@@ -19,16 +19,18 @@ const steps = [
     ),
     body: "Obelisk Q continuously monitors your portfolio against thousands of market scenarios. If conditions drift, the agent rebalances on your behalf — quietly, automatically.",
     accent: "Stability before yield.",
+    note: null,
   },
   {
-    eyebrow: "Step · 02",
+    eyebrow: "Step · 02 · How it thinks",
     title: (
       <>
         A single number for <span className="italic">peace of mind</span>.
       </>
     ),
-    body: "Your Stability Score (0–100) tells you everything. Above 90 means your capital is well within safe parameters. The agent never lets it drop without warning.",
-    accent: "Today, you're at 98.",
+    body: "Your Stability Score is a composite of three weighted signals: 40% Yield Differential, 35% Volatility Penalty, and 25% Liquidity Depth. A 5% circuit breaker halts all allocation if the score drops 5 points within any 60-minute window. In high-volatility conditions the confidence threshold rises to 80%; in stable markets it sits at 65%.",
+    accent: "Salam — today, you're at 98.",
+    note: "The engine identifies Market Regimes (Trending/Sideways) through 48-hour price patterns to dynamically adjust yield targets.",
   },
   {
     eyebrow: "Step · 03",
@@ -39,6 +41,7 @@ const steps = [
     ),
     body: "Press 'Invest' to put idle capital to work. Obelisk Q allocates across managed assets like USDY and mETH with a built-in Safety Buffer to absorb shocks.",
     accent: "Always reversible.",
+    note: null,
   },
 ];
 
@@ -112,6 +115,35 @@ export function GuidedTour({ open, onClose }: Props) {
                 <p className="mt-8 text-base text-muted-foreground max-w-md mx-auto leading-relaxed text-balance">
                   {s.body}
                 </p>
+                {s.note && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.25, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                    className="mt-6 mx-auto max-w-md px-5 py-4 text-left"
+                    style={{
+                      background: "rgba(255,255,255,0.025)",
+                      border: "1px solid rgba(255,255,255,0.09)",
+                    }}
+                  >
+                    <p
+                      className="text-[9px] uppercase text-muted-foreground mb-2"
+                      style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
+                    >
+                      Regime Detection
+                    </p>
+                    <p
+                      className="text-[11px] leading-relaxed"
+                      style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        color: "rgba(255,255,255,0.38)",
+                        letterSpacing: "0.01em",
+                      }}
+                    >
+                      {s.note}
+                    </p>
+                  </motion.div>
+                )}
                 <p className="mt-6 font-serif italic text-sm text-neon">{s.accent}</p>
               </motion.div>
             </AnimatePresence>

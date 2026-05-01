@@ -5,6 +5,7 @@ import { OptimizationDial } from "./OptimizationDial";
 import { StabilityGraph } from "./StabilityGraph";
 import { ManagedAssets } from "./ManagedAssets";
 import { SafeguardsView } from "./SafeguardsView";
+import { StabilityScoreCard } from "./StabilityScoreCard";
 import { IconArrowUpRight, IconArrowDownRight, IconArrowRight } from "./LineIcons";
 import { useStability } from "./StabilityContext";
 
@@ -238,45 +239,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange }: DashboardProp
                 </div>
               </div>
 
-              <div className="col-span-12 lg:col-span-5 glass-card glass-card-hover rounded-sm p-10 min-h-[320px] flex flex-col justify-between">
-                <div>
-                  <p
-                    className="text-[10px] uppercase text-muted-foreground mb-6"
-                    style={{ letterSpacing: "0.28em" }}
-                  >
-                    Stability Score
-                  </p>
-                  <div className="flex items-end gap-4">
-                    <span
-                      className="text-7xl text-foreground"
-                      style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}
-                    >
-                      {score}
-                    </span>
-                    <span
-                      className="italic text-3xl text-muted-foreground mb-3"
-                      style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-                    >
-                      / 100
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground mt-6 max-w-xs leading-relaxed">
-                    Your portfolio is within optimal risk parameters. No intervention required.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: 20 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`h-6 w-px ${
-                        i < Math.round(score / 5)
-                          ? "bg-foreground/70"
-                          : "bg-foreground/10"
-                      }`}
-                    />
-                  ))}
-                </div>
-              </div>
+              <StabilityScoreCard />
 
               <div className="col-span-12 lg:col-span-8 glass-card glass-card-hover rounded-sm p-10">
                 <div className="flex items-center justify-between mb-10">
@@ -537,20 +500,25 @@ export function Dashboard({ activeTab: externalTab, onTabChange }: DashboardProp
 }
 
 function QScoreBar() {
+  const { adaptive, setVolatility } = useStability();
+  const isHighVol = adaptive.volatility === "high";
+
   const metrics = [
     { label: "Yield Score", value: "94", unit: "/100", color: "hsl(104 100% 68%)" },
     { label: "Risk Score", value: "0.42", unit: "σ", color: "hsl(200 100% 72%)" },
     { label: "Accuracy", value: "98.7", unit: "%", color: "hsl(40 100% 72%)" },
     { label: "Uptime", value: "99.9", unit: "%", color: "hsl(270 80% 80%)" },
   ];
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="glass-card rounded-sm px-8 py-5 flex items-center justify-between gap-6"
+      className="glass-card rounded-sm px-8 py-4 flex items-center justify-between gap-6"
     >
-      <div className="flex items-center gap-4">
+      {/* Left: identity */}
+      <div className="flex items-center gap-4 flex-shrink-0">
         <div className="h-6 w-px" style={{ background: "rgba(255,255,255,0.12)" }} />
         <span
           className="text-[9px] uppercase text-muted-foreground"
@@ -559,7 +527,9 @@ function QScoreBar() {
           ERC-8004 · Q-Score
         </span>
       </div>
-      <div className="flex items-center gap-8 flex-1 justify-end">
+
+      {/* Centre: metrics */}
+      <div className="flex items-center gap-8 flex-1 justify-center">
         {metrics.map((m, i) => (
           <motion.div
             key={m.label}
@@ -576,7 +546,7 @@ function QScoreBar() {
             </span>
             <span className="text-[10px] text-muted-foreground hidden lg:block">·</span>
             <span
-              className="text-sm text-foreground"
+              className="text-sm"
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 letterSpacing: "-0.02em",
@@ -589,6 +559,59 @@ function QScoreBar() {
             </span>
           </motion.div>
         ))}
+      </div>
+
+      {/* Right: regime toggle (demo control) */}
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <span
+          className="text-[9px] uppercase text-muted-foreground hidden xl:block"
+          style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}
+        >
+          Regime
+        </span>
+        {/* Pill toggle: Stable ↔ Risk-Averse */}
+        <button
+          onClick={() => setVolatility(isHighVol ? "low" : "high")}
+          className="relative flex items-center gap-0 overflow-hidden"
+          style={{
+            background: "rgba(255,255,255,0.04)",
+            border: "0.5px solid rgba(255,255,255,0.12)",
+            height: "24px",
+          }}
+          title="Toggle volatility regime (demo)"
+        >
+          {(["low", "high"] as const).map((v) => (
+            <span
+              key={v}
+              className="relative z-10 px-3 text-[9px] uppercase transition-colors duration-500"
+              style={{
+                letterSpacing: "0.2em",
+                fontFamily: "'JetBrains Mono', monospace",
+                color:
+                  adaptive.volatility === v
+                    ? v === "high"
+                      ? "hsl(30 100% 70%)"
+                      : "hsl(104 100% 68%)"
+                    : "rgba(255,255,255,0.22)",
+              }}
+            >
+              {v === "low" ? "Stable" : "High Volatility"}
+            </span>
+          ))}
+          {/* Sliding pill */}
+          <motion.span
+            className="absolute top-0 bottom-0 w-1/2 pointer-events-none"
+            animate={{ x: isHighVol ? "100%" : "0%" }}
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              background: isHighVol
+                ? "rgba(255, 160, 60, 0.10)"
+                : "rgba(100, 255, 120, 0.07)",
+              borderRight: isHighVol ? "none" : "0.5px solid rgba(255,255,255,0.09)",
+              borderLeft: isHighVol ? "0.5px solid rgba(255,255,255,0.09)" : "none",
+            }}
+          />
+        </button>
       </div>
     </motion.div>
   );
