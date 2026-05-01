@@ -151,7 +151,7 @@ export function GuidedTour({ open, onClose }: Props) {
             <div className="mt-14 flex flex-col items-center gap-6">
               <button
                 onClick={next}
-                className="group inline-flex items-center gap-3 px-8 py-3 bg-gradient-metal rounded-full text-[11px] uppercase tracking-luxe text-primary-foreground font-medium hover:shadow-dial transition-shadow duration-500"
+                className="group inline-flex items-center gap-3 px-8 py-3 bg-gradient-metal rounded-full text-[11px] uppercase tracking-luxe text-primary-foreground hover:shadow-dial transition-shadow duration-500"
               >
                 {step === steps.length - 1 ? "Begin" : "Continue"}
                 <IconArrowRight size={12} />

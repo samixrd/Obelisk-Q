@@ -41,25 +41,30 @@ export function Dashboard({ activeTab: externalTab, onTabChange }: DashboardProp
       : undefined;
 
   return (
-    <main className="relative min-h-screen pt-28 pb-20">
+    <main className="relative min-h-screen pb-20">
 
-      {/* ── Hero Obelisk ── */}
-      <section className="relative h-[620px] flex flex-col items-center justify-center">
+      {/* ── Hero Obelisk — sits below fixed header (header ≈ 72px) ── */}
+      <section
+        className="relative flex flex-col items-center justify-center"
+        style={{ minHeight: "100svh", paddingTop: "96px" }}
+      >
         <div className="absolute inset-0 vignette" />
 
         <div style={{ filter: glowIntensity, transition: "filter 2s ease" }}>
           <Obelisk3D />
         </div>
 
+        {/* "Steady, precise" — clear of header at all scroll positions */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.6, duration: 1.2 }}
-          className="relative z-10 text-center pointer-events-none"
+          className="relative text-center pointer-events-none"
+          style={{ zIndex: 10, marginTop: "24px" }}
         >
           <p
             className="text-[10px] uppercase text-muted-foreground mb-3"
-            style={{ letterSpacing: "0.28em" }}
+            style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
           >
             Salam · Agent Active · Stability {score}
           </p>
@@ -68,9 +73,10 @@ export function Dashboard({ activeTab: externalTab, onTabChange }: DashboardProp
             style={{
               fontFamily: "'Cormorant Garamond', Georgia, serif",
               letterSpacing: "-0.04em",
+              fontWeight: 400,
             }}
           >
-            Steady, <span className="italic font-light">precise</span>.
+            Steady, <span className="italic" style={{ fontWeight: 300 }}>precise</span>.
           </h2>
         </motion.div>
 
@@ -79,7 +85,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange }: DashboardProp
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9, duration: 1.0 }}
-          className="absolute top-6 right-6 z-20 hidden lg:flex items-center gap-2 px-3 py-1.5"
+          className="absolute top-28 right-6 z-20 hidden lg:flex items-center gap-2 px-3 py-1.5"
           style={{
             background: "rgba(255,255,255,0.03)",
             border: "0.5px solid rgba(255,255,255,0.12)",
@@ -102,42 +108,52 @@ export function Dashboard({ activeTab: externalTab, onTabChange }: DashboardProp
           </span>
         </motion.div>
 
-        {/* One-Click Invest — lower third, refined matte metallic */}
+        {/* ── Activate Investment — perfectly centred, metallic matte, hover glow ── */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.0, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3"
+          className="flex flex-col items-center gap-3"
+          style={{ marginTop: "40px", zIndex: 20 }}
         >
           <motion.button
-            whileHover={{ y: -2 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ y: -1 }}
+            whileTap={{ scale: 0.985 }}
             transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-            className="group relative inline-flex items-center gap-3 pl-6 pr-2.5 py-2"
+            className="group relative inline-flex items-center gap-3 pl-6 pr-3 py-2.5"
             style={{
               background:
-                "linear-gradient(135deg, hsl(40 15% 88%) 0%, hsl(35 12% 72%) 40%, hsl(30 10% 50%) 70%, hsl(35 12% 78%) 100%)",
-              border: "0.5px solid rgba(255,255,255,0.18)",
-              boxShadow:
-                "0 4px 20px -8px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.3)",
+                "linear-gradient(135deg, hsl(40 14% 86%) 0%, hsl(35 10% 70%) 40%, hsl(30 8% 52%) 70%, hsl(35 11% 76%) 100%)",
+              border: "0.5px solid rgba(255,255,255,0.16)",
+              boxShadow: "0 4px 24px -8px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.28)",
+              transition: "box-shadow 0.5s ease",
+            }}
+            onMouseEnter={(e) => {
+              (e.currentTarget as HTMLElement).style.boxShadow =
+                "0 0 32px rgba(255,255,255,0.10), 0 0 80px rgba(200,220,255,0.06), 0 4px 24px -8px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.28)";
+            }}
+            onMouseLeave={(e) => {
+              (e.currentTarget as HTMLElement).style.boxShadow =
+                "0 4px 24px -8px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.28)";
             }}
           >
+            {/* Hover shimmer sweep */}
             <span
               aria-hidden
-              className="absolute -inset-2 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
+              className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
               style={{
                 background:
-                  "radial-gradient(ellipse, hsl(104 100% 78% / 0.12), transparent 65%)",
+                  "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%)",
               }}
             />
             <span
-              className="relative text-[10px] uppercase text-black/80"
-              style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}
+              className="relative text-[10px] uppercase text-black/75"
+              style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
             >
-              One-Click Invest
+              Activate Investment
             </span>
             <span className="relative inline-flex items-center justify-center h-6 w-6 rounded-full bg-black/10">
-              <IconArrowRight size={11} className="text-black/70" />
+              <IconArrowRight size={11} className="text-black/65" />
             </span>
           </motion.button>
 
