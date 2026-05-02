@@ -1,380 +1,400 @@
 /**
- * LandingPage — Cinematic entry. Pure SVG + CSS keyframes.
+ * LandingPage — Cinematic entry. Pure SVG + CSS keyframes. Full physics loop.
  *
- * Phase 1 (0.6s → 1.4s)  : White beam strokes in from the left, hits prism.
- * Phase 2 (1.4s → 1.7s)  : Beam fades out instantly on contact.
- * Phase 3 (1.7s → ∞)     : Rainbow rays emerge and flow continuously using
- *                           stroke-dashoffset CSS keyframes — real light physics.
+ * Cycle (6s, infinite):
+ *   0.0 – 0.9s  : white beam draws in from left
+ *   0.9 – 1.1s  : beam vanishes on contact + sparkle burst at hit point
+ *   1.1 – 5.2s  : rainbow rays emerge, flow continuously (tight ±12° fan)
+ *   5.2 – 6.0s  : rainbow fades, resets → loop
  *
- * No Three.js. No WebGL. 60fps on a decade-old laptop.
+ * Changes from v4:
+ *   • Q mark removed
+ *   • Triangle is fully white (liquid glass, not dark)
+ *   • Rainbow fan tightened to ±12° (compact, not spread)
+ *   • Full 6s infinite loop — beam → touch → rainbow → reset → repeat
+ *   • Sparkle burst (8-point star + scatter dots) at the hit point
  */
 
 import { motion } from "framer-motion";
 
-// ─── Animation constants ──────────────────────────────────────────────────────
+// ─── Geometry ─────────────────────────────────────────────────────────────────
 
-// Triangle vertices (within 800×520 SVG viewport, centred at 400,260)
-const APEX   = { x: 400, y:  62 };
-const BL     = { x: 148, y: 420 };
-const BR     = { x: 652, y: 420 };
+const APEX  = { x: 400, y:  58 };
+const BL    = { x: 144, y: 422 };
+const BR    = { x: 656, y: 422 };
 
-// Where the beam hits the left face (midpoint of left edge)
-const HIT_X  = (APEX.x + BL.x) / 2;   // ≈ 274
-const HIT_Y  = (APEX.y + BL.y) / 2;   // ≈ 241
+// Beam hits the left face at ~55% down from apex
+const HIT_X = APEX.x + (BL.x - APEX.x) * 0.54;   // ≈ 273
+const HIT_Y = APEX.y + (BL.y - APEX.y) * 0.54;   // ≈ 249
 
-// Where rainbow exits the right face (slightly lower midpoint)
-const EXIT_X = (APEX.x + BR.x) / 2 + 14; // ≈ 540
-const EXIT_Y = (APEX.y + BR.y) / 2 + 6;  // ≈ 247
+// Rainbow exits the right face at ~55% down
+const EXIT_X = APEX.x + (BR.x - APEX.x) * 0.54;  // ≈ 527
+const EXIT_Y = APEX.y + (BR.y - APEX.y) * 0.54;  // ≈ 249
 
-// Rainbow spectrum — 7 rays, fanning out from the right face
+// Tight rainbow: ±12° total spread, 7 rays → 4° apart
 const RAYS = [
-  { color: "#ff1a4e", angleDeg: -26, dashLen: 380, speed: 2.8 },
-  { color: "#ff6a00", angleDeg: -17, dashLen: 360, speed: 2.5 },
-  { color: "#ffe600", angleDeg:  -9, dashLen: 420, speed: 3.1 },
-  { color: "#44ff66", angleDeg:   0, dashLen: 400, speed: 2.7 },
-  { color: "#00aaff", angleDeg:   9, dashLen: 390, speed: 3.3 },
-  { color: "#5533ff", angleDeg:  17, dashLen: 370, speed: 2.4 },
-  { color: "#cc00ff", angleDeg:  26, dashLen: 410, speed: 2.9 },
+  { color: "#ff1a4e", angleDeg: -12, len: 360, flowSpeed: "2.6s" },
+  { color: "#ff6a00", angleDeg:  -8, len: 360, flowSpeed: "2.9s" },
+  { color: "#ffe200", angleDeg:  -4, len: 380, flowSpeed: "2.4s" },
+  { color: "#44ff66", angleDeg:   0, len: 390, flowSpeed: "3.0s" },
+  { color: "#00aaff", angleDeg:   4, len: 375, flowSpeed: "2.7s" },
+  { color: "#5533ff", angleDeg:   8, len: 360, flowSpeed: "2.5s" },
+  { color: "#cc00ff", angleDeg:  12, len: 355, flowSpeed: "3.1s" },
 ] as const;
 
-function rayEndpoint(angleDeg: number, length = 420) {
-  const rad = (angleDeg * Math.PI) / 180;
-  return {
-    x: EXIT_X + Math.cos(rad) * length,
-    y: EXIT_Y + Math.sin(rad) * length,
-  };
+function rayEnd(angleDeg: number, len: number) {
+  const r = (angleDeg * Math.PI) / 180;
+  return { x: EXIT_X + Math.cos(r) * len, y: EXIT_Y + Math.sin(r) * len };
 }
 
-// ─── Embedded CSS keyframes ───────────────────────────────────────────────────
+// Beam length from screen-left to hit point
+const BEAM_START_X = 0;
+const BEAM_LEN = HIT_X - BEAM_START_X + 8; // ≈ 281
+
+// ─── Loop cycle = 6 s ────────────────────────────────────────────────────────
+//  0%  – 15% : beam draws in         (0.0 – 0.9s)
+//  15% – 20% : beam fades + sparkle  (0.9 – 1.2s)
+//  20% – 86% : rainbow visible       (1.2 – 5.2s)
+//  86% – 100%: rainbow fades, reset  (5.2 – 6.0s)
+
+const CYCLE = "6s";
 
 const STYLES = `
-  /* Phase 1 — beam draws itself in, left → right */
-  @keyframes beam-draw {
-    from { stroke-dashoffset: 380; opacity: 1; }
-    to   { stroke-dashoffset: 0;   opacity: 1; }
+  /* ── BEAM loop ────────────────────────────────────────────── */
+  @keyframes beam-loop {
+    0%   { stroke-dashoffset: ${BEAM_LEN}; opacity: 0; }
+    2%   { stroke-dashoffset: ${BEAM_LEN}; opacity: 1; }
+    14%  { stroke-dashoffset: 0;           opacity: 1; }
+    20%  { stroke-dashoffset: 0;           opacity: 0; }
+    21%  { stroke-dashoffset: ${BEAM_LEN}; opacity: 0; }
+    100% { stroke-dashoffset: ${BEAM_LEN}; opacity: 0; }
   }
-  /* Phase 2 — beam vanishes on contact */
-  @keyframes beam-vanish {
-    0%   { opacity: 1; }
+
+  /* ── RAINBOW opacity loop ──────────────────────────────────── */
+  @keyframes ray-opacity-loop {
+    0%   { opacity: 0; }
+    20%  { opacity: 0; }
+    27%  { opacity: 1; }
+    84%  { opacity: 1; }
+    96%  { opacity: 0; }
     100% { opacity: 0; }
   }
-  /* Phase 3 — continuous flowing light through each ray */
+
+  /* ── RAINBOW continuous flow — runs at its own speed ──────── */
   @keyframes ray-flow {
     from { stroke-dashoffset: 0; }
-    to   { stroke-dashoffset: -140; }
-  }
-  /* Prism inner glow pulse */
-  @keyframes prism-breathe {
-    0%, 100% { opacity: 0.18; }
-    50%       { opacity: 0.38; }
-  }
-  /* Prism edge shimmer */
-  @keyframes edge-shimmer {
-    0%   { stroke-opacity: 0.22; }
-    50%  { stroke-opacity: 0.52; }
-    100% { stroke-opacity: 0.22; }
-  }
-  /* Refraction bloom at hit point */
-  @keyframes bloom-appear {
-    0%   { r: 0;  opacity: 0;   }
-    40%  { r: 18; opacity: 0.55; }
-    100% { r: 24; opacity: 0;   }
+    to   { stroke-dashoffset: -120; }
   }
 
-  .beam-core {
-    stroke-dasharray: 380;
-    stroke-dashoffset: 380;
-    animation:
-      beam-draw   0.72s cubic-bezier(0.22,1,0.36,1) 0.65s forwards,
-      beam-vanish 0.18s ease-in                     1.37s forwards;
+  /* ── SPARKLE — 8-point burst at hit point ────────────────── */
+  @keyframes spark-ring {
+    0%   { r: 0;  opacity: 0;    stroke-opacity: 0; }
+    16%  { r: 0;  opacity: 0;    stroke-opacity: 0; }
+    20%  { r: 4;  opacity: 1;    stroke-opacity: 0.9; }
+    30%  { r: 22; opacity: 0;    stroke-opacity: 0; }
+    100% { r: 22; opacity: 0;    stroke-opacity: 0; }
   }
-  .beam-glow {
-    stroke-dasharray: 380;
-    stroke-dashoffset: 380;
-    animation:
-      beam-draw   0.72s cubic-bezier(0.22,1,0.36,1) 0.60s forwards,
-      beam-vanish 0.22s ease-in                     1.34s forwards;
+  @keyframes spark-ring2 {
+    0%   { r: 0;  opacity: 0; }
+    17%  { r: 0;  opacity: 0; }
+    22%  { r: 8;  opacity: 0.55; }
+    32%  { r: 30; opacity: 0; }
+    100% { r: 30; opacity: 0; }
   }
-  .prism-fill {
-    animation: prism-breathe 4.2s ease-in-out infinite 1.8s;
+  /* Individual spark rays burst outward */
+  @keyframes spark-ray {
+    0%   { stroke-dashoffset: 20; opacity: 0; }
+    16%  { stroke-dashoffset: 20; opacity: 0; }
+    20%  { stroke-dashoffset: 20; opacity: 1; }
+    28%  { stroke-dashoffset: 0;  opacity: 0.9; }
+    36%  { stroke-dashoffset: -8; opacity: 0; }
+    100% { stroke-dashoffset: -8; opacity: 0; }
   }
-  .prism-edge {
-    animation: edge-shimmer 5s ease-in-out infinite 2s;
+  /* Scatter dots */
+  @keyframes spark-dot {
+    0%   { opacity: 0; transform: translate(0,0); }
+    18%  { opacity: 0; transform: translate(0,0); }
+    22%  { opacity: 1; }
+    34%  { opacity: 0; }
+    100% { opacity: 0; }
   }
-  .bloom {
-    animation: bloom-appear 0.55s ease-out 1.42s forwards;
+
+  /* ── PRISM inner glow breathe ─────────────────────────────── */
+  @keyframes prism-breathe {
+    0%, 100% { opacity: 0.10; }
+    50%       { opacity: 0.28; }
   }
+  /* ── PRISM edge shimmer ───────────────────────────────────── */
+  @keyframes edge-shimmer {
+    0%, 100% { stroke-opacity: 0.55; }
+    50%       { stroke-opacity: 0.90; }
+  }
+
+  .beam-layer {
+    stroke-dasharray: ${BEAM_LEN};
+    animation: beam-loop ${CYCLE} cubic-bezier(0.4,0,0.2,1) infinite;
+  }
+  .ray-opacity { animation: ray-opacity-loop ${CYCLE} linear infinite; }
+  .prism-inner-glow { animation: prism-breathe 4s ease-in-out infinite; }
+  .prism-left-edge  { animation: edge-shimmer 5s ease-in-out infinite; }
 `;
 
-// ─── Prism SVG ────────────────────────────────────────────────────────────────
+// ─── Sparkle burst (8 rays + 2 rings + scatter dots) ─────────────────────────
+
+function SparkBurst() {
+  const rayAngles = [0, 45, 90, 135, 180, 225, 270, 315];
+  const len = 18;
+
+  return (
+    <g>
+      {/* Expanding ring 1 */}
+      <circle
+        cx={HIT_X} cy={HIT_Y}
+        r={0}
+        fill="none"
+        stroke="rgba(255,255,255,0.85)"
+        strokeWidth="0.8"
+        style={{ animation: `spark-ring ${CYCLE} linear infinite` }}
+      />
+      {/* Expanding ring 2 — softer */}
+      <circle
+        cx={HIT_X} cy={HIT_Y}
+        r={0}
+        fill="rgba(220,235,255,0.15)"
+        style={{ animation: `spark-ring2 ${CYCLE} linear infinite` }}
+      />
+
+      {/* 8 radiating spark lines */}
+      {rayAngles.map((angle, i) => {
+        const r = (angle * Math.PI) / 180;
+        const x2 = HIT_X + Math.cos(r) * len;
+        const y2 = HIT_Y + Math.sin(r) * len;
+        return (
+          <line
+            key={i}
+            x1={HIT_X} y1={HIT_Y}
+            x2={x2} y2={y2}
+            stroke="rgba(255,255,255,0.90)"
+            strokeWidth="0.9"
+            strokeLinecap="round"
+            style={{
+              strokeDasharray: len,
+              animation: `spark-ray ${CYCLE} linear infinite`,
+              animationDelay: `${i * 0.018}s`,
+            }}
+          />
+        );
+      })}
+
+      {/* Scatter dots — 6 small dots flung out */}
+      {[20, 80, 145, 200, 260, 320].map((angle, i) => {
+        const r = (angle * Math.PI) / 180;
+        const dist = 14 + (i % 3) * 5;
+        return (
+          <circle
+            key={i}
+            cx={HIT_X + Math.cos(r) * dist}
+            cy={HIT_Y + Math.sin(r) * dist}
+            r="1.2"
+            fill="white"
+            style={{
+              animation: `spark-dot ${CYCLE} linear infinite`,
+              animationDelay: `${0.04 + i * 0.022}s`,
+            }}
+          />
+        );
+      })}
+    </g>
+  );
+}
+
+// ─── Main SVG ─────────────────────────────────────────────────────────────────
 
 function PrismSVG() {
   const pts = `${APEX.x},${APEX.y} ${BL.x},${BL.y} ${BR.x},${BR.y}`;
-  const beamStartX = 10;
-  const beamStartY = HIT_Y;
 
   return (
     <svg
-      viewBox="0 0 800 520"
+      viewBox="0 0 800 500"
       xmlns="http://www.w3.org/2000/svg"
       className="w-full h-full"
       style={{ overflow: "visible" }}
       aria-hidden
     >
       <defs>
-        {/* ── Prism fill — liquid glass mercury ── */}
-        <linearGradient id="prismGlass" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#1a1a28" stopOpacity="0.96" />
-          <stop offset="35%"  stopColor="#0d0d16" stopOpacity="0.99" />
-          <stop offset="65%"  stopColor="#14141f" stopOpacity="0.98" />
-          <stop offset="100%" stopColor="#0a0a12" stopOpacity="1"    />
+        {/* ── White liquid glass fill ── */}
+        <linearGradient id="prismWhite" x1="20%" y1="0%" x2="80%" y2="100%">
+          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.97" />
+          <stop offset="40%"  stopColor="#f0f4ff" stopOpacity="0.96" />
+          <stop offset="75%"  stopColor="#e8eeff" stopOpacity="0.95" />
+          <stop offset="100%" stopColor="#dce5ff" stopOpacity="0.94" />
         </linearGradient>
 
-        {/* Left-face refractive highlight */}
-        <linearGradient id="leftFaceHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor="#8899cc" stopOpacity="0" />
-          <stop offset="40%"  stopColor="#aabbee" stopOpacity="0.12" />
-          <stop offset="100%" stopColor="#ffffff"  stopOpacity="0.06" />
+        {/* Left face glass highlight (receives light) */}
+        <linearGradient id="leftFaceCatch" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.0"  />
+          <stop offset="55%"  stopColor="#cdd8ff" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#aabbff" stopOpacity="0.08" />
         </linearGradient>
 
-        {/* Inner glow — refractive index shimmer */}
-        <radialGradient id="innerGlow" cx="42%" cy="48%" r="44%">
-          <stop offset="0%"   stopColor="#6677bb" stopOpacity="0.22" />
-          <stop offset="60%"  stopColor="#3344aa" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#3344aa" stopOpacity="0"    />
+        {/* Refractive inner shimmer */}
+        <radialGradient id="innerShimmer" cx="38%" cy="42%" r="46%">
+          <stop offset="0%"   stopColor="#b8caff" stopOpacity="0.22" />
+          <stop offset="50%"  stopColor="#8ca0e8" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#8ca0e8" stopOpacity="0.0"  />
         </radialGradient>
 
-        {/* Apex highlight — where light gathers */}
-        <radialGradient id="apexGlow" cx="50%" cy="15%" r="30%">
-          <stop offset="0%"   stopColor="#99aadd" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#99aadd" stopOpacity="0"    />
+        {/* Apex brightness — light gathers at the tip */}
+        <radialGradient id="apexBright" cx="50%" cy="12%" r="28%">
+          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0"  />
         </radialGradient>
 
-        {/* Beam glow blur */}
-        <filter id="beamBlur" x="-20%" y="-100%" width="140%" height="300%">
-          <feGaussianBlur stdDeviation="2.5" />
-        </filter>
-        <filter id="beamCoreBlur" x="-10%" y="-200%" width="120%" height="500%">
-          <feGaussianBlur stdDeviation="0.8" />
+        {/* Ground shadow */}
+        <filter id="groundShadow" x="-10%" y="-5%" width="120%" height="130%">
+          <feDropShadow dx="0" dy="14" stdDeviation="22"
+            floodColor="#000000" floodOpacity="0.55" />
         </filter>
 
-        {/* Ray glow blur */}
-        <filter id="rayGlow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="3" result="blur"/>
-          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        {/* Beam soft glow */}
+        <filter id="beamBlur">
+          <feGaussianBlur stdDeviation="3" />
         </filter>
-        <filter id="rayGlowSoft" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="5" />
-        </filter>
-
-        {/* Prism shadow */}
-        <filter id="prismShadow" x="-15%" y="-10%" width="130%" height="130%">
-          <feDropShadow dx="0" dy="8" stdDeviation="20" floodColor="#000000" floodOpacity="0.65" />
+        <filter id="beamMid">
+          <feGaussianBlur stdDeviation="1.2" />
         </filter>
 
-        {/* Clipping mask — keep rays within right half */}
-        <clipPath id="rightHalf">
-          <rect x={EXIT_X} y="0" width="800" height="520" />
-        </clipPath>
+        {/* Ray glow */}
+        <filter id="rayGlow">
+          <feGaussianBlur stdDeviation="3.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="raySoft">
+          <feGaussianBlur stdDeviation="6" />
+        </filter>
       </defs>
 
-      {/* ══ PRISM BODY ══════════════════════════════════════════════════════════ */}
+      {/* ── PRISM ──────────────────────────────────────────────────────────── */}
 
       {/* Drop shadow */}
-      <polygon
-        points={pts}
-        fill="#000000"
-        opacity="0.45"
-        transform="translate(0,6)"
-        filter="url(#prismShadow)"
-      />
+      <polygon points={pts} fill="rgba(0,0,0,0.4)"
+        transform="translate(0,10)" filter="url(#groundShadow)" />
 
-      {/* Main fill — dark liquid glass */}
-      <polygon points={pts} fill="url(#prismGlass)" />
+      {/* Main white glass fill */}
+      <polygon points={pts} fill="url(#prismWhite)" />
 
-      {/* Refractive inner glow — pulsing */}
-      <polygon
-        points={pts}
-        fill="url(#innerGlow)"
-        className="prism-fill"
-      />
+      {/* Refractive inner shimmer — pulsing */}
+      <polygon points={pts} fill="url(#innerShimmer)"
+        className="prism-inner-glow" />
 
-      {/* Apex light gather */}
-      <polygon points={pts} fill="url(#apexGlow)" opacity="0.6" />
+      {/* Left face light-catch overlay */}
+      <polygon points={pts} fill="url(#leftFaceCatch)" />
 
-      {/* Left-face refractive surface highlight */}
-      <polygon points={pts} fill="url(#leftFaceHighlight)" />
+      {/* Apex brightness */}
+      <polygon points={pts} fill="url(#apexBright)" opacity="0.7" />
 
-      {/* Edge outlines — hairline shimmer */}
-      <line
-        x1={APEX.x} y1={APEX.y} x2={BL.x} y2={BL.y}
-        stroke="rgba(200,210,240,0.28)" strokeWidth="0.8"
-        className="prism-edge"
-      />
-      <line
-        x1={APEX.x} y1={APEX.y} x2={BR.x} y2={BR.y}
-        stroke="rgba(200,210,240,0.18)" strokeWidth="0.8"
-        className="prism-edge"
-        style={{ animationDelay: "2.6s" }}
-      />
-      <line
-        x1={BL.x} y1={BL.y} x2={BR.x} y2={BR.y}
-        stroke="rgba(200,210,240,0.10)" strokeWidth="0.6"
-      />
+      {/* Edges — hairline strokes */}
+      <line x1={APEX.x} y1={APEX.y} x2={BL.x} y2={BL.y}
+        stroke="rgba(160,180,220,0.55)" strokeWidth="0.7"
+        className="prism-left-edge" />
+      <line x1={APEX.x} y1={APEX.y} x2={BR.x} y2={BR.y}
+        stroke="rgba(160,180,220,0.35)" strokeWidth="0.7"
+        style={{ animation: "edge-shimmer 5s ease-in-out 2.5s infinite" }} />
+      <line x1={BL.x} y1={BL.y} x2={BR.x} y2={BR.y}
+        stroke="rgba(160,180,220,0.22)" strokeWidth="0.6" />
 
-      {/* Subtle bevel — top-left face catch */}
+      {/* Very subtle top-left bevel catch */}
       <line
         x1={APEX.x} y1={APEX.y}
-        x2={APEX.x - 8} y2={APEX.y + 18}
-        stroke="rgba(255,255,255,0.35)" strokeWidth="1.2"
+        x2={APEX.x - 6} y2={APEX.y + 14}
+        stroke="rgba(255,255,255,0.6)" strokeWidth="1.2"
         strokeLinecap="round"
       />
 
-      {/* ── Q mark — brand logo ── */}
-      <g transform={`translate(${BR.x - 72}, ${BR.y - 82})`} opacity="0.82">
-        {/* Circle of Q */}
-        <circle cx="18" cy="16" r="12"
-          fill="none"
-          stroke="rgba(255,255,255,0.70)"
-          strokeWidth="2.5"
-        />
-        {/* Tail of Q */}
-        <line x1="26" y1="24" x2="32" y2="30"
-          stroke="rgba(255,255,255,0.70)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-        />
-      </g>
+      {/* ── INCOMING WHITE BEAM ───────────────────────────────────────────── */}
 
-      {/* ══ PHASE 1 — INCOMING WHITE BEAM ══════════════════════════════════════ */}
-
-      {/* Outer glow — wider, blurred */}
+      {/* Soft outer glow */}
       <line
-        x1={beamStartX} y1={beamStartY}
-        x2={HIT_X}      y2={HIT_Y}
-        stroke="rgba(255,255,255,0.20)"
-        strokeWidth="8"
+        x1={BEAM_START_X} y1={HIT_Y}
+        x2={HIT_X} y2={HIT_Y}
+        stroke="rgba(255,255,255,0.18)" strokeWidth="10"
         strokeLinecap="round"
         filter="url(#beamBlur)"
-        className="beam-glow"
+        className="beam-layer"
       />
       {/* Mid halo */}
       <line
-        x1={beamStartX} y1={beamStartY}
-        x2={HIT_X}      y2={HIT_Y}
-        stroke="rgba(255,255,255,0.45)"
-        strokeWidth="2.5"
+        x1={BEAM_START_X} y1={HIT_Y}
+        x2={HIT_X} y2={HIT_Y}
+        stroke="rgba(255,255,255,0.55)" strokeWidth="2.5"
         strokeLinecap="round"
-        filter="url(#beamCoreBlur)"
-        className="beam-core"
+        filter="url(#beamMid)"
+        className="beam-layer"
       />
       {/* Sharp surgical core */}
       <line
-        x1={beamStartX} y1={beamStartY}
-        x2={HIT_X}      y2={HIT_Y}
-        stroke="rgba(255,255,255,0.92)"
-        strokeWidth="0.7"
+        x1={BEAM_START_X} y1={HIT_Y}
+        x2={HIT_X} y2={HIT_Y}
+        stroke="rgba(255,255,255,0.95)" strokeWidth="0.65"
         strokeLinecap="round"
-        className="beam-core"
+        className="beam-layer"
       />
 
-      {/* ══ PHASE 2 — REFRACTION BLOOM ════════════════════════════════════════ */}
-      <circle
-        cx={HIT_X} cy={HIT_Y}
-        r="0"
-        fill="none"
-        stroke="rgba(255,255,255,0.55)"
-        strokeWidth="1"
-        className="bloom"
-      />
-      <circle
-        cx={HIT_X} cy={HIT_Y}
-        r="0"
-        fill="rgba(160,180,255,0.25)"
-        className="bloom"
-        style={{ animationDelay: "1.44s" }}
-      />
+      {/* ── SPARKLE BURST at hit point ────────────────────────────────────── */}
+      <SparkBurst />
 
-      {/* ══ PHASE 3 — RAINBOW DISPERSION RAYS ════════════════════════════════ */}
+      {/* ── RAINBOW DISPERSION RAYS ──────────────────────────────────────── */}
       {RAYS.map((ray, i) => {
-        const end = rayEndpoint(ray.angleDeg, ray.dashLen);
-        const dashArray = `28 10`;   // dash + gap — creates the flowing segments
-        const delay     = `${1.72 + i * 0.06}s`;
-        const dur       = `${ray.speed}s`;
+        const end = rayEnd(ray.angleDeg, ray.len);
+        const dash = "22 8";   // dash + gap — gives flowing segments
 
         return (
-          <g key={i}>
-            {/* Soft outer glow */}
-            <line
-              x1={EXIT_X} y1={EXIT_Y}
-              x2={end.x}  y2={end.y}
-              stroke={ray.color}
-              strokeWidth="6"
-              strokeLinecap="round"
-              filter="url(#rayGlowSoft)"
-              opacity="0"
-              style={{
-                strokeDasharray: dashArray,
-                animation: `ray-flow ${dur} linear ${delay} infinite`,
-                animationFillMode: "forwards",
-              }}
-            >
-              <animate attributeName="opacity" from="0" to="0.18"
-                dur="0.4s" begin={delay} fill="freeze" />
-            </line>
+          <g key={i} className="ray-opacity"
+            style={{ animationDelay: `${i * 0.05}s` }}>
 
+            {/* Soft outer aura */}
+            <line
+              x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y}
+              stroke={ray.color} strokeWidth="7"
+              strokeLinecap="round"
+              filter="url(#raySoft)"
+              style={{
+                strokeDasharray: dash,
+                animation: `ray-flow ${ray.flowSpeed} linear infinite`,
+              }}
+            />
             {/* Mid glow */}
             <line
-              x1={EXIT_X} y1={EXIT_Y}
-              x2={end.x}  y2={end.y}
-              stroke={ray.color}
-              strokeWidth="2.2"
+              x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y}
+              stroke={ray.color} strokeWidth="2.2"
               strokeLinecap="round"
               filter="url(#rayGlow)"
-              opacity="0"
               style={{
-                strokeDasharray: dashArray,
-                animation: `ray-flow ${dur} linear ${delay} infinite`,
-                animationFillMode: "forwards",
+                strokeDasharray: dash,
+                animation: `ray-flow ${ray.flowSpeed} linear infinite`,
               }}
-            >
-              <animate attributeName="opacity" from="0" to="0.60"
-                dur="0.4s" begin={delay} fill="freeze" />
-            </line>
-
+            />
             {/* Sharp core */}
             <line
-              x1={EXIT_X} y1={EXIT_Y}
-              x2={end.x}  y2={end.y}
-              stroke={ray.color}
-              strokeWidth="0.9"
+              x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y}
+              stroke={ray.color} strokeWidth="0.85"
               strokeLinecap="round"
-              opacity="0"
               style={{
-                strokeDasharray: dashArray,
-                animation: `ray-flow ${dur} linear ${delay} infinite`,
-                animationFillMode: "forwards",
+                strokeDasharray: dash,
+                animation: `ray-flow ${ray.flowSpeed} linear infinite`,
               }}
-            >
-              <animate attributeName="opacity" from="0" to="0.88"
-                dur="0.35s" begin={delay} fill="freeze" />
-            </line>
+            />
           </g>
         );
       })}
 
-      {/* Exit point scatter — small burst where rainbow leaves glass */}
-      <circle
-        cx={EXIT_X} cy={EXIT_Y} r="4"
-        fill="rgba(255,255,255,0.0)"
-        opacity="0"
-      >
-        <animate attributeName="fill-opacity" values="0;0.35;0.12" dur="0.8s"
-          begin="1.72s" repeatCount="indefinite"/>
-        <animate attributeName="r" values="2;6;4" dur="2.5s"
-          begin="1.72s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" from="0" to="1"
-          dur="0.3s" begin="1.72s" fill="freeze"/>
+      {/* Exit point glow — where rainbow leaves the prism */}
+      <circle cx={EXIT_X} cy={EXIT_Y} r="4"
+        fill="white" opacity="0" className="ray-opacity">
+        <animate attributeName="r" values="2;5;3"
+          dur="2s" repeatCount="indefinite" begin="1.2s"/>
+        <animate attributeName="opacity" values="0;0.5;0.2"
+          dur="2s" repeatCount="indefinite" begin="1.2s"/>
       </circle>
     </svg>
   );
@@ -397,19 +417,15 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         transition: { duration: 0.85, ease: [0.55, 0, 1, 0.45] },
       }}
     >
-      {/* Embedded CSS */}
       <style>{STYLES}</style>
 
-      {/* Fine grain overlay */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
+      {/* Fine grain texture */}
+      <div aria-hidden className="pointer-events-none absolute inset-0"
         style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E\")",
+          backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E\")",
           backgroundRepeat: "repeat",
           backgroundSize: "160px 160px",
-          opacity: 0.5,
+          opacity: 0.45,
           mixBlendMode: "overlay",
         }}
       />
@@ -421,116 +437,105 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
       >
-        <p
-          className="text-[9px] uppercase tracking-[0.5em] text-white/28"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-        >
+        <p className="text-[9px] uppercase tracking-[0.5em] text-white/28"
+          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           Mantle Network · ERC-8004
         </p>
       </motion.div>
 
-      {/* ── Central light theater ── */}
+      {/* Central light theater */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1.0, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full max-w-[820px] px-4"
-        style={{ height: "380px" }}
+        transition={{ duration: 1.0, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        className="relative w-full max-w-[800px] px-4"
+        style={{ height: "360px" }}
       >
         <PrismSVG />
       </motion.div>
 
-      {/* ── Headline ── */}
+      {/* Headline */}
       <motion.div
-        className="relative z-20 text-center -mt-2"
-        initial={{ opacity: 0, y: 14 }}
+        className="relative z-20 text-center"
+        style={{ marginTop: "-4px" }}
+        initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.1, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 1.1, delay: 0.6, ease: [0.22, 1, 0.36, 1] }}
       >
-        <h1
-          className="text-[50px] leading-none tracking-[-0.04em] text-white"
-          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-        >
+        <h1 className="text-[50px] leading-none tracking-[-0.04em] text-white"
+          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400 }}>
           Obelisk <span className="italic" style={{ fontWeight: 300 }}>Q</span>
         </h1>
-        <p
-          className="mt-3 text-[9px] uppercase tracking-[0.38em] text-white/30"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-        >
+        <p className="mt-3 text-[9px] uppercase tracking-[0.38em] text-white/30"
+          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           Autonomous Investment Intelligence
         </p>
       </motion.div>
 
-      {/* ── Enter button — centred, hover glow ── */}
+      {/* Enter button */}
       <motion.div
         className="relative z-20 mt-10 flex flex-col items-center gap-3"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, delay: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.9, delay: 1.0, ease: [0.22, 1, 0.36, 1] }}
       >
         <motion.button
           onClick={onEnter}
-          whileHover={{ scale: 1.04 }}
+          whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="group relative px-10 py-3 overflow-hidden"
           style={{
             background: "transparent",
             border: "0.5px solid rgba(255,255,255,0.18)",
+            transition: "box-shadow 0.5s ease, border-color 0.5s ease",
           }}
           onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.boxShadow =
-              "0 0 28px rgba(255,255,255,0.08), inset 0 0 20px rgba(255,255,255,0.03)";
+            const el = e.currentTarget as HTMLElement;
+            el.style.boxShadow = "0 0 30px rgba(255,255,255,0.07), inset 0 0 20px rgba(255,255,255,0.025)";
+            el.style.borderColor = "rgba(255,255,255,0.32)";
           }}
           onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.boxShadow = "none";
+            const el = e.currentTarget as HTMLElement;
+            el.style.boxShadow = "none";
+            el.style.borderColor = "rgba(255,255,255,0.18)";
           }}
         >
-          <span
-            aria-hidden
+          <span aria-hidden
             className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
             style={{
-              background:
-                "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.035) 50%, transparent 100%)",
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.03), transparent)",
             }}
           />
           <span
-            className="relative text-[11px] uppercase tracking-[0.36em] text-white/65 group-hover:text-white/92 transition-colors duration-500"
+            className="relative text-[11px] uppercase tracking-[0.36em] text-white/60 group-hover:text-white/90 transition-colors duration-500"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}
           >
             Enter
           </span>
         </motion.button>
 
-        <p
-          className="text-[8px] uppercase tracking-[0.4em] text-white/16"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-        >
+        <p className="text-[8px] uppercase tracking-[0.4em] text-white/16"
+          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           Private · Secure · Non-custodial
         </p>
       </motion.div>
 
-      {/* Bottom network indicator */}
+      {/* Bottom version line */}
       <motion.div
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1.0, delay: 1.8 }}
+        transition={{ duration: 1.0, delay: 1.6 }}
       >
-        <span
-          className="h-1 w-1 rounded-full bg-white/22"
-          style={{ animation: "prism-breathe 3.5s ease-in-out infinite" }}
-        />
-        <span
-          className="text-[8px] uppercase tracking-[0.4em] text-white/18"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-        >
+        <span className="h-1 w-1 rounded-full bg-white/20"
+          style={{ animation: "prism-breathe 3.8s ease-in-out infinite" }} />
+        <span className="text-[8px] uppercase tracking-[0.4em] text-white/18"
+          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           v 1.0 · Mantle L2
         </span>
-        <span
-          className="h-1 w-1 rounded-full bg-white/22"
-          style={{ animation: "prism-breathe 3.5s ease-in-out infinite 1.75s" }}
-        />
+        <span className="h-1 w-1 rounded-full bg-white/20"
+          style={{ animation: "prism-breathe 3.8s ease-in-out 1.9s infinite" }} />
       </motion.div>
     </motion.div>
   );
