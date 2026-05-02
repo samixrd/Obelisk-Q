@@ -1,6 +1,8 @@
 // Shared stability + market-regime state.
-// volatility: 'low'  → Mode: Stable      → Confidence Threshold: 65%
-// volatility: 'high' → Mode: Risk-Averse → Confidence Threshold: 85%
+// volatility: 'low'  → Mode: Stable         → Confidence Threshold: 65%
+// volatility: 'high' → Mode: High Volatility → Confidence Threshold: 80%
+// Score ≥ 75 auto-derives 'low'; score < 75 auto-derives 'high'.
+// setVolatility() allows manual override for the demo toggle in QScoreBar.
 import { createContext, useContext, useState, useMemo, ReactNode } from "react";
 
 export type VolatilityRegime = "low" | "high";

@@ -222,38 +222,65 @@ function PrismSVG() {
       aria-hidden
     >
       <defs>
-        {/* ── White liquid glass fill ── */}
-        <linearGradient id="prismWhite" x1="20%" y1="0%" x2="80%" y2="100%">
-          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.97" />
-          <stop offset="40%"  stopColor="#f0f4ff" stopOpacity="0.96" />
-          <stop offset="75%"  stopColor="#e8eeff" stopOpacity="0.95" />
-          <stop offset="100%" stopColor="#dce5ff" stopOpacity="0.94" />
+        {/* ── Liquid glass: semi-transparent frosted fill ── */}
+        <linearGradient id="prismGlass" x1="15%" y1="0%" x2="85%" y2="100%">
+          <stop offset="0%"   stopColor="#c8d8f8" stopOpacity="0.22" />
+          <stop offset="28%"  stopColor="#a0b8e8" stopOpacity="0.14" />
+          <stop offset="60%"  stopColor="#7090cc" stopOpacity="0.10" />
+          <stop offset="100%" stopColor="#4060a8" stopOpacity="0.18" />
         </linearGradient>
 
-        {/* Left face glass highlight (receives light) */}
-        <linearGradient id="leftFaceCatch" x1="0%" y1="0%" x2="100%" y2="0%">
+        {/* Frosted body — the main translucency layer */}
+        <linearGradient id="prismFrost" x1="0%" y1="0%" x2="60%" y2="100%">
+          <stop offset="0%"   stopColor="#e8f0ff" stopOpacity="0.18" />
+          <stop offset="45%"  stopColor="#c0cef5" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#8098d8" stopOpacity="0.12" />
+        </linearGradient>
+
+        {/* Left face specular — receives the incoming beam */}
+        <linearGradient id="leftSpecular" x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.0"  />
-          <stop offset="55%"  stopColor="#cdd8ff" stopOpacity="0.18" />
-          <stop offset="100%" stopColor="#aabbff" stopOpacity="0.08" />
+          <stop offset="30%"  stopColor="#ddeeff" stopOpacity="0.28" />
+          <stop offset="65%"  stopColor="#bbccff" stopOpacity="0.14" />
+          <stop offset="100%" stopColor="#9aaaee" stopOpacity="0.04" />
         </linearGradient>
 
-        {/* Refractive inner shimmer */}
-        <radialGradient id="innerShimmer" cx="38%" cy="42%" r="46%">
-          <stop offset="0%"   stopColor="#b8caff" stopOpacity="0.22" />
-          <stop offset="50%"  stopColor="#8ca0e8" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#8ca0e8" stopOpacity="0.0"  />
+        {/* Right face subtle darkening — transmission side */}
+        <linearGradient id="rightFace" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor="#000010" stopOpacity="0.08" />
+          <stop offset="100%" stopColor="#000010" stopOpacity="0.22" />
+        </linearGradient>
+
+        {/* Apex concentration — light gathers at the tip */}
+        <radialGradient id="apexGlow" cx="50%" cy="10%" r="22%">
+          <stop offset="0%"   stopColor="#ddeeff" stopOpacity="0.55" />
+          <stop offset="100%" stopColor="#ddeeff" stopOpacity="0.0"  />
         </radialGradient>
 
-        {/* Apex brightness — light gathers at the tip */}
-        <radialGradient id="apexBright" cx="50%" cy="12%" r="28%">
-          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.55" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0"  />
+        {/* Refractive inner shimmer — pulsing */}
+        <radialGradient id="innerShimmer" cx="38%" cy="42%" r="46%">
+          <stop offset="0%"   stopColor="#a8c0f8" stopOpacity="0.18" />
+          <stop offset="55%"  stopColor="#7090d0" stopOpacity="0.05" />
+          <stop offset="100%" stopColor="#7090d0" stopOpacity="0.0"  />
         </radialGradient>
+
+        {/* Bottom base: faint reflection line */}
+        <linearGradient id="baseReflect" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.0"  />
+          <stop offset="50%"  stopColor="#ffffff" stopOpacity="0.20" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0"  />
+        </linearGradient>
 
         {/* Ground shadow */}
         <filter id="groundShadow" x="-10%" y="-5%" width="120%" height="130%">
           <feDropShadow dx="0" dy="14" stdDeviation="22"
             floodColor="#000000" floodOpacity="0.55" />
+        </filter>
+
+        {/* Prism overall soft glow */}
+        <filter id="prismGlow" x="-8%" y="-8%" width="116%" height="116%">
+          <feGaussianBlur stdDeviation="8" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
 
         {/* Beam soft glow */}
@@ -277,37 +304,51 @@ function PrismSVG() {
       {/* ── PRISM ──────────────────────────────────────────────────────────── */}
 
       {/* Drop shadow */}
-      <polygon points={pts} fill="rgba(0,0,0,0.4)"
-        transform="translate(0,10)" filter="url(#groundShadow)" />
+      <polygon points={pts} fill="rgba(0,0,0,0.35)"
+        transform="translate(0,12)" filter="url(#groundShadow)" />
 
-      {/* Main white glass fill */}
-      <polygon points={pts} fill="url(#prismWhite)" />
+      {/* Outer soft glow halo — gives the glass that lit-from-within quality */}
+      <polygon points={pts} fill="rgba(160,190,255,0.06)"
+        filter="url(#prismGlow)" />
+
+      {/* Base translucent glass body */}
+      <polygon points={pts} fill="url(#prismGlass)" />
+
+      {/* Frost overlay — adds the milky/cloudy glass depth */}
+      <polygon points={pts} fill="url(#prismFrost)" />
+
+      {/* Left face specular catch */}
+      <polygon points={pts} fill="url(#leftSpecular)" />
+
+      {/* Right face subtle shadow — transmission darkening */}
+      <polygon points={pts} fill="url(#rightFace)" />
+
+      {/* Apex light concentration */}
+      <polygon points={pts} fill="url(#apexGlow)" />
 
       {/* Refractive inner shimmer — pulsing */}
       <polygon points={pts} fill="url(#innerShimmer)"
         className="prism-inner-glow" />
 
-      {/* Left face light-catch overlay */}
-      <polygon points={pts} fill="url(#leftFaceCatch)" />
+      {/* Base reflection line */}
+      <line x1={BL.x} y1={BL.y} x2={BR.x} y2={BR.y}
+        stroke="url(#baseReflect)" strokeWidth="1.2" />
 
-      {/* Apex brightness */}
-      <polygon points={pts} fill="url(#apexBright)" opacity="0.7" />
-
-      {/* Edges — hairline strokes */}
+      {/* Edges — hairline crystal strokes */}
       <line x1={APEX.x} y1={APEX.y} x2={BL.x} y2={BL.y}
-        stroke="rgba(160,180,220,0.55)" strokeWidth="0.7"
+        stroke="rgba(180,200,240,0.55)" strokeWidth="0.7"
         className="prism-left-edge" />
       <line x1={APEX.x} y1={APEX.y} x2={BR.x} y2={BR.y}
-        stroke="rgba(160,180,220,0.35)" strokeWidth="0.7"
+        stroke="rgba(160,185,230,0.30)" strokeWidth="0.7"
         style={{ animation: "edge-shimmer 5s ease-in-out 2.5s infinite" }} />
       <line x1={BL.x} y1={BL.y} x2={BR.x} y2={BR.y}
-        stroke="rgba(160,180,220,0.22)" strokeWidth="0.6" />
+        stroke="rgba(160,185,230,0.18)" strokeWidth="0.6" />
 
-      {/* Very subtle top-left bevel catch */}
+      {/* Apex crystal tip catch */}
       <line
         x1={APEX.x} y1={APEX.y}
         x2={APEX.x - 6} y2={APEX.y + 14}
-        stroke="rgba(255,255,255,0.6)" strokeWidth="1.2"
+        stroke="rgba(255,255,255,0.50)" strokeWidth="1.0"
         strokeLinecap="round"
       />
 
@@ -412,9 +453,10 @@ export function LandingPage({ onEnter }: LandingPageProps) {
       className="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden"
       style={{ background: "#000000" }}
       exit={{
-        scale: 8,
         opacity: 0,
-        transition: { duration: 0.85, ease: [0.55, 0, 1, 0.45] },
+        scale: 1.06,
+        filter: "blur(12px)",
+        transition: { duration: 0.55, ease: [0.4, 0, 1, 1] },
       }}
     >
       <style>{STYLES}</style>
@@ -430,17 +472,24 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         }}
       />
 
-      {/* Top wordmark */}
+      {/* Top wordmark — perfectly centred */}
       <motion.div
-        className="absolute top-10 left-1/2 -translate-x-1/2 text-center"
+        className="absolute top-10 left-0 right-0 flex justify-center"
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 1.1, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
       >
-        <p className="text-[9px] uppercase tracking-[0.5em] text-white/28"
-          style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          Mantle Network · ERC-8004
-        </p>
+        <div className="flex items-center gap-4">
+          <p className="text-[9px] uppercase tracking-[0.46em] text-white/30"
+            style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            Mantle Network
+          </p>
+          <span className="h-3 w-px bg-white/15" />
+          <p className="text-[9px] uppercase tracking-[0.46em] text-white/30"
+            style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            ERC-8004
+          </p>
+        </div>
       </motion.div>
 
       {/* Central light theater */}

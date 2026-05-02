@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 
 interface AuthScreenProps {
-  onAuthenticated: () => void;
+  onAuthenticated: (method: "google" | "wallet") => void;
 }
 
 export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
@@ -11,8 +11,8 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
       style={{ background: "#000000" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0, transition: { duration: 0.5 } }}
-      transition={{ duration: 0.6 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
       {/* Ambient light pools */}
       <div
@@ -71,22 +71,22 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
         />
 
         <div className="p-10">
-          {/* Identity badge */}
+          {/* Identity badge — centred */}
           <motion.div
-            className="flex items-center gap-3 mb-10"
+            className="flex items-center justify-center gap-3 mb-10"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.35 }}
           >
             <span
-              className="text-[22px] leading-none tracking-[-0.03em] text-white"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+              className="text-[9px] uppercase tracking-[0.38em] text-white/30"
+              style={{ fontFamily: "'JetBrains Mono', monospace" }}
             >
-              Obelisk <span className="italic font-light">Q</span>
+              Mantle Network
             </span>
             <div className="h-3 w-px bg-white/15" />
             <span
-              className="text-[8px] uppercase tracking-[0.38em] text-white/30"
+              className="text-[9px] uppercase tracking-[0.38em] text-white/30"
               style={{ fontFamily: "'JetBrains Mono', monospace" }}
             >
               ERC-8004
@@ -102,11 +102,11 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           >
             <h2
               className="text-[34px] leading-tight tracking-[-0.03em] text-white"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400 }}
             >
-              Salam,
+              Welcome
               <br />
-              <span className="italic font-light text-white/60">welcome back.</span>
+              <span className="italic text-white/60" style={{ fontWeight: 300 }}>back.</span>
             </h2>
             <p
               className="mt-4 text-[11px] text-white/35 leading-relaxed"
@@ -134,7 +134,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           >
             {/* Google Sign In */}
             <AuthButton
-              onClick={onAuthenticated}
+              onClick={() => onAuthenticated("google")}
               icon={
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -149,7 +149,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
             {/* Connect Wallet */}
             <AuthButton
-              onClick={onAuthenticated}
+              onClick={() => onAuthenticated("wallet")}
               icon={
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
                   <rect x="2" y="6" width="20" height="14" rx="2" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2"/>

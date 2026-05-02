@@ -20,21 +20,19 @@ interface SidebarProps {
 const items: {
   icon: React.ComponentType<{ size?: number; className?: string }>;
   label: string;
-  tab?: DashboardTab;
+  tab: DashboardTab;
 }[] = [
-  { icon: IconOverview, label: "Overview", tab: "overview" },
-  { icon: IconPerformance, label: "Performance", tab: "performance" },
-  { icon: IconPortfolio, label: "Portfolio", tab: "overview" },
-  { icon: IconSafeguards, label: "Safeguards", tab: "safeguards" },
-  { icon: IconAgent, label: "Agent Logs" },
-  { icon: IconPreferences, label: "Preferences" },
+  { icon: IconOverview,     label: "Overview",     tab: "overview"     },
+  { icon: IconPerformance,  label: "Performance",  tab: "performance"  },
+  { icon: IconPortfolio,    label: "Portfolio",    tab: "portfolio"    },
+  { icon: IconSafeguards,   label: "Safeguards",   tab: "safeguards"   },
+  { icon: IconAgent,        label: "Agent Logs",   tab: "agent-logs"   },
+  { icon: IconPreferences,  label: "Preferences",  tab: "preferences"  },
 ];
 
 export function Sidebar({ open, onClose, activeTab, onNavigate }: SidebarProps) {
-  const handleItemClick = (tab?: DashboardTab) => {
-    if (tab && onNavigate) {
-      onNavigate(tab);
-    }
+  const handleItemClick = (tab: DashboardTab) => {
+    onNavigate?.(tab);
     onClose();
   };
 

@@ -29,7 +29,7 @@ const steps = [
       </>
     ),
     body: "Your Stability Score is a composite of three weighted signals: 40% Yield Differential, 35% Volatility Penalty, and 25% Liquidity Depth. A 5% circuit breaker halts all allocation if the score drops 5 points within any 60-minute window. In high-volatility conditions the confidence threshold rises to 80%; in stable markets it sits at 65%.",
-    accent: "Salam — today, you're at 98.",
+    accent: "Today, you're at 98.",
     note: "The engine identifies Market Regimes (Trending/Sideways) through 48-hour price patterns to dynamically adjust yield targets.",
   },
   {
