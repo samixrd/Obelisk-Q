@@ -9,6 +9,7 @@ function ObeliskMesh({ score }: { score: number }) {
   const pulseRef = useRef<THREE.Mesh>(null);
   const innerCoreRef = useRef<THREE.Mesh>(null);
   const glowDiscRef = useRef<THREE.Mesh>(null);
+  const rainbowLightRef = useRef<THREE.PointLight>(null);
 
   // Stability 0–100 → 0.3–1 intensity curve (steeper above 90)
   const intensity = useMemo(() => {
@@ -37,6 +38,12 @@ function ObeliskMesh({ score }: { score: number }) {
       const mat = glowDiscRef.current.material as THREE.MeshBasicMaterial;
       mat.opacity = 0.04 + intensity * 0.12;
     }
+    if (rainbowLightRef.current) {
+      rainbowLightRef.current.position.x = Math.sin(t * 0.6) * 3;
+      rainbowLightRef.current.position.z = Math.cos(t * 0.6) * 3;
+      rainbowLightRef.current.position.y = Math.sin(t * 0.4) * 2 + 1;
+      rainbowLightRef.current.color.setHSL((t * 0.15) % 1, 1, 0.6);
+    }
   });
 
   // Tapered obelisk geometry (a thin monolith with a pyramid tip)
@@ -45,6 +52,9 @@ function ObeliskMesh({ score }: { score: number }) {
 
   return (
     <group ref={groupRef}>
+      {/* Orbiting rainbow light */}
+      <pointLight ref={rainbowLightRef} intensity={4} distance={12} />
+      
       {/* Neon pulse at base */}
       <mesh ref={pulseRef} position={[0, -2.3, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <ringGeometry args={[0.8, 2.4, 64]} />
@@ -80,6 +90,9 @@ function ObeliskMesh({ score }: { score: number }) {
           attenuationColor="#BFFFA1"
           attenuationDistance={3}
           envMapIntensity={1.2}
+          iridescence={1}
+          iridescenceIOR={1.5}
+          iridescenceThicknessRange={[100, 400]}
         />
       </mesh>
 
@@ -94,6 +107,9 @@ function ObeliskMesh({ score }: { score: number }) {
           ior={1.6}
           clearcoat={1}
           envMapIntensity={1.4}
+          iridescence={1}
+          iridescenceIOR={1.5}
+          iridescenceThicknessRange={[100, 400]}
         />
       </mesh>
 
