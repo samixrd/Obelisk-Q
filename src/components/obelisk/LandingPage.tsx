@@ -1,37 +1,40 @@
 /**
- * LandingPage — Cinematic 3D entry. Pure SVG + CSS keyframes. Full physics loop.
+ * LandingPage — Classic Dark Side Prism
  * Features:
- *  - 3D CSS container for continuous rotating/floating movement towards the screen.
- *  - High-res 3D liquid glass torus shape.
- *  - Smooth, straight incoming white beam.
- *  - Smooth, straight rainbow dispersion rays.
+ *  - Cyan glowing edge prism with dark interior.
+ *  - Internal refraction ray.
+ *  - Continuous flowing animation loops for all beams.
  */
 
 import { motion } from "framer-motion";
 
 // ─── Geometry ─────────────────────────────────────────────────────────────────
 
-const APEX  = { x: 400, y:  58 };
-const BL    = { x: 144, y: 422 };
-const BR    = { x: 656, y: 422 };
+const APEX  = { x: 400, y:  80 };
+const BL    = { x: 200, y: 420 };
+const BR    = { x: 600, y: 420 };
 
-// Beam hits the left side of the torus at these coordinates
-const HIT_X = 220;
-const HIT_Y = 249;
+// Beam entry (left face)
+const HIT_X = 290;
+const HIT_Y = 267;
 
-// Rainbow exits the right side of the torus at these coordinates
-const EXIT_X = 580;
-const EXIT_Y = 249;
+// Beam exit (right face)
+const EXIT_X = 510;
+const EXIT_Y = 267;
 
-// Tight rainbow: ±12° total spread, 7 rays → 4° apart
+// Incoming beam starting point
+const BEAM_START_X = -100;
+const BEAM_START_Y = 308; // angled slightly up to hit (290, 267)
+
+// Continuous spreading rainbow (angles downwards)
 const RAYS = [
-  { color: "#ff1a4e", angleDeg: -12, len: 360, flowSpeed: "2.6s" },
-  { color: "#ff6a00", angleDeg:  -8, len: 360, flowSpeed: "2.9s" },
-  { color: "#ffe200", angleDeg:  -4, len: 380, flowSpeed: "2.4s" },
-  { color: "#44ff66", angleDeg:   0, len: 390, flowSpeed: "3.0s" },
-  { color: "#00aaff", angleDeg:   4, len: 375, flowSpeed: "2.7s" },
-  { color: "#5533ff", angleDeg:   8, len: 360, flowSpeed: "2.5s" },
-  { color: "#cc00ff", angleDeg:  12, len: 355, flowSpeed: "3.1s" },
+  { color: "#ff1a4e", angleDeg: 2,  len: 400, speed: "1.2s" },
+  { color: "#ff6a00", angleDeg: 5,  len: 400, speed: "1.3s" },
+  { color: "#ffe200", angleDeg: 8,  len: 400, speed: "1.4s" },
+  { color: "#44ff66", angleDeg: 11, len: 400, speed: "1.5s" },
+  { color: "#00aaff", angleDeg: 14, len: 400, speed: "1.6s" },
+  { color: "#5533ff", angleDeg: 17, len: 400, speed: "1.7s" },
+  { color: "#cc00ff", angleDeg: 20, len: 400, speed: "1.8s" },
 ] as const;
 
 function rayEnd(angleDeg: number, len: number) {
@@ -39,19 +42,13 @@ function rayEnd(angleDeg: number, len: number) {
   return { x: EXIT_X + Math.cos(r) * len, y: EXIT_Y + Math.sin(r) * len };
 }
 
-const BEAM_START_X = -50;
-const BEAM_LEN = HIT_X - BEAM_START_X; 
-
-// ─── Loop cycle = 6 s ────────────────────────────────────────────────────────
-const CYCLE = "6s";
-
 const STYLES = `
   /* ── 3D Container Physics Loop ────────────────────────────── */
   @keyframes physics-float {
     0%   { transform: perspective(1200px) rotateX(0deg) rotateY(0deg) translateZ(0px); }
-    25%  { transform: perspective(1200px) rotateX(6deg) rotateY(-5deg) translateZ(50px); }
-    50%  { transform: perspective(1200px) rotateX(-4deg) rotateY(6deg) translateZ(120px); }
-    75%  { transform: perspective(1200px) rotateX(3deg) rotateY(3deg) translateZ(60px); }
+    25%  { transform: perspective(1200px) rotateX(4deg) rotateY(-3deg) translateZ(30px); }
+    50%  { transform: perspective(1200px) rotateX(-2deg) rotateY(4deg) translateZ(60px); }
+    75%  { transform: perspective(1200px) rotateX(2deg) rotateY(2deg) translateZ(30px); }
     100% { transform: perspective(1200px) rotateX(0deg) rotateY(0deg) translateZ(0px); }
   }
 
@@ -60,181 +57,96 @@ const STYLES = `
     animation: physics-float 16s ease-in-out infinite;
   }
 
-  /* ── BEAM loop ────────────────────────────────────────────── */
-  @keyframes beam-loop {
-    0%   { stroke-dashoffset: ${BEAM_LEN}; opacity: 0; }
-    2%   { stroke-dashoffset: ${BEAM_LEN}; opacity: 1; }
-    14%  { stroke-dashoffset: 0;           opacity: 1; }
-    20%  { stroke-dashoffset: 0;           opacity: 0; }
-    21%  { stroke-dashoffset: ${BEAM_LEN}; opacity: 0; }
-    100% { stroke-dashoffset: ${BEAM_LEN}; opacity: 0; }
+  /* ── CONTINUOUS FLOW ANIMATION ────────────────────────────── */
+  @keyframes continuous-flow {
+    from { stroke-dashoffset: 90; }
+    to   { stroke-dashoffset: 0; }
   }
 
-  /* ── RAINBOW opacity loop ──────────────────────────────────── */
-  @keyframes ray-opacity-loop {
-    0%   { opacity: 0; }
-    20%  { opacity: 0; }
-    27%  { opacity: 1; }
-    84%  { opacity: 1; }
-    96%  { opacity: 0; }
-    100% { opacity: 0; }
+  /* ── PRISM EDGE PULSE ─────────────────────────────────────── */
+  @keyframes prism-pulse {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(96, 224, 255, 0.4)); stroke-opacity: 0.7; }
+    50%      { filter: drop-shadow(0 0 25px rgba(96, 224, 255, 0.9)); stroke-opacity: 1.0; }
   }
-
-  /* ── RAINBOW continuous flow — runs at its own speed ──────── */
-  @keyframes ray-flow {
-    from { stroke-dashoffset: 0; }
-    to   { stroke-dashoffset: -120; }
-  }
-
-  /* ── SPARKLE — 8-point burst at hit point ────────────────── */
-  @keyframes spark-ring {
-    0%   { r: 0;  opacity: 0;    stroke-opacity: 0; }
-    16%  { r: 0;  opacity: 0;    stroke-opacity: 0; }
-    20%  { r: 6;  opacity: 1;    stroke-opacity: 0.9; }
-    30%  { r: 35; opacity: 0;    stroke-opacity: 0; }
-    100% { r: 35; opacity: 0;    stroke-opacity: 0; }
-  }
-  @keyframes spark-ring2 {
-    0%   { r: 0;  opacity: 0; }
-    17%  { r: 0;  opacity: 0; }
-    22%  { r: 12;  opacity: 0.65; }
-    32%  { r: 45; opacity: 0; }
-    100% { r: 45; opacity: 0; }
-  }
-  @keyframes spark-ray {
-    0%   { stroke-dashoffset: 20; opacity: 0; }
-    16%  { stroke-dashoffset: 20; opacity: 0; }
-    20%  { stroke-dashoffset: 20; opacity: 1; }
-    28%  { stroke-dashoffset: 0;  opacity: 0.9; }
-    36%  { stroke-dashoffset: -8; opacity: 0; }
-    100% { stroke-dashoffset: -8; opacity: 0; }
-  }
-  @keyframes spark-dot {
-    0%   { opacity: 0; transform: translate(0,0); }
-    18%  { opacity: 0; transform: translate(0,0); }
-    22%  { opacity: 1; }
-    34%  { opacity: 0; }
-    100% { opacity: 0; }
-  }
-
-  .beam-layer {
-    stroke-dasharray: ${BEAM_LEN};
-    animation: beam-loop ${CYCLE} cubic-bezier(0.4,0,0.2,1) infinite;
-  }
-  .ray-opacity { animation: ray-opacity-loop ${CYCLE} linear infinite; }
 `;
-
-// ─── Sparkle burst (8 rays + 2 rings + scatter dots) ─────────────────────────
-
-function SparkBurst() {
-  const rayAngles = [0, 45, 90, 135, 180, 225, 270, 315];
-  const len = 24;
-
-  return (
-    <g>
-      <circle cx={HIT_X} cy={HIT_Y} r={0} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.2"
-        style={{ animation: `spark-ring ${CYCLE} linear infinite` }} />
-      <circle cx={HIT_X} cy={HIT_Y} r={0} fill="rgba(255,255,255,0.25)"
-        style={{ animation: `spark-ring2 ${CYCLE} linear infinite` }} />
-
-      {rayAngles.map((angle, i) => {
-        const r = (angle * Math.PI) / 180;
-        const x2 = HIT_X + Math.cos(r) * len;
-        const y2 = HIT_Y + Math.sin(r) * len;
-        return (
-          <line key={i} x1={HIT_X} y1={HIT_Y} x2={x2} y2={y2}
-            stroke="rgba(255,255,255,0.95)" strokeWidth="1.2" strokeLinecap="round"
-            style={{
-              strokeDasharray: len,
-              animation: `spark-ray ${CYCLE} linear infinite`,
-              animationDelay: `${i * 0.018}s`,
-            }} />
-        );
-      })}
-
-      {[20, 80, 145, 200, 260, 320].map((angle, i) => {
-        const r = (angle * Math.PI) / 180;
-        const dist = 18 + (i % 3) * 6;
-        return (
-          <circle key={i} cx={HIT_X + Math.cos(r) * dist} cy={HIT_Y + Math.sin(r) * dist} r="1.5" fill="white"
-            style={{
-              animation: `spark-dot ${CYCLE} linear infinite`,
-              animationDelay: `${0.04 + i * 0.022}s`,
-            }} />
-        );
-      })}
-    </g>
-  );
-}
 
 // ─── Main SVG ─────────────────────────────────────────────────────────────────
 
 function PrismSVG() {
+  const pts = `${APEX.x},${APEX.y} ${BL.x},${BL.y} ${BR.x},${BR.y}`;
+  const dashPattern = "60 30"; // length 60, gap 30
+
   return (
     <svg viewBox="-50 0 850 500" xmlns="http://www.w3.org/2000/svg"
       className="w-full h-full physics-container"
       style={{ overflow: "visible" }} aria-hidden>
       <defs>
-        {/* Filters */}
-        <filter id="beamBlur"><feGaussianBlur stdDeviation="4" /></filter>
-        <filter id="beamMid"><feGaussianBlur stdDeviation="1.5" /></filter>
+        <filter id="cyanGlow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="8" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="beamGlow">
+          <feGaussianBlur stdDeviation="3" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
         <filter id="rayGlow">
           <feGaussianBlur stdDeviation="4" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-        <filter id="raySoft"><feGaussianBlur stdDeviation="7" /></filter>
+        
+        {/* Prism Interior Gradient */}
+        <linearGradient id="prismFill" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor="#000000" stopOpacity="0.4" />
+          <stop offset="100%" stopColor="#0a1a2a" stopOpacity="0.8" />
+        </linearGradient>
       </defs>
 
-      {/* ── 3D LIQUID TORUS SHAPE ──────────────────────────────────────────── */}
-      {/* We use the liquid torus image embedded inside the SVG. 
-          mix-blend-mode: screen makes the black background transparent,
-          leaving only the beautifully rendered luminous liquid glass. */}
-      <image 
-        href="/liquid-torus.png" 
-        x="150" 
-        y="0" 
-        width="500" 
-        height="500" 
-        style={{ mixBlendMode: "screen", opacity: 0.95 }} 
-      />
-
-      {/* ── INCOMING STRAIGHT TAPERED BEAM ──────────────────────────────────── */}
-      {/* Soft outer glow */}
-      <line x1={BEAM_START_X} y1={HIT_Y} x2={HIT_X} y2={HIT_Y} stroke="rgba(255,255,255,0.15)" strokeWidth="16" strokeLinecap="round" filter="url(#beamBlur)" className="beam-layer" />
+      {/* ── PRISM ──────────────────────────────────────────────────────────── */}
+      {/* Background fill */}
+      <polygon points={pts} fill="url(#prismFill)" />
       
-      {/* Mid halo */}
-      <line x1={BEAM_START_X} y1={HIT_Y} x2={HIT_X} y2={HIT_Y} stroke="rgba(255,255,255,0.5)" strokeWidth="6" strokeLinecap="round" filter="url(#beamMid)" className="beam-layer" />
-      
-      {/* Sharp core */}
-      <line x1={BEAM_START_X} y1={HIT_Y} x2={HIT_X} y2={HIT_Y} stroke="rgba(255,255,255,1)" strokeWidth="2" strokeLinecap="round" className="beam-layer" />
+      {/* Cyan Glowing Edges */}
+      <polygon points={pts} fill="none" stroke="#60e0ff" strokeWidth="6" strokeLinejoin="round"
+        filter="url(#cyanGlow)" style={{ animation: "prism-pulse 4s ease-in-out infinite" }} />
+      <polygon points={pts} fill="none" stroke="#ffffff" strokeWidth="1.5" strokeLinejoin="round" opacity="0.6" />
 
-      {/* ── SPARKLE BURST at hit point ────────────────────────────────────── */}
-      <SparkBurst />
+      {/* ── INTERNAL REFRACTION BEAM ──────────────────────────────────────── */}
+      {/* Flowing internal line */}
+      <line x1={HIT_X} y1={HIT_Y} x2={EXIT_X} y2={EXIT_Y} stroke="rgba(255,255,255,0.4)" strokeWidth="3"
+        style={{ strokeDasharray: dashPattern, animation: "continuous-flow 1.5s linear infinite" }} />
+      <line x1={HIT_X} y1={HIT_Y} x2={EXIT_X} y2={EXIT_Y} stroke="rgba(255,255,255,0.8)" strokeWidth="1"
+        style={{ strokeDasharray: dashPattern, animation: "continuous-flow 1.5s linear infinite" }} />
 
-      {/* ── RAINBOW STRAIGHT DISPERSION RAYS ─────────────────────────────────── */}
+      {/* ── INCOMING WHITE BEAM ───────────────────────────────────────────── */}
+      <line x1={BEAM_START_X} y1={BEAM_START_Y} x2={HIT_X} y2={HIT_Y} stroke="rgba(255,255,255,0.6)" strokeWidth="6" strokeLinecap="round" filter="url(#beamGlow)"
+        style={{ strokeDasharray: dashPattern, animation: "continuous-flow 1.0s linear infinite" }} />
+      <line x1={BEAM_START_X} y1={BEAM_START_Y} x2={HIT_X} y2={HIT_Y} stroke="rgba(255,255,255,1)" strokeWidth="2" strokeLinecap="round"
+        style={{ strokeDasharray: dashPattern, animation: "continuous-flow 1.0s linear infinite" }} />
+
+      {/* Collision Sparkle at Entry */}
+      <circle cx={HIT_X} cy={HIT_Y} r="4" fill="#ffffff" filter="url(#beamGlow)">
+        <animate attributeName="opacity" values="0.6;1;0.6" dur="2s" repeatCount="indefinite" />
+      </circle>
+
+      {/* ── RAINBOW DISPERSION RAYS ────────────────────────────────────────── */}
       {RAYS.map((ray, i) => {
         const end = rayEnd(ray.angleDeg, ray.len);
-        const dash = "26 12";
 
         return (
-          <g key={i} className="ray-opacity" style={{ animationDelay: `${i * 0.05}s` }}>
-            {/* Soft outer aura */}
-            <line x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y} stroke={ray.color} strokeWidth="8" strokeLinecap="round" filter="url(#raySoft)"
-              style={{ strokeDasharray: dash, animation: `ray-flow ${ray.flowSpeed} linear infinite` }} />
-            {/* Mid glow */}
-            <line x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y} stroke={ray.color} strokeWidth="3" strokeLinecap="round" filter="url(#rayGlow)"
-              style={{ strokeDasharray: dash, animation: `ray-flow ${ray.flowSpeed} linear infinite` }} />
-            {/* Sharp core */}
-            <line x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y} stroke={ray.color} strokeWidth="1" strokeLinecap="round"
-              style={{ strokeDasharray: dash, animation: `ray-flow ${ray.flowSpeed} linear infinite` }} />
+          <g key={i}>
+            {/* Glow */}
+            <line x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y} stroke={ray.color} strokeWidth="6" strokeLinecap="round" filter="url(#rayGlow)"
+              style={{ strokeDasharray: dashPattern, animation: `continuous-flow ${ray.speed} linear infinite` }} />
+            {/* Core */}
+            <line x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y} stroke={ray.color} strokeWidth="1.5" strokeLinecap="round"
+              style={{ strokeDasharray: dashPattern, animation: `continuous-flow ${ray.speed} linear infinite` }} />
           </g>
         );
       })}
 
-      {/* Exit point sparkle */}
-      <circle cx={EXIT_X} cy={EXIT_Y} r="5" fill="white" opacity="0" className="ray-opacity">
-        <animate attributeName="r" values="3;7;4" dur="2s" repeatCount="indefinite" begin="1.2s"/>
-        <animate attributeName="opacity" values="0;0.7;0.3" dur="2s" repeatCount="indefinite" begin="1.2s"/>
+      {/* Exit Sparkle */}
+      <circle cx={EXIT_X} cy={EXIT_Y} r="3" fill="#ffffff" filter="url(#rayGlow)">
+        <animate attributeName="opacity" values="0.5;0.9;0.5" dur="1.5s" repeatCount="indefinite" />
       </circle>
     </svg>
   );
@@ -308,18 +220,18 @@ export function LandingPage({ onEnter }: LandingPageProps) {
       >
         <motion.button
           onClick={onEnter}
-          whileHover={{ scale: 1.04, boxShadow: "0 0 35px rgba(255,255,255,0.1), inset 0 0 25px rgba(255,255,255,0.04)" }}
+          whileHover={{ scale: 1.04, boxShadow: "0 0 35px rgba(96,224,255,0.2), inset 0 0 25px rgba(96,224,255,0.05)" }}
           whileTap={{ scale: 0.96 }}
           transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           className="group relative px-12 py-3.5 overflow-hidden rounded-sm"
           style={{
             background: "rgba(255,255,255,0.02)",
-            border: "0.5px solid rgba(255,255,255,0.25)",
+            border: "0.5px solid rgba(96,224,255,0.3)",
             backdropFilter: "blur(8px)",
           }}
         >
           <span aria-hidden className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
-            style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent)" }} />
+            style={{ background: "linear-gradient(90deg, transparent, rgba(96,224,255,0.1), transparent)" }} />
           <span className="relative text-[11px] font-medium uppercase tracking-[0.36em] text-white/70 group-hover:text-white transition-colors duration-500"
             style={{ fontFamily: "'JetBrains Mono', monospace" }}>Enter</span>
         </motion.button>
@@ -333,11 +245,11 @@ export function LandingPage({ onEnter }: LandingPageProps) {
         className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-3"
         initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.0, delay: 1.6 }}
       >
-        <span className="h-1 w-1 rounded-full bg-white/30" style={{ animation: "prism-breathe 3.8s ease-in-out infinite" }} />
+        <span className="h-1 w-1 rounded-full bg-[#60e0ff]/40" style={{ animation: "prism-pulse 3.8s ease-in-out infinite" }} />
         <span className="text-[8.5px] uppercase tracking-[0.4em] text-white/25" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           v 1.0 · Mantle L2
         </span>
-        <span className="h-1 w-1 rounded-full bg-white/30" style={{ animation: "prism-breathe 3.8s ease-in-out 1.9s infinite" }} />
+        <span className="h-1 w-1 rounded-full bg-[#60e0ff]/40" style={{ animation: "prism-pulse 3.8s ease-in-out 1.9s infinite" }} />
       </motion.div>
     </motion.div>
   );
