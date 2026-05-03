@@ -12,6 +12,7 @@ import { StabilityScoreCard } from "./StabilityScoreCard";
 import { IconArrowUpRight, IconArrowDownRight, IconArrowRight } from "./LineIcons";
 import { InvestModal } from "./InvestModal";
 import { useStability } from "./StabilityContext";
+import { useVault } from "@/hooks/useVault";
 
 export type DashboardTab =
   | "overview"
@@ -39,6 +40,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   const [internalTab, setInternalTab] = useState<DashboardTab>("overview");
   const tab = externalTab ?? internalTab;
   const { score, engineError, engineLoading, lastFetched } = useStability();
+  const { vaultStats } = useVault();
 
   // Human-readable sync label for the tab bar
   const syncLabel = engineError
@@ -268,13 +270,13 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                       className="text-[10px] uppercase text-muted-foreground mb-6"
                       style={{ letterSpacing: "0.28em" }}
                     >
-                      Balance
+                      Balance (MNT)
                     </p>
                     <p
                       className="text-6xl md:text-7xl text-foreground"
                       style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}
                     >
-                      $428,150<span className="text-muted-foreground">.24</span>
+                      {vaultStats?.userBalance?.split('.')[0] ?? "0"}<span className="text-muted-foreground">.{vaultStats?.userBalance?.split('.')[1] ?? "0000"}</span>
                     </p>
                   </div>
                   <span
