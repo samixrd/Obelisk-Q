@@ -1,9 +1,5 @@
-# Obelisk Q — Scoring Engine dependencies
-# Core library has no external deps — pure Python stdlib.
-# Add below when connecting to live data sources:
-
-# requests>=2.31.0         # HTTP calls to Mantle RPC / DEX APIs
-# httpx>=0.26.0            # async alternative to requests
-# fastapi>=0.110.0         # expose the engine as a REST endpoint
-# uvicorn[standard]>=0.29  # ASGI server for FastAPI
-# python-dotenv>=1.0.0     # load .env secrets
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+pydantic>=2.6.0
+python-dotenv>=1.0.0
+httpx>=0.26.0

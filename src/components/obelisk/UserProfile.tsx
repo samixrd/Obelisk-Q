@@ -6,6 +6,7 @@
  */
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 // ─── Mock Mantle NFT collection data ─────────────────────────────────────────
 // In production, fetch from the Mantle NFT indexer / user's wallet
@@ -164,14 +165,16 @@ function NftPickerPanel({
 
 // ─── Main component ───────────────────────────────────────────────────────────
 interface Props {
-  name?: string;
-  email?: string;
+  onSignOut?: () => void;
 }
 
-export function UserProfile({ name = "Eleanor Vance", email = "eleanor@obelisk.q" }: Props) {
-  const [open,        setOpen]        = useState(false);
+export function UserProfile({ onSignOut }: Props) {
+  const { displayName, avatarUrl, user } = useAuth();
+  const email = user?.email ?? "guest@obelisk.q";
+
+  const [open,          setOpen]          = useState(false);
   const [showNftPicker, setShowNftPicker] = useState(false);
-  const [selectedNft, setSelectedNft] = useState<string | null>(null);
+  const [selectedNft,   setSelectedNft]  = useState<string | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -185,7 +188,7 @@ export function UserProfile({ name = "Eleanor Vance", email = "eleanor@obelisk.q
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, []);
 
-  const initials = name.split(" ").map((n) => n[0]).slice(0, 2).join("");
+  const initials = displayName.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase() || "EV";
   const activeNft = selectedNft ? MANTLE_NFTS.find((n) => n.id === selectedNft) : null;
 
   const handleSelectNft = (id: string) => {
@@ -203,22 +206,19 @@ export function UserProfile({ name = "Eleanor Vance", email = "eleanor@obelisk.q
         aria-label="Open profile menu"
       >
         <span className="hidden md:flex flex-col items-end leading-tight">
-          <span className="font-serif text-sm text-foreground">{name}</span>
+          <span className="font-serif text-sm text-foreground">{displayName}</span>
           <span className="text-[9px] uppercase tracking-luxe text-muted-foreground">
             Private Tier
           </span>
         </span>
 
-        {/* Avatar — shows NFT or initials */}
-        <span className="relative inline-flex items-center justify-center h-10 w-10 rounded-full overflow-hidden shadow-dial"
-          style={{
-            background: activeNft
-              ? `linear-gradient(135deg, ${activeNft.color[0]}, ${activeNft.color[1]})`
-              : undefined,
-          }}
-        >
+        {/* Avatar — shows Google photo, NFT, or initials */}
+        <span className="relative inline-flex items-center justify-center h-10 w-10 rounded-full overflow-hidden shadow-dial">
           {activeNft ? (
             <NftAvatar nft={activeNft} size={40} />
+          ) : avatarUrl ? (
+            <img src={avatarUrl} alt={displayName}
+              className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           ) : (
             <span className="w-full h-full inline-flex items-center justify-center bg-gradient-metal">
               <span className="font-serif italic text-[13px] text-primary-foreground">{initials}</span>
@@ -271,12 +271,10 @@ export function UserProfile({ name = "Eleanor Vance", email = "eleanor@obelisk.q
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-serif text-base text-foreground truncate">{name}</p>
+                    <p className="font-serif text-base text-foreground truncate">{displayName}</p>
                   </div>
-                  <p
-                    className="text-[9px] text-muted-foreground truncate mt-0.5"
-                    style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.02em" }}
-                  >
+                  <p className="text-[9px] text-muted-foreground truncate mt-0.5"
+                    style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.02em" }}>
                     {email}
                   </p>
                   <div className="flex items-center gap-2 mt-1.5">
@@ -372,6 +370,7 @@ export function UserProfile({ name = "Eleanor Vance", email = "eleanor@obelisk.q
                 Account settings
               </button>
               <button
+                onClick={() => { setOpen(false); onSignOut?.(); }}
                 className="w-full text-left text-[9px] uppercase text-muted-foreground hover:text-foreground transition-colors duration-400 py-2"
                 style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
               >

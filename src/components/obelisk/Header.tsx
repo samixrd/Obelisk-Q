@@ -3,11 +3,12 @@ import { IconMenu } from "./LineIcons";
 import { UserProfile } from "./UserProfile";
 
 interface HeaderProps {
-  onMenuClick: () => void;
-  onTourClick?: () => void;
-  needsWallet?: boolean;
-  walletAddress?: string | null;
+  onMenuClick:     () => void;
+  onTourClick?:    () => void;
+  needsWallet?:    boolean;
+  walletAddress?:  string | null;
   onConnectWallet?: () => void;
+  onSignOut?:      () => void;
 }
 
 export function Header({
@@ -16,6 +17,7 @@ export function Header({
   needsWallet,
   walletAddress,
   onConnectWallet,
+  onSignOut,
 }: HeaderProps) {
   return (
     <motion.header
@@ -133,7 +135,7 @@ export function Header({
               Guided tour
             </button>
           )}
-          <UserProfile />
+          <UserProfile onSignOut={onSignOut} />
         </div>
       </div>
       <div className="hairline" />

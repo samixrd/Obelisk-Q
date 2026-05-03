@@ -10,6 +10,7 @@ import { AgentLogsView } from "./AgentLogsView";
 import { PreferencesView } from "./PreferencesView";
 import { StabilityScoreCard } from "./StabilityScoreCard";
 import { IconArrowUpRight, IconArrowDownRight, IconArrowRight } from "./LineIcons";
+import { InvestModal } from "./InvestModal";
 import { useStability } from "./StabilityContext";
 
 export type DashboardTab =
@@ -37,7 +38,16 @@ interface DashboardProps {
 export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, onConnectWallet }: DashboardProps) {
   const [internalTab, setInternalTab] = useState<DashboardTab>("overview");
   const tab = externalTab ?? internalTab;
-  const { score } = useStability();
+  const { score, engineError, engineLoading, lastFetched } = useStability();
+
+  // Human-readable sync label for the tab bar
+  const syncLabel = engineError
+    ? "Engine offline"
+    : engineLoading
+    ? "Connecting..."
+    : lastFetched
+    ? `Live · ${Math.round((Date.now() - lastFetched) / 1000)}s ago`
+    : "Live";
 
   // When tab changes, always snap to top so the content is immediately visible
   const setTab = (t: DashboardTab) => {
@@ -46,6 +56,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
     window.scrollTo({ top: 0, behavior: "instant" });
   };
 
+  const [investOpen, setInvestOpen] = useState(false);
   // Hero only appears on overview — all other views show content directly
   const showHero = tab === "overview";
 
@@ -138,6 +149,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                 whileTap={{ scale: 0.985 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                 className="group relative inline-flex items-center gap-3 pl-6 pr-3 py-2.5"
+                onClick={() => setInvestOpen(true)}
                 style={{
                   background:
                     "linear-gradient(135deg, hsl(40 14% 86%) 0%, hsl(35 10% 70%) 40%, hsl(30 8% 52%) 70%, hsl(35 11% 76%) 100%)",
@@ -234,9 +246,10 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             </div>
             <p
               className="hidden md:block text-[9px] uppercase text-muted-foreground"
-              style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
+              style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace",
+                color: engineError ? "hsl(0 70% 60%)" : undefined }}
             >
-              Last sync · 2s ago
+              {syncLabel}
             </p>
           </div>
         </div>
@@ -556,19 +569,29 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
           </span>
         </div>
       </div>
+      <InvestModal open={investOpen} onClose={() => setInvestOpen(false)} />
     </main>
   );
 }
 
 function QScoreBar() {
-  const { adaptive, setVolatility } = useStability();
+  const { adaptive, setVolatility, engineLoading, engineError, lastFetched, components } = useStability();
   const isHighVol = adaptive.volatility === "high";
 
+  // Human-readable "last updated" label
+  const syncLabel = engineError
+    ? "Engine offline"
+    : engineLoading
+    ? "Connecting..."
+    : lastFetched
+    ? `Live · ${Math.round((Date.now() - lastFetched) / 1000)}s ago`
+    : "Live";
+
   const metrics = [
-    { label: "Yield Score", value: "94", unit: "/100", color: "hsl(104 100% 68%)" },
-    { label: "Risk Score", value: "0.42", unit: "σ", color: "hsl(200 100% 72%)" },
-    { label: "Accuracy", value: "98.7", unit: "%", color: "hsl(40 100% 72%)" },
-    { label: "Uptime", value: "99.9", unit: "%", color: "hsl(270 80% 80%)" },
+    { label: "Yield Score",   value: engineLoading ? "—" : String(Math.round(components.yield_score)),      unit: "/100", color: "hsl(104 100% 68%)" },
+    { label: "Risk Score",    value: "0.42",                                                                   unit: "σ",    color: "hsl(200 100% 72%)" },
+    { label: "Accuracy",      value: engineLoading ? "—" : String(Math.round(components.volatility_score)),  unit: "%",    color: "hsl(40 100% 72%)"  },
+    { label: "Uptime",        value: "99.9",                                                                   unit: "%",    color: "hsl(270 80% 80%)"  },
   ];
 
   return (

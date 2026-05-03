@@ -1,0 +1,18 @@
+# ── SECRETS — never commit ────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# !! MOST IMPORTANT — your wallet private key !!
+# If this leaks, your wallet can be drained immediately.
+*.key
+private_key*
+
+# ── Build / cache ─────────────────────────────────────────────
+node_modules/
+artifacts/
+cache/
+typechain-types/
+
+# ── Logs ──────────────────────────────────────────────────────
+npm-debug.log*

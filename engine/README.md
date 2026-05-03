@@ -1,38 +1,63 @@
-# Obelisk Q — Scoring Engine
+# Obelisk Q — Scoring Engine (Phase 2)
 
-Python scoring engine that powers the confidence score displayed in the React dashboard.
+Python FastAPI microservice that powers the live confidence score
+in the React dashboard.
 
 ## quick start
 
 ```bash
 cd engine
-python obelisk_scoring_engine.py   # runs smoke tests
+pip install -r requirements.txt
+uvicorn api:app --reload --port 8000
 ```
 
-## function signature
+Then open: http://localhost:8000/docs — interactive Swagger UI.
 
-```python
-from obelisk_scoring_engine import calculate_confidence_score
+## endpoints
 
-result = calculate_confidence_score(
-    yield_spread   = 2.8,   # USDY vs mETH yield differential (%)
-    volatility_72h = 1.4,   # 72-hour realised volatility (%)
-    dex_liquidity  = 5_200_000,  # on-chain liquidity depth (USD)
-)
+| method | path               | description                              |
+|--------|--------------------|------------------------------------------|
+| GET    | /health            | liveness probe                           |
+| GET    | /api/score         | compute score from query params          |
+| POST   | /api/score         | compute score from JSON body (preferred) |
+| GET    | /api/score/stream  | server-sent events — live push every Ns  |
+
+## example POST request
+
+```bash
+curl -X POST http://localhost:8000/api/score \
+  -H "Content-Type: application/json" \
+  -d '{
+    "yield_spread":   2.8,
+    "volatility_72h": 1.4,
+    "dex_liquidity":  5200000
+  }'
 ```
 
-## returned keys
+## example response
 
-| key                  | type  | description                                   |
-|----------------------|-------|-----------------------------------------------|
-| confidence_score     | float | composite 0-100 score                         |
-| confidence_threshold | float | adaptive threshold — 65 (stable) / 85 (high vol) |
-| should_rebalance     | bool  | True when score < threshold                   |
-| volatility_regime    | str   | 'stable' or 'high_volatility'                 |
-| components           | dict  | individual sub-scores before weighting        |
-| metadata             | dict  | echoed inputs + weights for audit logging     |
+```json
+{
+  "confidence_score":     75.18,
+  "confidence_threshold": 65.0,
+  "should_rebalance":     false,
+  "volatility_regime":    "stable",
+  "components": {
+    "yield_score":      56.0,
+    "volatility_score": 86.0,
+    "liquidity_score":  83.79
+  },
+  "computed_at": 1714900000.12
+}
+```
 
 ## connecting to the React dashboard
 
-Run as a FastAPI microservice (see Phase 2) and call from the
-frontend via `fetch('/api/score')` inside a React `useEffect` hook.
+1. Copy `.env.example` to `.env.local` in the frontend folder.
+2. Set `VITE_SCORING_API_URL=http://localhost:8000`.
+3. Start both servers — the Vite proxy forwards `/api/*` to FastAPI.
+
+## production deployment
+
+Deploy the engine to Railway, Render, or Fly.io. Then update
+`VITE_SCORING_API_URL` in the frontend environment to the live URL.
