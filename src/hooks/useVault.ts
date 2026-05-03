@@ -305,6 +305,14 @@ export function useVault(): VaultState {
   useEffect(() => {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
     if (!eth) return;
+    
+    // Fetch initial account if already connected
+    (eth as Record<string, Function>).request?.({ method: "eth_accounts" })
+      .then((accounts: string[]) => {
+        if (accounts.length > 0) setAddress(accounts[0]);
+      })
+      .catch(console.error);
+
     const handler = (accounts: string[]) => setAddress(accounts[0] ?? null);
     (eth as Record<string, Function>).on?.("accountsChanged", handler);
     return () => (eth as Record<string, Function>).removeListener?.("accountsChanged", handler);
