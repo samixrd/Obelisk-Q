@@ -2,9 +2,9 @@
  * LandingPage — Cinematic 3D entry. Pure SVG + CSS keyframes. Full physics loop.
  * Features:
  *  - 3D CSS container for continuous rotating/floating movement towards the screen.
- *  - Pure liquid glass prism aesthetic.
- *  - Zigzag, tapered incoming white beam.
- *  - Zigzag rainbow dispersion rays.
+ *  - High-res 3D liquid glass torus shape.
+ *  - Smooth, straight incoming white beam.
+ *  - Smooth, straight rainbow dispersion rays.
  */
 
 import { motion } from "framer-motion";
@@ -15,13 +15,13 @@ const APEX  = { x: 400, y:  58 };
 const BL    = { x: 144, y: 422 };
 const BR    = { x: 656, y: 422 };
 
-// Beam hits the left face at ~55% down from apex
-const HIT_X = APEX.x + (BL.x - APEX.x) * 0.54;   // ≈ 273
-const HIT_Y = APEX.y + (BL.y - APEX.y) * 0.54;   // ≈ 249
+// Beam hits the left side of the torus at these coordinates
+const HIT_X = 220;
+const HIT_Y = 249;
 
-// Rainbow exits the right face at ~55% down
-const EXIT_X = APEX.x + (BR.x - APEX.x) * 0.54;  // ≈ 527
-const EXIT_Y = APEX.y + (BR.y - APEX.y) * 0.54;  // ≈ 249
+// Rainbow exits the right side of the torus at these coordinates
+const EXIT_X = 580;
+const EXIT_Y = 249;
 
 // Tight rainbow: ±12° total spread, 7 rays → 4° apart
 const RAYS = [
@@ -39,32 +39,8 @@ function rayEnd(angleDeg: number, len: number) {
   return { x: EXIT_X + Math.cos(r) * len, y: EXIT_Y + Math.sin(r) * len };
 }
 
-// Generate a zigzag path between two points
-function getZigzagPath(x1: number, y1: number, x2: number, y2: number, segments: number, variance: number) {
-  const dx = x2 - x1;
-  const dy = y2 - y1;
-  const angle = Math.atan2(dy, dx);
-  
-  let path = `M ${x1},${y1}`;
-  for (let i = 1; i <= segments; i++) {
-    const t = i / segments;
-    const px = x1 + dx * t;
-    const py = y1 + dy * t;
-    
-    const isLast = i === segments;
-    const v = isLast ? 0 : (i % 2 === 0 ? variance : -variance);
-    
-    const vx = px + Math.cos(angle + Math.PI/2) * v;
-    const vy = py + Math.sin(angle + Math.PI/2) * v;
-    
-    path += ` L ${vx},${vy}`;
-  }
-  return path;
-}
-
 const BEAM_START_X = -50;
-const BEAM_LEN = 450; // Approximated length for zigzag dashoffset
-const ZIGZAG_BEAM_PATH = getZigzagPath(BEAM_START_X, HIT_Y, HIT_X, HIT_Y, 8, 18);
+const BEAM_LEN = HIT_X - BEAM_START_X; 
 
 // ─── Loop cycle = 6 s ────────────────────────────────────────────────────────
 const CYCLE = "6s";
@@ -81,7 +57,7 @@ const STYLES = `
 
   .physics-container {
     transform-style: preserve-3d;
-    animation: physics-float 12s ease-in-out infinite;
+    animation: physics-float 16s ease-in-out infinite;
   }
 
   /* ── BEAM loop ────────────────────────────────────────────── */
@@ -141,31 +117,11 @@ const STYLES = `
     100% { opacity: 0; }
   }
 
-  /* ── PRISM inner glow breathe ─────────────────────────────── */
-  @keyframes prism-breathe {
-    0%, 100% { opacity: 0.15; }
-    50%      { opacity: 0.40; }
-  }
-  /* ── PRISM edge shimmer ───────────────────────────────────── */
-  @keyframes edge-shimmer {
-    0%, 100% { stroke-opacity: 0.65; }
-    50%      { stroke-opacity: 1.0; }
-  }
-  
-  /* ── LIQUID GLASS WOBBLE ───────────────────────────────────── */
-  @keyframes liquid-wobble {
-    0%, 100% { transform: translateY(0) scale(1); opacity: 0.1; }
-    50%      { transform: translateY(-4px) scale(1.01); opacity: 0.2; }
-  }
-
   .beam-layer {
     stroke-dasharray: ${BEAM_LEN};
     animation: beam-loop ${CYCLE} cubic-bezier(0.4,0,0.2,1) infinite;
   }
   .ray-opacity { animation: ray-opacity-loop ${CYCLE} linear infinite; }
-  .prism-inner-glow { animation: prism-breathe 4s ease-in-out infinite; }
-  .prism-left-edge  { animation: edge-shimmer 5s ease-in-out infinite; }
-  .liquid-layer { animation: liquid-wobble 6s ease-in-out infinite; }
 `;
 
 // ─── Sparkle burst (8 rays + 2 rings + scatter dots) ─────────────────────────
@@ -214,52 +170,12 @@ function SparkBurst() {
 // ─── Main SVG ─────────────────────────────────────────────────────────────────
 
 function PrismSVG() {
-  const pts = `${APEX.x},${APEX.y} ${BL.x},${BL.y} ${BR.x},${BR.y}`;
-
   return (
     <svg viewBox="-50 0 850 500" xmlns="http://www.w3.org/2000/svg"
       className="w-full h-full physics-container"
       style={{ overflow: "visible" }} aria-hidden>
       <defs>
-        {/* ── Pure Liquid Glass Gradients ── */}
-        <linearGradient id="prismGlass" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.45" />
-          <stop offset="35%"  stopColor="#e8f0ff" stopOpacity="0.1" />
-          <stop offset="70%"  stopColor="#b8c8f5" stopOpacity="0.05" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.5" />
-        </linearGradient>
-
-        <linearGradient id="prismFrost" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.3" />
-          <stop offset="50%"  stopColor="#90a8e0" stopOpacity="0.0" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.3" />
-        </linearGradient>
-
-        <linearGradient id="leftSpecular" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.6"  />
-          <stop offset="25%"  stopColor="#ffffff" stopOpacity="0.1" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0" />
-        </linearGradient>
-
-        <radialGradient id="apexGlow" cx="50%" cy="10%" r="25%">
-          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.75" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0"  />
-        </radialGradient>
-
-        <radialGradient id="innerShimmer" cx="40%" cy="50%" r="50%">
-          <stop offset="0%"   stopColor="#ffffff" stopOpacity="0.25" />
-          <stop offset="60%"  stopColor="#a0b8f0" stopOpacity="0.05" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0.0"  />
-        </radialGradient>
-
         {/* Filters */}
-        <filter id="groundShadow" x="-20%" y="-10%" width="140%" height="150%">
-          <feDropShadow dx="0" dy="25" stdDeviation="30" floodColor="#000000" floodOpacity="0.7" />
-        </filter>
-        <filter id="prismGlow" x="-10%" y="-10%" width="120%" height="120%">
-          <feGaussianBlur stdDeviation="10" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
         <filter id="beamBlur"><feGaussianBlur stdDeviation="4" /></filter>
         <filter id="beamMid"><feGaussianBlur stdDeviation="1.5" /></filter>
         <filter id="rayGlow">
@@ -269,75 +185,53 @@ function PrismSVG() {
         <filter id="raySoft"><feGaussianBlur stdDeviation="7" /></filter>
       </defs>
 
-      {/* ── PRISM ──────────────────────────────────────────────────────────── */}
-      {/* Drop shadow */}
-      <polygon points={pts} fill="rgba(0,0,0,0.4)" transform="translate(0,20)" filter="url(#groundShadow)" />
+      {/* ── 3D LIQUID TORUS SHAPE ──────────────────────────────────────────── */}
+      {/* We use the liquid torus image embedded inside the SVG. 
+          mix-blend-mode: screen makes the black background transparent,
+          leaving only the beautifully rendered luminous liquid glass. */}
+      <image 
+        href="/liquid-torus.png" 
+        x="150" 
+        y="0" 
+        width="500" 
+        height="500" 
+        style={{ mixBlendMode: "screen", opacity: 0.95 }} 
+      />
 
-      {/* Outer halo */}
-      <polygon points={pts} fill="rgba(200,220,255,0.12)" filter="url(#prismGlow)" />
-
-      {/* Base translucent glass body */}
-      <polygon points={pts} fill="url(#prismGlass)" />
-
-      {/* Liquid Wobble Inner Layer */}
-      <polygon points={pts} fill="url(#innerShimmer)" className="liquid-layer" />
-
-      {/* Frost overlay */}
-      <polygon points={pts} fill="url(#prismFrost)" />
-
-      {/* Left face specular catch */}
-      <polygon points={pts} fill="url(#leftSpecular)" />
-
-      {/* Apex light concentration */}
-      <polygon points={pts} fill="url(#apexGlow)" />
-
-      {/* Refractive inner shimmer */}
-      <polygon points={pts} fill="url(#innerShimmer)" className="prism-inner-glow" />
-
-      {/* Base reflection line */}
-      <line x1={BL.x} y1={BL.y} x2={BR.x} y2={BR.y} stroke="#ffffff" strokeOpacity="0.3" strokeWidth="1.5" />
-
-      {/* Edges */}
-      <line x1={APEX.x} y1={APEX.y} x2={BL.x} y2={BL.y} stroke="rgba(255,255,255,0.7)" strokeWidth="1.2" className="prism-left-edge" />
-      <line x1={APEX.x} y1={APEX.y} x2={BR.x} y2={BR.y} stroke="rgba(200,220,255,0.4)" strokeWidth="1.0" style={{ animation: "edge-shimmer 5s ease-in-out 2.5s infinite" }} />
-      <line x1={BL.x} y1={BL.y} x2={BR.x} y2={BR.y} stroke="rgba(200,220,255,0.25)" strokeWidth="0.8" />
-      <line x1={APEX.x} y1={APEX.y} x2={APEX.x - 6} y2={APEX.y + 14} stroke="rgba(255,255,255,0.8)" strokeWidth="1.5" strokeLinecap="round" />
-
-      {/* ── INCOMING ZIGZAG TAPERED BEAM ──────────────────────────────────── */}
+      {/* ── INCOMING STRAIGHT TAPERED BEAM ──────────────────────────────────── */}
       {/* Soft outer glow */}
-      <path d={ZIGZAG_BEAM_PATH} fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="16" strokeLinecap="round" strokeLinejoin="round" filter="url(#beamBlur)" className="beam-layer" />
+      <line x1={BEAM_START_X} y1={HIT_Y} x2={HIT_X} y2={HIT_Y} stroke="rgba(255,255,255,0.15)" strokeWidth="16" strokeLinecap="round" filter="url(#beamBlur)" className="beam-layer" />
       
-      {/* Mid halo — thick at start, simulating taper through overlapping layers */}
-      <path d={ZIGZAG_BEAM_PATH} fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" filter="url(#beamMid)" className="beam-layer" />
+      {/* Mid halo */}
+      <line x1={BEAM_START_X} y1={HIT_Y} x2={HIT_X} y2={HIT_Y} stroke="rgba(255,255,255,0.5)" strokeWidth="6" strokeLinecap="round" filter="url(#beamMid)" className="beam-layer" />
       
       {/* Sharp core */}
-      <path d={ZIGZAG_BEAM_PATH} fill="none" stroke="rgba(255,255,255,1)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="beam-layer" />
+      <line x1={BEAM_START_X} y1={HIT_Y} x2={HIT_X} y2={HIT_Y} stroke="rgba(255,255,255,1)" strokeWidth="2" strokeLinecap="round" className="beam-layer" />
 
       {/* ── SPARKLE BURST at hit point ────────────────────────────────────── */}
       <SparkBurst />
 
-      {/* ── RAINBOW ZIGZAG DISPERSION RAYS ─────────────────────────────────── */}
+      {/* ── RAINBOW STRAIGHT DISPERSION RAYS ─────────────────────────────────── */}
       {RAYS.map((ray, i) => {
         const end = rayEnd(ray.angleDeg, ray.len);
-        // Variance for zigzags spreads them out nicely
-        const rayPath = getZigzagPath(EXIT_X, EXIT_Y, end.x, end.y, 10, 12);
         const dash = "26 12";
 
         return (
           <g key={i} className="ray-opacity" style={{ animationDelay: `${i * 0.05}s` }}>
             {/* Soft outer aura */}
-            <path d={rayPath} fill="none" stroke={ray.color} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" filter="url(#raySoft)"
+            <line x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y} stroke={ray.color} strokeWidth="8" strokeLinecap="round" filter="url(#raySoft)"
               style={{ strokeDasharray: dash, animation: `ray-flow ${ray.flowSpeed} linear infinite` }} />
             {/* Mid glow */}
-            <path d={rayPath} fill="none" stroke={ray.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" filter="url(#rayGlow)"
+            <line x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y} stroke={ray.color} strokeWidth="3" strokeLinecap="round" filter="url(#rayGlow)"
               style={{ strokeDasharray: dash, animation: `ray-flow ${ray.flowSpeed} linear infinite` }} />
             {/* Sharp core */}
-            <path d={rayPath} fill="none" stroke={ray.color} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"
+            <line x1={EXIT_X} y1={EXIT_Y} x2={end.x} y2={end.y} stroke={ray.color} strokeWidth="1" strokeLinecap="round"
               style={{ strokeDasharray: dash, animation: `ray-flow ${ray.flowSpeed} linear infinite` }} />
           </g>
         );
       })}
 
+      {/* Exit point sparkle */}
       <circle cx={EXIT_X} cy={EXIT_Y} r="5" fill="white" opacity="0" className="ray-opacity">
         <animate attributeName="r" values="3;7;4" dur="2s" repeatCount="indefinite" begin="1.2s"/>
         <animate attributeName="opacity" values="0;0.7;0.3" dur="2s" repeatCount="indefinite" begin="1.2s"/>
