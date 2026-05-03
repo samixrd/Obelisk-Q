@@ -177,9 +177,9 @@ function SparkBurst() {
   return (
     <g>
       <circle cx={HIT_X} cy={HIT_Y} r={0} fill="none" stroke="rgba(255,255,255,0.9)" strokeWidth="1.2"
-        style={{ animation: \`spark-ring \${CYCLE} linear infinite\` }} />
+        style={{ animation: `spark-ring ${CYCLE} linear infinite` }} />
       <circle cx={HIT_X} cy={HIT_Y} r={0} fill="rgba(255,255,255,0.25)"
-        style={{ animation: \`spark-ring2 \${CYCLE} linear infinite\` }} />
+        style={{ animation: `spark-ring2 ${CYCLE} linear infinite` }} />
 
       {rayAngles.map((angle, i) => {
         const r = (angle * Math.PI) / 180;
@@ -190,8 +190,8 @@ function SparkBurst() {
             stroke="rgba(255,255,255,0.95)" strokeWidth="1.2" strokeLinecap="round"
             style={{
               strokeDasharray: len,
-              animation: \`spark-ray \${CYCLE} linear infinite\`,
-              animationDelay: \`\${i * 0.018}s\`,
+              animation: `spark-ray ${CYCLE} linear infinite`,
+              animationDelay: `${i * 0.018}s`,
             }} />
         );
       })}
@@ -202,8 +202,8 @@ function SparkBurst() {
         return (
           <circle key={i} cx={HIT_X + Math.cos(r) * dist} cy={HIT_Y + Math.sin(r) * dist} r="1.5" fill="white"
             style={{
-              animation: \`spark-dot \${CYCLE} linear infinite\`,
-              animationDelay: \`\${0.04 + i * 0.022}s\`,
+              animation: `spark-dot ${CYCLE} linear infinite`,
+              animationDelay: `${0.04 + i * 0.022}s`,
             }} />
         );
       })}
@@ -214,7 +214,7 @@ function SparkBurst() {
 // ─── Main SVG ─────────────────────────────────────────────────────────────────
 
 function PrismSVG() {
-  const pts = \`${APEX.x},${APEX.y} ${BL.x},${BL.y} ${BR.x},${BR.y}\`;
+  const pts = `${APEX.x},${APEX.y} ${BL.x},${BL.y} ${BR.x},${BR.y}`;
 
   return (
     <svg viewBox="-50 0 850 500" xmlns="http://www.w3.org/2000/svg"
@@ -324,16 +324,16 @@ function PrismSVG() {
         const dash = "26 12";
 
         return (
-          <g key={i} className="ray-opacity" style={{ animationDelay: \`\${i * 0.05}s\` }}>
+          <g key={i} className="ray-opacity" style={{ animationDelay: `${i * 0.05}s` }}>
             {/* Soft outer aura */}
             <path d={rayPath} fill="none" stroke={ray.color} strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" filter="url(#raySoft)"
-              style={{ strokeDasharray: dash, animation: \`ray-flow \${ray.flowSpeed} linear infinite\` }} />
+              style={{ strokeDasharray: dash, animation: `ray-flow ${ray.flowSpeed} linear infinite` }} />
             {/* Mid glow */}
             <path d={rayPath} fill="none" stroke={ray.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" filter="url(#rayGlow)"
-              style={{ strokeDasharray: dash, animation: \`ray-flow \${ray.flowSpeed} linear infinite\` }} />
+              style={{ strokeDasharray: dash, animation: `ray-flow ${ray.flowSpeed} linear infinite` }} />
             {/* Sharp core */}
             <path d={rayPath} fill="none" stroke={ray.color} strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"
-              style={{ strokeDasharray: dash, animation: \`ray-flow \${ray.flowSpeed} linear infinite\` }} />
+              style={{ strokeDasharray: dash, animation: `ray-flow ${ray.flowSpeed} linear infinite` }} />
           </g>
         );
       })}
@@ -364,7 +364,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
       {/* Fine grain texture */}
       <div aria-hidden className="pointer-events-none absolute inset-0"
         style={{
-          backgroundImage: "url(\\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E\\")",
+          backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E\")",
           backgroundRepeat: "repeat",
           backgroundSize: "160px 160px",
           opacity: 0.45,
