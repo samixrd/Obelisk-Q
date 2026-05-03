@@ -9,11 +9,11 @@ dist-ssr/
 build/
 
 # ── SECRETS — never commit these ──────────────────────────────
-# .env
-# .env.local
-# .env.development
-# .env.production
-# .env.*.local
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
 
 # ── Editor ────────────────────────────────────────────────────
 .vscode/
