@@ -77,7 +77,7 @@ function PrismSVG() {
   const dashPattern = "60 30"; // length 60, gap 30
 
   return (
-    <svg viewBox="-50 0 850 500" xmlns="http://www.w3.org/2000/svg"
+    <svg viewBox="-150 0 1100 500" xmlns="http://www.w3.org/2000/svg"
       className="w-full h-full physics-container"
       style={{ overflow: "visible" }} aria-hidden>
       <defs>
