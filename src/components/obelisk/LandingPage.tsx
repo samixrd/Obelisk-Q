@@ -112,7 +112,7 @@ function NavBar({ onLaunch }: { onLaunch: () => void }) {
 
 function HeroSection({ onLaunch }: { onLaunch: () => void }) {
   return (
-    <section className="landing-hero" id="wallet">
+    <section className="landing-hero" id="dashboard">
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
@@ -145,7 +145,7 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
 
 function WalletSection() {
   return (
-    <section className="landing-section" id="dashboard">
+    <section className="landing-section" id="wallet">
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}

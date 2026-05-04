@@ -6,9 +6,7 @@ import { useStability } from "./StabilityContext";
 
 function ObeliskMesh({ score }: { score: number }) {
   const groupRef = useRef<THREE.Group>(null);
-  const pulseRef = useRef<THREE.Mesh>(null);
   const innerCoreRef = useRef<THREE.Mesh>(null);
-  const glowDiscRef = useRef<THREE.Mesh>(null);
   const rainbowLightRef = useRef<THREE.PointLight>(null);
 
   // Stability 0–100 → 0.3–1 intensity curve (steeper above 90)
@@ -24,19 +22,9 @@ function ObeliskMesh({ score }: { score: number }) {
       groupRef.current.rotation.y = t * 0.06;
       groupRef.current.rotation.x = Math.sin(t * 0.08) * 0.02;
     }
-    if (pulseRef.current) {
-      const s = 1 + Math.sin(t * 1.3) * 0.14;
-      pulseRef.current.scale.set(s, 1, s);
-      const mat = pulseRef.current.material as THREE.MeshBasicMaterial;
-      mat.opacity = (0.35 + Math.sin(t * 1.3) * 0.2) * intensity;
-    }
     if (innerCoreRef.current) {
       const mat = innerCoreRef.current.material as THREE.MeshBasicMaterial;
       mat.opacity = (0.55 + Math.sin(t * 0.9) * 0.15) * intensity;
-    }
-    if (glowDiscRef.current) {
-      const mat = glowDiscRef.current.material as THREE.MeshBasicMaterial;
-      mat.opacity = 0.04 + intensity * 0.12;
     }
     if (rainbowLightRef.current) {
       rainbowLightRef.current.position.x = Math.sin(t * 0.6) * 3;
@@ -54,21 +42,6 @@ function ObeliskMesh({ score }: { score: number }) {
     <group ref={groupRef}>
       {/* Orbiting rainbow light */}
       <pointLight ref={rainbowLightRef} intensity={4} distance={12} />
-      
-      {/* Neon pulse at base */}
-      <mesh ref={pulseRef} position={[0, -2.3, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.8, 2.4, 64]} />
-        <meshBasicMaterial color="#BFFFA1" transparent opacity={0.5} side={THREE.DoubleSide} />
-      </mesh>
-      <mesh position={[0, -2.29, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[0.6, 0.9, 64]} />
-        <meshBasicMaterial color="#BFFFA1" transparent opacity={0.9 * intensity} side={THREE.DoubleSide} />
-      </mesh>
-      {/* Glow disc under */}
-      <mesh ref={glowDiscRef} position={[0, -2.31, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[3.5, 64]} />
-        <meshBasicMaterial color="#BFFFA1" transparent opacity={0.06} />
-      </mesh>
 
       {/* Base plinth */}
       <mesh position={[0, -2.35, 0]}>
