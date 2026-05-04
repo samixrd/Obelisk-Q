@@ -55,7 +55,7 @@ export function SafeguardsView() {
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6">
 
       {/* Header stat row */}
-      <div className="col-span-12 grid grid-cols-3 gap-4">
+      <div className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { label: "Protocols Active", value: "4 / 4", note: "All armed" },
           { label: "Risk Score", value: "0.42σ", note: "Well within bounds" },
@@ -66,7 +66,7 @@ export function SafeguardsView() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-card rounded-sm px-8 py-6"
+            className="glass-card rounded-2xl px-8 py-6"
           >
             <p
               className="text-[10px] uppercase text-muted-foreground mb-4"
@@ -75,7 +75,7 @@ export function SafeguardsView() {
               {s.label}
             </p>
             <p
-              className="text-4xl text-foreground"
+              className="text-3xl md:text-4xl text-foreground"
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 letterSpacing: "-0.04em",
@@ -94,7 +94,7 @@ export function SafeguardsView() {
       </div>
 
       {/* Protocol cards */}
-      <div className="col-span-12 glass-card rounded-sm p-10">
+      <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
         <div className="mb-8">
           <p
             className="text-[10px] uppercase text-muted-foreground mb-2"
@@ -117,24 +117,12 @@ export function SafeguardsView() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 + i * 0.07, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative rounded-sm p-6"
-              style={{
-                background:
-                  "linear-gradient(145deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0.005) 100%)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                transition: "border-color 0.5s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.16)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
-              }}
+              className="group relative rounded-2xl p-6 bg-foreground/[0.015] border border-foreground/5 hover:border-foreground/15 transition-colors duration-500"
             >
               <div className="flex items-start justify-between mb-3">
                 <p
-                  className="text-base text-foreground"
-                  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.01em" }}
+                  className="text-base text-foreground font-medium"
+                  style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}
                 >
                   {p.name}
                 </p>
@@ -143,27 +131,27 @@ export function SafeguardsView() {
                   style={{
                     letterSpacing: "0.25em",
                     fontFamily: "'JetBrains Mono', monospace",
-                    color: p.statusOk ? "hsl(104 100% 68%)" : "hsl(0 70% 60%)",
+                    color: p.statusOk ? "hsl(104 100% 35%)" : "hsl(0 70% 45%)",
                   }}
                 >
                   <span
                     className="h-1 w-1 rounded-full"
                     style={{
-                      background: p.statusOk ? "hsl(104 100% 68%)" : "hsl(0 70% 60%)",
+                      background: p.statusOk ? "hsl(104 100% 45%)" : "hsl(0 70% 55%)",
                       boxShadow: p.statusOk
-                        ? "0 0 4px hsl(104 100% 68% / 0.6)"
-                        : "0 0 4px hsl(0 70% 60% / 0.6)",
+                        ? "0 0 4px hsl(104 100% 45% / 0.3)"
+                        : "0 0 4px hsl(0 70% 55% / 0.3)",
                     }}
                   />
                   {p.status}
                 </span>
               </div>
 
-              <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+              <p className="text-sm text-muted-foreground leading-relaxed mb-6">
                 {p.description}
               </p>
 
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between mt-auto">
                 <div>
                   <p
                     className="text-[9px] uppercase text-muted-foreground mb-1"
@@ -199,7 +187,7 @@ export function SafeguardsView() {
       </div>
 
       {/* Stability graph */}
-      <div className="col-span-12 lg:col-span-8 glass-card rounded-sm p-10">
+      <div className="col-span-12 lg:col-span-8 glass-card rounded-2xl p-6 md:p-10">
         <div className="flex items-center justify-between mb-8">
           <div>
             <p
@@ -220,7 +208,7 @@ export function SafeguardsView() {
       </div>
 
       {/* Audit log */}
-      <div className="col-span-12 lg:col-span-4 glass-card rounded-sm p-10">
+      <div className="col-span-12 lg:col-span-4 glass-card rounded-2xl p-6 md:p-10">
         <p
           className="text-[10px] uppercase text-muted-foreground mb-6"
           style={{ letterSpacing: "0.28em" }}
@@ -234,26 +222,25 @@ export function SafeguardsView() {
               initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1 + i * 0.05, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="flex items-start gap-3 py-3"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
+              className="flex items-start gap-3 py-4 border-b border-foreground/5"
             >
               <span
                 className="mt-1.5 h-1 w-1 rounded-full flex-shrink-0"
                 style={{
-                  background: ev.ok ? "hsl(104 100% 68%)" : "hsl(0 70% 60%)",
-                  boxShadow: ev.ok ? "0 0 4px hsl(104 100% 68% / 0.5)" : "none",
+                  background: ev.ok ? "hsl(104 100% 45%)" : "hsl(0 70% 55%)",
+                  boxShadow: ev.ok ? "0 0 4px hsl(104 100% 45% / 0.2)" : "none",
                 }}
               />
               <div className="flex-1 min-w-0">
-                <p className="text-[12px] text-foreground/85 leading-snug">{ev.event}</p>
-                <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-[13px] text-foreground/85 leading-snug">{ev.event}</p>
+                <div className="flex items-center gap-2 mt-1">
                   <span
                     className="text-[9px] text-muted-foreground"
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     {ev.time}
                   </span>
-                  <span className="text-[9px] text-muted-foreground/50">·</span>
+                  <span className="text-[9px] text-muted-foreground/30">·</span>
                   <span
                     className="text-[9px] text-muted-foreground/60"
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
