@@ -62,7 +62,7 @@ function NavBar({ onLaunch }: { onLaunch: () => void }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = ["Wallet", "Dashboard", "Features", "About"];
+  const navItems = ["Dashboard", "Wallet", "Features", "About"];
 
   return (
     <motion.nav
@@ -236,7 +236,7 @@ function FeaturesSection() {
 
 function Footer() {
   const linkGroups = [
-    { title: "", links: ["Wallet", "Dashboard", "Features"] },
+    { title: "", links: ["Dashboard", "Wallet", "Features"] },
     { title: "", links: ["Docs", "GitHub", "Blog"] },
   ];
 
