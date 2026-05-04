@@ -56,12 +56,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const displayName =
-    user?.displayName ??
+    user?.displayName ||
     (walletAddress
       ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-      : "Guest");
+      : "Guest Identity");
 
-  const avatarUrl = user?.photoURL ?? null;
+  const avatarUrl = user?.photoURL || null;
 
   return (
     <Ctx.Provider value={{
