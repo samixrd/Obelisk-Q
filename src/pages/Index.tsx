@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LandingPage } from "@/components/obelisk/LandingPage";
 import { AuthScreen } from "@/components/obelisk/AuthScreen";
@@ -24,7 +24,7 @@ function AppInner() {
   const [activeTab,      setActiveTab]       = useState<DashboardTab>("overview");
   
   // Global scroll restoration: snap to top on tab or stage change
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [activeTab, stage]);
 
@@ -90,6 +90,7 @@ function AppInner() {
             />
 
             <Dashboard
+              key={activeTab}
               activeTab={activeTab}
               onTabChange={setActiveTab}
               walletAddress={walletAddress}
