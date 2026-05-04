@@ -20,8 +20,7 @@ export function StabilityGraph({ seed = 1, height = 120 }: Props) {
       pts.push([(i / (n - 1)) * w, y]);
     }
     const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(" ");
-    const area = `${path} L${w},${h} L0,${h} Z`;
-    return { path, area, points: pts };
+    return { path, points: pts };
   }, [seed, height]);
 
   const last = points[points.length - 1];
@@ -30,14 +29,10 @@ export function StabilityGraph({ seed = 1, height = 120 }: Props) {
     <div className="relative w-full" style={{ height }}>
       <svg viewBox={`0 0 800 ${height}`} preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
         <defs>
-          <linearGradient id={`grad-${seed}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="hsl(0 0% 100%)" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="hsl(0 0% 100%)" stopOpacity="0" />
-          </linearGradient>
           <linearGradient id={`line-${seed}`} x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="hsl(0 0% 40%)" />
-            <stop offset="70%" stopColor="hsl(0 0% 85%)" />
-            <stop offset="100%" stopColor="hsl(0 0% 98%)" />
+            <stop offset="0%" stopColor="hsl(0 0% 80%)" />
+            <stop offset="70%" stopColor="hsl(0 0% 40%)" />
+            <stop offset="100%" stopColor="hsl(0 0% 10%)" />
           </linearGradient>
         </defs>
 
@@ -49,18 +44,10 @@ export function StabilityGraph({ seed = 1, height = 120 }: Props) {
             x2="800"
             y1={height * p}
             y2={height * p}
-            stroke="hsl(0 0% 100% / 0.04)"
+            stroke="hsl(0 0% 10% / 0.04)"
             strokeWidth="1"
           />
         ))}
-
-        <motion.path
-          d={area}
-          fill={`url(#grad-${seed})`}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 1.6, ease: [0.22, 1, 0.36, 1] }}
-        />
         <motion.path
           d={path}
           fill="none"
