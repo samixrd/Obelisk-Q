@@ -203,7 +203,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       <div
         className="sticky z-30 top-[72px]"
         style={{
-          background: "rgba(245,245,248,0.85)",
+          background: "rgba(240, 242, 245, 0.85)",
           backdropFilter: "blur(20px) saturate(160%)",
           WebkitBackdropFilter: "blur(20px) saturate(160%)",
           borderBottom: "1px solid rgba(50, 50, 93, 0.1)",
