@@ -26,7 +26,7 @@ export function Header({
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       className="fixed top-0 left-0 right-0 z-40"
       style={{
-        background: "rgba(246, 249, 252, 0.85)",
+        background: "rgba(245,245,248,0.85)",
         backdropFilter: "blur(20px) saturate(160%)",
         WebkitBackdropFilter: "blur(20px) saturate(160%)",
         borderBottom: "1px solid rgba(50, 50, 93, 0.1)",
@@ -49,7 +49,7 @@ export function Header({
           <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.10)" }} />
           <h1 style={{
             fontSize: 22, lineHeight: 1, letterSpacing: "-0.03em",
-            color: "#0a2540", fontWeight: 600, fontFamily: "'Inter', sans-serif",
+            color: "#0a0a0a", fontWeight: 600, fontFamily: "'Inter', sans-serif",
           }}>
             Obelisk <span style={{ fontWeight: 400, color: "#888" }}>Q</span>
           </h1>
@@ -105,7 +105,7 @@ export function Header({
               whileTap={{ scale: 0.98 }}
               className="hidden md:flex items-center gap-2.5 px-4 py-1.5 group"
               style={{
-                background: "#635BFF",
+                background: "#0a0a0a",
                 color: "#fff",
                 border: "none",
                 borderRadius: 100,
@@ -113,10 +113,10 @@ export function Header({
                 transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "#544ccc";
+                (e.currentTarget as HTMLElement).style.background = "#222";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "#635BFF";
+                (e.currentTarget as HTMLElement).style.background = "#0a0a0a";
               }}
             >
               <svg viewBox="0 0 16 16" width="12" height="12" fill="none" style={{ color: "#fff" }}>
