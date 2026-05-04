@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
-import { Obelisk3D } from "./Obelisk3D";
+
 import { OptimizationDial } from "./OptimizationDial";
 import { StabilityGraph } from "./StabilityGraph";
 import { ManagedAssets } from "./ManagedAssets";
@@ -59,145 +59,19 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   };
 
   const [investOpen, setInvestOpen] = useState(false);
-  // Hero only appears on overview — all other views show content directly
-  const showHero = tab === "overview";
-
-  const glowIntensity =
-    score >= 90
-      ? "drop-shadow(0 0 24px rgba(34,197,94,0.3))"
-      : score >= 70
-      ? "drop-shadow(0 0 12px rgba(34,197,94,0.15))"
-      : undefined;
 
   return (
     <main className="relative min-h-screen pb-20">
+      {/* Global background vignette */}
+      <div className="absolute inset-0 vignette" />
 
-      {/* ── Hero — overview only ── */}
-      {showHero && (
-        <>
-          <section
-            className="relative flex flex-col items-center justify-center"
-            style={{ minHeight: "100svh", paddingTop: "96px" }}
-          >
-            <div className="absolute inset-0 vignette" />
+      {/* Push content below fixed header */}
+      <div style={{ height: "72px" }} />
 
-            <div style={{ filter: glowIntensity, transition: "filter 2s ease" }}>
-              <Obelisk3D />
-            </div>
-
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.6, duration: 1.2 }}
-              className="relative text-center pointer-events-none"
-              style={{ zIndex: 10, marginTop: "24px" }}
-            >
-              <p
-                style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", color: "#888", marginBottom: 12, textTransform: "uppercase" as const }}
-              >
-                Agent Active · Stability {score}
-              </p>
-              <h2
-                style={{
-                  fontSize: "clamp(42px, 5vw, 60px)",
-                  fontWeight: 700,
-                  fontFamily: "'Inter', sans-serif",
-                  letterSpacing: "-0.035em",
-                  color: "#0a0a0a",
-                  lineHeight: 1.1,
-                }}
-              >
-                Steady, <span style={{ fontWeight: 400, color: "#888" }}>precise</span>.
-              </h2>
-            </motion.div>
-
-            {/* ERC-8004 badge */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.9, duration: 1.0 }}
-              className="absolute top-28 right-6 z-20 hidden lg:flex items-center gap-2 px-3 py-1.5"
-              style={{
-                background: "#fff",
-                border: "1px solid rgba(0,0,0,0.08)",
-                borderRadius: 8,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-              }}
-            >
-              <span
-                className="h-1.5 w-1.5 rounded-full"
-                style={{
-                  background: "#22c55e",
-                  boxShadow: "0 0 5px rgba(34,197,94,0.5)",
-                }}
-              />
-              <span
-                style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.1em", color: "#888", textTransform: "uppercase" as const }}
-              >
-                ERC-8004 · Q-Agent
-              </span>
-            </motion.div>
-
-            {/* Activate Investment button */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.0, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-              className="flex flex-col items-center gap-3"
-              style={{ marginTop: "40px", zIndex: 20 }}
-            >
-              <motion.button
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.985 }}
-                transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="group relative inline-flex items-center gap-3 pl-7 pr-4 py-3"
-                onClick={() => setInvestOpen(true)}
-                style={{
-                  background: "#0a0a0a",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: 100,
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
-                  transition: "all 0.35s ease",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "#222";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,0.2)";
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "#0a0a0a";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(0,0,0,0.15)";
-                }}
-              >
-                <span
-                  style={{ fontSize: 12, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const }}
-                >
-                  Activate Investment
-                </span>
-                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
-                  <IconArrowRight size={13} className="text-white/70" />
-                </span>
-              </motion.button>
-
-              <p
-                className="text-[9px] uppercase text-muted-foreground"
-                style={{ letterSpacing: "0.32em", fontFamily: "'JetBrains Mono', monospace" }}
-              >
-                Allocate idle capital
-              </p>
-            </motion.div>
-          </section>
-
-          {/* Q-Score Bar — overview only */}
-          <div className="mx-auto max-w-[1400px] px-8 md:px-14 mt-8">
-            <QScoreBar />
-          </div>
-        </>
-      )}
-
-      {/* Non-overview pages: push content below fixed header */}
-      {!showHero && <div style={{ height: "72px" }} />}
+      {/* Main Stats Header */}
+      <div className="relative mx-auto max-w-[1400px] px-8 md:px-14 mt-8 mb-8 z-10">
+        <QScoreBar />
+      </div>
 
       {/* ── Sticky tab navigation bar ── */}
       <div
@@ -273,13 +147,21 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                       {vaultStats?.userBalance?.split('.')[0] ?? "0"}<span className="text-muted-foreground">.{vaultStats?.userBalance?.split('.')[1] ?? "0000"}</span>
                     </p>
                   </div>
-                  <span
-                    className="inline-flex items-center gap-1 text-[11px] text-neon"
-                    style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                  >
-                    <IconArrowUpRight size={12} />
-                    +2.41%
-                  </span>
+                  <div className="flex items-center gap-4">
+                    <span
+                      className="inline-flex items-center gap-1 text-[11px] text-neon"
+                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                    >
+                      <IconArrowUpRight size={12} />
+                      +2.41%
+                    </span>
+                    <button
+                      onClick={() => setInvestOpen(true)}
+                      className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded-full hover:bg-foreground/80 transition-colors"
+                    >
+                      Deposit
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <div className="hairline mb-6" />
