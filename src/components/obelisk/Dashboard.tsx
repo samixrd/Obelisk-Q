@@ -187,7 +187,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                     <p
                       className="text-2xl text-foreground"
                       style={{
-                        fontFamily: "'Cormorant Garamond', Georgia, serif",
+                        fontFamily: "'Inter', sans-serif",
                         letterSpacing: "-0.02em",
                       }}
                     >
@@ -215,7 +215,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                 <div className="flex items-center justify-between mb-8">
                   <p
                     className="text-2xl text-foreground"
-                    style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.02em" }}
+                    style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
                   >
                     Positions
                   </p>
@@ -239,15 +239,15 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                         <div className="col-span-5 flex items-center gap-4">
                           <div className="h-8 w-8 rounded-full bg-gradient-metal/30 border border-border-strong/60 flex items-center justify-center">
                             <span
-                              className="italic text-xs text-foreground/80"
-                              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                              className="text-xs text-foreground/80"
+                              style={{ fontFamily: "'Inter', sans-serif" }}
                             >
                               {p.symbol}
                             </span>
                           </div>
                           <span
                             className="text-lg text-foreground truncate"
-                            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                            style={{ fontFamily: "'Inter', sans-serif" }}
                           >
                             {p.name}
                           </span>
@@ -351,7 +351,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
               <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
                 <p
                   className="text-2xl text-foreground mb-8"
-                  style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.02em" }}
+                  style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
                 >
                   Monthly Returns
                 </p>
@@ -434,7 +434,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
         >
           <span>Obelisk Q</span>
           <span
-            style={{ fontStyle: "italic", fontSize: 14, color: "#aaa", letterSpacing: "normal" }}
+            style={{ fontSize: 14, color: "#aaa", letterSpacing: "normal" }}
           >
             A quiet intelligence.
           </span>

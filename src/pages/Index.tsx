@@ -79,9 +79,9 @@ function AppInner() {
 
             <Sidebar
               open={sidebarOpen}
-              onClose={() => setSidebarOpen(false)}
               activeTab={activeTab}
-              onNavigate={(tab) => { setActiveTab(tab); setSidebarOpen(false); }}
+              onTabChange={(tab) => { setActiveTab(tab); setSidebarOpen(false); }}
+              onClose={() => setSidebarOpen(false)}
             />
 
             <Dashboard

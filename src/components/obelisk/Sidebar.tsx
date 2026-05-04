@@ -1,148 +1,139 @@
-import { AnimatePresence, motion } from "framer-motion";
-import {
-  IconClose,
-  IconOverview,
-  IconPerformance,
-  IconPortfolio,
-  IconSafeguards,
-  IconAgent,
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  IconOverview, 
+  IconPerformance, 
+  IconSafeguards, 
+  IconPortfolio, 
+  IconLogs, 
   IconPreferences,
+  IconClose
 } from "./LineIcons";
-import type { DashboardTab } from "./Dashboard";
+import { DashboardTab } from "./Dashboard.tsx";
 
 interface SidebarProps {
   open: boolean;
+  activeTab: DashboardTab;
+  onTabChange: (tab: DashboardTab) => void;
   onClose: () => void;
-  activeTab?: DashboardTab;
-  onNavigate?: (tab: DashboardTab) => void;
 }
 
-const items: {
-  icon: React.ComponentType<{ size?: number; className?: string }>;
-  label: string;
-  tab: DashboardTab;
-}[] = [
+const MENU_ITEMS = [
   { icon: IconOverview,     label: "Overview",     tab: "overview"     },
   { icon: IconPerformance,  label: "Performance",  tab: "performance"  },
-  { icon: IconPortfolio,    label: "Portfolio",    tab: "portfolio"    },
   { icon: IconSafeguards,   label: "Safeguards",   tab: "safeguards"   },
-  { icon: IconAgent,        label: "Agent Logs",   tab: "agent-logs"   },
+  { icon: IconPortfolio,    label: "Portfolio",    tab: "portfolio"    },
+  { icon: IconLogs,         label: "Agent Logs",   tab: "agent-logs"   },
   { icon: IconPreferences,  label: "Preferences",  tab: "preferences"  },
 ];
 
-export function Sidebar({ open, onClose, activeTab, onNavigate }: SidebarProps) {
-  const handleItemClick = (tab: DashboardTab) => {
-    onNavigate?.(tab);
-    onClose();
-  };
-
+export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps) {
   return (
     <AnimatePresence>
       {open && (
         <>
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
             onClick={onClose}
-            className="fixed inset-0 z-40 bg-background/70 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-background/40 backdrop-blur-sm"
           />
-          <motion.aside
+
+          {/* Drawer */}
+          <motion.div
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
-            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed top-0 left-0 bottom-0 z-50 w-[360px] glass-card border-r border-border-strong/40 p-10"
+            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="fixed top-0 left-0 bottom-0 z-50 w-full max-w-[320px] flex flex-col bg-white border-r border-foreground/5 p-6 md:p-10 shadow-2xl"
           >
-            <div className="flex items-center justify-between mb-16">
-              <span
-                className="text-[10px] uppercase text-muted-foreground"
-                style={{ letterSpacing: "0.28em" }}
-              >
-                Navigation
-              </span>
-              <button
-                onClick={onClose}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <IconClose size={16} />
-              </button>
+            {/* Close button */}
+            <button
+              onClick={onClose}
+              className="absolute top-6 right-6 h-10 w-10 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <IconClose size={20} />
+            </button>
+
+            {/* Brand area */}
+            <div className="mb-14 px-2">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="h-8 w-8 rounded-full bg-foreground flex items-center justify-center">
+                  <div className="h-3 w-3 bg-white rounded-sm rotate-45" />
+                </div>
+                <span className="text-xl font-semibold tracking-tight text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  Obelisk Q
+                </span>
+              </div>
+              <p className="text-[10px] uppercase text-muted-foreground/60 tracking-[0.25em]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                Autonomous Wealth
+              </p>
             </div>
 
-            <nav className="space-y-1">
-              {items.map((item, i) => {
-                const isActive = item.tab && activeTab === item.tab;
-                return (
-                  <motion.button
-                    key={item.label}
-                    initial={{ opacity: 0, x: -8 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{
-                      delay: 0.1 + i * 0.05,
-                      duration: 0.6,
-                      ease: [0.22, 1, 0.36, 1],
-                    }}
-                    onClick={() => handleItemClick(item.tab)}
-                    className="group w-full flex items-center gap-4 py-4 text-left border-b border-border/40 hover:border-border-strong transition-all duration-500"
+            {/* Nav items */}
+            <nav className="flex-1 space-y-1">
+              {MENU_ITEMS.map((item) => (
+                <button
+                  key={item.tab}
+                  onClick={() => {
+                    onTabChange(item.tab as DashboardTab);
+                    onClose();
+                  }}
+                  className="group relative w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-300"
+                >
+                  {/* Active background indicator */}
+                  {activeTab === item.tab && (
+                    <motion.div
+                      layoutId="active-bg"
+                      className="absolute inset-0 bg-foreground/[0.03] border border-foreground/[0.05] rounded-xl"
+                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+                    />
+                  )}
+
+                  {/* Icon */}
+                  <div className={`relative z-10 transition-colors duration-300 ${
+                    activeTab === item.tab ? "text-foreground" : "text-muted-foreground/40 group-hover:text-foreground/60"
+                  }`}>
+                    <item.icon size={18} />
+                  </div>
+
+                  {/* Label */}
+                  <span
+                    className={`relative z-10 text-sm capitalize transition-colors duration-300 ${
+                      activeTab === item.tab ? "text-foreground font-semibold" : "text-muted-foreground group-hover:text-foreground/70"
+                    }`}
                     style={{
-                      borderBottomColor: isActive
-                        ? "rgba(255,255,255,0.2)"
-                        : undefined,
+                      fontFamily: "'Inter', sans-serif",
+                      letterSpacing: "-0.01em",
                     }}
                   >
-                    <item.icon
-                      size={14}
-                      className={`transition-colors duration-500 ${
-                        isActive
-                          ? "text-foreground"
-                          : "text-muted-foreground group-hover:text-foreground"
-                      }`}
+                    {item.label}
+                  </span>
+
+                  {/* Dot indicator */}
+                  {activeTab === item.tab && (
+                    <motion.div
+                      layoutId="active-dot"
+                      className="relative z-10 ml-auto h-1 w-1 rounded-full bg-foreground"
+                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     />
-                    <span
-                      className={`text-xl transition-colors ${
-                        isActive
-                          ? "text-foreground"
-                          : "text-foreground/90 group-hover:text-foreground"
-                      }`}
-                      style={{
-                        fontFamily: "'Cormorant Garamond', Georgia, serif",
-                        letterSpacing: item.tab === activeTab ? "-0.03em" : "-0.02em",
-                      }}
-                    >
-                      {item.label}
-                    </span>
-                    {isActive && (
-                      <motion.span
-                        layoutId="sidebar-active"
-                        className="ml-auto h-1 w-1 rounded-full"
-                        style={{
-                          background: "hsl(104 100% 68%)",
-                          boxShadow: "0 0 5px hsl(104 100% 68% / 0.7)",
-                        }}
-                      />
-                    )}
-                  </motion.button>
-                );
-              })}
+                  )}
+                </button>
+              ))}
             </nav>
 
-            <div className="absolute bottom-10 left-10 right-10">
-              <div className="hairline mb-6" />
-              <p
-                className="text-[10px] uppercase text-muted-foreground mb-2"
-                style={{ letterSpacing: "0.28em" }}
-              >
-                Protocol
-              </p>
-              <p
-                className="text-sm text-foreground/80"
-                style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
-              >
-                Mantle Network · L2
-              </p>
+            {/* Footer info */}
+            <div className="mt-auto px-3">
+              <div className="hairline mb-6 opacity-30" />
+              <div className="flex items-center gap-3">
+                <div className="h-1.5 w-1.5 rounded-full bg-neon animate-pulse" />
+                <span className="text-[10px] uppercase text-muted-foreground/40 tracking-[0.2em]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  Engine v1.02.4
+                </span>
+              </div>
             </div>
-          </motion.aside>
+          </motion.div>
         </>
       )}
     </AnimatePresence>

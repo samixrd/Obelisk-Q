@@ -56,8 +56,8 @@ export function AgentLogsView() {
       <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
         <div className="flex items-center justify-between mb-8">
           <p className="text-2xl text-foreground"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.02em" }}>
-            Agent <span className="italic" style={{ fontWeight: 300 }}>log stream</span>
+            style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+            Agent <span style={{ fontWeight: 300 }}>log stream</span>
           </p>
           <span className="flex items-center gap-2 text-[9px] uppercase text-muted-foreground"
             style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}>

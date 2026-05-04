@@ -121,7 +121,7 @@ export function StabilityScoreCard() {
 
         <div className="flex items-end gap-3">
           <span className="text-6xl md:text-7xl text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}>{score}</span>
-          <span className="italic text-2xl md:text-3xl text-muted-foreground mb-2 md:mb-3" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>/ 100</span>
+          <span className="text-2xl md:text-3xl text-muted-foreground mb-2 md:mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>/ 100</span>
         </div>
 
         <p className="text-sm text-muted-foreground mt-5 leading-relaxed">Your portfolio is within optimal risk parameters. No intervention required.</p>

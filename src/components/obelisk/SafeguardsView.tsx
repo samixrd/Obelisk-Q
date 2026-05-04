@@ -104,9 +104,9 @@ export function SafeguardsView() {
           </p>
           <p
             className="text-2xl text-foreground"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.02em" }}
+            style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
           >
-            Automated <span className="italic font-light">safeguard</span> layer
+            Automated <span className="font-light">safeguard</span> layer
           </p>
         </div>
 
@@ -198,9 +198,9 @@ export function SafeguardsView() {
             </p>
             <p
               className="text-2xl text-foreground"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.02em" }}
+              style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
             >
-              Consistently <span className="italic font-light">within envelope</span>
+              Consistently <span className="font-light">within envelope</span>
             </p>
           </div>
         </div>
