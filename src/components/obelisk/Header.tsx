@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { IconMenu } from "./LineIcons";
 import { UserProfile } from "./UserProfile";
+import { useVault } from "@/hooks/useVault";
 
 interface HeaderProps {
   onMenuClick:     () => void;
@@ -19,6 +20,7 @@ export function Header({
   onConnectWallet,
   onSignOut,
 }: HeaderProps) {
+  const { vaultStats } = useVault();
   return (
     <motion.header
       initial={{ opacity: 0, y: -12 }}
@@ -88,12 +90,21 @@ export function Header({
                 background: "#22c55e", boxShadow: "0 0 5px rgba(34,197,94,0.5)",
                 flexShrink: 0,
               }} />
-              <span style={{
-                fontSize: 11, fontWeight: 500, color: "#666",
-                letterSpacing: "0.04em", fontFamily: "'Inter', sans-serif",
-              }}>
-                {walletAddress}
-              </span>
+              <div className="hidden md:flex flex-col items-end mr-3">
+                <span className="text-[10px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em", fontFamily: "'JetBrains Mono', monospace" }}>
+                  Connected
+                </span>
+                <span className="text-xs text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                </span>
+              </div>
+              
+              <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-background rounded-full border border-border">
+                <div className="h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_5px_rgba(34,197,94,0.5)]" />
+                <span className="text-[10px] text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  {vaultStats?.walletBalance ?? "0.0000"} MNT
+                </span>
+              </div>
             </motion.div>
           ) : needsWallet ? (
             <motion.button
