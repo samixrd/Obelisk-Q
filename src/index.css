@@ -7,9 +7,10 @@
 
 @layer base {
   :root {
-    /* Light base */
-    --background: 240 5% 96%;
-    --foreground: 0 0% 4%;
+    /* Light base (Stripe #f6f9fc) */
+    --background: 210 33% 98%;
+    /* Stripe Dark Slate #0a2540 */
+    --foreground: 210 73% 15%;
 
     /* Light surfaces */
     --surface: 0 0% 100%;
@@ -17,54 +18,55 @@
     --surface-glass: 0 0% 100%;
 
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 4%;
+    --card-foreground: 210 73% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 4%;
+    --popover-foreground: 210 73% 15%;
 
     /* Primary */
-    --primary: 0 0% 4%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 243 100% 68%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 0 0% 15%;
+    /* Stripe Slate #425466 */
+    --secondary: 210 21% 33%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 210 33% 98%;
+    --muted-foreground: 210 21% 33%;
 
-    --accent: 240 5% 93%;
-    --accent-foreground: 0 0% 4%;
+    --accent: 243 100% 68%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Green accent — for status indicators */
-    --neon: 142 71% 45%;
-    --neon-glow: 142 71% 45%;
+    /* Stripe Blurple accent */
+    --neon: 243 100% 68%;
+    --neon-glow: 243 100% 68%;
 
     /* Neutral grays */
-    --metal-light: 0 0% 92%;
-    --metal-mid: 0 0% 70%;
-    --metal-dark: 0 0% 40%;
+    --metal-light: 210 33% 90%;
+    --metal-mid: 210 33% 80%;
+    --metal-dark: 210 21% 33%;
 
     /* Borders */
-    --border: 0 0% 0%;
-    --border-strong: 0 0% 0%;
-    --input: 0 0% 90%;
-    --ring: 221 83% 53%;
+    --border: 210 21% 85%;
+    --border-strong: 210 21% 70%;
+    --input: 210 21% 85%;
+    --ring: 243 100% 68%;
 
-    --radius: 0.5rem;
+    --radius: 8px;
 
     /* Gradients */
-    --gradient-metal: linear-gradient(135deg, hsl(0 0% 96%) 0%, hsl(0 0% 90%) 35%, hsl(0 0% 80%) 65%, hsl(0 0% 94%) 100%);
+    --gradient-metal: linear-gradient(135deg, hsl(0 0% 100%) 0%, hsl(210 33% 98%) 100%);
     --gradient-obsidian: none;
-    --gradient-glass: linear-gradient(145deg, hsl(0 0% 100% / 0.8) 0%, hsl(0 0% 100% / 0.4) 100%);
-    --gradient-neon: radial-gradient(ellipse at center, hsl(142 71% 45% / 0.15) 0%, transparent 70%);
+    --gradient-glass: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(0 0% 100%) 100%);
+    --gradient-neon: radial-gradient(ellipse at center, hsl(243 100% 68% / 0.15) 0%, transparent 70%);
 
-    /* Shadows */
-    --shadow-glass: 0 1px 3px 0 rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.06);
-    --shadow-dial: 0 4px 16px -4px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
-    --shadow-neon: 0 0 12px hsl(142 71% 45% / 0.25);
+    /* Shadows (Stripe Elevation) */
+    --shadow-glass: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-dial: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+    --shadow-neon: 0 0 12px hsl(243 100% 68% / 0.25);
 
     /* Motion */
     --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
@@ -73,7 +75,7 @@
 
 @layer base {
   * {
-    border-color: hsl(0 0% 0% / 0.06);
+    border-color: rgba(50, 50, 93, 0.1);
   }
 
   html {
@@ -85,43 +87,42 @@
 
   body {
     @apply bg-background text-foreground;
-    background: #f5f5f8;
+    background: #f6f9fc;
     letter-spacing: -0.01em;
   }
 
   .font-serif-display {
     font-family: 'Inter', system-ui, sans-serif;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
     font-weight: 700;
   }
 
   .font-mono-num {
     font-family: 'JetBrains Mono', 'Fragment Mono', 'IBM Plex Mono', ui-monospace, monospace;
     font-feature-settings: "tnum", "zero";
-    letter-spacing: -0.02em;
+    letter-spacing: -0.01em;
   }
 }
 
 @layer components {
   .glass-card {
     background: #ffffff;
-    border: 1px solid rgba(0,0,0,0.06);
+    border: none;
     box-shadow: var(--shadow-glass);
-    border-radius: 12px;
+    border-radius: 8px;
   }
 
   .glass-card-hover {
-    transition: transform 0.4s var(--ease-luxe), border-color 0.4s var(--ease-luxe), box-shadow 0.4s var(--ease-luxe);
+    transition: transform 0.3s var(--ease-luxe), box-shadow 0.3s var(--ease-luxe);
     will-change: transform;
   }
   .glass-card-hover:hover {
-    border-color: rgba(0,0,0,0.12);
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px -10px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.08);
+    box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
   }
 
   .hairline-border {
-    border: 1px solid rgba(0,0,0,0.06);
+    border: 1px solid rgba(50, 50, 93, 0.1);
   }
 
   .metal-surface {
@@ -134,7 +135,7 @@
   }
 
   .hairline {
-    background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(50, 50, 93, 0.1) 50%, transparent 100%);
     height: 1px;
   }
 
@@ -143,7 +144,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse at 50% 40%, transparent 0%, rgba(245,245,248,0.4) 80%, rgba(245,245,248,1) 100%);
+    background: radial-gradient(ellipse at 50% 40%, transparent 0%, rgba(246, 249, 252, 0.4) 80%, rgba(246, 249, 252, 1) 100%);
   }
 }
 

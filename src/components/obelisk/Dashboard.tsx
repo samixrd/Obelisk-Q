@@ -103,7 +103,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                   fontWeight: 700,
                   fontFamily: "'Inter', sans-serif",
                   letterSpacing: "-0.035em",
-                  color: "#0a0a0a",
+                  color: "#0a2540",
                   lineHeight: 1.1,
                 }}
               >
@@ -153,21 +153,21 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                 className="group relative inline-flex items-center gap-3 pl-7 pr-4 py-3"
                 onClick={() => setInvestOpen(true)}
                 style={{
-                  background: "#0a0a0a",
+                  background: "#635BFF",
                   color: "#fff",
                   border: "none",
                   borderRadius: 100,
-                  boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                  boxShadow: "0 4px 20px rgba(99,91,255,0.15)",
                   transition: "all 0.35s ease",
                   cursor: "pointer",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "#222";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,0.2)";
+                  (e.currentTarget as HTMLElement).style.background = "#544ccc";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(99,91,255,0.25)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "#0a0a0a";
-                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(0,0,0,0.15)";
+                  (e.currentTarget as HTMLElement).style.background = "#635BFF";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(99,91,255,0.15)";
                 }}
               >
                 <span
@@ -203,10 +203,10 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       <div
         className="sticky z-30 top-[72px]"
         style={{
-          background: "rgba(245,245,248,0.85)",
+          background: "rgba(246, 249, 252, 0.85)",
           backdropFilter: "blur(20px) saturate(160%)",
           WebkitBackdropFilter: "blur(20px) saturate(160%)",
-          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          borderBottom: "1px solid rgba(50, 50, 93, 0.1)",
         }}
       >
         <div className="mx-auto max-w-[1400px] px-8 md:px-14">
@@ -649,9 +649,10 @@ function QScoreBar() {
           onClick={() => setVolatility(isHighVol ? "low" : "high")}
           className="relative flex items-center gap-0 overflow-hidden"
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "0.5px solid rgba(255,255,255,0.12)",
+            background: "rgba(10, 37, 64, 0.04)",
+            border: "0.5px solid rgba(10, 37, 64, 0.12)",
             height: "24px",
+            borderRadius: "12px",
           }}
           title="Toggle volatility regime (demo)"
         >
@@ -665,9 +666,9 @@ function QScoreBar() {
                 color:
                   adaptive.volatility === v
                     ? v === "high"
-                      ? "hsl(30 100% 70%)"
-                      : "hsl(104 100% 68%)"
-                    : "rgba(255,255,255,0.22)",
+                      ? "hsl(30 100% 60%)"
+                      : "hsl(243 100% 68%)"
+                    : "rgba(10, 37, 64, 0.4)",
               }}
             >
               {v === "low" ? "Stable" : "High Volatility"}
@@ -680,10 +681,11 @@ function QScoreBar() {
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             style={{
               background: isHighVol
-                ? "rgba(255, 160, 60, 0.10)"
-                : "rgba(100, 255, 120, 0.07)",
-              borderRight: isHighVol ? "none" : "0.5px solid rgba(255,255,255,0.09)",
-              borderLeft: isHighVol ? "0.5px solid rgba(255,255,255,0.09)" : "none",
+                ? "rgba(255, 160, 60, 0.15)"
+                : "rgba(99, 91, 255, 0.1)",
+              borderRight: isHighVol ? "none" : "0.5px solid rgba(10, 37, 64, 0.09)",
+              borderLeft: isHighVol ? "0.5px solid rgba(10, 37, 64, 0.09)" : "none",
+              borderRadius: "12px",
             }}
           />
         </button>
