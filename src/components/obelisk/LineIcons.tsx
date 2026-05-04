@@ -112,3 +112,12 @@ export const IconPreferences = (p: IconProps) => (
     <circle cx="15" cy="15" r="2" />
   </svg>
 );
+
+// Logs — four simple hairlines (list)
+export const IconLogs = (p: IconProps) => (
+  <svg {...base(p)}>
+    <line x1="5" y1="7" x2="19" y2="7" />
+    <line x1="5" y1="12" x2="19" y2="12" />
+    <line x1="5" y1="17" x2="15" y2="17" />
+  </svg>
+);

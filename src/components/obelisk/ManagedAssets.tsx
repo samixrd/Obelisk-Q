@@ -49,8 +49,8 @@ export function ManagedAssets() {
           <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>
             Managed Assets
           </p>
-          <p className="text-2xl text-foreground" style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.02em" }}>
-            Curated by the <span className="italic">Obelisk Q</span> controller
+          <p className="text-2xl text-foreground" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+            Curated by the <span>Obelisk Q</span> controller
           </p>
         </div>
         <p className="hidden md:block text-[10px] uppercase text-muted-foreground" style={{ letterSpacing: "0.28em" }}>
@@ -72,7 +72,7 @@ export function ManagedAssets() {
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-6">
                 <div className="flex items-center gap-4">
                   <span className="inline-flex items-center justify-center h-11 w-11 rounded-full bg-gradient-metal/20 border border-foreground/10">
-                    <span className="font-serif italic text-sm text-foreground/90">{a.symbol[0]}</span>
+                    <span className="text-sm text-foreground/90" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol[0]}</span>
                   </span>
                   <div>
                     <p className="text-xl text-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol}</p>

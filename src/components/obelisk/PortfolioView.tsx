@@ -58,8 +58,8 @@ export function PortfolioView() {
       {/* Position table */}
       <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
         <p className="text-2xl text-foreground mb-8"
-          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.02em" }}>
-          All <span className="italic" style={{ fontWeight: 300 }}>positions</span>
+          style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+          All <span style={{ fontWeight: 300 }}>positions</span>
         </p>
         <div className="overflow-x-auto no-scrollbar">
           <div className="min-w-[700px] md:min-w-0">
@@ -71,8 +71,8 @@ export function PortfolioView() {
               >
                 <div className="col-span-5 flex items-center gap-4">
                   <div className="h-8 w-8 rounded-full border border-foreground/10 flex items-center justify-center">
-                    <span className="italic text-xs text-foreground/70"
-                      style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}>{p.symbol}</span>
+                    <span className="text-xs text-foreground/70"
+                      style={{ fontFamily: "'Inter', sans-serif" }}>{p.symbol}</span>
                   </div>
                   <span className="text-base text-foreground font-medium"
                     style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
