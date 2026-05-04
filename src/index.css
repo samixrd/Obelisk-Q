@@ -2,69 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Obelisk Q — Luxury OS design system.
+/* Obelisk Q — Light Agent Layer design system.
    All colors MUST be HSL. */
 
 @layer base {
   :root {
-    /* True obsidian base */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 98%;
+    /* Light base */
+    --background: 240 5% 96%;
+    --foreground: 0 0% 4%;
 
-    /* Deep charcoal surfaces — pulled darker for hardware feel */
-    --surface: 0 0% 4%;
-    --surface-elevated: 0 0% 6%;
-    --surface-glass: 0 0% 5%;
+    /* Light surfaces */
+    --surface: 0 0% 100%;
+    --surface-elevated: 0 0% 100%;
+    --surface-glass: 0 0% 100%;
 
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 98%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
 
-    --popover: 0 0% 3%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
 
-    /* Bone white primary */
-    --primary: 40 20% 96%;
-    --primary-foreground: 0 0% 2%;
+    /* Primary */
+    --primary: 0 0% 4%;
+    --primary-foreground: 0 0% 98%;
 
-    --secondary: 0 0% 8%;
-    --secondary-foreground: 0 0% 92%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 0 0% 15%;
 
-    --muted: 0 0% 6%;
-    --muted-foreground: 0 0% 48%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 0 0% 45%;
 
-    --accent: 0 0% 10%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 240 5% 93%;
+    --accent-foreground: 0 0% 4%;
 
     --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Mantle neon green — reserved for critical data only */
-    --neon: 104 100% 78%;
-    --neon-glow: 104 100% 68%;
+    /* Green accent — for status indicators */
+    --neon: 142 71% 45%;
+    --neon-glow: 142 71% 45%;
 
-    /* Metallic */
-    --metal-light: 40 15% 88%;
-    --metal-mid: 35 10% 70%;
-    --metal-dark: 30 8% 40%;
+    /* Neutral grays */
+    --metal-light: 0 0% 92%;
+    --metal-mid: 0 0% 70%;
+    --metal-dark: 0 0% 40%;
 
-    /* Architectural 1px hairlines — used via hsl(var(--border) / <alpha>) */
-    --border: 0 0% 100%;
-    --border-strong: 0 0% 100%;
-    --input: 0 0% 12%;
-    --ring: 104 100% 78%;
+    /* Borders */
+    --border: 0 0% 0%;
+    --border-strong: 0 0% 0%;
+    --input: 0 0% 90%;
+    --ring: 221 83% 53%;
 
-    --radius: 0.25rem;
+    --radius: 0.5rem;
 
     /* Gradients */
-    --gradient-metal: linear-gradient(135deg, hsl(40 15% 92%) 0%, hsl(35 12% 78%) 35%, hsl(30 10% 55%) 65%, hsl(35 12% 82%) 100%);
-    --gradient-obsidian: radial-gradient(ellipse at 50% 0%, hsl(0 0% 3%) 0%, hsl(0 0% 0%) 70%);
-    --gradient-glass: linear-gradient(145deg, hsl(0 0% 100% / 0.035) 0%, hsl(0 0% 100% / 0.005) 100%);
-    --gradient-neon: radial-gradient(ellipse at center, hsl(104 100% 78% / 0.5) 0%, hsl(104 100% 68% / 0.15) 40%, transparent 70%);
+    --gradient-metal: linear-gradient(135deg, hsl(0 0% 96%) 0%, hsl(0 0% 90%) 35%, hsl(0 0% 80%) 65%, hsl(0 0% 94%) 100%);
+    --gradient-obsidian: none;
+    --gradient-glass: linear-gradient(145deg, hsl(0 0% 100% / 0.8) 0%, hsl(0 0% 100% / 0.4) 100%);
+    --gradient-neon: radial-gradient(ellipse at center, hsl(142 71% 45% / 0.15) 0%, transparent 70%);
 
-    /* Shadows — sharper, more device-like */
-    --shadow-glass: 0 1px 0 0 hsl(0 0% 100% / 0.05) inset, 0 0 0 1px hsl(0 0% 100% / 0.10), 0 40px 80px -30px hsl(0 0% 0% / 0.9), 0 8px 24px -8px hsl(0 0% 0% / 0.7);
-    --shadow-dial: 0 10px 40px -10px hsl(0 0% 0% / 0.95), 0 0 0 1px hsl(40 15% 80% / 0.12), inset 0 1px 0 0 hsl(40 15% 95% / 0.45), inset 0 -10px 20px -5px hsl(30 10% 20% / 0.7);
-    --shadow-neon: 0 0 24px hsl(104 100% 68% / 0.45), 0 0 48px hsl(104 100% 68% / 0.18);
+    /* Shadows */
+    --shadow-glass: 0 1px 3px 0 rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.06);
+    --shadow-dial: 0 4px 16px -4px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.06);
+    --shadow-neon: 0 0 12px hsl(142 71% 45% / 0.25);
 
     /* Motion */
     --ease-luxe: cubic-bezier(0.22, 1, 0.36, 1);
@@ -73,7 +73,7 @@
 
 @layer base {
   * {
-    border-color: hsl(0 0% 100% / 0.10);
+    border-color: hsl(0 0% 0% / 0.06);
   }
 
   html {
@@ -85,13 +85,14 @@
 
   body {
     @apply bg-background text-foreground;
-    background: var(--gradient-obsidian);
+    background: #f5f5f8;
     letter-spacing: -0.01em;
   }
 
   .font-serif-display {
-    font-family: 'Cormorant Garamond', 'Didot', 'Bodoni Moda', Georgia, serif;
-    letter-spacing: -0.02em;
+    font-family: 'Inter', system-ui, sans-serif;
+    letter-spacing: -0.03em;
+    font-weight: 700;
   }
 
   .font-mono-num {
@@ -103,43 +104,37 @@
 
 @layer components {
   .glass-card {
-    background: var(--gradient-glass), hsl(0 0% 4% / 0.55);
-    backdrop-filter: blur(40px) saturate(160%);
-    -webkit-backdrop-filter: blur(40px) saturate(160%);
-    border: 1px solid hsl(0 0% 100% / 0.10);
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.06);
     box-shadow: var(--shadow-glass);
+    border-radius: 12px;
   }
 
   .glass-card-hover {
-    transition: transform 0.6s var(--ease-luxe), border-color 0.6s var(--ease-luxe), box-shadow 0.6s var(--ease-luxe);
+    transition: transform 0.4s var(--ease-luxe), border-color 0.4s var(--ease-luxe), box-shadow 0.4s var(--ease-luxe);
     will-change: transform;
   }
   .glass-card-hover:hover {
-    border-color: hsl(0 0% 100% / 0.18);
-    transform: translateY(-4px);
-    box-shadow:
-      0 1px 0 0 hsl(0 0% 100% / 0.06) inset,
-      0 0 0 1px hsl(0 0% 100% / 0.14),
-      0 50px 80px -30px hsl(0 0% 0% / 0.95),
-      0 0 60px -10px hsl(104 100% 78% / 0.18);
+    border-color: rgba(0,0,0,0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px -10px rgba(0,0,0,0.1), 0 0 0 1px rgba(0,0,0,0.08);
   }
 
   .hairline-border {
-    border: 1px solid hsl(0 0% 100% / 0.10);
+    border: 1px solid rgba(0,0,0,0.06);
   }
 
   .metal-surface {
     background: var(--gradient-metal);
-    color: hsl(var(--primary-foreground));
+    color: hsl(var(--primary));
   }
 
   .neon-text {
     color: hsl(var(--neon));
-    text-shadow: 0 0 20px hsl(var(--neon) / 0.5);
   }
 
   .hairline {
-    background: linear-gradient(90deg, transparent 0%, hsl(0 0% 100% / 0.10) 50%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 50%, transparent 100%);
     height: 1px;
   }
 
@@ -148,13 +143,13 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: radial-gradient(ellipse at 50% 40%, transparent 0%, hsl(0 0% 0% / 0.4) 80%, hsl(0 0% 0%) 100%);
+    background: radial-gradient(ellipse at 50% 40%, transparent 0%, rgba(245,245,248,0.4) 80%, rgba(245,245,248,1) 100%);
   }
 }
 
 @layer utilities {
   .tracking-luxe {
-    letter-spacing: 0.28em;
+    letter-spacing: 0.1em;
   }
   .tracking-tightest {
     letter-spacing: -0.04em;

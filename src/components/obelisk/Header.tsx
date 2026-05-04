@@ -26,9 +26,10 @@ export function Header({
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       className="fixed top-0 left-0 right-0 z-40"
       style={{
-        background: "rgba(7,7,10,0.82)",
+        background: "rgba(245,245,248,0.85)",
         backdropFilter: "blur(20px) saturate(160%)",
         WebkitBackdropFilter: "blur(20px) saturate(160%)",
+        borderBottom: "1px solid rgba(0,0,0,0.06)",
       }}
     >
       <div className="mx-auto max-w-[1680px] px-8 md:px-14 py-5 flex items-center justify-between">
@@ -38,53 +39,63 @@ export function Header({
           <button
             onClick={onMenuClick}
             aria-label="Open navigation"
-            className="h-9 w-9 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors duration-500"
+            className="h-9 w-9 flex items-center justify-center transition-colors duration-500"
+            style={{ color: "#999" }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#333"; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#999"; }}
           >
             <IconMenu size={16} />
           </button>
-          <div className="h-4 w-px bg-border-strong/60" />
-          <h1 className="font-serif text-[26px] leading-none tracking-tightest text-foreground">
-            Obelisk <span className="italic font-light">Q</span>
+          <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.10)" }} />
+          <h1 style={{
+            fontSize: 22, lineHeight: 1, letterSpacing: "-0.03em",
+            color: "#0a0a0a", fontWeight: 600, fontFamily: "'Inter', sans-serif",
+          }}>
+            Obelisk <span style={{ fontWeight: 400, color: "#888" }}>Q</span>
           </h1>
         </div>
 
         {/* Right: network + wallet status + tour + avatar */}
         <div className="flex items-center gap-5">
 
-          <span className="hidden md:inline-flex items-center gap-2 text-[10px] uppercase tracking-luxe text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-neon animate-pulse-neon shadow-neon" />
+          <span className="hidden md:inline-flex items-center gap-2" style={{
+            fontSize: 11, fontWeight: 500, letterSpacing: "0.1em",
+            color: "#999", textTransform: "uppercase" as const,
+          }}>
+            <span style={{
+              height: 6, width: 6, borderRadius: "50%",
+              background: "#22c55e", boxShadow: "0 0 6px rgba(34,197,94,0.5)",
+              display: "inline-block",
+            }} />
             Mantle Network
           </span>
 
-          {/* Wallet status — always visible */}
+          {/* Wallet status */}
           {walletAddress ? (
-            /* Connected state — address chip */
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
               className="hidden md:flex items-center gap-2 px-3 py-1.5"
               style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "0.5px solid rgba(255,255,255,0.14)",
+                background: "rgba(0,0,0,0.03)",
+                border: "1px solid rgba(0,0,0,0.08)",
+                borderRadius: 8,
               }}
             >
-              <span
-                className="h-1.5 w-1.5 rounded-full flex-shrink-0"
-                style={{
-                  background: "hsl(104 100% 68%)",
-                  boxShadow: "0 0 5px hsl(104 100% 68% / 0.65)",
-                }}
-              />
-              <span
-                className="text-[9px] uppercase text-foreground/55"
-                style={{ letterSpacing: "0.22em", fontFamily: "'JetBrains Mono', monospace" }}
-              >
+              <span style={{
+                height: 6, width: 6, borderRadius: "50%",
+                background: "#22c55e", boxShadow: "0 0 5px rgba(34,197,94,0.5)",
+                flexShrink: 0,
+              }} />
+              <span style={{
+                fontSize: 11, fontWeight: 500, color: "#666",
+                letterSpacing: "0.04em", fontFamily: "'Inter', sans-serif",
+              }}>
                 {walletAddress}
               </span>
             </motion.div>
           ) : needsWallet ? (
-            /* Google user — prompt to connect */
             <motion.button
               initial={{ opacity: 0, x: 8 }}
               animate={{ opacity: 1, x: 0 }}
@@ -94,34 +105,30 @@ export function Header({
               whileTap={{ scale: 0.98 }}
               className="hidden md:flex items-center gap-2.5 px-4 py-1.5 group"
               style={{
-                background: "linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)",
-                border: "0.5px solid rgba(255,255,255,0.22)",
-                transition: "all 0.4s ease",
+                background: "#0a0a0a",
+                color: "#fff",
+                border: "none",
+                borderRadius: 100,
+                cursor: "pointer",
+                transition: "all 0.3s ease",
               }}
               onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.38)";
-                (e.currentTarget as HTMLElement).style.background =
-                  "linear-gradient(135deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.04) 100%)";
+                (e.currentTarget as HTMLElement).style.background = "#222";
               }}
               onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.22)";
-                (e.currentTarget as HTMLElement).style.background =
-                  "linear-gradient(135deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 100%)";
+                (e.currentTarget as HTMLElement).style.background = "#0a0a0a";
               }}
             >
-              {/* Wallet icon */}
-              <svg viewBox="0 0 16 16" width="12" height="12" fill="none"
-                className="text-white/55 group-hover:text-white/80 transition-colors">
-                <rect x="1" y="4" width="14" height="10" rx="1.5"
-                  stroke="currentColor" strokeWidth="1.1"/>
+              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" style={{ color: "#fff" }}>
+                <rect x="1" y="4" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.1"/>
                 <path d="M1 7h14" stroke="currentColor" strokeWidth="1.1"/>
                 <circle cx="11.5" cy="10" r="1" fill="currentColor"/>
                 <path d="M11 4V3a1.5 1.5 0 0 1 3 0v1" stroke="currentColor" strokeWidth="1.1"/>
               </svg>
-              <span
-                className="text-[9px] uppercase text-white/55 group-hover:text-white/80 transition-colors"
-                style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}
-              >
+              <span style={{
+                fontSize: 11, fontWeight: 500, letterSpacing: "0.05em",
+                textTransform: "uppercase" as const,
+              }}>
                 Connect wallet
               </span>
             </motion.button>
@@ -130,7 +137,15 @@ export function Header({
           {onTourClick && (
             <button
               onClick={onTourClick}
-              className="hidden md:inline-block text-[10px] uppercase tracking-luxe text-muted-foreground hover:text-foreground transition-colors duration-500"
+              style={{
+                fontSize: 11, fontWeight: 500, letterSpacing: "0.1em",
+                color: "#999", textTransform: "uppercase" as const,
+                background: "none", border: "none", cursor: "pointer",
+                transition: "color 0.3s ease",
+              }}
+              className="hidden md:inline-block"
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#333"; }}
+              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#999"; }}
             >
               Guided tour
             </button>
@@ -138,7 +153,10 @@ export function Header({
           <UserProfile onSignOut={onSignOut} />
         </div>
       </div>
-      <div className="hairline" />
+      <div style={{
+        height: 1,
+        background: "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 50%, transparent 100%)",
+      }} />
     </motion.header>
   );
 }

@@ -64,9 +64,9 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
   const glowIntensity =
     score >= 90
-      ? "drop-shadow(0 0 32px hsl(104 100% 68% / 0.45))"
+      ? "drop-shadow(0 0 24px rgba(34,197,94,0.3))"
       : score >= 70
-      ? "drop-shadow(0 0 16px hsl(104 100% 68% / 0.22))"
+      ? "drop-shadow(0 0 12px rgba(34,197,94,0.15))"
       : undefined;
 
   return (
@@ -93,20 +93,21 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
               style={{ zIndex: 10, marginTop: "24px" }}
             >
               <p
-                className="text-[10px] uppercase text-muted-foreground mb-3"
-                style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
+                style={{ fontSize: 11, fontWeight: 500, letterSpacing: "0.12em", color: "#888", marginBottom: 12, textTransform: "uppercase" as const }}
               >
                 Agent Active · Stability {score}
               </p>
               <h2
-                className="text-5xl md:text-6xl text-foreground"
                 style={{
-                  fontFamily: "'Cormorant Garamond', Georgia, serif",
-                  letterSpacing: "-0.04em",
-                  fontWeight: 400,
+                  fontSize: "clamp(42px, 5vw, 60px)",
+                  fontWeight: 700,
+                  fontFamily: "'Inter', sans-serif",
+                  letterSpacing: "-0.035em",
+                  color: "#0a0a0a",
+                  lineHeight: 1.1,
                 }}
               >
-                Steady, <span className="italic" style={{ fontWeight: 300 }}>precise</span>.
+                Steady, <span style={{ fontWeight: 400, color: "#888" }}>precise</span>.
               </h2>
             </motion.div>
 
@@ -117,22 +118,21 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
               transition={{ delay: 0.9, duration: 1.0 }}
               className="absolute top-28 right-6 z-20 hidden lg:flex items-center gap-2 px-3 py-1.5"
               style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "0.5px solid rgba(255,255,255,0.12)",
-                backdropFilter: "blur(16px)",
+                background: "#fff",
+                border: "1px solid rgba(0,0,0,0.08)",
+                borderRadius: 8,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
               }}
             >
               <span
-                className="h-1 w-1 rounded-full"
+                className="h-1.5 w-1.5 rounded-full"
                 style={{
-                  background: "hsl(104 100% 68%)",
-                  boxShadow: "0 0 5px hsl(104 100% 68% / 0.7)",
-                  animation: "pulse-neon 3.2s ease-in-out infinite",
+                  background: "#22c55e",
+                  boxShadow: "0 0 5px rgba(34,197,94,0.5)",
                 }}
               />
               <span
-                className="text-[8px] uppercase text-muted-foreground"
-                style={{ letterSpacing: "0.3em", fontFamily: "'JetBrains Mono', monospace" }}
+                style={{ fontSize: 10, fontWeight: 500, letterSpacing: "0.1em", color: "#888", textTransform: "uppercase" as const }}
               >
                 ERC-8004 · Q-Agent
               </span>
@@ -147,43 +147,36 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
               style={{ marginTop: "40px", zIndex: 20 }}
             >
               <motion.button
-                whileHover={{ y: -1 }}
+                whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.985 }}
                 transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                className="group relative inline-flex items-center gap-3 pl-6 pr-3 py-2.5"
+                className="group relative inline-flex items-center gap-3 pl-7 pr-4 py-3"
                 onClick={() => setInvestOpen(true)}
                 style={{
-                  background:
-                    "linear-gradient(135deg, hsl(40 14% 86%) 0%, hsl(35 10% 70%) 40%, hsl(30 8% 52%) 70%, hsl(35 11% 76%) 100%)",
-                  border: "0.5px solid rgba(255,255,255,0.16)",
-                  boxShadow: "0 4px 24px -8px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.28)",
-                  transition: "box-shadow 0.5s ease",
+                  background: "#0a0a0a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 100,
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.15)",
+                  transition: "all 0.35s ease",
+                  cursor: "pointer",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 0 32px rgba(255,255,255,0.10), 0 0 80px rgba(200,220,255,0.06), 0 4px 24px -8px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.28)";
+                  (e.currentTarget as HTMLElement).style.background = "#222";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,0.2)";
                 }}
                 onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.boxShadow =
-                    "0 4px 24px -8px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.28)";
+                  (e.currentTarget as HTMLElement).style.background = "#0a0a0a";
+                  (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 20px rgba(0,0,0,0.15)";
                 }}
               >
                 <span
-                  aria-hidden
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.06) 50%, transparent 100%)",
-                  }}
-                />
-                <span
-                  className="relative text-[10px] uppercase text-black/75"
-                  style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
+                  style={{ fontSize: 12, fontWeight: 500, letterSpacing: "0.08em", textTransform: "uppercase" as const }}
                 >
                   Activate Investment
                 </span>
-                <span className="relative inline-flex items-center justify-center h-6 w-6 rounded-full bg-black/10">
-                  <IconArrowRight size={11} className="text-black/65" />
+                <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                  <IconArrowRight size={13} className="text-white/70" />
                 </span>
               </motion.button>
 
@@ -210,10 +203,10 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       <div
         className="sticky z-30 top-[72px]"
         style={{
-          background: "rgba(7,7,10,0.80)",
+          background: "rgba(245,245,248,0.85)",
           backdropFilter: "blur(20px) saturate(160%)",
           WebkitBackdropFilter: "blur(20px) saturate(160%)",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
         }}
       >
         <div className="mx-auto max-w-[1400px] px-8 md:px-14">
@@ -222,19 +215,20 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
               {(["overview", "performance", "safeguards"] as DashboardTab[]).map((t) => (
                 <button key={t} onClick={() => setTab(t)} className="relative group py-2">
                   <span
-                    className={`text-xl md:text-2xl capitalize transition-colors duration-400 ${
+                    className={`text-lg md:text-xl capitalize transition-colors duration-400 ${
                       tab === t
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground/65"
                     }`}
                     style={{
-                      fontFamily: "'Cormorant Garamond', Georgia, serif",
-                      letterSpacing: "-0.035em",
+                      fontFamily: "'Inter', sans-serif",
+                      letterSpacing: "-0.02em",
+                      fontWeight: tab === t ? 600 : 400,
                     }}
                   >
                     {t === "overview" && "Overview"}
-                    {t === "performance" && <>Perform<span className="italic">ance</span></>}
-                    {t === "safeguards" && <>Safe<span className="italic">guards</span></>}
+                    {t === "performance" && "Performance"}
+                    {t === "safeguards" && "Safeguards"}
                   </span>
                   {tab === t && (
                     <motion.div
@@ -538,16 +532,12 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
         >
           <span
             style={{
-              fontFamily: "'Cormorant Garamond', Georgia, serif",
+              fontFamily: "'Inter', sans-serif",
               letterSpacing: "-0.04em",
-              fontSize: "clamp(80px, 12vw, 180px)",
-              fontStyle: "italic",
+              fontSize: "clamp(60px, 10vw, 140px)",
+              fontWeight: 900,
               lineHeight: 1,
-              background:
-                "linear-gradient(180deg, hsl(0 0% 100% / 0.04) 0%, hsl(0 0% 100% / 0) 80%)",
-              WebkitBackgroundClip: "text",
-              backgroundClip: "text",
-              color: "transparent",
+              color: "rgba(0,0,0,0.04)",
             }}
           >
             Mantle
@@ -560,8 +550,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
         >
           <span>Obelisk Q</span>
           <span
-            className="italic text-sm normal-case text-muted-foreground/80"
-            style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "normal" }}
+            style={{ fontStyle: "italic", fontSize: 14, color: "#aaa", letterSpacing: "normal" }}
           >
             A quiet intelligence.
           </span>
