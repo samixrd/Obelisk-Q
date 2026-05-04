@@ -1,5 +1,5 @@
 /**
- * AuthScreen — real Firebase Google auth + MetaMask wallet connect
+ * AuthScreen — Light-themed auth matching Agent Layer landing style
  */
 import { motion } from "framer-motion";
 import { useState } from "react";
@@ -81,85 +81,85 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: "#000000" }}
+      style={{ background: "#f5f5f8" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Ambient glow */}
-      <div aria-hidden className="pointer-events-none absolute inset-0"
-        style={{ background: "radial-gradient(ellipse 55% 45% at 50% 50%, hsl(220 50% 8% / 0.5), transparent 80%)" }} />
-
-      {/* Fine grain */}
-      <div aria-hidden className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          backgroundImage: "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E\")",
-          backgroundRepeat: "repeat", backgroundSize: "180px 180px", mixBlendMode: "overlay",
-        }} />
+      {/* Blue glow border — same as landing */}
+      <div aria-hidden style={{
+        position: "fixed", inset: 0, zIndex: 100, pointerEvents: "none",
+        boxShadow: "inset 0 0 80px 20px rgba(100,160,255,0.12), inset 0 0 200px 40px rgba(80,140,255,0.06)",
+        border: "1px solid rgba(100,160,255,0.08)",
+      }} />
 
       {/* Card */}
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.96 }}
         animate={{ opacity: 1, y: 0,  scale: 1 }}
         transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full max-w-[420px] mx-6"
+        className="relative w-full max-w-[440px] mx-6"
         style={{
-          background: "linear-gradient(145deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.008) 100%), rgba(8,8,10,0.7)",
-          backdropFilter: "blur(48px) saturate(180%)",
-          WebkitBackdropFilter: "blur(48px) saturate(180%)",
-          border: "1px solid rgba(255,255,255,0.10)",
-          boxShadow: "0 1px 0 0 rgba(255,255,255,0.05) inset, 0 50px 100px -30px rgba(0,0,0,0.95)",
+          background: "#ffffff",
+          border: "1px solid rgba(0,0,0,0.08)",
+          boxShadow: "0 25px 60px -15px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.05)",
+          borderRadius: "16px",
         }}
       >
-        {/* Top accent */}
-        <div className="absolute top-0 left-6 right-6 h-px"
-          style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent)" }} />
-
         <div className="p-10">
-          {/* Identity badge — centred */}
+          {/* Identity badge */}
           <motion.div className="flex items-center justify-center gap-4 mb-10"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.35 }}>
-            <span className="text-[9px] uppercase tracking-[0.38em] text-white/30"
-              style={{ fontFamily: "'JetBrains Mono', monospace" }}>Mantle Network</span>
-            <div className="h-3 w-px bg-white/15" />
-            <span className="text-[9px] uppercase tracking-[0.38em] text-white/30"
-              style={{ fontFamily: "'JetBrains Mono', monospace" }}>ERC-8004</span>
+            <span style={{
+              fontSize: "11px", fontWeight: 500, letterSpacing: "0.12em",
+              color: "#999", fontFamily: "'Inter', sans-serif", textTransform: "uppercase",
+            }}>Mantle Network</span>
+            <div style={{ height: 12, width: 1, background: "rgba(0,0,0,0.12)" }} />
+            <span style={{
+              fontSize: "11px", fontWeight: 500, letterSpacing: "0.12em",
+              color: "#999", fontFamily: "'Inter', sans-serif", textTransform: "uppercase",
+            }}>ERC-8004</span>
           </motion.div>
 
           {/* Greeting */}
           <motion.div className="mb-10"
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.45, ease: [0.22, 1, 0.36, 1] }}>
-            <h2 className="text-[34px] leading-tight tracking-[-0.03em] text-white"
-              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", fontWeight: 400 }}>
+            <h2 style={{
+              fontSize: 38, lineHeight: 1.1, letterSpacing: "-0.03em",
+              color: "#0a0a0a", fontWeight: 700, fontFamily: "'Inter', sans-serif",
+            }}>
               Welcome
               <br />
-              <span className="italic text-white/60" style={{ fontWeight: 300 }}>back.</span>
+              <span style={{ fontWeight: 400, color: "#888" }}>back.</span>
             </h2>
-            <p className="mt-4 text-[11px] text-white/35 leading-relaxed"
-              style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.02em" }}>
+            <p style={{
+              marginTop: 16, fontSize: 14, color: "#888",
+              fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em", lineHeight: 1.6,
+            }}>
               Your private investment intelligence is ready.
             </p>
           </motion.div>
 
           {/* Divider */}
-          <div className="h-px mb-8"
-            style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent)" }} />
+          <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 28 }} />
 
           {/* Error */}
           {error && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="mb-5 px-4 py-3 text-[10px] leading-relaxed"
-              style={{ background: "rgba(255,60,60,0.06)", border: "0.5px solid rgba(255,60,60,0.22)",
-                fontFamily: "'JetBrains Mono', monospace", color: "hsl(0 70% 70%)" }}>
+              style={{
+                marginBottom: 16, padding: "12px 16px", fontSize: 12, lineHeight: 1.5,
+                background: "rgba(255,60,60,0.06)", border: "1px solid rgba(255,60,60,0.15)",
+                borderRadius: 10, color: "#d44", fontFamily: "'Inter', sans-serif",
+              }}>
               {error}
             </motion.div>
           )}
 
           {/* Auth buttons */}
-          <motion.div className="space-y-3"
+          <motion.div style={{ display: "flex", flexDirection: "column", gap: 12 }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}>
 
@@ -168,7 +168,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
               onClick={handleGoogle}
               loading={googleLoading}
               icon={
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                   <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
@@ -184,11 +184,11 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
               onClick={handleWallet}
               loading={walletLoading}
               icon={
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
-                  <rect x="2" y="6" width="20" height="14" rx="2" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2"/>
-                  <path d="M2 10h20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2"/>
-                  <circle cx="17" cy="15" r="1.5" fill="rgba(255,255,255,0.6)"/>
-                  <path d="M16 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" stroke="rgba(255,255,255,0.6)" strokeWidth="1.2"/>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                  <rect x="2" y="6" width="20" height="14" rx="2" stroke="#555" strokeWidth="1.4"/>
+                  <path d="M2 10h20" stroke="#555" strokeWidth="1.4"/>
+                  <circle cx="17" cy="15" r="1.5" fill="#555"/>
+                  <path d="M16 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" stroke="#555" strokeWidth="1.4"/>
                 </svg>
               }
               label={walletLoading ? "Connecting..." : "Connect Wallet"}
@@ -198,18 +198,23 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           </motion.div>
 
           {/* Footer */}
-          <motion.div className="mt-10 pt-6 flex items-center justify-between"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}
+          <motion.div style={{
+            marginTop: 32, paddingTop: 20, display: "flex", alignItems: "center", justifyContent: "space-between",
+            borderTop: "1px solid rgba(0,0,0,0.06)",
+          }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}>
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full"
-                style={{ background: "hsl(104 100% 68%)", boxShadow: "0 0 6px hsl(104 100% 68% / 0.7)" }} />
-              <span className="text-[9px] uppercase tracking-[0.3em] text-white/30"
-                style={{ fontFamily: "'JetBrains Mono', monospace" }}>Mantle Network</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{
+                height: 6, width: 6, borderRadius: "50%", background: "#22c55e",
+                boxShadow: "0 0 6px rgba(34,197,94,0.5)",
+              }} />
+              <span style={{
+                fontSize: 11, fontWeight: 500, letterSpacing: "0.1em",
+                color: "#999", textTransform: "uppercase",
+              }}>Mantle Network</span>
             </div>
-            <span className="text-[9px] text-white/20"
-              style={{ fontFamily: "'JetBrains Mono', monospace" }}>Non-custodial</span>
+            <span style={{ fontSize: 11, color: "#bbb" }}>Non-custodial</span>
           </motion.div>
         </div>
       </motion.div>
@@ -236,43 +241,48 @@ function AuthButton({ onClick, loading, icon, label, sublabel, accent }: AuthBut
       whileHover={loading ? {} : { y: -2 }}
       whileTap={loading ? {} : { scale: 0.99 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-      className="group w-full flex items-center gap-4 px-5 py-4 text-left"
+      className="group"
       style={{
-        background: accent
-          ? "linear-gradient(145deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015))"
-          : "rgba(255,255,255,0.02)",
-        border: "0.5px solid rgba(255,255,255,0.10)",
+        width: "100%",
+        display: "flex",
+        alignItems: "center",
+        gap: 16,
+        padding: "16px 20px",
+        textAlign: "left" as const,
+        background: accent ? "rgba(0,0,0,0.03)" : "#fff",
+        border: "1px solid rgba(0,0,0,0.08)",
+        borderRadius: 12,
         opacity: loading ? 0.6 : 1,
         cursor: loading ? "not-allowed" : "pointer",
-        transition: "all 0.5s ease",
+        transition: "all 0.35s ease",
       }}
       onMouseEnter={(e) => {
         if (loading) return;
-        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.22)";
-        (e.currentTarget as HTMLElement).style.background = accent
-          ? "linear-gradient(145deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))"
-          : "rgba(255,255,255,0.04)";
+        (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,0,0,0.18)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)";
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.10)";
-        (e.currentTarget as HTMLElement).style.background = accent
-          ? "linear-gradient(145deg, rgba(255,255,255,0.055), rgba(255,255,255,0.015))"
-          : "rgba(255,255,255,0.02)";
+        (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,0,0,0.08)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "none";
       }}
     >
-      <span className="flex-shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">{icon}</span>
-      <div className="flex-1 min-w-0">
-        <p className="text-[13px] text-white/85 group-hover:text-white transition-colors"
-          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.01em" }}>
+      <span style={{ flexShrink: 0, opacity: 0.8 }}>{icon}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{
+          fontSize: 14, fontWeight: 500, color: "#0a0a0a",
+          fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em",
+        }}>
           {label}
         </p>
-        <p className="text-[9px] text-white/28 mt-0.5"
-          style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.05em" }}>
+        <p style={{
+          fontSize: 11, color: "#aaa", marginTop: 2,
+          fontFamily: "'Inter', sans-serif", letterSpacing: "0.02em",
+        }}>
           {sublabel}
         </p>
       </div>
-      <svg viewBox="0 0 16 16" width="10" height="10" fill="none"
-        className="text-white/20 group-hover:text-white/50 transition-colors flex-shrink-0">
+      <svg viewBox="0 0 16 16" width="12" height="12" fill="none"
+        style={{ color: "#ccc", flexShrink: 0 }}>
         <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     </motion.button>
