@@ -109,7 +109,7 @@ export function GuidedTour({ open, onClose }: Props) {
                 <p className="text-[10px] uppercase tracking-luxe text-muted-foreground mb-8">
                   {s.eyebrow} · A guided tour
                 </p>
-                <h2 className="font-serif text-5xl md:text-6xl tracking-tightest text-foreground leading-[0.98] text-balance">
+                <h2 className="text-4xl md:text-5xl font-medium tracking-tight text-foreground leading-[1.1] text-balance">
                   {s.title}
                 </h2>
                 <p className="mt-8 text-base text-muted-foreground max-w-md mx-auto leading-relaxed text-balance">
@@ -122,8 +122,8 @@ export function GuidedTour({ open, onClose }: Props) {
                     transition={{ delay: 0.25, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                     className="mt-6 mx-auto max-w-md px-5 py-4 text-left"
                     style={{
-                      background: "rgba(255,255,255,0.025)",
-                      border: "1px solid rgba(255,255,255,0.09)",
+                      background: "rgba(0,0,0,0.03)",
+                      border: "1px solid rgba(0,0,0,0.06)",
                     }}
                   >
                     <p
@@ -136,7 +136,7 @@ export function GuidedTour({ open, onClose }: Props) {
                       className="text-[11px] leading-relaxed"
                       style={{
                         fontFamily: "'JetBrains Mono', monospace",
-                        color: "rgba(255,255,255,0.38)",
+                        color: "var(--muted-foreground)",
                         letterSpacing: "0.01em",
                       }}
                     >
@@ -144,14 +144,14 @@ export function GuidedTour({ open, onClose }: Props) {
                     </p>
                   </motion.div>
                 )}
-                <p className="mt-6 font-serif italic text-sm text-neon">{s.accent}</p>
+                <p className="mt-6 italic text-sm text-primary">{s.accent}</p>
               </motion.div>
             </AnimatePresence>
 
             <div className="mt-14 flex flex-col items-center gap-6">
               <button
                 onClick={next}
-                className="group inline-flex items-center gap-3 px-8 py-3 bg-gradient-metal rounded-full text-[11px] uppercase tracking-luxe text-primary-foreground hover:shadow-dial transition-shadow duration-500"
+                className="group inline-flex items-center gap-3 px-8 py-3 bg-black rounded-full text-[11px] uppercase tracking-luxe text-white hover:bg-black/90 transition-colors duration-300"
               >
                 {step === steps.length - 1 ? "Begin" : "Continue"}
                 <IconArrowRight size={12} />

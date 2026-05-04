@@ -67,14 +67,15 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
             <div
               className="relative w-full max-w-[420px]"
               style={{
-                background: "rgb(10,10,14)",
-                border: "1px solid rgba(255,255,255,0.12)",
-                boxShadow: "0 40px 80px -20px rgba(0,0,0,0.98), 0 0 0 1px rgba(255,255,255,0.06)",
+                background: "#ffffff",
+                border: "1px solid rgba(0,0,0,0.10)",
+                boxShadow: "0 8px 30px -8px rgba(0,0,0,0.15), 0 40px 80px -20px rgba(0,0,0,0.10)",
+                borderRadius: 16,
               }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Top accent */}
-              <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.16), transparent)" }} />
+              <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent)", borderRadius: "16px 16px 0 0" }} />
 
               <div className="p-8">
                 {/* Header */}
@@ -84,8 +85,8 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       style={{ letterSpacing: "0.32em", fontFamily: "'JetBrains Mono', monospace" }}>
                       Mantle Sepolia Testnet
                     </p>
-                    <h3 className="text-2xl text-foreground"
-                      style={{ fontFamily: "'Cormorant Garamond', serif", letterSpacing: "-0.03em", fontWeight: 400 }}>
+                    <h3 className="text-2xl text-foreground font-semibold"
+                      style={{ letterSpacing: "-0.02em" }}>
                       {tab === "deposit"
                         ? <>Activate <span className="italic" style={{ fontWeight: 300 }}>investment</span></>
                         : <>Withdraw <span className="italic" style={{ fontWeight: 300 }}>funds</span></>
@@ -101,7 +102,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
 
                 {/* Confidence score indicator */}
                 <div className="flex items-center justify-between mb-6 px-4 py-3"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.08)" }}>
+                  style={{ background: "rgba(0,0,0,0.03)", border: "0.5px solid rgba(0,0,0,0.07)", borderRadius: 8 }}>
                   <div>
                     <p className="text-[9px] uppercase text-muted-foreground"
                       style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}>
@@ -141,14 +142,14 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
 
                 {/* Tab switcher */}
                 <div className="flex mb-6"
-                  style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                  style={{ borderBottom: "1px solid rgba(0,0,0,0.09)" }}>
                   {(["deposit", "withdraw"] as const).map((t) => (
                     <button key={t} onClick={() => setTab(t)}
                       className="relative py-2 px-4 text-[11px] uppercase transition-colors"
                       style={{
                         letterSpacing: "0.22em",
                         fontFamily: "'JetBrains Mono', monospace",
-                        color: tab === t ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.28)",
+                        color: tab === t ? "#0a0a0a" : "rgba(0,0,0,0.35)",
                       }}>
                       {t}
                       {tab === t && (
@@ -173,7 +174,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       </span>
                     </div>
                     <div className="flex items-center gap-0"
-                      style={{ border: "0.5px solid rgba(255,255,255,0.15)" }}>
+                      style={{ border: "1px solid rgba(0,0,0,0.12)", borderRadius: 8, overflow: "hidden" }}>
                       <input
                         type="number"
                         value={amount}
@@ -193,7 +194,8 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       {["0.01", "0.05", "0.1", "0.5"].map((v) => (
                         <button key={v} onClick={() => setAmount(v)}
                           className="text-[9px] px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
-                          style={{ border: "0.5px solid rgba(255,255,255,0.08)",
+                          style={{ border: "1px solid rgba(0,0,0,0.10)",
+                            borderRadius: 4,
                             fontFamily: "'JetBrains Mono', monospace" }}>
                           {v}
                         </button>
@@ -207,7 +209,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                   <div className="mb-6">
                     {/* Your balance */}
                     <div className="flex items-center justify-between mb-4 px-4 py-3"
-                      style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.08)" }}>
+                      style={{ background: "rgba(0,0,0,0.03)", border: "0.5px solid rgba(0,0,0,0.07)", borderRadius: 8 }}>
                       <span className="text-[9px] uppercase text-muted-foreground"
                         style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}>
                         Available Vault Balance
@@ -227,14 +229,15 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                             letterSpacing: "0.22em",
                             fontFamily: "'JetBrains Mono', monospace",
                             background: withdrawMode === m
-                              ? "rgba(255,255,255,0.07)"
+                              ? "rgba(0,0,0,0.07)"
                               : "transparent",
-                            border: `0.5px solid ${withdrawMode === m
-                              ? "rgba(255,255,255,0.22)"
-                              : "rgba(255,255,255,0.08)"}`,
+                            border: `1px solid ${withdrawMode === m
+                              ? "rgba(0,0,0,0.18)"
+                              : "rgba(0,0,0,0.10)"}`,
+                            borderRadius: 8,
                             color: withdrawMode === m
-                              ? "rgba(255,255,255,0.85)"
-                              : "rgba(255,255,255,0.30)",
+                              ? "#0a0a0a"
+                              : "rgba(0,0,0,0.40)",
                           }}>
                           {m === "full" ? "Withdraw all" : "Partial"}
                         </button>
@@ -256,7 +259,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                             Amount (MNT)
                           </label>
                           <div className="flex items-center"
-                            style={{ border: "0.5px solid rgba(255,255,255,0.15)" }}>
+                            style={{ border: "1px solid rgba(0,0,0,0.12)", borderRadius: 8, overflow: "hidden" }}>
                             <input
                               type="number"
                               value={withdrawAmount}
@@ -296,7 +299,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                 {/* Score warning */}
                 {tab === "deposit" && !canDeposit && (
                   <div className="mb-5 px-4 py-3"
-                    style={{ background: "rgba(255,160,60,0.06)", border: "0.5px solid rgba(255,160,60,0.22)" }}>
+                    style={{ background: "rgba(251,146,60,0.08)", border: "1px solid rgba(251,146,60,0.25)", borderRadius: 8 }}>
                     <p className="text-[10px] leading-relaxed"
                       style={{ fontFamily: "'JetBrains Mono', monospace",
                         color: "hsl(30 100% 70%)", letterSpacing: "0.01em" }}>
@@ -309,7 +312,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                 {/* Success state */}
                 {isSuccess && txHash && (
                   <div className="mb-5 px-4 py-3"
-                    style={{ background: "rgba(100,255,120,0.04)", border: "0.5px solid rgba(100,255,120,0.20)" }}>
+                    style={{ background: "rgba(34,197,94,0.06)", border: "1px solid rgba(34,197,94,0.20)", borderRadius: 8 }}>
                     <p className="text-[9px] uppercase mb-1"
                       style={{ fontFamily: "'JetBrains Mono', monospace",
                         color: "hsl(104 100% 68%)", letterSpacing: "0.22em" }}>
@@ -344,16 +347,15 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                     letterSpacing: "0.28em",
                     fontFamily: "'JetBrains Mono', monospace",
                     background: isLoading
-                      ? "rgba(255,255,255,0.04)"
+                      ? "rgba(0,0,0,0.04)"
                       : !isConnected
-                      ? "linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))"
-                      : "linear-gradient(135deg, hsl(40 14% 86%), hsl(35 10% 68%))",
+                      ? "#0a0a0a"
+                      : "#0a0a0a",
                     color: isLoading
-                      ? "rgba(255,255,255,0.3)"
-                      : !isConnected
-                      ? "rgba(255,255,255,0.65)"
-                      : "rgba(0,0,0,0.75)",
-                    border: "0.5px solid rgba(255,255,255,0.15)",
+                      ? "rgba(0,0,0,0.3)"
+                      : "#ffffff",
+                    border: "none",
+                    borderRadius: 100,
                     cursor: isLoading ? "not-allowed" : "pointer",
                   }}>
                   {!isConnected
@@ -386,7 +388,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
 
 function StatBox({ label, value, accent }: { label: string; value: string; accent?: boolean }) {
   return (
-    <div className="px-3 py-2.5" style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.07)" }}>
+    <div className="px-3 py-2.5" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8 }}>
       <p className="text-[8px] uppercase text-muted-foreground mb-1"
         style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}>
         {label}
@@ -394,7 +396,7 @@ function StatBox({ label, value, accent }: { label: string; value: string; accen
       <p className="text-sm"
         style={{
           fontFamily: "'JetBrains Mono', monospace",
-          color: accent ? "hsl(104 100% 68%)" : "rgba(255,255,255,0.75)",
+          color: accent ? "hsl(142 72% 36%)" : "var(--foreground)",
         }}>
         {value}
       </p>

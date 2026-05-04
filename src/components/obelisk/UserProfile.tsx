@@ -116,7 +116,7 @@ function NftPickerPanel({
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       style={{ overflow: "hidden" }}
     >
-      <div className="pt-4 mt-4" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
+      <div className="pt-4 mt-4" style={{ borderTop: "1px solid rgba(0,0,0,0.07)" }}>
         <div className="flex items-center justify-between mb-3">
           <p
             className="text-[9px] uppercase text-muted-foreground"
@@ -206,7 +206,7 @@ export function UserProfile({ onSignOut }: Props) {
         aria-label="Open profile menu"
       >
         <span className="hidden md:flex flex-col items-end leading-tight">
-          <span className="font-serif text-sm text-foreground">{displayName}</span>
+          <span className="font-medium text-sm text-foreground">{displayName}</span>
           <span className="text-[9px] uppercase tracking-luxe text-muted-foreground">
             Private Tier
           </span>
@@ -220,8 +220,8 @@ export function UserProfile({ onSignOut }: Props) {
             <img src={avatarUrl} alt={displayName}
               className="w-full h-full object-cover" referrerPolicy="no-referrer" />
           ) : (
-            <span className="w-full h-full inline-flex items-center justify-center bg-gradient-metal">
-              <span className="font-serif italic text-[13px] text-primary-foreground">{initials}</span>
+            <span className="w-full h-full inline-flex items-center justify-center" style={{ background: "#e8eaed" }}>
+              <span className="font-semibold text-[13px] text-foreground">{initials}</span>
             </span>
           )}
           <span className="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-neon shadow-neon ring-2 ring-background" />
@@ -238,16 +238,15 @@ export function UserProfile({ onSignOut }: Props) {
             transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
             className="absolute right-0 mt-4 w-80 z-50"
             style={{
-              /* Fully opaque — no background bleed */
-              background: "rgb(10, 10, 14)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              boxShadow:
-                "0 0 0 1px rgba(255,255,255,0.06), 0 32px 64px -16px rgba(0,0,0,0.98), 0 8px 24px -8px rgba(0,0,0,0.9)",
+              background: "#ffffff",
+              border: "1px solid rgba(0,0,0,0.10)",
+              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.07), 0 20px 40px -8px rgba(0,0,0,0.12)",
+              borderRadius: 12,
             }}
           >
             {/* Top accent line */}
             <div className="h-px"
-              style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent)" }} />
+              style={{ background: "linear-gradient(90deg, transparent, rgba(0,0,0,0.07), transparent)", borderRadius: "12px 12px 0 0" }} />
 
             <div className="p-6">
               {/* Profile header */}
@@ -263,15 +262,15 @@ export function UserProfile({ onSignOut }: Props) {
                   {activeNft ? (
                     <NftAvatar nft={activeNft} size={48} />
                   ) : (
-                    <span className="w-full h-full inline-flex items-center justify-center bg-gradient-metal">
-                      <span className="font-serif italic text-base text-primary-foreground">{initials}</span>
+                    <span className="w-full h-full inline-flex items-center justify-center" style={{ background: "#f0f1f3" }}>
+                      <span className="font-semibold text-base text-foreground">{initials}</span>
                     </span>
                   )}
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <p className="font-serif text-base text-foreground truncate">{displayName}</p>
+                    <p className="font-semibold text-base text-foreground truncate">{displayName}</p>
                   </div>
                   <p className="text-[9px] text-muted-foreground truncate mt-0.5"
                     style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.02em" }}>
@@ -292,7 +291,7 @@ export function UserProfile({ onSignOut }: Props) {
 
               {/* Stats */}
               <div className="h-px mb-4"
-                style={{ background: "rgba(255,255,255,0.07)" }} />
+                style={{ background: "rgba(0,0,0,0.07)" }} />
               <div className="space-y-2.5 mb-4">
                 <Row label="Member since" value="2026" />
                 <Row label="Plan"         value="Private" />
@@ -301,24 +300,25 @@ export function UserProfile({ onSignOut }: Props) {
 
               {/* NFT profile option */}
               <div className="h-px mb-4"
-                style={{ background: "rgba(255,255,255,0.07)" }} />
+                style={{ background: "rgba(0,0,0,0.07)" }} />
 
               <button
                 onClick={() => setShowNftPicker((v) => !v)}
                 className="group w-full flex items-center justify-between py-2.5 px-3 transition-colors duration-400"
                 style={{
-                  background: showNftPicker ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
-                  border: "0.5px solid rgba(255,255,255,0.09)",
+                  background: showNftPicker ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.02)",
+                  border: "0.5px solid rgba(0,0,0,0.09)",
+                  borderRadius: 6,
                   transition: "all 0.35s ease",
                 }}
                 onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.16)";
+                  (e.currentTarget as HTMLElement).style.background = "rgba(0,0,0,0.05)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,0,0,0.15)";
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLElement).style.background = showNftPicker
-                    ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)";
-                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.09)";
+                    ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.02)";
+                  (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,0,0,0.09)";
                 }}
               >
                 <div className="flex items-center gap-2.5">
@@ -362,7 +362,7 @@ export function UserProfile({ onSignOut }: Props) {
 
               {/* Actions */}
               <div className="h-px mt-4 mb-3"
-                style={{ background: "rgba(255,255,255,0.07)" }} />
+                style={{ background: "rgba(0,0,0,0.07)" }} />
               <button
                 className="w-full text-left text-[9px] uppercase text-muted-foreground hover:text-foreground transition-colors duration-400 py-2"
                 style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
@@ -397,8 +397,8 @@ function Row({ label, value, accent }: { label: string; value: string; accent?: 
         className="text-[11px]"
         style={{
           fontFamily: "'JetBrains Mono', monospace",
-          color: accent ? "hsl(104 100% 68%)" : "rgba(255,255,255,0.75)",
-          textShadow: accent ? "0 0 8px hsl(104 100% 68% / 0.4)" : "none",
+          color: accent ? "hsl(142 72% 36%)" : "var(--foreground)",
+          textShadow: "none",
         }}
       >
         {value}
