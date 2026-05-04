@@ -131,9 +131,9 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                 {/* Vault stats */}
                 {vaultStats && (
                   <div className="grid grid-cols-2 gap-3 mb-6">
-                    <StatBox label="Your balance" value={`${vaultStats.userBalance} MNT`} />
+                    <StatBox label="Vault balance" value={`${vaultStats.userBalance} MNT`} />
+                    <StatBox label="Wallet balance" value={`${vaultStats.walletBalance} MNT`} />
                     <StatBox label="Total deposited" value={`${vaultStats.totalDeposited} MNT`} />
-                    <StatBox label="Depositors" value={String(vaultStats.depositorCount)} />
                     <StatBox label="Vault status" value={vaultStats.paused ? "Paused" : "Active"}
                       accent={!vaultStats.paused} />
                   </div>
@@ -163,10 +163,15 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                 {/* Amount input — deposit only */}
                 {tab === "deposit" && (
                   <div className="mb-6">
-                    <label className="block text-[9px] uppercase text-muted-foreground mb-2"
-                      style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}>
-                      Amount (MNT)
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="block text-[9px] uppercase text-muted-foreground"
+                        style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}>
+                        Amount (MNT)
+                      </label>
+                      <span className="text-[9px] text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        Wallet: {vaultStats?.walletBalance ?? "—"} MNT
+                      </span>
+                    </div>
                     <div className="flex items-center gap-0"
                       style={{ border: "0.5px solid rgba(255,255,255,0.15)" }}>
                       <input
@@ -205,7 +210,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.08)" }}>
                       <span className="text-[9px] uppercase text-muted-foreground"
                         style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}>
-                        Your balance
+                        Available Vault Balance
                       </span>
                       <span className="text-base text-foreground"
                         style={{ fontFamily: "'JetBrains Mono', monospace" }}>
