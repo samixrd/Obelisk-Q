@@ -9,6 +9,7 @@ import {
   IconClose
 } from "./LineIcons";
 import { DashboardTab } from "./Dashboard.tsx";
+import { Logo } from "./Logo";
 
 interface SidebarProps {
   open: boolean;
@@ -59,9 +60,7 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
             {/* Brand area */}
             <div className="mb-14 px-2">
               <div className="flex items-center gap-3 mb-2">
-                <div className="h-8 w-8 rounded-full bg-foreground flex items-center justify-center">
-                  <div className="h-3 w-3 bg-white rounded-sm rotate-45" />
-                </div>
+                <Logo size={40} className="text-foreground" />
                 <span className="text-xl font-semibold tracking-tight text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
                   Obelisk Q
                 </span>

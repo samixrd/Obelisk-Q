@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { IconArrowRight } from "./LineIcons";
+import { Logo } from "./Logo";
 
 interface Props {
   onComplete: () => void;
@@ -32,6 +33,7 @@ export function Onboarding({ onComplete }: Props) {
               transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
               className="text-center"
             >
+              <Logo size={80} className="mx-auto mb-8 text-foreground" />
               <p className="text-[10px] uppercase tracking-luxe text-muted-foreground mb-8">
                 A private invitation
               </p>

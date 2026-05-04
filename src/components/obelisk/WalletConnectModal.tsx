@@ -3,6 +3,7 @@
  * link a wallet post-login. Clean, light-themed Agent Layer aesthetic.
  */
 import { AnimatePresence, motion } from "framer-motion";
+import { Logo } from "./Logo";
 
 const WALLETS = [
   {
@@ -110,16 +111,17 @@ export function WalletConnectModal({ open, onClose, onConnected }: WalletConnect
 
               <div className="p-8">
                 {/* Header row */}
-                <div className="flex items-start justify-between mb-8">
-                  <div className="space-y-1.5">
+                <div className="flex items-start gap-4 mb-8">
+                  <Logo size={32} className="text-foreground shrink-0" />
+                  <div className="flex-1 space-y-1.5 min-w-0">
                     <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-600/80">
                       Connect Infrastructure
                     </p>
                     <h3 className="text-2xl font-bold tracking-tight text-[#0a0a0a]">
                       Link your wallet
                     </h3>
-                    <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[280px]">
-                      Select a provider to authenticate your on-chain identity and manage assets.
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">
+                      Select a provider to authenticate your identity.
                     </p>
                   </div>
                   <button 

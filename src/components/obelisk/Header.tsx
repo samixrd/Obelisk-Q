@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { IconMenu } from "./LineIcons";
+import { Logo } from "./Logo";
 import { UserProfile } from "./UserProfile";
 import { useVault } from "@/hooks/useVault";
 
@@ -49,12 +50,15 @@ export function Header({
             <IconMenu size={16} />
           </button>
           <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.10)" }} />
-          <h1 style={{
-            fontSize: 22, lineHeight: 1, letterSpacing: "-0.03em",
-            color: "#0a0a0a", fontWeight: 600, fontFamily: "'Inter', sans-serif",
-          }}>
-            Obelisk <span style={{ fontWeight: 400, color: "#888" }}>Q</span>
-          </h1>
+          <div className="flex items-center gap-3">
+            <Logo size={24} className="text-foreground" />
+            <h1 style={{
+              fontSize: 22, lineHeight: 1, letterSpacing: "-0.03em",
+              color: "#0a0a0a", fontWeight: 600, fontFamily: "'Inter', sans-serif",
+            }}>
+              Obelisk <span style={{ fontWeight: 400, color: "#888" }}>Q</span>
+            </h1>
+          </div>
         </div>
 
         {/* Right: network + wallet status + tour + avatar */}

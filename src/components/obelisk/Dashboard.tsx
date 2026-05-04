@@ -11,6 +11,7 @@ import { PreferencesView } from "./PreferencesView";
 import { StabilityScoreCard } from "./StabilityScoreCard";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { InvestModal } from "./InvestModal";
+import { Logo } from "./Logo";
 import { useStability } from "./StabilityContext";
 import { useVault } from "@/hooks/useVault";
 
@@ -432,7 +433,10 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
           className="relative flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0 text-[10px] uppercase text-muted-foreground text-center md:text-left"
           style={{ letterSpacing: "0.28em" }}
         >
-          <span>Obelisk Q</span>
+          <div className="flex items-center gap-2">
+            <Logo size={16} />
+            <span>Obelisk Q</span>
+          </div>
           <span
             style={{ fontSize: 14, color: "#aaa", letterSpacing: "normal" }}
           >
@@ -469,6 +473,7 @@ function QScoreBar() {
     >
       {/* Left: identity */}
       <div className="flex items-center gap-4 flex-shrink-0">
+        <Logo size={24} className="text-foreground" />
         <span
           className="text-[9px] uppercase text-muted-foreground"
           style={{ letterSpacing: "0.35em", fontFamily: "'JetBrains Mono', monospace" }}
