@@ -6,6 +6,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { useVault } from "@/hooks/useVault";
+import { Logo } from "./Logo";
 import { useStability } from "./StabilityContext";
 
 interface InvestModalProps {
@@ -79,8 +80,9 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
 
               <div className="p-8">
                 {/* Header */}
-                <div className="flex items-start justify-between mb-6">
-                  <div>
+                <div className="flex items-center gap-4 mb-6">
+                  <Logo size={32} className="text-foreground" />
+                  <div className="flex-1">
                     <p className="text-[9px] uppercase text-muted-foreground mb-1"
                       style={{ letterSpacing: "0.32em", fontFamily: "'JetBrains Mono', monospace" }}>
                       Mantle Sepolia Testnet
@@ -93,7 +95,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       }
                     </h3>
                   </div>
-                  <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors mt-1">
+                  <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors self-start">
                     <svg viewBox="0 0 16 16" width="14" height="14" fill="none">
                       <path d="M3 3l10 10M13 3L3 13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
                     </svg>

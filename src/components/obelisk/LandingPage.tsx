@@ -10,6 +10,7 @@
 
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
+import { Logo } from "./Logo";
 import "./LandingPage.css";
 
 // ─── Floating Symbols ─────────────────────────────────────────────────────────
@@ -79,10 +80,7 @@ function NavBar({ onLaunch }: { onLaunch: () => void }) {
       <div className="landing-nav-inner">
         <div className="landing-nav-left">
           <span className="landing-logo">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-              <polygon points="14,2 4,24 24,24" stroke="#000" strokeWidth="1.8" fill="none" />
-              <line x1="14" y1="8" x2="14" y2="20" stroke="#000" strokeWidth="1.2" />
-            </svg>
+            <Logo size={32} />
           </span>
           <span className="landing-brand">
             Obelisk Q <span className="landing-beta">β</span>
@@ -249,7 +247,10 @@ function Footer() {
 
       <div className="landing-footer-inner">
         <div className="landing-footer-left">
-          <span className="landing-footer-brand">Obelisk Q</span>
+          <div className="flex items-center gap-3">
+            <Logo size={24} className="text-foreground" />
+            <span className="landing-footer-brand">Obelisk Q</span>
+          </div>
         </div>
         <div className="landing-footer-links">
           {linkGroups.map((group, gi) => (

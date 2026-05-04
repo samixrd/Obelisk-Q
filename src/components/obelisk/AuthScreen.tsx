@@ -3,6 +3,7 @@
  */
 import { motion } from "framer-motion";
 import { useState } from "react";
+import { Logo } from "./Logo";
 import { signInWithGoogle } from "@/lib/firebase";
 import { useAuth } from "@/context/AuthContext";
 
@@ -108,6 +109,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
         }}
       >
         <div className="p-10">
+          <Logo size={64} className="mx-auto mb-10 text-foreground" />
           {/* Identity badge */}
           <motion.div className="flex items-center justify-center gap-4 mb-10"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
