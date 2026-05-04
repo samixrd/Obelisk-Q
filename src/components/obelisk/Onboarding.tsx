@@ -35,10 +35,10 @@ export function Onboarding({ onComplete }: Props) {
               <p className="text-[10px] uppercase tracking-luxe text-muted-foreground mb-8">
                 A private invitation
               </p>
-              <h1 className="font-serif text-6xl md:text-7xl tracking-tightest text-foreground text-balance leading-[0.95]">
+              <h1 className="text-6xl md:text-7xl tracking-tightest text-foreground text-balance leading-[0.95]" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 700 }}>
                 Welcome to
                 <br />
-                <span className="italic font-light">Obelisk Q</span>
+                <span style={{ fontWeight: 300 }}>Obelisk Q</span>
               </h1>
               <p className="mt-8 text-sm text-muted-foreground max-w-sm mx-auto text-balance leading-relaxed">
                 A concierge-grade intelligence that quietly tends to your capital on the Mantle Network.
@@ -65,8 +65,8 @@ export function Onboarding({ onComplete }: Props) {
               <p className="text-[10px] uppercase tracking-luxe text-muted-foreground mb-6 text-center">
                 Step · 01
               </p>
-              <h2 className="font-serif text-4xl text-foreground text-center mb-2 tracking-tightest">
-                Your <span className="italic">address</span>
+              <h2 className="text-4xl text-foreground text-center mb-2 tracking-tightest" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+                Your <span style={{ fontWeight: 300 }}>address</span>
               </h2>
               <p className="text-sm text-muted-foreground text-center mb-12">
                 No wallets, no seed phrases. Just an email.
@@ -78,7 +78,8 @@ export function Onboarding({ onComplete }: Props) {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@domain.com"
-                  className="w-full bg-transparent border-0 border-b border-border-strong pb-3 text-2xl font-serif text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-neon transition-colors duration-500"
+                  className="w-full bg-transparent border-0 border-b border-border-strong pb-3 text-2xl text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:border-neon transition-colors duration-500"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
                   autoFocus
                 />
               </div>
@@ -106,8 +107,8 @@ export function Onboarding({ onComplete }: Props) {
               <div className="mx-auto mb-10 h-20 w-20 rounded-full bg-gradient-neon flex items-center justify-center animate-breathe">
                 <div className="h-2 w-2 rounded-full bg-neon shadow-neon" />
               </div>
-              <h2 className="font-serif text-5xl text-foreground tracking-tightest mb-4">
-                At your <span className="italic">service</span>
+              <h2 className="text-5xl text-foreground tracking-tightest mb-4" style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}>
+                At your <span style={{ fontWeight: 300 }}>service</span>
               </h2>
               <p className="text-sm text-muted-foreground mb-12">
                 Your agent is calibrated. A steady hand, always watching.

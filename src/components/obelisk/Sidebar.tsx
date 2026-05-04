@@ -20,8 +20,8 @@ interface SidebarProps {
 const MENU_ITEMS = [
   { icon: IconOverview,     label: "Overview",     tab: "overview"     },
   { icon: IconPerformance,  label: "Performance",  tab: "performance"  },
-  { icon: IconSafeguards,   label: "Safeguards",   tab: "safeguards"   },
   { icon: IconPortfolio,    label: "Portfolio",    tab: "portfolio"    },
+  { icon: IconSafeguards,   label: "Safeguards",   tab: "safeguards"   },
   { icon: IconLogs,         label: "Agent Logs",   tab: "agent-logs"   },
   { icon: IconPreferences,  label: "Preferences",  tab: "preferences"  },
 ];
@@ -66,9 +66,6 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
                   Obelisk Q
                 </span>
               </div>
-              <p className="text-[10px] uppercase text-muted-foreground/60 tracking-[0.25em]" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                Autonomous Wealth
-              </p>
             </div>
 
             {/* Nav items */}
@@ -79,6 +76,7 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
                   onClick={() => {
                     onTabChange(item.tab as DashboardTab);
                     onClose();
+                    window.scrollTo({ top: 0, behavior: "instant" });
                   }}
                   className="group relative w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-300"
                 >
