@@ -1,13 +1,23 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 
 interface UserProfileProps {
   onSignOut?: () => void;
 }
 
 export function UserProfile({ onSignOut }: UserProfileProps) {
+  const { displayName, avatarUrl, walletAddress } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Get initials from display name
+  const initials = displayName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -33,17 +43,21 @@ export function UserProfile({ onSignOut }: UserProfileProps) {
         whileTap={{ scale: 0.95 }}
         className="h-10 w-10 rounded-full flex items-center justify-center relative overflow-hidden group"
         style={{
-          background: "linear-gradient(135deg, #f0f2f5 0%, #e0e2e5 100%)",
+          background: avatarUrl ? "transparent" : "linear-gradient(135deg, #f0f2f5 0%, #e0e2e5 100%)",
           border: "1px solid rgba(0,0,0,0.08)",
           boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
         }}
       >
-        <span
-          className="text-xs font-semibold text-foreground/60 transition-colors group-hover:text-foreground/80"
-          style={{ fontFamily: "'Inter', sans-serif" }}
-        >
-          JD
-        </span>
+        {avatarUrl ? (
+          <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
+        ) : (
+          <span
+            className="text-xs font-semibold text-foreground/60 transition-colors group-hover:text-foreground/80"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            {initials}
+          </span>
+        )}
         <motion.div
           className="absolute inset-0 bg-foreground/5 opacity-0 group-hover:opacity-100 transition-opacity"
         />
@@ -72,11 +86,13 @@ export function UserProfile({ onSignOut }: UserProfileProps) {
                 className="text-lg text-foreground font-medium"
                 style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}
               >
-                Jane Doe
+                {displayName}
               </p>
-              <p className="text-[11px] text-muted-foreground font-mono truncate opacity-60">
-                0x1234...5678
-              </p>
+              {walletAddress && (
+                <p className="text-[11px] text-muted-foreground font-mono truncate opacity-60">
+                  {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                </p>
+              )}
             </div>
 
             <div className="space-y-0.5">
