@@ -14,9 +14,9 @@ const LOGS = [
 ];
 
 const LEVEL_COLOR: Record<string, string> = {
-  info: "rgba(255,255,255,0.25)",
-  exec: "hsl(104 100% 68%)",
-  warn: "hsl(38 100% 65%)",
+  info: "rgba(0,0,0,0.25)",
+  exec: "hsl(104 100% 35%)",
+  warn: "hsl(38 100% 40%)",
 };
 
 const fadeUp = {
@@ -30,7 +30,7 @@ export function AgentLogsView() {
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6">
 
       {/* Summary row */}
-      <div className="col-span-12 grid grid-cols-3 gap-4">
+      <div className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4">
         {[
           { label: "Actions today",      value: "4" },
           { label: "Warnings",           value: "1" },
@@ -39,7 +39,7 @@ export function AgentLogsView() {
           <motion.div key={s.label}
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-card rounded-sm px-8 py-6"
+            className="glass-card rounded-2xl px-8 py-6"
           >
             <p className="text-[10px] uppercase text-muted-foreground mb-3" style={{ letterSpacing: "0.28em" }}>
               {s.label}
@@ -53,7 +53,7 @@ export function AgentLogsView() {
       </div>
 
       {/* Log stream */}
-      <div className="col-span-12 glass-card rounded-sm p-10">
+      <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
         <div className="flex items-center justify-between mb-8">
           <p className="text-2xl text-foreground"
             style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.02em" }}>
@@ -62,7 +62,7 @@ export function AgentLogsView() {
           <span className="flex items-center gap-2 text-[9px] uppercase text-muted-foreground"
             style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}>
             <span className="h-1 w-1 rounded-full"
-              style={{ background: "hsl(104 100% 68%)", boxShadow: "0 0 4px hsl(104 100% 68% / 0.6)", animation: "pulse 3s infinite" }} />
+              style={{ background: "hsl(104 100% 45%)", boxShadow: "0 0 4px hsl(104 100% 45% / 0.3)", animation: "pulse 3s infinite" }} />
             Live
           </span>
         </div>
@@ -72,23 +72,28 @@ export function AgentLogsView() {
             <motion.div key={i}
               initial={{ opacity: 0, x: -4 }} animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.05 + i * 0.04, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-              className="flex items-start gap-4 py-4"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.055)" }}
+              className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-4 py-4 border-b border-foreground/5"
             >
-              {/* Level dot */}
-              <span className="mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0"
-                style={{ background: LEVEL_COLOR[log.level], boxShadow: log.level === "exec" ? "0 0 4px hsl(104 100% 68% / 0.5)" : undefined }} />
+              <div className="flex items-center gap-4 w-full md:w-auto">
+                {/* Level dot */}
+                <span className="h-1.5 w-1.5 rounded-full flex-shrink-0"
+                  style={{ background: LEVEL_COLOR[log.level] }} />
 
-              {/* Timestamp */}
-              <span className="text-[10px] text-muted-foreground/50 flex-shrink-0 w-20 mt-0.5"
-                style={{ fontFamily: "'JetBrains Mono', monospace" }}>{log.ts}</span>
+                {/* Timestamp */}
+                <span className="text-[10px] text-muted-foreground/50 flex-shrink-0 w-20"
+                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>{log.ts}</span>
+                
+                {/* Tag on mobile */}
+                <span className="md:hidden text-[9px] uppercase text-muted-foreground/40 ml-auto"
+                  style={{ letterSpacing: "0.22em", fontFamily: "'JetBrains Mono', monospace" }}>{log.tag}</span>
+              </div>
 
               {/* Message */}
-              <span className="flex-1 text-sm text-foreground/75 leading-snug"
+              <span className="flex-1 text-sm text-foreground/75 leading-snug pl-5 md:pl-0"
                 style={{ fontFamily: "'JetBrains Mono', monospace" }}>{log.msg}</span>
 
-              {/* Tag */}
-              <span className="text-[9px] uppercase text-muted-foreground/40 flex-shrink-0"
+              {/* Tag on desktop */}
+              <span className="hidden md:block text-[9px] uppercase text-muted-foreground/40 flex-shrink-0"
                 style={{ letterSpacing: "0.22em", fontFamily: "'JetBrains Mono', monospace" }}>{log.tag}</span>
             </motion.div>
           ))}

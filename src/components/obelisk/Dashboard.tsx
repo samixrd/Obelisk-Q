@@ -9,7 +9,7 @@ import { PortfolioView } from "./PortfolioView";
 import { AgentLogsView } from "./AgentLogsView";
 import { PreferencesView } from "./PreferencesView";
 import { StabilityScoreCard } from "./StabilityScoreCard";
-import { IconArrowUpRight, IconArrowDownRight, IconArrowRight } from "./LineIcons";
+import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { InvestModal } from "./InvestModal";
 import { useStability } from "./StabilityContext";
 import { useVault } from "@/hooks/useVault";
@@ -39,7 +39,7 @@ interface DashboardProps {
 export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, onConnectWallet }: DashboardProps) {
   const [internalTab, setInternalTab] = useState<DashboardTab>("overview");
   const tab = externalTab ?? internalTab;
-  const { score, engineError, engineLoading, lastFetched } = useStability();
+  const { engineError, engineLoading, lastFetched } = useStability();
   const { vaultStats } = useVault();
 
   // Human-readable sync label for the tab bar
@@ -69,7 +69,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       <div style={{ height: "72px" }} />
 
       {/* Main Stats Header */}
-      <div className="relative mx-auto max-w-[1400px] px-8 md:px-14 mt-8 mb-8 z-10">
+      <div className="relative mx-auto max-w-[1400px] px-4 md:px-14 mt-6 md:mt-8 mb-8 z-10">
         <QScoreBar />
       </div>
 
@@ -83,13 +83,13 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
           borderBottom: "1px solid rgba(50, 50, 93, 0.1)",
         }}
       >
-        <div className="mx-auto max-w-[1400px] px-8 md:px-14">
+        <div className="mx-auto max-w-[1400px] px-4 md:px-14">
           <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-8 md:gap-10">
+            <div className="flex items-center gap-5 md:gap-10 overflow-x-auto no-scrollbar">
               {(["overview", "performance", "safeguards"] as DashboardTab[]).map((t) => (
-                <button key={t} onClick={() => setTab(t)} className="relative group py-2">
+                <button key={t} onClick={() => setTab(t)} className="relative group py-2 flex-shrink-0">
                   <span
-                    className={`text-lg md:text-xl capitalize transition-colors duration-400 ${
+                    className={`text-base md:text-xl capitalize transition-colors duration-400 ${
                       tab === t
                         ? "text-foreground"
                         : "text-muted-foreground hover:text-foreground/65"
@@ -115,7 +115,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
               ))}
             </div>
             <p
-              className="hidden md:block text-[9px] uppercase text-muted-foreground"
+              className="hidden lg:block text-[9px] uppercase text-muted-foreground"
               style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace",
                 color: engineError ? "hsl(0 70% 60%)" : undefined }}
             >
@@ -126,28 +126,28 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       </div>
 
       {/* Content */}
-      <div className="mx-auto max-w-[1400px] px-8 md:px-14 mt-12">
+      <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-12">
         <AnimatePresence mode="wait">
           {tab === "overview" && (
-            <motion.div key="overview" {...fadeUp} className="grid grid-cols-12 gap-6">
+            <motion.div key="overview" {...fadeUp} className="grid grid-cols-12 gap-5 md:gap-6">
 
-              <div className="col-span-12 lg:col-span-7 glass-card glass-card-hover rounded-sm p-10 min-h-[320px] flex flex-col justify-between">
-                <div className="flex items-start justify-between">
+              <div className="col-span-12 lg:col-span-7 glass-card rounded-2xl p-6 md:p-10 min-h-[280px] md:min-h-[320px] flex flex-col justify-between">
+                <div className="flex flex-col md:flex-row items-start md:items-start justify-between gap-6 md:gap-0">
                   <div>
                     <p
-                      className="text-[10px] uppercase text-muted-foreground mb-6"
+                      className="text-[10px] uppercase text-muted-foreground mb-4 md:mb-6"
                       style={{ letterSpacing: "0.28em" }}
                     >
                       Balance (MNT)
                     </p>
                     <p
-                      className="text-6xl md:text-7xl text-foreground"
+                      className="text-4xl md:text-7xl text-foreground"
                       style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}
                     >
                       {vaultStats?.userBalance?.split('.')[0] ?? "0"}<span className="text-muted-foreground">.{vaultStats?.userBalance?.split('.')[1] ?? "0000"}</span>
                     </p>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 self-end md:self-auto">
                     <span
                       className="inline-flex items-center gap-1 text-[11px] text-neon"
                       style={{ fontFamily: "'JetBrains Mono', monospace" }}
@@ -165,7 +165,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                 </div>
                 <div>
                   <div className="hairline mb-6" />
-                  <div className="grid grid-cols-3 gap-8">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
                     <Stat label="24h Yield" value="$1,032.18" />
                     <Stat label="Allocated" value="92.4%" />
                     <Stat label="In Reserve" value="$32,520" />
@@ -175,8 +175,8 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
               <StabilityScoreCard />
 
-              <div className="col-span-12 lg:col-span-8 glass-card glass-card-hover rounded-sm p-10">
-                <div className="flex items-center justify-between mb-10">
+              <div className="col-span-12 lg:col-span-8 glass-card rounded-2xl p-6 md:p-10">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
                   <div>
                     <p
                       className="text-[10px] uppercase text-muted-foreground mb-2"
@@ -200,18 +200,18 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                   >
                     <span>1D</span>
                     <span>7D</span>
-                    <span className="text-foreground">30D</span>
+                    <span className="text-foreground border-b border-foreground/30 pb-0.5">30D</span>
                     <span>1Y</span>
                   </div>
                 </div>
                 <StabilityGraph seed={1} height={160} />
               </div>
 
-              <div className="col-span-12 lg:col-span-4 glass-card glass-card-hover rounded-sm p-10 flex items-center justify-center">
+              <div className="col-span-12 lg:col-span-4 glass-card rounded-2xl p-6 md:p-10 flex items-center justify-center">
                 <OptimizationDial />
               </div>
 
-              <div className="col-span-12 glass-card rounded-sm p-10">
+              <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
                 <div className="flex items-center justify-between mb-8">
                   <p
                     className="text-2xl text-foreground"
@@ -226,54 +226,56 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                     View all
                   </button>
                 </div>
-                <div className="space-y-0">
-                  {positions.map((p, i) => (
-                    <motion.div
-                      key={p.name}
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 + i * 0.06, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                      className="grid grid-cols-12 items-center py-5 border-t border-border/50 hover:bg-foreground/[0.02] transition-colors duration-500"
-                    >
-                      <div className="col-span-5 flex items-center gap-4">
-                        <div className="h-8 w-8 rounded-full bg-gradient-metal/30 border border-border-strong/60 flex items-center justify-center">
+                <div className="space-y-0 overflow-x-auto no-scrollbar">
+                  <div className="min-w-[600px] md:min-w-0">
+                    {positions.map((p, i) => (
+                      <motion.div
+                        key={p.name}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 + i * 0.06, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+                        className="grid grid-cols-12 items-center py-5 border-t border-border/50 hover:bg-foreground/[0.02] transition-colors duration-500"
+                      >
+                        <div className="col-span-5 flex items-center gap-4">
+                          <div className="h-8 w-8 rounded-full bg-gradient-metal/30 border border-border-strong/60 flex items-center justify-center">
+                            <span
+                              className="italic text-xs text-foreground/80"
+                              style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                            >
+                              {p.symbol}
+                            </span>
+                          </div>
                           <span
-                            className="italic text-xs text-foreground/80"
+                            className="text-lg text-foreground truncate"
                             style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                           >
-                            {p.symbol}
+                            {p.name}
                           </span>
                         </div>
-                        <span
-                          className="text-lg text-foreground"
-                          style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
+                        <div
+                          className="col-span-3 text-[13px] text-muted-foreground px-2"
+                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
                         >
-                          {p.name}
-                        </span>
-                      </div>
-                      <div
-                        className="col-span-3 text-sm text-muted-foreground"
-                        style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                      >
-                        {p.strategy}
-                      </div>
-                      <div
-                        className="col-span-2 text-sm text-foreground text-right"
-                        style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                      >
-                        {p.balance}
-                      </div>
-                      <div
-                        className={`col-span-2 text-sm text-right flex items-center justify-end gap-1 ${
-                          p.up ? "text-foreground/80" : "text-muted-foreground"
-                        }`}
-                        style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                      >
-                        {p.up ? <IconArrowUpRight size={12} /> : <IconArrowDownRight size={12} />}
-                        {p.change}
-                      </div>
-                    </motion.div>
-                  ))}
+                          {p.strategy}
+                        </div>
+                        <div
+                          className="col-span-2 text-[13px] text-foreground text-right"
+                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                        >
+                          {p.balance}
+                        </div>
+                        <div
+                          className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1 ${
+                            p.up ? "text-foreground/80" : "text-muted-foreground"
+                          }`}
+                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
+                        >
+                          {p.up ? <IconArrowUpRight size={12} /> : <IconArrowDownRight size={12} />}
+                          {p.change}
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
@@ -282,24 +284,24 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
           )}
 
           {tab === "performance" && (
-            <motion.div key="performance" {...fadeUp} className="grid grid-cols-12 gap-6">
-              <div className="col-span-12 glass-card rounded-sm p-10">
-                <div className="flex items-start justify-between mb-10">
+            <motion.div key="performance" {...fadeUp} className="grid grid-cols-12 gap-5 md:gap-6">
+              <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
+                <div className="flex flex-col md:flex-row items-start justify-between gap-8 mb-10">
                   <div>
                     <p
-                      className="text-[10px] uppercase text-muted-foreground mb-3"
+                      className="text-[10px] uppercase text-muted-foreground mb-4"
                       style={{ letterSpacing: "0.28em" }}
                     >
                       Cumulative Return · YTD
                     </p>
                     <p
-                      className="text-7xl text-foreground"
+                      className="text-5xl md:text-7xl text-foreground"
                       style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}
                     >
                       +14.82<span className="text-muted-foreground">%</span>
                     </p>
                   </div>
-                  <div className="text-right space-y-1">
+                  <div className="flex md:block items-center gap-4 md:text-right md:space-y-1">
                     <p
                       className="text-[10px] uppercase text-muted-foreground"
                       style={{ letterSpacing: "0.28em" }}
@@ -323,22 +325,22 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.08, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className="col-span-12 md:col-span-6 lg:col-span-3 glass-card glass-card-hover rounded-sm p-8"
+                  className="col-span-6 lg:col-span-3 glass-card rounded-2xl p-6 md:p-8"
                 >
                   <p
-                    className="text-[10px] uppercase text-muted-foreground mb-5"
+                    className="text-[9px] md:text-[10px] uppercase text-muted-foreground mb-4 md:mb-5 truncate"
                     style={{ letterSpacing: "0.28em" }}
                   >
                     {s.label}
                   </p>
                   <p
-                    className="text-4xl text-foreground"
+                    className="text-2xl md:text-4xl text-foreground"
                     style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}
                   >
                     {s.value}
                   </p>
                   <p
-                    className={`mt-3 text-xs ${s.up ? "text-foreground/70" : "text-muted-foreground"}`}
+                    className={`mt-2 md:mt-3 text-[10px] md:text-xs ${s.up ? "text-foreground/70" : "text-muted-foreground"}`}
                     style={{ fontFamily: "'JetBrains Mono', monospace" }}
                   >
                     {s.delta}
@@ -346,32 +348,32 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                 </motion.div>
               ))}
 
-              <div className="col-span-12 glass-card rounded-sm p-10">
+              <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
                 <p
                   className="text-2xl text-foreground mb-8"
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif", letterSpacing: "-0.02em" }}
                 >
                   Monthly Returns
                 </p>
-                <div className="grid grid-cols-12 gap-3 items-end h-48">
+                <div className="grid grid-cols-12 gap-1.5 md:gap-3 items-end h-48">
                   {months.map((m, i) => (
                     <div key={m.label} className="flex flex-col items-center gap-3">
                       <motion.div
                         initial={{ height: 0 }}
                         animate={{ height: `${m.value}%` }}
                         transition={{ delay: 0.1 + i * 0.04, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                        className={`w-full ${
+                        className={`w-full max-w-[12px] md:max-w-none ${
                           m.value > 0
                             ? "bg-gradient-to-t from-foreground/5 to-foreground/40"
                             : "bg-muted"
                         }`}
-                        style={{ minHeight: "2px" }}
+                        style={{ minHeight: "2px", borderRadius: "1px 1px 0 0" }}
                       />
                       <span
-                        className="text-[10px] uppercase text-muted-foreground"
-                        style={{ letterSpacing: "0.25em" }}
+                        className="text-[8px] md:text-[10px] uppercase text-muted-foreground -rotate-45 md:rotate-0 mt-2 md:mt-0"
+                        style={{ letterSpacing: "0.1em" }}
                       >
-                        {m.label}
+                        {m.label.slice(0, 3)}
                       </span>
                     </div>
                   ))}
@@ -407,7 +409,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       </div>
 
       {/* Footer */}
-      <div className="relative mx-auto max-w-[1400px] px-8 md:px-14 mt-24">
+      <div className="relative mx-auto max-w-[1400px] px-4 md:px-14 mt-24">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 -bottom-6 flex items-end justify-center overflow-hidden select-none"
@@ -427,7 +429,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
         </div>
         <div className="hairline mb-6" />
         <div
-          className="relative flex items-center justify-between text-[10px] uppercase text-muted-foreground"
+          className="relative flex flex-col md:flex-row items-center justify-between gap-6 md:gap-0 text-[10px] uppercase text-muted-foreground text-center md:text-left"
           style={{ letterSpacing: "0.28em" }}
         >
           <span>Obelisk Q</span>
@@ -448,23 +450,14 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 }
 
 function QScoreBar() {
-  const { adaptive, setVolatility, engineLoading, engineError, lastFetched, components } = useStability();
+  const { adaptive, setVolatility, engineLoading, engineError, components } = useStability();
   const isHighVol = adaptive.volatility === "high";
 
-  // Human-readable "last updated" label
-  const syncLabel = engineError
-    ? "Engine offline"
-    : engineLoading
-    ? "Connecting..."
-    : lastFetched
-    ? `Live · ${Math.round((Date.now() - lastFetched) / 1000)}s ago`
-    : "Live";
-
   const metrics = [
-    { label: "Yield Score",   value: engineLoading ? "—" : String(Math.round(components.yield_score)),      unit: "/100", color: "hsl(104 100% 68%)" },
-    { label: "Risk Score",    value: "0.42",                                                                   unit: "σ",    color: "hsl(200 100% 72%)" },
-    { label: "Accuracy",      value: engineLoading ? "—" : String(Math.round(components.volatility_score)),  unit: "%",    color: "hsl(40 100% 72%)"  },
-    { label: "Uptime",        value: "99.9",                                                                   unit: "%",    color: "hsl(270 80% 80%)"  },
+    { label: "Yield Score",   value: engineLoading ? "—" : String(Math.round(components.yield_score)),      unit: "/100", color: "hsl(104 100% 45%)" },
+    { label: "Risk Score",    value: "0.42",                                                                   unit: "σ",    color: "hsl(210 100% 50%)" },
+    { label: "Accuracy",      value: engineLoading ? "—" : String(Math.round(components.volatility_score)),  unit: "%",    color: "hsl(35 100% 50%)"  },
+    { label: "Uptime",        value: "99.9",                                                                   unit: "%",    color: "hsl(270 80% 60%)"  },
   ];
 
   return (
@@ -472,28 +465,28 @@ function QScoreBar() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="glass-card rounded-sm px-8 py-4 flex items-center justify-between gap-6"
+      className="glass-card rounded-2xl px-5 md:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-6"
     >
       {/* Left: identity */}
       <div className="flex items-center gap-4 flex-shrink-0">
-        <div className="h-6 w-px" style={{ background: "rgba(255,255,255,0.12)" }} />
         <span
           className="text-[9px] uppercase text-muted-foreground"
           style={{ letterSpacing: "0.35em", fontFamily: "'JetBrains Mono', monospace" }}
         >
           ERC-8004 · Q-Score
         </span>
+        <div className="hidden md:block h-4 w-px bg-foreground/10" />
       </div>
 
       {/* Centre: metrics */}
-      <div className="flex items-center gap-8 flex-1 justify-center">
+      <div className="grid grid-cols-2 lg:flex items-center gap-x-10 gap-y-4 md:gap-8 flex-1 justify-center w-full md:w-auto">
         {metrics.map((m, i) => (
           <motion.div
             key={m.label}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 + i * 0.08, duration: 0.7 }}
-            className="flex items-center gap-3"
+            className="flex items-center justify-center md:justify-start gap-3"
           >
             <span
               className="text-[9px] uppercase text-muted-foreground hidden lg:block"
@@ -503,71 +496,67 @@ function QScoreBar() {
             </span>
             <span className="text-[10px] text-muted-foreground hidden lg:block">·</span>
             <span
-              className="text-sm"
+              className="text-xs md:text-sm"
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 letterSpacing: "-0.02em",
                 color: m.color,
-                textShadow: `0 0 12px ${m.color}55`,
+                fontWeight: 500,
               }}
             >
               {m.value}
-              <span className="text-[10px] text-muted-foreground ml-0.5">{m.unit}</span>
+              <span className="text-[10px] text-muted-foreground/60 ml-0.5">{m.unit}</span>
             </span>
           </motion.div>
         ))}
       </div>
 
-      {/* Right: regime toggle (demo control) */}
-      <div className="flex items-center gap-3 flex-shrink-0">
+      {/* Right: regime toggle */}
+      <div className="flex items-center gap-3 flex-shrink-0 w-full md:w-auto justify-center md:justify-end border-t md:border-t-0 border-foreground/5 pt-4 md:pt-0">
         <span
           className="text-[9px] uppercase text-muted-foreground hidden xl:block"
           style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}
         >
           Regime
         </span>
-        {/* Pill toggle: Stable ↔ Risk-Averse */}
         <button
           onClick={() => setVolatility(isHighVol ? "low" : "high")}
-          className="relative flex items-center gap-0 overflow-hidden"
+          className="relative flex items-center gap-0 overflow-hidden w-full md:w-auto"
           style={{
-            background: "rgba(255,255,255,0.04)",
-            border: "0.5px solid rgba(255,255,255,0.12)",
-            height: "24px",
-            borderRadius: "12px",
+            background: "rgba(0,0,0,0.03)",
+            border: "1px solid rgba(0,0,0,0.06)",
+            height: "28px",
+            borderRadius: "14px",
           }}
           title="Toggle volatility regime (demo)"
         >
           {(["low", "high"] as const).map((v) => (
             <span
               key={v}
-              className="relative z-10 px-3 text-[9px] uppercase transition-colors duration-500"
+              className="relative z-10 px-4 text-[9px] uppercase transition-colors duration-500 w-1/2 md:w-auto text-center"
               style={{
-                letterSpacing: "0.2em",
+                letterSpacing: "0.15em",
                 fontFamily: "'JetBrains Mono', monospace",
                 color:
                   adaptive.volatility === v
                     ? v === "high"
-                      ? "hsl(30 100% 70%)"
-                      : "hsl(104 100% 68%)"
-                    : "rgba(255,255,255,0.22)",
+                      ? "hsl(30 100% 40%)"
+                      : "hsl(104 100% 35%)"
+                    : "rgba(0,0,0,0.3)",
               }}
             >
-              {v === "low" ? "Stable" : "High Volatility"}
+              {v === "low" ? "Stable" : "High Vol"}
             </span>
           ))}
-          {/* Sliding pill */}
           <motion.span
             className="absolute top-0 bottom-0 w-1/2 pointer-events-none"
             animate={{ x: isHighVol ? "100%" : "0%" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
             style={{
               background: isHighVol
-                ? "rgba(255, 160, 60, 0.10)"
-                : "rgba(100, 255, 120, 0.07)",
-              borderRight: isHighVol ? "none" : "0.5px solid rgba(255,255,255,0.09)",
-              borderLeft: isHighVol ? "0.5px solid rgba(255,255,255,0.09)" : "none",
-              borderRadius: "12px",
+                ? "rgba(255, 160, 60, 0.08)"
+                : "rgba(100, 255, 120, 0.08)",
+              borderRadius: "14px",
             }}
           />
         </button>
@@ -579,10 +568,10 @@ function QScoreBar() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>
+      <p className="text-[9px] md:text-[10px] uppercase text-muted-foreground mb-2 truncate" style={{ letterSpacing: "0.28em" }}>
         {label}
       </p>
-      <p className="text-lg text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+      <p className="text-base md:text-lg text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
         {value}
       </p>
     </div>
