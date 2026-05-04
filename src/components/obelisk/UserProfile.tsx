@@ -12,12 +12,15 @@ export function UserProfile({ onSignOut }: UserProfileProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Get initials from display name
-  const initials = displayName
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials = displayName === "Guest Identity" 
+    ? "GU" 
+    : displayName
+        .split(" ")
+        .filter(Boolean)
+        .map((n) => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -80,7 +83,7 @@ export function UserProfile({ onSignOut }: UserProfileProps) {
           >
             <div className="px-3 py-4 mb-2">
               <p className="text-[10px] uppercase text-muted-foreground/60 font-bold mb-1" style={{ letterSpacing: "0.2em" }}>
-                Connected Identity
+                Active Identity
               </p>
               <p
                 className="text-lg text-foreground font-medium"
@@ -88,7 +91,7 @@ export function UserProfile({ onSignOut }: UserProfileProps) {
               >
                 {displayName}
               </p>
-              {walletAddress && (
+              {walletAddress && walletAddress !== "connected" && (
                 <p className="text-[11px] text-muted-foreground font-mono truncate opacity-60">
                   {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
                 </p>
