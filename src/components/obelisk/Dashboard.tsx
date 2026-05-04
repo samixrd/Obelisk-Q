@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 
 import { OptimizationDial } from "./OptimizationDial";
 import { StabilityGraph } from "./StabilityGraph";
@@ -53,10 +53,13 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
     : "Live";
 
   // When tab changes, always snap to top so the content is immediately visible
+  useLayoutEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [tab]);
+
   const setTab = (t: DashboardTab) => {
     setInternalTab(t);
     onTabChange?.(t);
-    window.scrollTo({ top: 0, behavior: "instant" });
   };
 
   const [investOpen, setInvestOpen] = useState(false);
@@ -130,7 +133,11 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-12">
         <AnimatePresence mode="wait">
           {tab === "overview" && (
-            <motion.div key="overview" {...fadeUp} className="grid grid-cols-12 gap-5 md:gap-6">
+            <motion.div 
+              key="overview" 
+              {...fadeUp} 
+              className="grid grid-cols-12 gap-5 md:gap-6"
+            >
 
               <div className="col-span-12 lg:col-span-7 glass-card rounded-2xl p-6 md:p-10 min-h-[280px] md:min-h-[320px] flex flex-col justify-between">
                 <div className="flex flex-col md:flex-row items-start md:items-start justify-between gap-6 md:gap-0">

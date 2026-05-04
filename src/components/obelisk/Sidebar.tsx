@@ -75,7 +75,6 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
                   onClick={() => {
                     onTabChange(item.tab as DashboardTab);
                     onClose();
-                    window.scrollTo({ top: 0, behavior: "instant" });
                   }}
                   className="group relative w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-300"
                 >
