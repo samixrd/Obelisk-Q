@@ -22,6 +22,11 @@ function AppInner() {
   const [sidebarOpen,    setSidebarOpen]     = useState(false);
   const [tourOpen,       setTourOpen]        = useState(false);
   const [activeTab,      setActiveTab]       = useState<DashboardTab>("overview");
+  
+  // Global scroll restoration: snap to top on tab or stage change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "instant" });
+  }, [activeTab, stage]);
 
   // If Firebase auto-restores a Google session, skip auth screen
   useEffect(() => {
