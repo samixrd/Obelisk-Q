@@ -1,0 +1,7 @@
+engine/
+contracts/
+README.md
+.gitignore
+.env.example
+*.py
+*.sol
