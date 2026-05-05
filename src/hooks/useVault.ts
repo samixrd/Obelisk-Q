@@ -10,6 +10,7 @@
  */
 
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "@/hooks/use-toast";
 
 // ── Replace with your deployed contract address after running deploy script ──
 const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS ?? "";
@@ -36,6 +37,15 @@ export interface VaultStats {
   walletBalance:   string;   // native MNT balance
 }
 
+export interface TransactionRecord {
+  id: string;
+  type: "Deposit" | "Withdraw";
+  amount: string;
+  status: "Confirmed" | "Failed" | "Pending";
+  timestamp: Date;
+  hash: string;
+}
+
 export interface VaultState {
   deposit:         (amountMnt: string) => Promise<void>;
   withdraw:        () => Promise<void>;
@@ -48,6 +58,9 @@ export interface VaultState {
   address:     string | null;
   connect:     () => Promise<void>;
   refreshStats: () => Promise<void>;
+  confirmations: number;
+  explorerUrl: (hash: string) => string;
+  txHistory: TransactionRecord[];
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -77,6 +90,37 @@ export function useVault(): VaultState {
   const [txHash,     setTxHash]     = useState<string | null>(null);
   const [txError,    setTxError]    = useState<string | null>(null);
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
+  const [confirmations, setConfirmations] = useState<number>(0);
+  const [txHistory, setTxHistory] = useState<TransactionRecord[]>([]);
+
+  const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5003";
+
+  const getExplorerUrl = useCallback((hash: string) => {
+    const baseUrl = CHAIN_ID === "5000" 
+      ? "https://mantlescan.xyz" 
+      : "https://explorer.sepolia.mantle.xyz";
+    return `${baseUrl}/tx/${hash}`;
+  }, [CHAIN_ID]);
+
+  // Load history
+  useEffect(() => {
+    const saved = localStorage.getItem(`tx_history_${address}`);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setTxHistory(parsed.map((r: any) => ({ ...r, timestamp: new Date(r.timestamp) })));
+      } catch (e) { console.error("Failed to parse tx history", e); }
+    }
+  }, [address]);
+
+  const saveTx = useCallback((record: TransactionRecord) => {
+    setTxHistory(prev => {
+      const filtered = prev.filter(r => r.hash !== record.hash);
+      const updated = [record, ...filtered].slice(0, 20);
+      localStorage.setItem(`tx_history_${address}`, JSON.stringify(updated));
+      return updated;
+    });
+  }, [address]);
 
   const isConnected = !!address;
 
@@ -225,30 +269,81 @@ export function useVault(): VaultState {
 
       setTxHash(hash);
       setTxState("pending");
+      setConfirmations(0);
 
-      // poll for receipt
+      toast({
+        title: "Transaction submitted",
+        description: `${hash.slice(0, 10)}...${hash.slice(-8)} ↗`,
+      });
+
+      saveTx({
+        id: hash,
+        type: "Deposit",
+        amount: `${amountMnt} MNT`,
+        status: "Pending",
+        timestamp: new Date(),
+        hash,
+      });
+
+      // poll for receipt and confirmations
       const interval = setInterval(async () => {
-        const receipt = await (eth.request as Function)({
-          method: "eth_getTransactionReceipt",
-          params: [hash],
-        });
-        if (receipt) {
-          clearInterval(interval);
-          setTxState("success");
-          
-          // Update simulated balance
-          const currentSim = parseFloat(localStorage.getItem(`sim_balance_${address}`) || "0");
-          localStorage.setItem(`sim_balance_${address}`, (currentSim + parseFloat(amountMnt)).toFixed(4));
-          
-          await refreshStats();
-        }
-      }, 2000);
+        try {
+          const receipt = await (eth.request as Function)({
+            method: "eth_getTransactionReceipt",
+            params: [hash],
+          });
+
+          if (receipt) {
+            const currentBlockRaw = await (eth.request as Function)({
+              method: "eth_blockNumber",
+            }) as string;
+            
+            const currentBlock = BigInt(currentBlockRaw);
+            const receiptBlock = BigInt(receipt.blockNumber);
+            const confs = Number(currentBlock - receiptBlock + 1);
+            setConfirmations(confs);
+
+            if (confs >= 1 && txState !== "success") {
+              setTxState("success");
+              toast({
+                title: "Transaction confirmed ✓",
+                description: "View on Mantlescan ↗",
+              });
+              
+              saveTx({
+                id: hash,
+                type: "Deposit",
+                amount: `${amountMnt} MNT`,
+                status: "Confirmed",
+                timestamp: new Date(),
+                hash,
+              });
+
+              // Update simulated balance
+              const currentSim = parseFloat(localStorage.getItem(`sim_balance_${address}`) || "0");
+              localStorage.setItem(`sim_balance_${address}`, (currentSim + parseFloat(amountMnt)).toFixed(4));
+              
+              await refreshStats();
+            }
+
+            if (confs >= 3) {
+              clearInterval(interval);
+            }
+          }
+        } catch (e) { console.error("Polling error", e); }
+      }, 3000);
 
     } catch (err: unknown) {
       setTxState("error");
-      setTxError((err as Error).message ?? "Transaction failed");
+      const msg = (err as Error).message ?? "Transaction failed";
+      setTxError(msg);
+      toast({
+        title: "Transaction failed",
+        description: "View details ↗",
+        variant: "destructive",
+      });
     }
-  }, [address, connect, refreshStats]);
+  }, [address, connect, refreshStats, saveTx, txState]);
 
   // ── Withdraw ────────────────────────────────────────────────────────────
   const withdraw = useCallback(async () => {
@@ -270,28 +365,77 @@ export function useVault(): VaultState {
 
       setTxHash(hash);
       setTxState("pending");
+      setConfirmations(0);
+
+      toast({
+        title: "Withdrawal submitted",
+        description: `${hash.slice(0, 10)}...${hash.slice(-8)} ↗`,
+      });
+
+      saveTx({
+        id: hash,
+        type: "Withdraw",
+        amount: `${vaultStats?.userBalance ?? "0"} MNT`,
+        status: "Pending",
+        timestamp: new Date(),
+        hash,
+      });
 
       const interval = setInterval(async () => {
-        const receipt = await (eth.request as Function)({
-          method: "eth_getTransactionReceipt",
-          params: [hash],
-        });
-        if (receipt) {
-          clearInterval(interval);
-          setTxState("success");
-          
-          // Clear simulated balance
-          localStorage.setItem(`sim_balance_${address}`, "0.0000");
-          
-          await refreshStats();
-        }
-      }, 2000);
+        try {
+          const receipt = await (eth.request as Function)({
+            method: "eth_getTransactionReceipt",
+            params: [hash],
+          });
+          if (receipt) {
+            const currentBlockRaw = await (eth.request as Function)({
+              method: "eth_blockNumber",
+            }) as string;
+            
+            const currentBlock = BigInt(currentBlockRaw);
+            const receiptBlock = BigInt(receipt.blockNumber);
+            const confs = Number(currentBlock - receiptBlock + 1);
+            setConfirmations(confs);
+
+            if (confs >= 1 && txState !== "success") {
+              setTxState("success");
+              toast({
+                title: "Withdrawal confirmed ✓",
+                description: "Funds returned to wallet",
+              });
+              
+              saveTx({
+                id: hash,
+                type: "Withdraw",
+                amount: `${vaultStats?.userBalance ?? "0"} MNT`,
+                status: "Confirmed",
+                timestamp: new Date(),
+                hash,
+              });
+
+              // Clear simulated balance
+              localStorage.setItem(`sim_balance_${address}`, "0.0000");
+              await refreshStats();
+            }
+
+            if (confs >= 3) {
+              clearInterval(interval);
+            }
+          }
+        } catch (e) { console.error("Polling error", e); }
+      }, 3000);
 
     } catch (err: unknown) {
       setTxState("error");
-      setTxError((err as Error).message ?? "Withdraw failed");
+      const msg = (err as Error).message ?? "Withdraw failed";
+      setTxError(msg);
+      toast({
+        title: "Withdrawal failed",
+        description: "View details ↗",
+        variant: "destructive",
+      });
     }
-  }, [address, refreshStats]);
+  }, [address, refreshStats, saveTx, txState, vaultStats?.userBalance]);
 
   // ── Withdraw Partial ───────────────────────────────────────────────────
   const withdrawPartial = useCallback(async (amountMnt: string) => {
@@ -310,30 +454,80 @@ export function useVault(): VaultState {
 
       setTxHash(hash);
       setTxState("pending");
+      setConfirmations(0);
+
+      toast({
+        title: "Withdrawal submitted",
+        description: `${hash.slice(0, 10)}...${hash.slice(-8)} ↗`,
+      });
+
+      saveTx({
+        id: hash,
+        type: "Withdraw",
+        amount: `${amountMnt} MNT`,
+        status: "Pending",
+        timestamp: new Date(),
+        hash,
+      });
 
       const interval = setInterval(async () => {
-        const receipt = await (eth.request as Function)({
-          method: "eth_getTransactionReceipt",
-          params: [hash],
-        });
-        if (receipt) {
-          clearInterval(interval);
-          setTxState("success");
-          
-          // Update simulated balance
-          const currentSim = parseFloat(localStorage.getItem(`sim_balance_${address}`) || "0");
-          const newSim = Math.max(0, currentSim - parseFloat(amountMnt));
-          localStorage.setItem(`sim_balance_${address}`, newSim.toFixed(4));
-          
-          await refreshStats();
-        }
-      }, 2000);
+        try {
+          const receipt = await (eth.request as Function)({
+            method: "eth_getTransactionReceipt",
+            params: [hash],
+          });
+          if (receipt) {
+            const currentBlockRaw = await (eth.request as Function)({
+              method: "eth_blockNumber",
+            }) as string;
+            
+            const currentBlock = BigInt(currentBlockRaw);
+            const receiptBlock = BigInt(receipt.blockNumber);
+            const confs = Number(currentBlock - receiptBlock + 1);
+            setConfirmations(confs);
+
+            if (confs >= 1 && txState !== "success") {
+              setTxState("success");
+              toast({
+                title: "Withdrawal confirmed ✓",
+                description: `Withdrew ${amountMnt} MNT`,
+              });
+              
+              saveTx({
+                id: hash,
+                type: "Withdraw",
+                amount: `${amountMnt} MNT`,
+                status: "Confirmed",
+                timestamp: new Date(),
+                hash,
+              });
+
+              // Update simulated balance
+              const currentSim = parseFloat(localStorage.getItem(`sim_balance_${address}`) || "0");
+              const newSim = Math.max(0, currentSim - parseFloat(amountMnt));
+              localStorage.setItem(`sim_balance_${address}`, newSim.toFixed(4));
+              
+              await refreshStats();
+            }
+
+            if (confs >= 3) {
+              clearInterval(interval);
+            }
+          }
+        } catch (e) { console.error("Polling error", e); }
+      }, 3000);
 
     } catch (err: unknown) {
       setTxState("error");
-      setTxError((err as Error).message ?? "Withdraw failed");
+      const msg = (err as Error).message ?? "Withdraw failed";
+      setTxError(msg);
+      toast({
+        title: "Withdrawal failed",
+        description: "View details ↗",
+        variant: "destructive",
+      });
     }
-  }, [address, refreshStats]);
+  }, [address, refreshStats, saveTx, txState]);
   useEffect(() => {
     if (!address) return;
     refreshStats();
@@ -358,5 +552,11 @@ export function useVault(): VaultState {
     return () => (eth as Record<string, Function>).removeListener?.("accountsChanged", handler);
   }, []);
 
-  return { deposit, withdraw, withdrawPartial, vaultStats, txState, txHash, txError, isConnected, address, connect, refreshStats };
+  return { 
+    deposit, withdraw, withdrawPartial, 
+    vaultStats, txState, txHash, txError, 
+    isConnected, address, connect, refreshStats,
+    confirmations, explorerUrl: getExplorerUrl,
+    txHistory
+  };
 }
