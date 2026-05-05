@@ -52,13 +52,30 @@ export function useAgentFeed() {
     });
   };
 
+  const API_BASE = import.meta.env.VITE_SCORING_API_URL ?? "http://localhost:8000";
+  const LOGGER_ADDRESS = import.meta.env.VITE_AGENT_LOGGER_ADDRESS;
+
   const fetchStatus = async () => {
     try {
-      // In a real app, this would be:
-      // const res = await fetch('/api/agent/status');
-      // const data = await res.json();
-      // For now, we simulate the agent activity
+      // If we have a real scoring engine API, try to fetch the latest agent event
+      const res = await fetch(`${API_BASE}/api/agent/status?address=${LOGGER_ADDRESS || ""}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.event) {
+          addEntry({
+            timestamp: new Date(data.event.timestamp * 1000),
+            action: data.event.action,
+            score: data.event.score,
+            regime: data.event.regime,
+            threshold: data.event.threshold,
+            message: data.event.message,
+            txHash: data.event.txHash,
+          });
+          return;
+        }
+      }
       
+      // Fallback: simulate agent activity for demo purposes if API is unavailable
       const mockIdx = Math.floor(Math.random() * MOCK_MESSAGES.length);
       const mock = MOCK_MESSAGES[mockIdx];
       const score = 60 + Math.floor(Math.random() * 38);
@@ -75,7 +92,7 @@ export function useAgentFeed() {
 
       addEntry(newEntry);
     } catch (err) {
-      console.error("Failed to poll agent status:", err);
+      console.warn("Agent status API unreachable, staying in demo mode.");
     }
   };
 
