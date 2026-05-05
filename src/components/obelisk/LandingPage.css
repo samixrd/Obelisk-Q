@@ -151,11 +151,14 @@
 
 .landing-hero-heading {
   font-size: clamp(42px, 7vw, 72px);
-  font-weight: 700;
+  font-weight: 300;
   line-height: 1.05;
   letter-spacing: -0.035em;
   color: #0a0a0a;
   margin-bottom: 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .landing-hero-sub {
