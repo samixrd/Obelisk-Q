@@ -28,9 +28,9 @@ const steps = [
         A single number for <span className="italic">peace of mind</span>.
       </>
     ),
-    body: "Your Stability Score is a composite of three weighted signals: 40% Yield Differential, 35% Volatility Penalty, and 25% Liquidity Depth. A 5% circuit breaker halts all allocation if the score drops 5 points within any 60-minute window. In high-volatility conditions the confidence threshold rises to 80%; in stable markets it sits at 65%.",
+    body: "Your Stability Score is a composite of three weighted signals: 40% Yield Differential, 35% Volatility Penalty, and 25% Liquidity Depth. A 5% circuit breaker halts all allocation if the score drops 5 points within any 60-minute window. In Contraction regimes the confidence threshold rises to 75%; in Expansion or Consolidation markets it sits at 60-65%.",
     accent: "Today, you're at 98.",
-    note: "The engine identifies Market Regimes (Trending/Sideways) through 48-hour price patterns to dynamically adjust yield targets.",
+    note: "The engine identifies Market Regimes (Expansion/Consolidation/Contraction) through Hidden Markov Model analysis of volatility to dynamically assign Control Transfer Functions (H(s)).",
   },
   {
     eyebrow: "Step · 03",
