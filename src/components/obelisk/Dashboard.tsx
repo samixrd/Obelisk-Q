@@ -94,7 +94,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
         <div className="mx-auto max-w-[1400px] px-4 md:px-14">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-5 md:gap-10 overflow-x-auto no-scrollbar">
-              {(["overview", "performance", "safeguards"] as DashboardTab[]).map((t) => (
+              {(["overview", "performance", "safeguards", "assets"] as DashboardTab[]).map((t) => (
                 <button key={t} onClick={() => setTab(t)} className="relative group py-2 flex-shrink-0">
                   <span
                     className={`text-base md:text-xl capitalize transition-colors duration-400 ${
@@ -462,9 +462,10 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             A quiet intelligence.
           </span>
           <span className="inline-flex items-center gap-2">
-            <span className="h-1 w-1 rounded-full bg-foreground/20" />
-            Powered by Mantle · v 1.0
-          </span>
+            <span className="text-[10px] uppercase text-muted-foreground/50 tracking-luxe">
+              Powered by Mantle · v 1.0
+            </span>
+          </div>
         </div>
 
         {/* Compliance badge */}
@@ -513,11 +514,10 @@ function QScoreBar() {
   const isHighVol = adaptive.volatility === "high";
 
   const spread = Math.abs(usdy.apy - meth.apy).toFixed(1);
-  const yieldDisplay = `${usdy.apy.toFixed(1)}% · ${meth.apy.toFixed(1)}%`;
 
   const metrics = [
     { 
-      label: "Live Yields",   
+      label: "Yield Score",   
       value: `USDY ${usdy.apy.toFixed(1)}% · mETH ${meth.apy.toFixed(1)}%`, 
       unit: `Spread ${spread}%`, 
       color: "hsl(104 100% 45%)" 
