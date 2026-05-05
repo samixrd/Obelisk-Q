@@ -21,7 +21,7 @@ function AppInner() {
   const [walletModal,    setWalletModal]     = useState(false);
   const [sidebarOpen,    setSidebarOpen]     = useState(false);
   const [tourOpen,       setTourOpen]        = useState(false);
-  const [activeTab,      setActiveTab]       = useState<DashboardTab>("overview");
+  const [activeTab,      setActiveTab]       = useState<DashboardTab>("earn");
   
   // Global scroll restoration: snap to top on tab or stage change
   useLayoutEffect(() => {

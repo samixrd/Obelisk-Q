@@ -21,6 +21,7 @@ import { useYieldData } from "@/hooks/useYieldData";
 import { useAgentFeed } from "@/hooks/useAgentFeed";
 
 export type DashboardTab =
+  | "earn"
   | "overview"
   | "performance"
   | "safeguards"
@@ -44,7 +45,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, onConnectWallet }: DashboardProps) {
-  const [internalTab, setInternalTab] = useState<DashboardTab>("overview");
+  const [internalTab, setInternalTab] = useState<DashboardTab>("earn");
   const tab = externalTab ?? internalTab;
   const { engineError, engineLoading, lastFetched } = useStability();
   const { vaultStats } = useVault();
@@ -88,13 +89,8 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       {/* Content */}
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-12">
         <AnimatePresence mode="wait">
-          {tab === "overview" && (
-            <motion.div 
-              key="overview" 
-              {...fadeUp} 
-              className="grid grid-cols-12 gap-5 md:gap-6"
-            >
-
+          {tab === "earn" && (
+            <motion.div key="earn" {...fadeUp} className="grid grid-cols-12 gap-5 md:gap-6">
               <div className="col-span-12 lg:col-span-7 glass-card rounded-2xl p-6 md:p-10 min-h-[280px] md:min-h-[320px] flex flex-col justify-between">
                 <div className="flex flex-col md:flex-row items-start md:items-start justify-between gap-6 md:gap-0">
                   <div>
@@ -127,7 +123,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                           setInvestOpen(true);
                         }
                       }}
-                      className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded-full hover:bg-foreground/80 transition-colors"
+                      className="px-6 py-2.5 bg-[#0a0a0a] text-white text-[13px] font-bold rounded-full hover:bg-[#222] transition-colors shadow-lg shadow-black/5"
                     >
                       Deposit
                     </button>
@@ -142,6 +138,18 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                   </div>
                 </div>
               </div>
+              <StabilityScoreCard />
+              <YieldEstimator />
+              <ManagedAssets />
+            </motion.div>
+          )}
+
+          {tab === "overview" && (
+            <motion.div 
+              key="overview" 
+              {...fadeUp} 
+              className="grid grid-cols-12 gap-5 md:gap-6"
+            >
 
               <StabilityScoreCard />
 
