@@ -17,6 +17,12 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   const [walletLoading,  setWalletLoading]  = useState(false);
   const [error,          setError]          = useState<string | null>(null);
 
+  // Compliance checkboxes — all must be checked to proceed
+  const [checkUS,    setCheckUS]    = useState(false);
+  const [checkReg,   setCheckReg]   = useState(false);
+  const [checkTOS,   setCheckTOS]   = useState(false);
+  const allChecked = checkUS && checkReg && checkTOS;
+
   // ── Real Google sign-in via Firebase ──────────────────────────────────
   const handleGoogle = async () => {
     setGoogleLoading(true);
@@ -148,6 +154,63 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           {/* Divider */}
           <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 28 }} />
 
+          {/* Compliance checkboxes */}
+          <motion.div
+            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+            style={{ marginBottom: 24 }}
+          >
+            <p style={{
+              fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const,
+              color: "#aaa", fontFamily: "'JetBrains Mono', monospace", marginBottom: 14,
+            }}>
+              Compliance Confirmation
+            </p>
+            {[
+              { id: "us", checked: checkUS, set: setCheckUS, label: "I confirm I am not a US person or entity" },
+              { id: "reg", checked: checkReg, set: setCheckReg, label: "I understand USDY is a regulated financial instrument subject to transfer restrictions" },
+              { id: "tos", checked: checkTOS, set: setCheckTOS, label: "I accept the Terms of Service and Risk Disclosure" },
+            ].map((item) => (
+              <label
+                key={item.id}
+                style={{
+                  display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer",
+                  marginBottom: 10, padding: "8px 10px", borderRadius: 8,
+                  background: item.checked ? "rgba(34,197,94,0.04)" : "transparent",
+                  border: `1px solid ${item.checked ? "rgba(34,197,94,0.15)" : "rgba(0,0,0,0.06)"}`,
+                  transition: "all 0.3s ease",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={item.checked}
+                  onChange={() => item.set(!item.checked)}
+                  style={{ display: "none" }}
+                />
+                <span style={{
+                  width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 1,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: item.checked ? "#0a0a0a" : "#fff",
+                  border: `1.5px solid ${item.checked ? "#0a0a0a" : "rgba(0,0,0,0.18)"}`,
+                  transition: "all 0.25s ease",
+                }}>
+                  {item.checked && (
+                    <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
+                      <path d="M2.5 6l2.5 2.5 4.5-5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  )}
+                </span>
+                <span style={{
+                  fontSize: 12, color: item.checked ? "#333" : "#888",
+                  fontFamily: "'Inter', sans-serif", lineHeight: 1.5, letterSpacing: "-0.01em",
+                  transition: "color 0.25s ease",
+                }}>
+                  {item.label}
+                </span>
+              </label>
+            ))}
+          </motion.div>
+
           {/* Error */}
           {error && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -161,8 +224,8 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           )}
 
           {/* Auth buttons */}
-          <motion.div style={{ display: "flex", flexDirection: "column", gap: 12 }}
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          <motion.div style={{ display: "flex", flexDirection: "column", gap: 12, opacity: allChecked ? 1 : 0.45, pointerEvents: allChecked ? "auto" : "none", transition: "opacity 0.4s ease" }}
+            initial={{ opacity: 0 }} animate={{ opacity: allChecked ? 1 : 0.45 }}
             transition={{ duration: 0.8, delay: 0.6 }}>
 
             {/* Google */}
