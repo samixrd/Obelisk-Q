@@ -47,7 +47,7 @@ export function ManagedAssets() {
   ];
 
   return (
-    <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
+    <div className="col-span-12 glass-card rounded-3xl p-8 md:p-10">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
         <div>
           <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>

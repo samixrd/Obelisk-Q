@@ -108,7 +108,7 @@ export function StabilityScoreCard() {
   const [engineOpen, setEngineOpen] = useState(false);
 
   return (
-    <div className="col-span-12 lg:col-span-5 glass-card rounded-2xl p-6 md:p-10 min-h-[320px] flex flex-col justify-between">
+    <div className="col-span-12 glass-card rounded-3xl p-8 md:p-10 min-h-[320px] flex flex-col justify-between">
       <div>
         <div className="flex items-center justify-between mb-6">
           <p className="text-[10px] uppercase text-muted-foreground" style={{ letterSpacing: "0.28em" }}>Stability Score</p>

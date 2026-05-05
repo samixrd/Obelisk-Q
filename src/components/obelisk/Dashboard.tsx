@@ -311,12 +311,10 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                 </div>
               </div>
 
-              {/* Existing feature components — restored */}
-              <div className="w-full grid grid-cols-12 gap-5 md:gap-6 mt-4">
-                <StabilityScoreCard />
-                <YieldEstimator />
-                <ManagedAssets />
-              </div>
+              {/* Existing feature components — restored to main grid */}
+              <StabilityScoreCard />
+              <YieldEstimator />
+              <ManagedAssets />
 
             </motion.div>
           )}
