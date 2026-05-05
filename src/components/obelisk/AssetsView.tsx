@@ -1,236 +1,161 @@
 import { motion } from "framer-motion";
-import { useYieldData, YieldInfo } from "@/hooks/useYieldData";
-import { usePriceOracle, PriceData } from "@/hooks/usePriceOracle";
-import { useState, useEffect } from "react";
-
-function useRelativeTime(date: Date | null) {
-  const [time, setTime] = useState("");
-
-  useEffect(() => {
-    if (!date) return;
-    const update = () => {
-      const diff = Math.floor((new Date().getTime() - date.getTime()) / 1000);
-      if (diff < 60) setTime("Just now");
-      else if (diff < 3600) setTime(`Updated ${Math.floor(diff / 60)}m ago`);
-      else setTime(`Updated ${Math.floor(diff / 3600)}h ago`);
-    };
-    update();
-    const id = setInterval(update, 30000);
-    return () => clearInterval(id);
-  }, [date]);
-
-  return time;
-}
+import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { useVault } from "@/hooks/useVault";
 
 const fadeUp = {
-  initial: { opacity: 0, y: 16 },
+  initial: { opacity: 0, y: 14 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
 };
 
-interface AssetCardProps {
-  title: string;
-  subtitle: string;
-  fields: { label: string; value: string; isLink?: boolean; href?: string }[];
-  delay: number;
-  yieldInfo: YieldInfo;
-  priceData: PriceData;
-}
+const ASSET_DETAILS = [
+  {
+    symbol: "USDY",
+    name: "Ondo USD Yield",
+    issuer: "Ondo Finance",
+    standard: "ERC-20",
+    backing: "US Treasuries / Bank Deposits",
+    chain: "Mantle Network",
+    address: "0x8D6857216076fb05316B3C068694086E6689799c",
+    allocation_rule: "Score < 60 → Default Reserve"
+  },
+  {
+    symbol: "mETH",
+    name: "Mantle Staked ETH",
+    issuer: "Mantle LSP",
+    standard: "ERC-20",
+    backing: "Staked ETH (Beacon Chain)",
+    chain: "Mantle Network",
+    address: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0",
+    allocation_rule: "Score ≥ 80 → Targeted Growth"
+  }
+];
 
-function AssetCard({ title, subtitle, fields, delay, yieldInfo, priceData }: AssetCardProps) {
-  const relativeTime = useRelativeTime(yieldInfo.lastUpdated);
+export function AssetsView() {
+  const { livePrices, liveYields } = useAgentWebSocket();
+  const { vaultStats } = useVault();
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
-      className="glass-card rounded-2xl p-8 md:p-10 col-span-12 lg:col-span-6 flex flex-col h-full"
-    >
-      <div className="mb-8">
-        <h3
-          className="text-2xl font-semibold text-foreground mb-1 flex items-baseline gap-3"
-        >
-          {title}
-          {!priceData.loading && (
-            <span className="text-[13px] font-medium font-mono">
-              ${priceData.price.toLocaleString(undefined, { 
-                minimumFractionDigits: priceData.price < 10 ? 2 : 0, 
-                maximumFractionDigits: 2 
-              })}
-              <span className={`ml-2 ${priceData.change24h >= 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
-                {priceData.change24h >= 0 ? '↑' : '↓'} {priceData.change24h >= 0 ? '+' : ''}{priceData.change24h.toFixed(2)}%
-              </span>
-            </span>
-          )}
-        </h3>
-        <p
-          className="text-sm text-muted-foreground"
-        >
-          {subtitle}
-        </p>
+    <motion.div {...fadeUp} className="space-y-12 pb-20">
+      
+      {/* Sector Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {ASSET_DETAILS.map((asset, i) => {
+          const isUSDY = asset.symbol === "USDY";
+          const price = isUSDY ? livePrices.usdy : livePrices.meth;
+          const apy = isUSDY ? liveYields.usdy : liveYields.meth;
+
+          return (
+            <div key={asset.symbol} className="glass-card rounded-[32px] overflow-hidden flex flex-col">
+              <div className="p-8 md:p-10 flex-1">
+                <div className="flex items-center justify-between mb-8">
+                  <div className="flex items-center gap-4">
+                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center shadow-lg ${isUSDY ? "bg-blue-500/10 text-blue-600" : "bg-purple-500/10 text-purple-600"}`}>
+                      <span className="font-bold text-lg">{asset.symbol[0]}</span>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>{asset.name}</h3>
+                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-widest" style={{ fontFamily: "'Inter', sans-serif" }}>{asset.issuer} · {asset.chain}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/5 border border-emerald-500/10 rounded-full mb-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-tighter">LIVE FEED</span>
+                    </div>
+                    <p className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {isUSDY ? `$${price.toFixed(2)}` : `$${price.toLocaleString()}`}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Sub-metrics */}
+                <div className="grid grid-cols-2 gap-4 mb-8">
+                  <div className="p-5 bg-black/[0.02] border border-black/[0.05] rounded-3xl">
+                    <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5" style={{ fontFamily: "'Inter', sans-serif" }}>Current APY</p>
+                    <p className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>{apy}%</p>
+                  </div>
+                  <div className="p-5 bg-black/[0.02] border border-black/[0.05] rounded-3xl">
+                    <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5" style={{ fontFamily: "'Inter', sans-serif" }}>Market Cap (Mantle)</p>
+                    <p className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      {isUSDY ? "~24M" : "~29K"} <span className="text-xs text-muted-foreground font-medium ml-0.5">{asset.symbol}</span>
+                    </p>
+                  </div>
+                </div>
+
+                {/* Technical Specs */}
+                <div className="space-y-4">
+                  {[
+                    { label: "Token Standard", value: asset.standard },
+                    { label: "Backing Reserve", value: asset.backing },
+                    { label: "Allocation Rule", value: asset.allocation_rule },
+                    { label: "Contract Address", value: `${asset.address.slice(0, 10)}...${asset.address.slice(-8)}`, copy: true }
+                  ].map(spec => (
+                    <div key={spec.label} className="flex items-center justify-between py-3 border-b border-black/[0.03]">
+                      <span className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>{spec.label}</span>
+                      <span className="text-[12px] font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>{spec.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      <div className="space-y-4 flex-1">
-        {fields.map((field, i) => (
-          <div key={i} className="flex flex-col gap-1">
-            <span
-              className="text-[9px] uppercase text-muted-foreground/60"
-              style={{ letterSpacing: "0.2em", fontFamily: "'JetBrains Mono', monospace", fontWeight: 400 }}
-            >
-              {field.label}
-            </span>
-            {field.label === "Current APY" ? (
-              <div className="flex items-center gap-2">
-                <span
-                  className="text-[13px] text-foreground/80"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 400 }}
-                >
-                  {yieldInfo.apy.toFixed(2)}%
-                </span>
-                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon/5 border border-neon/10">
-                  <div className="h-1 w-1 rounded-full bg-neon animate-pulse" />
-                  <span className="text-[8px] uppercase text-neon tracking-wider font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>Live</span>
-                </div>
-                <span className="text-[9px] text-muted-foreground/40 ml-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{relativeTime}</span>
+      {/* Rules Table */}
+      <div className="glass-card rounded-[32px] p-8 md:p-12">
+        <div className="flex items-center justify-between mb-10">
+          <h3 className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+            AI Allocation <span className="font-light">Rules Engine</span>
+          </h3>
+          <IconShield className="text-black/20" size={32} />
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[
+            { range: "≥ 80", target: "mETH", color: "bg-purple-500", desc: "Aggressive Growth" },
+            { range: "60 - 80", target: "HOLD", color: "bg-slate-400", desc: "Maintain Neutral" },
+            { range: "< 60", target: "USDY", color: "bg-blue-500", desc: "Defensive Hedge" },
+            { range: "Δ5/60m", target: "PAUSE", color: "bg-red-500", desc: "Circuit Breaker" }
+          ].map(rule => (
+            <div key={rule.range} className="p-6 border border-black/5 rounded-[24px]">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Score Range</span>
+                <div className={`h-2 w-2 rounded-full ${rule.color}`} />
               </div>
-            ) : field.isLink ? (
-              <a
-                href={field.href}
-                target="_blank"
-                rel="noreferrer"
-                className="text-[13px] text-foreground/80 hover:text-foreground transition-colors break-all"
-                style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 400 }}
-              >
-                {field.value} <span className="opacity-30">↗</span>
-              </a>
-            ) : (
-              <span
-                className="text-[13px] text-foreground/80"
-                style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 400 }}
-              >
-                {field.value}
-              </span>
-            )}
-          </div>
-        ))}
+              <p className="text-xl font-bold text-black mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>{rule.range}</p>
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-widest mb-4">{rule.desc}</p>
+              <div className="py-2 px-3 bg-black/5 rounded-xl inline-block">
+                <span className="text-[10px] font-bold text-black">ACTION: {rule.target}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Constraints */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+         <div className="p-8 bg-blue-500/5 border border-blue-500/10 rounded-[32px]">
+            <h4 className="text-sm font-bold text-blue-900 mb-2 uppercase tracking-widest">Counterparty Exposure Cap</h4>
+            <p className="text-xs text-blue-800/60 leading-relaxed">
+              Automated enforcement ensures no single counterparty (Ondo/Mantle) exceeds **45%** of total vault NAV, mitigating platform-specific systemic risks.
+            </p>
+         </div>
+         <div className="p-8 bg-purple-500/5 border border-purple-500/10 rounded-[32px]">
+            <h4 className="text-sm font-bold text-purple-900 mb-2 uppercase tracking-widest">Liquidity Reserve Floor</h4>
+            <p className="text-xs text-purple-800/60 leading-relaxed">
+              A minimum **7.5%** liquidity floor is maintained at all times to facilitate instant withdrawals and cover gas spikes during high volatility.
+            </p>
+         </div>
       </div>
     </motion.div>
   );
 }
 
-export function AssetsView() {
-  const yieldData = useYieldData();
-  const prices = usePriceOracle();
+function IconShield({ className, size }: { className?: string, size?: number }) {
   return (
-    <motion.div {...fadeUp} className="space-y-8">
-      {/* Assets Grid */}
-      <div className="grid grid-cols-12 gap-6">
-        <AssetCard
-          delay={0.1}
-          yieldInfo={yieldData.usdy}
-          priceData={prices.usdy}
-          title="USDY — US Dollar Yield"
-          subtitle="Tokenized US Treasury Note by Ondo Finance"
-          fields={[
-            { label: "Asset type", value: "Tokenized short-term US Treasuries" },
-            { label: "Issuer", value: "Ondo Finance" },
-            { label: "Backing", value: "US Treasury bills + bank demand deposits" },
-            { label: "Current APY", value: `${yieldData.usdy.apy.toFixed(1)}% (variable)` },
-            { label: "Token standard", value: "ERC-20 (upgradeable proxy)" },
-            { label: "Chain", value: "Mantle Network (L2)" },
-            { label: "Contract", value: "0x5bE26527e817998A7206475496fDE1E68957c5A6" },
-            { 
-              label: "Explorer link", 
-              value: "mantlescan.xyz/token/0x5bE...", 
-              isLink: true, 
-              href: "https://mantlescan.xyz/token/0x5bE26527e817998A7206475496fDE1E68957c5A6" 
-            },
-            { label: "Transfer restriction", value: "Non-US persons only" },
-            { label: "Total supply on Mantle", value: "~24 million USDY" },
-          ]}
-        />
-
-        <AssetCard
-          delay={0.2}
-          yieldInfo={yieldData.meth}
-          priceData={prices.meth}
-          title="mETH — Mantle Staked ETH"
-          subtitle="Liquid staking receipt token by Mantle LSP"
-          fields={[
-            { label: "Asset type", value: "Liquid staked Ethereum" },
-            { label: "Issuer", value: "Mantle Liquid Staking Protocol" },
-            { label: "Backing", value: "ETH staked on Ethereum L1" },
-            { label: "Current APY", value: `${yieldData.meth.apy.toFixed(1)}% (variable)` },
-            { label: "Token standard", value: "ERC-20 (upgradeable proxy)" },
-            { label: "Chain", value: "Mantle Network (L2)" },
-            { label: "Contract", value: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0" },
-            { 
-              label: "Explorer link", 
-              value: "mantlescan.xyz/token/0xcDA...", 
-              isLink: true, 
-              href: "https://mantlescan.xyz/token/0xcDA86A272531e8640cD7F1a92c01839911B90bb0" 
-            },
-            { label: "Transfer restriction", value: "None — permissionless" },
-            { label: "Total supply on Mantle", value: "~29,000 mETH" },
-          ]}
-        />
-      </div>
-
-      {/* Allocation Logic */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="glass-card rounded-2xl p-8 md:p-10"
-      >
-        <h3
-          className="text-xl font-semibold text-foreground mb-8"
-        >
-          How the AI allocates between these assets
-        </h3>
-
-        <div className="flex flex-col gap-6">
-          {[
-            { condition: "Score >= 80 + Stable", action: "Rotate to mETH (higher yield)" },
-            { condition: "Score < 60 or High Volatility", action: "Rotate to USDY (stable)" },
-            { condition: "Between 60-80", action: "Hold current allocation" },
-            { condition: "Circuit breaker fired", action: "Pause all allocation" },
-          ].map((item, i) => (
-            <div key={i} className="flex items-center gap-6">
-              <div className="w-[200px] flex-shrink-0">
-                <span
-                  className="text-[11px] text-muted-foreground"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 400 }}
-                >
-                  {item.condition}
-                </span>
-              </div>
-              <div className="h-px flex-1 bg-foreground/5" />
-              <div className="w-[240px] text-right">
-                <span
-                  className="text-[11px] text-foreground/70"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 400 }}
-                >
-                  {item.action}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Bottom Note */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 0.5 }}
-        className="text-[11px] text-muted-foreground/50 text-center max-w-2xl mx-auto leading-relaxed"
-        style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 400 }}
-      >
-        Both assets are yield-bearing RWAs. 
-        The AI agent monitors yield spread, volatility, 
-        and liquidity depth every 10 seconds to optimize allocation.
-      </motion.p>
-    </motion.div>
+    <svg viewBox="0 0 24 24" width={size ?? 24} height={size ?? 24} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+    </svg>
   );
 }

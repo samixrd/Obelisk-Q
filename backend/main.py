@@ -1,14 +1,17 @@
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+import asyncio
+import json
 import random
 import time
-import math
+import sqlite3
 from datetime import datetime, timedelta
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
+from typing import List
 
-app = FastAPI(title="Obelisk Q AI Engine")
+app = FastAPI(title="Obelisk Q Advanced AI Engine")
 
-# Enable CORS for frontend integration
+# CORS setup
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -16,107 +19,185 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ─── Data Models ──────────────────────────────────────────────────────────────
+# ─── Database Setup ───────────────────────────────────────────────────────────
 
-class ScoreRequest(BaseModel):
-    yield_spread: float
-    volatility_72h: float
-    dex_liquidity: float
+def init_db():
+    conn = sqlite3.connect("obelisk_q.db")
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS logs 
+                 (timestamp TEXT, action TEXT, score INTEGER, message TEXT, regime TEXT)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS metrics 
+                 (timestamp TEXT, score INTEGER, yield_diff REAL, vol REAL, liq REAL)''')
+    conn.commit()
+    conn.close()
 
-class ScoreResponse(BaseModel):
-    confidence_score: int
-    confidence_threshold: int
-    volatility_regime: str
-    market_regime: str
-    components: dict
+init_db()
 
-# ─── AI Logic (Simulated for this demo, but structured for real models) ──────
+# ─── Global State ─────────────────────────────────────────────────────────────
 
-def calculate_q_score(spread: float, vol: float, liq: float) -> int:
+class AgentState:
+    def __init__(self):
+        self.current_score = 92
+        self.regime = "Stable"
+        self.last_action = "HOLD"
+        self.score_history = [] # List of (timestamp, score)
+        self.circuit_breaker_armed = False
+        self.next_analysis_in = 10
+        self.active_connections: List[WebSocket] = []
+
+state = AgentState()
+
+# ─── AI Engine Logic ──────────────────────────────────────────────────────────
+
+def calculate_weighted_q_score(yield_diff: float, vol: float, liq: float) -> int:
     """
-    In a real scenario, this would load a PyTorch/TensorFlow model.
-    Logic: High spread + Low Vol + High Liq = High Score.
+    Weighted formula:
+    Yield Diff (40%) + Volatility Penalty (35%) + Liquidity Depth (25%)
     """
-    base = 85
-    penalty = (vol * 5) - (liq / 1000000) + (spread * 2)
-    score = int(base - penalty + random.randint(-2, 2))
-    return max(0, min(100, score))
-
-def detect_regime(vol: float) -> str:
-    return "high_volatility" if vol > 2.5 else "stable"
-
-# ─── Endpoints ───────────────────────────────────────────────────────────────
-
-@app.post("/api/score", response_model=ScoreResponse)
-async def get_score(req: ScoreRequest):
-    score = calculate_q_score(req.yield_spread, req.volatility_72h, req.dex_liquidity)
-    regime = detect_regime(req.volatility_72h)
+    # Normalize inputs (0-100 scales)
+    y_score = min(100, max(0, yield_diff * 20)) # Assuming 5% diff is 100
+    v_score = max(0, 100 - (vol * 20))           # Assuming 5.0 sigma is 0
+    l_score = min(100, max(0, liq / 50000))      # Assuming 5M is 100
     
-    return {
-        "confidence_score": score,
-        "confidence_threshold": 65 if regime == "stable" else 80,
-        "volatility_regime": regime,
-        "market_regime": "Trending" if score > 75 else "Sideways",
-        "components": {
-            "yield_score": random.randint(70, 95),
-            "volatility_score": random.randint(80, 98),
-            "liquidity_score": random.randint(75, 90)
+    final_score = (y_score * 0.40) + (v_score * 0.35) + (l_score * 0.25)
+    return int(final_score)
+
+def check_circuit_breaker(new_score: int) -> bool:
+    """Trigger if score drops 5 points in 60 minutes."""
+    now = time.time()
+    state.score_history.append((now, new_score))
+    
+    # Keep only 60m history
+    state.score_history = [s for s in state.score_history if s[0] > now - 3600]
+    
+    if len(state.score_history) > 1:
+        old_score = state.score_history[0][1]
+        if old_score - new_score >= 5:
+            return True
+    return False
+
+async def engine_cycle():
+    """Runs every 10 seconds."""
+    while True:
+        # 1. Countdown update (every 1s)
+        for i in range(10, 0, -1):
+            state.next_analysis_in = i
+            await broadcast({"type": "countdown", "value": i})
+            await asyncio.sleep(1)
+
+        # 2. Perform Analysis
+        yield_diff = 2.4 + random.uniform(-0.5, 0.5)
+        vol = 1.2 + random.uniform(-0.8, 0.8)
+        liq = 4200000 + random.randint(-500000, 500000)
+        
+        new_score = calculate_weighted_q_score(yield_diff, vol, liq)
+        
+        # Regime detection
+        if vol > 2.5: state.regime = "Volatile"
+        elif new_score > 80: state.regime = "Trending"
+        else: state.regime = "Stable"
+        
+        # Rule Engine Decision
+        decision = "HOLD"
+        message = "Market conditions stable. Maintaining current allocation."
+        
+        if new_score >= 80:
+            decision = "REBALANCE"
+            message = f"Bullish signal detected (Score {new_score}). Increasing mETH exposure."
+        elif new_score < 60:
+            decision = "PROTECT"
+            message = f"Risk threshold exceeded (Score {new_score}). Rotating to USDY reserves."
+            
+        # Circuit Breaker check
+        if check_circuit_breaker(new_score):
+            state.circuit_breaker_armed = True
+            decision = "PAUSE"
+            message = "CIRCUIT BREAKER TRIGGERED: Rapid stability degradation detected."
+
+        # 3. Persistence
+        conn = sqlite3.connect("obelisk_q.db")
+        c = conn.cursor()
+        now_str = datetime.now().isoformat()
+        c.execute("INSERT INTO logs VALUES (?, ?, ?, ?, ?)", (now_str, decision, new_score, message, state.regime))
+        c.execute("INSERT INTO metrics VALUES (?, ?, ?, ?, ?)", (now_str, new_score, yield_diff, vol, liq))
+        conn.commit()
+        conn.close()
+
+        # 4. Broadcast Update
+        state.current_score = new_score
+        payload = {
+            "type": "update",
+            "score": new_score,
+            "regime": state.regime,
+            "decision": decision,
+            "message": message,
+            "yields": {
+                "usdy": round(4.8 + random.uniform(-0.1, 0.1), 2),
+                "meth": round(3.4 + random.uniform(-0.2, 0.2), 2)
+            },
+            "prices": {
+                "usdy": 1.00,
+                "meth": round(3450.20 + random.uniform(-10, 10), 2)
+            }
         }
-    }
+        await broadcast(payload)
 
-@app.get("/api/yields")
-async def get_live_yields():
-    # Real logic would fetch from Pyth/Chainlink or protocol APIs
-    return {
-        "usdy": {
-            "apy": round(4.8 + random.uniform(-0.1, 0.1), 2),
-            "price": 1.00,
-            "change_24h": 0.01
-        },
-        "meth": {
-            "apy": round(3.4 + random.uniform(-0.2, 0.2), 2),
-            "price": 3450.20 + random.uniform(-10, 10),
-            "change_24h": 1.2
-        },
-        "timestamp": datetime.now().isoformat()
-    }
+# ─── WebSocket Management ────────────────────────────────────────────────────
 
-@app.get("/api/performance")
-async def get_performance_metrics():
-    return {
-        "ytd_return": 14.82,
-        "sharpe_ratio": 2.41,
-        "max_drawdown": -1.84,
-        "win_rate": 86,
-        "monthly_returns": [
-            {"month": "Jan", "value": 4.2},
-            {"month": "Feb", "value": 3.8},
-            {"month": "Mar", "value": 5.1},
-            {"month": "Apr", "value": 1.72}
-        ]
-    }
-
-@app.get("/api/agent/logs")
-async def get_agent_logs():
-    actions = ["rebalance", "scan", "hold", "warn"]
-    messages = [
-        "Optimal allocation detected: Increasing mETH weight by 2.4%",
-        "Stability scan passed: All safety parameters within 1.5 sigma",
-        "Market regime shifted to Trending: Adjusting confidence threshold",
-        "Minor liquidity fluctuation detected in USDY pool: Monitoring",
-        "Circuit breaker armed: Drawdown threshold set at -3.5%"
-    ]
+async def broadcast(message: dict):
+    if not state.active_connections: return
+    dead_connections = []
+    msg_json = json.dumps(message)
+    for connection in state.active_connections:
+        try:
+            await connection.send_text(msg_json)
+        except:
+            dead_connections.append(connection)
     
-    logs = []
-    now = datetime.now()
-    for i in range(10):
-        logs.append({
-            "timestamp": (now - timedelta(minutes=i*5)).isoformat(),
-            "action": random.choice(actions),
-            "message": random.choice(messages),
-            "score": random.randint(85, 99)
-        })
-    return logs
+    for dead in dead_connections:
+        state.active_connections.remove(dead)
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    state.active_connections.append(websocket)
+    try:
+        # Send initial state
+        await websocket.send_text(json.dumps({
+            "type": "init",
+            "score": state.current_score,
+            "regime": state.regime
+        }))
+        while True:
+            await websocket.receive_text() # Keep alive
+    except WebSocketDisconnect:
+        state.active_connections.remove(websocket)
+
+# ─── REST Endpoints ──────────────────────────────────────────────────────────
+
+@app.get("/api/status")
+async def get_status():
+    return {
+        "score": state.current_score,
+        "regime": state.regime,
+        "circuit_breaker": state.circuit_breaker_armed,
+        "next_analysis": state.next_analysis_in
+    }
+
+@app.get("/api/logs")
+async def get_logs(limit: int = 20):
+    conn = sqlite3.connect("obelisk_q.db")
+    c = conn.cursor()
+    c.execute("SELECT * FROM logs ORDER BY timestamp DESC LIMIT ?", (limit,))
+    rows = c.fetchall()
+    conn.close()
+    return [{"timestamp": r[0], "action": r[1], "score": r[2], "message": r[3], "regime": r[4]} for r in rows]
+
+# ─── Lifecycle ────────────────────────────────────────────────────────────────
+
+@app.on_event("startup")
+async def startup_event():
+    asyncio.create_task(engine_cycle())
 
 if __name__ == "__main__":
     import uvicorn
