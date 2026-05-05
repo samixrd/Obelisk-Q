@@ -84,60 +84,6 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
         <QScoreBar />
       </div>
 
-      {/* ── Sticky tab navigation bar ── */}
-      <div
-        className="sticky z-30 top-[72px]"
-        style={{
-          background: "rgba(255, 255, 255, 0.7)",
-          backdropFilter: "blur(24px) saturate(160%)",
-          WebkitBackdropFilter: "blur(24px) saturate(160%)",
-          borderBottom: "1px solid rgba(0, 0, 0, 0.04)",
-        }}
-      >
-        <div className="mx-auto max-w-[1400px] px-4 md:px-14">
-          <div className="flex items-center justify-between py-3 md:py-4">
-            <div className="flex items-center gap-6 md:gap-12 overflow-x-auto no-scrollbar">
-              {(["overview", "portfolio", "performance", "safeguards", "assets"] as DashboardTab[]).map((t) => (
-                <button key={t} onClick={() => setTab(t)} className="relative group py-2 flex-shrink-0">
-                  <span
-                    className={`text-sm md:text-[15px] capitalize transition-all duration-500 ${
-                      tab === t
-                        ? "text-foreground"
-                        : "text-muted-foreground/50 hover:text-foreground/70"
-                    }`}
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      letterSpacing: "-0.01em",
-                      fontWeight: tab === t ? 600 : 500,
-                    }}
-                  >
-                    {t === "overview" && "Overview"}
-                    {t === "portfolio" && "Portfolio"}
-                    {t === "performance" && "Performance"}
-                    {t === "safeguards" && "Safeguards"}
-                    {t === "assets" && "Assets"}
-                  </span>
-                  {tab === t && (
-                    <motion.div
-                      layoutId="tab-underline"
-                      className="absolute -bottom-[13px] md:-bottom-[17px] left-0 right-0 h-[2px] bg-foreground rounded-full"
-                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-                    />
-                  )}
-                </button>
-              ))}
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/60 animate-pulse" />
-              <p
-                className="hidden md:block text-[10px] uppercase text-muted-foreground/40 font-mono tracking-[0.2em]"
-              >
-                {syncLabel}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Content */}
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-12">
@@ -174,7 +120,13 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                       +2.41%
                     </span>
                     <button
-                      onClick={() => setInvestOpen(true)}
+                      onClick={() => {
+                        if (!walletAddress || walletAddress === "connected") {
+                          onConnectWallet?.();
+                        } else {
+                          setInvestOpen(true);
+                        }
+                      }}
                       className="px-4 py-2 bg-foreground text-background text-xs font-medium rounded-full hover:bg-foreground/80 transition-colors"
                     >
                       Deposit
