@@ -122,10 +122,16 @@ function MagneticText({ text, className }: { text: string; className?: string })
     return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
+  const words = text.split(" ");
+
   return (
-    <div ref={containerRef} className={className}>
-      {text.split("").map((char, i) => (
-        <MagneticChar key={i} char={char} mousePos={mousePos} />
+    <div ref={containerRef} className={className} style={{ display: "inline-flex", flexWrap: "wrap", columnGap: "0.25em" }}>
+      {words.map((word, wordIndex) => (
+        <span key={wordIndex} style={{ display: "inline-block", whiteSpace: "nowrap" }}>
+          {word.split("").map((char, i) => (
+            <MagneticChar key={i} char={char} mousePos={mousePos} />
+          ))}
+        </span>
       ))}
     </div>
   );
