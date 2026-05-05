@@ -14,18 +14,19 @@ export function Logo({ size = 28, ...props }: LogoProps) {
       xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      {/* Braces { } */}
+      {/* Left Brace { */}
       <path 
-        d="M30 20 C20 20 20 30 20 40 L20 45 C20 50 15 50 15 50 C15 50 20 50 20 55 L20 60 C20 70 20 80 30 80" 
+        d="M 36 20 L 26 20 Q 18 20 18 28 L 18 42 Q 18 50 10 50 Q 18 50 18 58 L 18 72 Q 18 80 26 80 L 36 80" 
         stroke="currentColor" 
-        strokeWidth="4" 
+        strokeWidth="7" 
         strokeLinecap="round" 
         strokeLinejoin="round"
       />
+      {/* Right Brace } */}
       <path 
-        d="M70 20 C80 20 80 30 80 40 L80 45 C80 50 85 50 85 50 C85 50 80 50 80 55 L80 60 C80 70 80 80 70 80" 
+        d="M 64 20 L 74 20 Q 82 20 82 28 L 82 42 Q 82 50 90 50 Q 82 50 82 58 L 82 72 Q 82 80 74 80 L 64 80" 
         stroke="currentColor" 
-        strokeWidth="4" 
+        strokeWidth="7" 
         strokeLinecap="round" 
         strokeLinejoin="round"
       />
@@ -34,15 +35,16 @@ export function Logo({ size = 28, ...props }: LogoProps) {
       <circle 
         cx="50" 
         cy="50" 
-        r="18" 
+        r="15" 
         stroke="currentColor" 
-        strokeWidth="4" 
+        strokeWidth="7" 
         fill="none" 
       />
+      {/* Q Tail */}
       <path 
-        d="M62 62 L70 70" 
+        d="M 58 58 L 66 66" 
         stroke="currentColor" 
-        strokeWidth="4" 
+        strokeWidth="7" 
         strokeLinecap="round" 
       />
     </svg>
