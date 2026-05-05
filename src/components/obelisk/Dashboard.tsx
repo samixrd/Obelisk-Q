@@ -546,12 +546,12 @@ function QScoreBar() {
               {m.label}
             </span>
             <span
-              className="text-base md:text-lg"
+              className="text-base md:text-[17px]"
               style={{
-                fontFamily: "'JetBrains Mono', monospace",
-                letterSpacing: "-0.03em",
+                fontFamily: "'Inter', sans-serif",
+                letterSpacing: "-0.01em",
                 color: m.color,
-                fontWeight: 600,
+                fontWeight: 400,
               }}
             >
               {m.value}
