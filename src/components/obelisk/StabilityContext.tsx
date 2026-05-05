@@ -50,7 +50,7 @@ export function StabilityProvider({ children }: { children: ReactNode }) {
   const [engineScore,        setEngineScore]        = useState<number>(98);
   const [engineThreshold,    setEngineThreshold]    = useState<number>(65);
   const [engineRegime,       setEngineRegime]       = useState<"stable"|"high_volatility">("stable");
-  const [components,         setComponents]         = useState({ yield_score: 94, volatility_score: 86, liquidity_score: 84 });
+  const [components,         setComponents]         = useState({ yield_score: 56, volatility_score: 86, liquidity_score: 84 });
   const [engineLoading,      setEngineLoading]      = useState(false);
   const [engineError,        setEngineError]        = useState<string | null>(null);
   const [lastFetched,        setLastFetched]        = useState<number | null>(null);
