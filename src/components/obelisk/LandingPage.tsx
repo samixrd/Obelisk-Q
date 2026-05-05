@@ -171,6 +171,8 @@ function MagneticChar({ char, mousePos }: { char: string; mousePos: { x: number;
 
 // ─── Section Components ───────────────────────────────────────────────────────
 
+// ─── Section Components ───────────────────────────────────────────────────────
+
 function HeroSection({ onLaunch }: { onLaunch: () => void }) {
   return (
     <section className="landing-hero" id="dashboard">
@@ -180,7 +182,7 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         transition={{ duration: 1.0, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="landing-hero-content"
       >
-        <div className="landing-hero-heading" style={{ fontWeight: 300 }}>
+        <div className="landing-hero-heading" style={{ fontWeight: 700 }}>
           <MagneticText text="Multi-agent wealth" />
           <MagneticText text="orchestrated by AI." />
         </div>
@@ -213,11 +215,10 @@ function WalletSection() {
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
         <span className="landing-section-label">ANTIGRAVITY PROTOCOL</span>
-        <h2 className="landing-section-heading">
-          High-availability
-          <br />
-          agent resilience
-        </h2>
+        <div className="landing-section-heading" style={{ fontWeight: 700 }}>
+          <MagneticText text="High-availability" />
+          <MagneticText text="agent resilience" />
+        </div>
         <p className="landing-section-desc">
           Obelisk Q uses the Antigravity Protocol to ensure 100% uptime through 500ms agent timeouts and state-bypass logic.
         </p>
@@ -262,11 +263,10 @@ function FeaturesSection() {
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
         <span className="landing-section-label">FEATURES</span>
-        <h2 className="landing-section-heading">
-          Intelligence meets
-          <br />
-          infrastructure
-        </h2>
+        <div className="landing-section-heading" style={{ fontWeight: 700 }}>
+          <MagneticText text="Intelligence meets" />
+          <MagneticText text="infrastructure" />
+        </div>
       </motion.div>
 
       <div className="landing-features-grid">
@@ -280,7 +280,9 @@ function FeaturesSection() {
             transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
           >
             <span className="landing-feature-num">{f.num}</span>
-            <h3 className="landing-feature-title">{f.title}</h3>
+            <div className="landing-feature-title" style={{ fontWeight: 600 }}>
+              <MagneticText text={f.title} />
+            </div>
             <p className="landing-feature-desc">{f.desc}</p>
             <div className="landing-tags">
               {f.tags.map((tag) => (
@@ -328,7 +330,9 @@ function BuiltForSection() {
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
         <span className="landing-section-label">USER PROFILES</span>
-        <h2 className="landing-section-heading">Built for</h2>
+        <div className="landing-section-heading" style={{ fontWeight: 700 }}>
+          <MagneticText text="Built for" />
+        </div>
       </motion.div>
 
       <div className="landing-profiles-grid">
@@ -342,7 +346,9 @@ function BuiltForSection() {
             transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
           >
             <div className="landing-profile-icon">{p.icon}</div>
-            <h3 className="landing-profile-headline">{p.headline}</h3>
+            <div className="landing-profile-headline" style={{ fontWeight: 600 }}>
+              <MagneticText text={p.headline} />
+            </div>
             <p className="landing-profile-body">{p.body}</p>
             <div className="mt-auto pt-6">
               <span className="landing-profile-tag">{p.tag}</span>

@@ -236,6 +236,9 @@
   letter-spacing: -0.035em;
   color: #0a0a0a;
   margin-bottom: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .landing-section-desc {
