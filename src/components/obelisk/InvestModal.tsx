@@ -311,6 +311,50 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                   </div>
                 )}
 
+                {/* Risk disclosure — caution when score < 70 */}
+                {tab === "deposit" && score < 70 && (
+                  <div className="mb-4 px-4 py-3 flex items-start gap-3"
+                    style={{ background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.20)", borderRadius: 8 }}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="hsl(45,96%,53%)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+                      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                      <line x1="12" y1="9" x2="12" y2="13" />
+                      <line x1="12" y1="17" x2="12.01" y2="17" />
+                    </svg>
+                    <p className="text-[10px] leading-relaxed"
+                      style={{ fontFamily: "'JetBrains Mono', monospace",
+                        color: "hsl(45,96%,40%)", letterSpacing: "0.01em" }}>
+                      Market conditions are uncertain. The AI agent recommends caution.
+                    </p>
+                  </div>
+                )}
+
+                {/* Risk disclosure — vault paused (circuit breaker) */}
+                {tab === "deposit" && vaultStats?.paused && (
+                  <div className="mb-4 px-4 py-3 flex items-start gap-3"
+                    style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.20)", borderRadius: 8 }}>
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="hsl(0,84%,60%)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
+                      <circle cx="12" cy="12" r="10" />
+                      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
+                    </svg>
+                    <p className="text-[10px] leading-relaxed"
+                      style={{ fontFamily: "'JetBrains Mono', monospace",
+                        color: "hsl(0,84%,55%)", letterSpacing: "0.01em" }}>
+                      The circuit breaker has been triggered. Deposits are temporarily paused.
+                    </p>
+                  </div>
+                )}
+
+                {/* Audit disclaimer — always visible on deposit */}
+                {tab === "deposit" && (
+                  <div className="mb-5 px-4 py-2.5"
+                    style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 8 }}>
+                    <p className="text-[9px] leading-relaxed text-muted-foreground/50"
+                      style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.01em" }}>
+                      Smart contract audits pending. Use at your own risk.
+                    </p>
+                  </div>
+                )}
+
                 {/* Success state */}
                 {isSuccess && txHash && (
                   <div className="mb-5 px-4 py-3"
