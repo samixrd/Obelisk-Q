@@ -22,7 +22,6 @@ import { useAgentFeed } from "@/hooks/useAgentFeed";
 
 export type DashboardTab =
   | "earn"
-  | "overview"
   | "performance"
   | "safeguards"
   | "portfolio"
@@ -143,122 +142,6 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             </motion.div>
           )}
 
-          {tab === "overview" && (
-            <motion.div 
-              key="overview" 
-              {...fadeUp} 
-              className="grid grid-cols-12 gap-5 md:gap-6"
-            >
-
-              <StabilityScoreCard />
-
-              <div className="col-span-12 lg:col-span-8 glass-card rounded-2xl p-6 md:p-10">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
-                  <div>
-                    <p
-                      className="text-[10px] uppercase text-muted-foreground mb-2"
-                      style={{ letterSpacing: "0.28em" }}
-                    >
-                      System Health
-                    </p>
-                    <p
-                      className="text-2xl text-foreground"
-                      style={{
-                        fontFamily: "'Inter', sans-serif",
-                        letterSpacing: "-0.02em",
-                      }}
-                    >
-                      Stability · 30 days
-                    </p>
-                  </div>
-                  <div
-                    className="flex items-center gap-6 text-[10px] uppercase text-muted-foreground"
-                    style={{ letterSpacing: "0.25em" }}
-                  >
-                    <span>1D</span>
-                    <span>7D</span>
-                    <span className="text-foreground border-b border-foreground/30 pb-0.5">30D</span>
-                    <span>1Y</span>
-                  </div>
-                </div>
-                <StabilityGraph seed={1} height={160} />
-              </div>
-
-
-              <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
-                <div className="flex items-center justify-between mb-8">
-                  <p
-                    className="text-2xl text-foreground"
-                    style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
-                  >
-                    Positions
-                  </p>
-                  <button
-                    className="text-[10px] uppercase text-muted-foreground hover:text-foreground transition-colors"
-                    style={{ letterSpacing: "0.28em" }}
-                  >
-                    View all
-                  </button>
-                </div>
-                <div className="space-y-0 overflow-x-auto no-scrollbar">
-                  <div className="min-w-[600px] md:min-w-0">
-                    {positions.map((p, i) => (
-                      <motion.div
-                        key={p.name}
-                        initial={{ opacity: 0, y: 8 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 + i * 0.06, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-                        className="grid grid-cols-12 items-center py-5 border-t border-border/50 hover:bg-foreground/[0.02] transition-colors duration-500"
-                      >
-                        <div className="col-span-5 flex items-center gap-4">
-                          <div className="h-8 w-8 rounded-full bg-gradient-metal/30 border border-border-strong/60 flex items-center justify-center">
-                            <span
-                              className="text-xs text-foreground/80"
-                              style={{ fontFamily: "'Inter', sans-serif" }}
-                            >
-                              {p.symbol}
-                            </span>
-                          </div>
-                          <span
-                            className="text-lg text-foreground truncate"
-                            style={{ fontFamily: "'Inter', sans-serif" }}
-                          >
-                            {p.name}
-                          </span>
-                        </div>
-                        <div
-                          className="col-span-3 text-[13px] text-muted-foreground px-2"
-                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                        >
-                          {p.strategy}
-                        </div>
-                        <div
-                          className="col-span-2 text-[13px] text-foreground text-right"
-                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                        >
-                          {p.balance}
-                        </div>
-                        <div
-                          className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1 ${
-                            p.up ? "text-foreground/80" : "text-muted-foreground"
-                          }`}
-                          style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                        >
-                          {p.up ? <IconArrowUpRight size={12} /> : <IconArrowDownRight size={12} />}
-                          {p.change}
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <YieldEstimator />
-
-
-              <ManagedAssets />
-            </motion.div>
-          )}
 
           {tab === "performance" && (
             <motion.div key="performance" {...fadeUp} className="grid grid-cols-12 gap-5 md:gap-6">
