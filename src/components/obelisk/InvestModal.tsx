@@ -110,15 +110,15 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="p-5 bg-black/[0.03] border border-black/[0.05] rounded-3xl">
                     <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5" style={{ fontFamily: "'Inter', sans-serif" }}>Your Balance</p>
-                    <p className="text-xl font-bold text-black font-mono">
+                    <p className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
                       {vaultStats?.userBalance ?? "0.00"} <span className="text-xs font-medium text-muted-foreground ml-0.5">MNT</span>
                     </p>
                   </div>
                   <div className="p-5 bg-black/[0.03] border border-black/[0.05] rounded-3xl">
                     <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5" style={{ fontFamily: "'Inter', sans-serif" }}>Confidence</p>
                     <div className="flex items-center gap-2">
-                      <p className="text-xl font-bold text-black font-mono">{score}</p>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${canDeposit ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
+                      <p className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>{score}</p>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${canDeposit ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
                         {canDeposit ? "SAFE" : "RISK"}
                       </span>
                     </div>
@@ -140,12 +140,13 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                           type="number"
                           value={amount}
                           onChange={(e) => setAmount(e.target.value)}
-                          className="flex-1 bg-transparent text-xl font-bold text-black outline-none font-mono"
+                          className="flex-1 bg-transparent text-2xl font-bold text-black outline-none"
+                          style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
                           placeholder="0.00"
                         />
                         <div className="flex items-center gap-2 px-3 py-1.5 bg-black/5 rounded-xl">
                           <div className="h-4 w-4 rounded-full bg-blue-500" />
-                          <span className="text-xs font-bold text-black">MNT</span>
+                          <span className="text-xs font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
                         </div>
                       </div>
                     </div>
@@ -175,12 +176,14 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                             type="number"
                             value={withdrawAmount}
                             onChange={(e) => setWithdrawAmount(e.target.value)}
-                            className="flex-1 bg-transparent text-xl font-bold text-black outline-none font-mono"
+                            className="flex-1 bg-transparent text-2xl font-bold text-black outline-none"
+                            style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
                             placeholder="0.00"
                           />
                           <button 
                             onClick={() => setWithdrawAmount(vaultStats?.userBalance ?? "0")}
                             className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-tighter"
+                            style={{ fontFamily: "'Inter', sans-serif" }}
                           >
                             MAX
                           </button>
@@ -207,13 +210,13 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                     {txState === "pending" && (
                       <motion.div
                         initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-                        className="p-5 bg-black/[0.02] border border-black/[0.05] rounded-3xl"
+                        className="p-6 bg-black/[0.03] border border-black/[0.05] rounded-[24px]"
                       >
                         <div className="flex items-center justify-between mb-3">
                           <p className="text-[11px] font-bold text-black uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>Confirmations</p>
-                          <span className="text-[12px] font-bold font-mono">{confirmations}/3</span>
+                          <span className="text-[14px] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{confirmations}/3</span>
                         </div>
-                        <div className="h-1.5 w-full bg-black/5 rounded-full overflow-hidden">
+                        <div className="h-2 w-full bg-black/5 rounded-full overflow-hidden">
                           <motion.div 
                             className="h-full bg-black"
                             initial={{ width: 0 }}
@@ -221,7 +224,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                             transition={{ duration: 0.5 }}
                           />
                         </div>
-                        <p className="text-[10px] text-muted-foreground mt-3 font-medium text-center" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        <p className="text-[11px] text-muted-foreground mt-4 font-medium text-center" style={{ fontFamily: "'Inter', sans-serif" }}>
                           Processing on Mantle Testnet...
                         </p>
                       </motion.div>
@@ -232,14 +235,14 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                   <motion.button
                     onClick={handleAction}
                     disabled={isLoading || (tab === "deposit" && !canDeposit)}
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
-                    className={`w-full py-5 rounded-[24px] text-[15px] font-bold text-white transition-all shadow-lg ${isLoading ? "bg-black/50 cursor-not-allowed" : (tab === "deposit" && !canDeposit) ? "bg-orange-500/20 text-orange-600 cursor-not-allowed" : "bg-black hover:shadow-black/20"}`}
-                    style={{ fontFamily: "'Inter', sans-serif" }}
+                    whileHover={isLoading ? {} : { scale: 1.005 }}
+                    whileTap={isLoading ? {} : { scale: 0.995 }}
+                    className={`w-full py-5 rounded-[100px] text-[15px] font-bold text-white transition-all shadow-lg ${isLoading ? "bg-[#222] cursor-not-allowed" : (tab === "deposit" && !canDeposit) ? "bg-orange-500/20 text-orange-600 cursor-not-allowed" : "bg-[#0a0a0a] hover:shadow-black/20"}`}
+                    style={{ fontFamily: "'Inter', sans-serif", border: "none" }}
                   >
                     {isLoading ? (
                       <span className="flex items-center justify-center gap-3">
-                        <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                         </svg>
