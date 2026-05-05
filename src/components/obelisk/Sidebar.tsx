@@ -1,13 +1,13 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { 
-  IconOverview, 
   IconPerformance, 
   IconSafeguards, 
   IconPortfolio, 
   IconLogs, 
   IconPreferences,
   IconAssetInfo,
-  IconClose
+  IconClose,
+  IconArrowUpRight
 } from "./LineIcons";
 import { DashboardTab } from "./Dashboard.tsx";
 import { Logo } from "./Logo";
@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 const MENU_ITEMS = [
-  { icon: IconOverview,     label: "Overview",     tab: "overview"     },
+  { icon: IconArrowUpRight, label: "Earn",         tab: "earn"         },
   { icon: IconPerformance,  label: "Performance",  tab: "performance"  },
   { icon: IconPortfolio,    label: "Portfolio",    tab: "portfolio"    },
   { icon: IconSafeguards,   label: "Safeguards",   tab: "safeguards"   },
