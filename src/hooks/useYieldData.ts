@@ -14,6 +14,7 @@ export interface YieldData {
 
 const FALLBACK_USDY = 5.0;
 const FALLBACK_METH = 3.5;
+const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
 
 export function useYieldData(): YieldData {
   const [data, setData] = useState<YieldData>({
@@ -23,30 +24,42 @@ export function useYieldData(): YieldData {
 
   const fetchYields = async () => {
     try {
+      // 1. Try custom backend first for the "Real" AI-curated rates
+      const backendRes = await fetch(`${API_BASE}/api/yields`);
+      if (backendRes.ok) {
+        const bData = await backendRes.json();
+        setData({
+          usdy: {
+            apy: bData.usdy.apy,
+            loading: false,
+            lastUpdated: new Date(bData.timestamp),
+            trend7d: bData.usdy.change_24h
+          },
+          meth: {
+            apy: bData.meth.apy,
+            loading: false,
+            lastUpdated: new Date(bData.timestamp),
+            trend7d: bData.meth.change_24h
+          }
+        });
+        return;
+      }
+
+      // 2. Fallback to DefiLlama
       const response = await fetch('https://yields.llama.fi/pools');
       const json = await response.json();
       
       if (json.status === 'success' && Array.isArray(json.data)) {
         const pools = json.data;
-        
-        // Find USDY on Mantle
-        // Filter by project "ondo-finance", chain "Mantle"
-        const usdyPool = pools.find((p: any) => 
-          p.project === 'ondo-finance' && p.chain === 'Mantle'
-        );
-
-        // Find mETH
-        // Filter by project "mantle-lsp" or symbol "mETH"
-        const methPool = pools.find((p: any) => 
-          p.project === 'mantle-lsp' || p.symbol === 'mETH'
-        );
+        const usdyPool = pools.find((p: any) => p.project === 'ondo-finance' && p.chain === 'Mantle');
+        const methPool = pools.find((p: any) => p.project === 'mantle-lsp' || p.symbol === 'mETH');
 
         setData({
           usdy: {
             apy: usdyPool ? usdyPool.apy : FALLBACK_USDY,
             loading: false,
             lastUpdated: new Date(),
-            trend7d: usdyPool ? usdyPool.apyPct1D : null, // 1D trend as proxy or check if 7D exists
+            trend7d: usdyPool ? usdyPool.apyPct1D : null,
           },
           meth: {
             apy: methPool ? methPool.apy : FALLBACK_METH,
@@ -67,7 +80,7 @@ export function useYieldData(): YieldData {
 
   useEffect(() => {
     fetchYields();
-    const interval = setInterval(fetchYields, 60000);
+    const interval = setInterval(fetchYields, 30000); // More frequent updates for "Real" feel
     return () => clearInterval(interval);
   }, []);
 
