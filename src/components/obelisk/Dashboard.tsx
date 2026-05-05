@@ -17,6 +17,7 @@ import { Logo } from "./Logo";
 import { useStability } from "./StabilityContext";
 import { useVault } from "@/hooks/useVault";
 import { useYieldData } from "@/hooks/useYieldData";
+import { useAgentFeed } from "@/hooks/useAgentFeed";
 
 export type DashboardTab =
   | "overview"
@@ -46,6 +47,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   const tab = externalTab ?? internalTab;
   const { engineError, engineLoading, lastFetched } = useStability();
   const { vaultStats } = useVault();
+  const { logs } = useAgentFeed();
 
   // Human-readable sync label for the tab bar
   const syncLabel = engineError
@@ -293,6 +295,50 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
               </div>
 
               <DecisionTransparency />
+              
+              {/* Mini Agent Feed */}
+              <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
+                <div className="flex items-center justify-between mb-6">
+                  <p className="text-2xl text-foreground" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+                    Agent <span style={{ fontWeight: 300 }}>Signals</span>
+                  </p>
+                  <button 
+                    onClick={() => setTab("agent-logs")}
+                    className="text-[10px] uppercase text-muted-foreground hover:text-foreground transition-colors"
+                    style={{ letterSpacing: "0.28em" }}
+                  >
+                    View full feed
+                  </button>
+                </div>
+                <div className="space-y-2">
+                  {logs.slice(0, 3).map((log, i) => (
+                    <div key={i} className="flex items-center gap-4 py-3 border-t border-foreground/[0.03]">
+                      <span className="text-[10px] text-muted-foreground/40 font-mono w-16">
+                        {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
+                      </span>
+                      <div className="px-2 py-0.5 rounded text-[8px] font-bold w-14 text-center tracking-tighter"
+                        style={{ 
+                          background: log.action === 'rebalance' ? 'hsl(104 100% 68% / 0.1)' : 'rgba(0,0,0,0.05)',
+                          color: log.action === 'rebalance' ? 'hsl(104 100% 30%)' : 'rgba(0,0,0,0.5)'
+                        }}
+                      >
+                        {log.action.toUpperCase()}
+                      </div>
+                      <span className="flex-1 text-xs text-foreground/60 font-mono truncate">
+                        {log.message}
+                      </span>
+                      <span className="text-[10px] text-foreground font-mono">
+                        {log.score}
+                      </span>
+                    </div>
+                  ))}
+                  {logs.length === 0 && (
+                    <p className="text-center py-4 text-[10px] uppercase text-muted-foreground/30 tracking-widest">
+                      Initializing agent feed...
+                    </p>
+                  )}
+                </div>
+              </div>
 
               <ManagedAssets />
             </motion.div>
