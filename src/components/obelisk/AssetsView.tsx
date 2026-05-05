@@ -1,4 +1,25 @@
 import { motion } from "framer-motion";
+import { useYieldData, YieldInfo } from "@/hooks/useYieldData";
+import { useState, useEffect } from "react";
+
+function useRelativeTime(date: Date | null) {
+  const [time, setTime] = useState("");
+
+  useEffect(() => {
+    if (!date) return;
+    const update = () => {
+      const diff = Math.floor((new Date().getTime() - date.getTime()) / 1000);
+      if (diff < 60) setTime("Just now");
+      else if (diff < 3600) setTime(`Updated ${Math.floor(diff / 60)}m ago`);
+      else setTime(`Updated ${Math.floor(diff / 3600)}h ago`);
+    };
+    update();
+    const id = setInterval(update, 30000);
+    return () => clearInterval(id);
+  }, [date]);
+
+  return time;
+}
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -11,9 +32,11 @@ interface AssetCardProps {
   subtitle: string;
   fields: { label: string; value: string; isLink?: boolean; href?: string }[];
   delay: number;
+  yieldInfo: YieldInfo;
 }
 
-function AssetCard({ title, subtitle, fields, delay }: AssetCardProps) {
+function AssetCard({ title, subtitle, fields, delay, yieldInfo }: AssetCardProps) {
+  const relativeTime = useRelativeTime(yieldInfo.lastUpdated);
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -45,7 +68,21 @@ function AssetCard({ title, subtitle, fields, delay }: AssetCardProps) {
             >
               {field.label}
             </span>
-            {field.isLink ? (
+            {field.label === "Current APY" ? (
+              <div className="flex items-center gap-2">
+                <span
+                  className="text-[13px] text-foreground/80"
+                  style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 400 }}
+                >
+                  {yieldInfo.apy.toFixed(2)}%
+                </span>
+                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-neon/5 border border-neon/10">
+                  <div className="h-1 w-1 rounded-full bg-neon animate-pulse" />
+                  <span className="text-[8px] uppercase text-neon tracking-wider font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>Live</span>
+                </div>
+                <span className="text-[9px] text-muted-foreground/40 ml-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{relativeTime}</span>
+              </div>
+            ) : field.isLink ? (
               <a
                 href={field.href}
                 target="_blank"
@@ -71,19 +108,21 @@ function AssetCard({ title, subtitle, fields, delay }: AssetCardProps) {
 }
 
 export function AssetsView() {
+  const yieldData = useYieldData();
   return (
     <motion.div {...fadeUp} className="space-y-8">
       {/* Assets Grid */}
       <div className="grid grid-cols-12 gap-6">
         <AssetCard
           delay={0.1}
+          yieldInfo={yieldData.usdy}
           title="USDY — US Dollar Yield"
           subtitle="Tokenized US Treasury Note by Ondo Finance"
           fields={[
             { label: "Asset type", value: "Tokenized short-term US Treasuries" },
             { label: "Issuer", value: "Ondo Finance" },
             { label: "Backing", value: "US Treasury bills + bank demand deposits" },
-            { label: "Current APY", value: "~5.0% (variable)" },
+            { label: "Current APY", value: `${yieldData.usdy.apy.toFixed(1)}% (variable)` },
             { label: "Token standard", value: "ERC-20 (upgradeable proxy)" },
             { label: "Chain", value: "Mantle Network (L2)" },
             { label: "Contract", value: "0x5bE26527e817998A7206475496fDE1E68957c5A6" },
@@ -100,13 +139,14 @@ export function AssetsView() {
 
         <AssetCard
           delay={0.2}
+          yieldInfo={yieldData.meth}
           title="mETH — Mantle Staked ETH"
           subtitle="Liquid staking receipt token by Mantle LSP"
           fields={[
             { label: "Asset type", value: "Liquid staked Ethereum" },
             { label: "Issuer", value: "Mantle Liquid Staking Protocol" },
             { label: "Backing", value: "ETH staked on Ethereum L1" },
-            { label: "Current APY", value: "~3.5% (variable)" },
+            { label: "Current APY", value: `${yieldData.meth.apy.toFixed(1)}% (variable)` },
             { label: "Token standard", value: "ERC-20 (upgradeable proxy)" },
             { label: "Chain", value: "Mantle Network (L2)" },
             { label: "Contract", value: "0xcDA86A272531e8640cD7F1a92c01839911B90bb0" },

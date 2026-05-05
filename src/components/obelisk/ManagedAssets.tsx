@@ -3,6 +3,7 @@
 // by the Obelisk Q controller.
 import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
+import { useYieldData } from "@/hooks/useYieldData";
 
 interface Asset {
   symbol: string;
@@ -16,32 +17,35 @@ interface Asset {
   seed: number;
 }
 
-const assets: Asset[] = [
-  {
-    symbol: "USDY",
-    name: "Ondo US Dollar Yield",
-    blurb: "Tokenized US treasuries. Conservative, dollar-denominated.",
-    yield: "5.18%",
-    yieldLabel: "Real-time APY",
-    buffer: "$24,180",
-    bufferPct: 78,
-    tvl: "$182,430",
-    seed: 7,
-  },
-  {
-    symbol: "mETH",
-    name: "Mantle Staked Ether",
-    blurb: "Liquid-staked ETH on Mantle. Balanced growth with hedged downside.",
-    yield: "4.02%",
-    yieldLabel: "Staking yield",
-    buffer: "$11,640",
-    bufferPct: 62,
-    tvl: "$98,210",
-    seed: 11,
-  },
-];
-
 export function ManagedAssets() {
+  const { usdy, meth } = useYieldData();
+
+  const assets: Asset[] = [
+    {
+      symbol: "USDY",
+      name: "Ondo US Dollar Yield",
+      blurb: "Tokenized US treasuries. Conservative, dollar-denominated.",
+      yield: `${usdy.apy.toFixed(2)}%`,
+      yieldLabel: "Real-time APY",
+      buffer: "$24,180",
+      bufferPct: 78,
+      tvl: "$182,430",
+      seed: 7,
+      trend: usdy.trend7d,
+    },
+    {
+      symbol: "mETH",
+      name: "Mantle Staked Ether",
+      blurb: "Liquid-staked ETH on Mantle. Balanced growth with hedged downside.",
+      yield: `${meth.apy.toFixed(2)}%`,
+      yieldLabel: "Staking yield",
+      buffer: "$11,640",
+      bufferPct: 62,
+      tvl: "$98,210",
+      seed: 11,
+      trend: meth.trend7d,
+    },
+  ];
   return (
     <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
@@ -84,6 +88,11 @@ export function ManagedAssets() {
                     {a.yieldLabel}
                   </p>
                   <p className="text-2xl text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.yield}</p>
+                  {(a as any).trend && (
+                    <p className={`text-[9px] mt-1 ${(a as any).trend > 0 ? "text-neon" : "text-muted-foreground"}`} style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                      {(a as any).trend > 0 ? "+" : ""}{(a as any).trend.toFixed(2)}% (7d)
+                    </p>
+                  )}
                 </div>
               </div>
 
