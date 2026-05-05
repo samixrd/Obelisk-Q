@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
+import { PortfolioAllocation } from "./PortfolioAllocation";
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -18,6 +19,7 @@ const POSITIONS = [
 export function PortfolioView() {
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6">
+      <PortfolioAllocation />
 
       {/* Allocation donut — text-based since no charting lib imported */}
       <div className="col-span-12 lg:col-span-5 glass-card rounded-2xl p-6 md:p-10 flex flex-col justify-between min-h-[280px]">
