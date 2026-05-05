@@ -8,7 +8,7 @@ import { SafeguardsView } from "./SafeguardsView";
 import { PortfolioView } from "./PortfolioView";
 import { AgentLogsView } from "./AgentLogsView";
 import { PreferencesView } from "./PreferencesView";
-import { AssetInfoView } from "./AssetInfoView";
+import { AssetsView } from "./AssetsView";
 import { StabilityScoreCard } from "./StabilityScoreCard";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { InvestModal } from "./InvestModal";
@@ -23,7 +23,7 @@ export type DashboardTab =
   | "portfolio"
   | "agent-logs"
   | "preferences"
-  | "asset-info";
+  | "assets";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -416,9 +416,9 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             </motion.div>
           )}
 
-          {tab === "asset-info" && (
-            <motion.div key="asset-info" {...fadeUp}>
-              <AssetInfoView />
+          {tab === "assets" && (
+            <motion.div key="assets" {...fadeUp}>
+              <AssetsView />
             </motion.div>
           )}
         </AnimatePresence>
