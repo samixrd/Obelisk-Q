@@ -6,6 +6,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { useVault } from "@/hooks/useVault";
+import { usePriceOracle } from "@/hooks/usePriceOracle";
 import { Logo } from "./Logo";
 import { useStability } from "./StabilityContext";
 
@@ -20,6 +21,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
     vaultStats, txState, txHash, txError,
     isConnected, address, connect,
   } = useVault();
+  const prices = usePriceOracle();
 
   const { score, adaptive } = useStability();
   const [tab,            setTab]           = useState<"deposit" | "withdraw">("deposit");
@@ -192,6 +194,15 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                         MNT
                       </span>
                     </div>
+
+                    {!prices.mnt.loading && (
+                      <div className="mt-2 flex items-center justify-between text-[9px] text-muted-foreground/60 px-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        <span>1 MNT = ${prices.mnt.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</span>
+                        <span className="text-foreground/40">·</span>
+                        <span>Depositing {amount} MNT = ${(parseFloat(amount || "0") * prices.mnt.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}</span>
+                      </div>
+                    )}
+
                     <div className="flex gap-2 mt-2">
                       {["0.01", "0.05", "0.1", "0.5"].map((v) => (
                         <button key={v} onClick={() => setAmount(v)}
