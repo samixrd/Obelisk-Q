@@ -293,19 +293,19 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
               {/* Info cards — using site-wide glass-card */}
               <div className="col-span-12 lg:col-span-6 grid grid-cols-2 gap-4 content-start">
-                <div className="glass-card rounded-2xl px-6 py-5">
+                <div className="glass-card rounded-3xl px-6 py-5">
                   <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Yield Source</p>
                   <p className="text-sm font-medium text-foreground">USDY + mETH Blend</p>
                 </div>
-                <div className="glass-card rounded-2xl px-6 py-5">
+                <div className="glass-card rounded-3xl px-6 py-5">
                   <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Strategy</p>
                   <p className="text-sm font-medium text-foreground">AI-Managed · Auto</p>
                 </div>
-                <div className="glass-card rounded-2xl px-6 py-5">
+                <div className="glass-card rounded-3xl px-6 py-5">
                   <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Q-Score</p>
                   <p className="text-sm font-medium text-foreground">{engineLoading ? "—" : `${score} / 100`}</p>
                 </div>
-                <div className="glass-card rounded-2xl px-6 py-5">
+                <div className="glass-card rounded-3xl px-6 py-5">
                   <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Lock-up</p>
                   <p className="text-sm font-medium text-foreground">None · Withdraw anytime</p>
                 </div>
