@@ -48,9 +48,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   const { vaultStats } = useVault();
 
   // Human-readable sync label for the tab bar
-  const syncLabel = engineError === "Simulated"
-    ? "Live · Simulated"
-    : engineError
+  const syncLabel = engineError
     ? "Engine offline"
     : engineLoading
     ? "Connecting..."
