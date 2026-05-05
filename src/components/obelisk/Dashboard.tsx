@@ -477,8 +477,16 @@ function QScoreBar() {
   const { adaptive, setVolatility, engineLoading, engineError, components } = useStability();
   const isHighVol = adaptive.volatility === "high";
 
+  const { usdy, meth } = useYieldData();
+  const spread = Math.abs(usdy.apy - meth.apy).toFixed(1);
+
   const metrics = [
-    { label: "Yield Score",   value: engineLoading ? "—" : String(Math.round(components.yield_score)),      unit: "/100", color: "hsl(104 100% 45%)" },
+    { 
+      label: "Live Yields",   
+      value: `USDY ${usdy.apy.toFixed(1)}% · mETH ${meth.apy.toFixed(1)}% · Spread ${spread}%`, 
+      unit: "", 
+      color: "hsl(104 100% 45%)" 
+    },
     { label: "Risk Score",    value: "0.42",                                                                   unit: "σ",    color: "hsl(210 100% 50%)" },
     { label: "Accuracy",      value: engineLoading ? "—" : String(Math.round(components.volatility_score)),  unit: "%",    color: "hsl(35 100% 50%)"  },
     { label: "Uptime",        value: "99.9",                                                                   unit: "%",    color: "hsl(270 80% 60%)"  },

@@ -1,21 +1,6 @@
-// Managed Assets — features USDY (Ondo USD Yield) and mETH (Mantle Staked
-// ETH). Each card displays current yield and the Safety Buffer maintained
-// by the Obelisk Q controller.
 import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
-
-interface Asset {
-  symbol: string;
-  name: string;
-  blurb: string;
-  yield: string;
-  yieldLabel: string;
-  buffer: string;
-  bufferPct: number; // 0–100
-  tvl: string;
-  seed: number;
-}
-
+import { IconArrowUpRight } from "./LineIcons";
 import { useYieldData } from "@/hooks/useYieldData";
 
 interface Asset {
@@ -28,6 +13,7 @@ interface Asset {
   bufferPct: number; // 0–100
   tvl: string;
   seed: number;
+  trend?: string | null;
 }
 
 export function ManagedAssets() {
@@ -44,6 +30,7 @@ export function ManagedAssets() {
       bufferPct: 78,
       tvl: "$182,430",
       seed: 7,
+      trend: usdy.trend7d?.toFixed(2),
     },
     {
       symbol: "mETH",
@@ -55,6 +42,7 @@ export function ManagedAssets() {
       bufferPct: 62,
       tvl: "$98,210",
       seed: 11,
+      trend: meth.trend7d?.toFixed(2),
     },
   ];
 
@@ -99,7 +87,15 @@ export function ManagedAssets() {
                   <p className="text-[10px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.2em" }}>
                     {a.yieldLabel}
                   </p>
-                  <p className="text-2xl text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.yield}</p>
+                  <div className="flex flex-col sm:items-end">
+                    <p className="text-2xl text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.yield}</p>
+                    {a.trend && (
+                      <p className="text-[9px] text-neon flex items-center gap-0.5 mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        <IconArrowUpRight size={8} />
+                        {a.trend}% (7d)
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
