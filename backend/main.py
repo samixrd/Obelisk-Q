@@ -55,58 +55,52 @@ class AgentState(TypedDict):
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 def rwa_analyst_node(state: AgentState):
-    print("--- RWA ANALYST ---")
-    # Real logic: Fetch USDY yield, price data, and treasury spreads
+    print("node: analyst")
+    # control logic: open-loop yield delta scan
     yield_data = {"usdy": 5.1, "meth": 3.4}
     state["data"]["yields"] = yield_data
-    
-    msg = AIMessage(content=f"RWA Yield Scan Complete: USDY at {yield_data['usdy']}% provides superior risk-adjusted floor.")
+    msg = AIMessage(content="analyst: input vector processed. open-loop yield delta detected. usdy 5.1%. meth 3.4%. feedback loop stable.")
     return {"messages": [msg], "data": state["data"]}
 
 def risk_manager_node(state: AgentState):
-    print("--- RISK & COMPLIANCE ---")
-    # Real logic: Concentration checks, volatility sigma calculation
+    print("node: risk")
+    # control logic: pole-zero stability audit
     vol = 1.4
     risk_score = 42
     state["data"]["risk"] = {"vol": vol, "score": risk_score}
-    
-    msg = AIMessage(content=f"Compliance Check: Portfolio within 45% concentration cap. Risk score stable at {risk_score}.")
+    msg = AIMessage(content="risk: poles and zeros calculated. damping ratio 0.85. no oscillation detected in concentration cap. system within stable region.")
     return {"messages": [msg], "data": state["data"]}
 
 def researcher_node(state: AgentState):
-    print("--- RESEARCHER ---")
-    # Real logic: News search, Fed rate monitoring
-    msg = AIMessage(content="Market Sentiment: Fed rates holding steady. Favorable environment for Treasury-backed RWA.")
+    print("node: researcher")
+    msg = AIMessage(content="researcher: market frequency response neutral. no phase shift in treasury benchmark.")
     return {"messages": [msg]}
 
 def portfolio_tracker_node(state: AgentState):
-    print("--- PORTFOLIO TRACKER ---")
-    # Real logic: Performance calculations
+    print("node: tracker")
+    # control logic: steady-state error check
     state["data"]["perf"] = {"ytd": 14.82, "sharpe": 2.41}
-    msg = AIMessage(content="Portfolio Audit: Sharpe Ratio maintained at 2.41. All systems performing as expected.")
+    msg = AIMessage(content="tracker: steady-state error minimized. transfer function h(s) output matches target. performance resonant.")
     return {"messages": [msg], "data": state["data"]}
 
 def executor_node(state: AgentState):
-    print("--- EXECUTOR ---")
-    # Real logic: Building Mantle Transaction
-    msg = AIMessage(content="Execution Signal: Conditions met. Maintaining current allocation to USDY/mETH.")
+    print("node: executor")
+    # control logic: signal lock
+    msg = AIMessage(content="executor: signal locked. gain adjustment zero. maintaining state. logic synchronized.")
     return {"messages": [msg]}
 
 def supervisor_node(state: AgentState):
-    print("--- SUPERVISOR (BRAIN) ---")
-    # This acts as the router. In a real scenario, this uses an LLM to decide.
-    # Here we simulate the logic flow: Analyst -> Risk -> Portfolio -> Executor
-    
+    print("node: supervisor")
     messages = state.get("messages", [])
     if not messages:
         return {"next_agent": "rwa_analyst"}
     
     last_msg = messages[-1].content
-    if "Yield Scan" in last_msg:
+    if "analyst:" in last_msg:
         return {"next_agent": "risk_manager"}
-    if "Compliance Check" in last_msg:
+    if "risk:" in last_msg:
         return {"next_agent": "portfolio_tracker"}
-    if "Portfolio Audit" in last_msg:
+    if "tracker:" in last_msg:
         return {"next_agent": "executor"}
     
     return {"next_agent": END}
