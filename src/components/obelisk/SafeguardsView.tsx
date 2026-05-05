@@ -10,6 +10,8 @@ const fadeUp = {
   transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
 };
 
+import { MagneticText } from "./MagneticText";
+
 export function SafeguardsView() {
   const { logs } = useAgentFeed();
   const { score, regime, lastMessage } = useAgentWebSocket();
@@ -88,7 +90,11 @@ export function SafeguardsView() {
       <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">
         <div className="mb-8">
           <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Risk Protocols</p>
-          <p className="text-2xl text-foreground" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>Automated <span className="font-light">safeguard</span> layer</p>
+          <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
+            <MagneticText text="Automated" />
+            <div style={{ fontWeight: 300 }}><MagneticText text="safeguard" /></div>
+            <MagneticText text="layer" />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -128,7 +134,10 @@ export function SafeguardsView() {
         <div className="flex items-center justify-between mb-8">
           <div>
             <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Risk Exposure · 30 days</p>
-            <p className="text-2xl text-foreground font-bold" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>Consistently <span className="font-light">within envelope</span></p>
+            <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 700 }}>
+              <MagneticText text="Consistently" />
+              <div style={{ fontWeight: 300 }}><MagneticText text="within envelope" /></div>
+            </div>
           </div>
         </div>
         <StabilityGraph seed={17} height={160} />
@@ -165,9 +174,10 @@ export function SafeguardsView() {
       {/* Mini Agent Feed */}
       <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
         <div className="flex items-center justify-between mb-6">
-          <p className="text-2xl text-foreground" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
-            Agent <span style={{ fontWeight: 300 }}>Signals</span>
-          </p>
+          <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
+            <MagneticText text="Agent" />
+            <div style={{ fontWeight: 300 }}><MagneticText text="Signals" /></div>
+          </div>
         </div>
         <div className="space-y-2">
           {logs.slice(0, 5).map((log, i) => (

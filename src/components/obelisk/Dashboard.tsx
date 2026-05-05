@@ -13,6 +13,8 @@ import { InvestModal } from "./InvestModal";
 import { Logo } from "./Logo";
 import { useStability } from "./StabilityContext";
 
+import { FloatingSymbols } from "./FloatingSymbols";
+
 export type DashboardTab =
   | "earn"
   | "performance"
@@ -41,9 +43,12 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   const [investOpen, setInvestOpen] = useState(false);
 
   return (
-    <main className="relative min-h-screen pb-20">
-      {/* Global background vignette */}
-      <div className="absolute inset-0 vignette" />
+    <main className="relative min-h-screen pb-20 landing-root">
+      {/* Blue viewport glow border */}
+      <div className="landing-glow-border" aria-hidden />
+
+      {/* Floating math symbols */}
+      <FloatingSymbols />
 
       {/* Push content below fixed header */}
       <div style={{ height: "72px" }} />

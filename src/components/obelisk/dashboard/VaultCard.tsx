@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useVault } from "@/hooks/useVault";
 import { useYieldData } from "@/hooks/useYieldData";
+import { MagneticText } from "../MagneticText";
 
 interface VaultCardProps {
   onOpenInvest: () => void;
@@ -41,9 +42,9 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               </div>
             </div>
             <div>
-              <p className="text-[17px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
-                Obelisk Vault
-              </p>
+              <div className="text-[17px] font-semibold text-[#0a0a0a] flex" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
+                <MagneticText text="Obelisk Vault" />
+              </div>
               <p className="text-[12px] text-[#6B7280]" style={{ fontFamily: "'Inter', sans-serif" }}>
                 Mantle Network · MNT
               </p>

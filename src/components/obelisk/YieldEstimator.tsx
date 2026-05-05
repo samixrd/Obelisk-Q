@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { useYieldData } from "@/hooks/useYieldData";
 import { useStability } from "./StabilityContext";
 import { usePriceOracle } from "@/hooks/usePriceOracle";
+import { MagneticText } from "./MagneticText";
 
 type RiskLevel = "Conservative" | "Balanced" | "Growth";
 type Period = 1 | 3 | 6 | 12;
@@ -51,9 +52,10 @@ export function YieldEstimator() {
   return (
     <div className="col-span-12 glass-card rounded-3xl p-8 md:p-10">
       <div className="flex items-center justify-between mb-8">
-        <p className="text-2xl text-foreground" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
-          Yield <span style={{ fontWeight: 300 }}>estimator</span>
-        </p>
+        <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
+          <MagneticText text="Yield" />
+          <div style={{ fontWeight: 300 }}><MagneticText text="estimator" /></div>
+        </div>
         <div className="flex items-center gap-2 px-3 py-1 bg-foreground/[0.03] border border-foreground/[0.08] rounded-full">
            <span className="h-1.5 w-1.5 rounded-full bg-neon animate-pulse" />
            <span className="text-[9px] uppercase text-muted-foreground font-mono tracking-widest">Live Rates</span>
