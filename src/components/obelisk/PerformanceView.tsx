@@ -20,10 +20,17 @@ export function PerformanceView() {
   });
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/performance`)
-      .then(res => res.json())
-      .then(data => setMetrics(data))
-      .catch(() => console.warn("Performance API offline"));
+    const loadMetrics = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/performance`);
+        if (!res.ok) throw new Error("API error");
+        const data = await res.json();
+        if (data) setMetrics(data);
+      } catch (err) {
+        console.warn("Performance API offline, using cache.");
+      }
+    };
+    loadMetrics();
   }, []);
 
   const perfStats = [
