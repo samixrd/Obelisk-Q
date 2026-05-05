@@ -71,7 +71,7 @@ function AppInner() {
             <div aria-hidden
               className="pointer-events-none fixed inset-0 opacity-[0.035] mix-blend-overlay"
               style={{ backgroundImage: "radial-gradient(hsl(0 0% 100%) 1px, transparent 1px)", backgroundSize: "3px 3px" }} />
-            <StatePlot className="fixed inset-0 z-0 opacity-[0.55]" />
+            <StatePlot className="fixed inset-0 z-0 opacity-[0.1]" />
 
             <Header
               onMenuClick={() => setSidebarOpen(true)}
