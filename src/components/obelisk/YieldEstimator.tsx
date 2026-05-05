@@ -49,7 +49,7 @@ export function YieldEstimator() {
   }, [score, adaptive.modeLabel]);
 
   return (
-    <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
+    <div className="col-span-12 glass-card rounded-3xl p-8 md:p-10">
       <div className="flex items-center justify-between mb-8">
         <p className="text-2xl text-foreground" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
           Yield <span style={{ fontWeight: 300 }}>estimator</span>
