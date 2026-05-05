@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useYieldData, YieldInfo } from "@/hooks/useYieldData";
+import { usePriceOracle, PriceData } from "@/hooks/usePriceOracle";
 import { useState, useEffect } from "react";
 
 function useRelativeTime(date: Date | null) {
@@ -33,9 +34,10 @@ interface AssetCardProps {
   fields: { label: string; value: string; isLink?: boolean; href?: string }[];
   delay: number;
   yieldInfo: YieldInfo;
+  priceData: PriceData;
 }
 
-function AssetCard({ title, subtitle, fields, delay, yieldInfo }: AssetCardProps) {
+function AssetCard({ title, subtitle, fields, delay, yieldInfo, priceData }: AssetCardProps) {
   const relativeTime = useRelativeTime(yieldInfo.lastUpdated);
   return (
     <motion.div
@@ -46,9 +48,20 @@ function AssetCard({ title, subtitle, fields, delay, yieldInfo }: AssetCardProps
     >
       <div className="mb-8">
         <h3
-          className="text-2xl font-semibold text-foreground mb-1"
+          className="text-2xl font-semibold text-foreground mb-1 flex items-baseline gap-3"
         >
           {title}
+          {!priceData.loading && (
+            <span className="text-[13px] font-medium font-mono">
+              ${priceData.price.toLocaleString(undefined, { 
+                minimumFractionDigits: priceData.price < 10 ? 2 : 0, 
+                maximumFractionDigits: 2 
+              })}
+              <span className={`ml-2 ${priceData.change24h >= 0 ? 'text-emerald-500' : 'text-amber-500'}`}>
+                {priceData.change24h >= 0 ? '↑' : '↓'} {priceData.change24h >= 0 ? '+' : ''}{priceData.change24h.toFixed(2)}%
+              </span>
+            </span>
+          )}
         </h3>
         <p
           className="text-sm text-muted-foreground"
@@ -107,6 +120,7 @@ function AssetCard({ title, subtitle, fields, delay, yieldInfo }: AssetCardProps
 
 export function AssetsView() {
   const yieldData = useYieldData();
+  const prices = usePriceOracle();
   return (
     <motion.div {...fadeUp} className="space-y-8">
       {/* Assets Grid */}
@@ -114,6 +128,7 @@ export function AssetsView() {
         <AssetCard
           delay={0.1}
           yieldInfo={yieldData.usdy}
+          priceData={prices.usdy}
           title="USDY — US Dollar Yield"
           subtitle="Tokenized US Treasury Note by Ondo Finance"
           fields={[
@@ -138,6 +153,7 @@ export function AssetsView() {
         <AssetCard
           delay={0.2}
           yieldInfo={yieldData.meth}
+          priceData={prices.meth}
           title="mETH — Mantle Staked ETH"
           subtitle="Liquid staking receipt token by Mantle LSP"
           fields={[

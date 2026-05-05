@@ -3,6 +3,7 @@ import { IconMenu } from "./LineIcons";
 import { Logo } from "./Logo";
 import { UserProfile } from "./UserProfile";
 import { useVault } from "@/hooks/useVault";
+import { usePriceOracle } from "@/hooks/usePriceOracle";
 
 interface HeaderProps {
   onMenuClick:     () => void;
@@ -22,6 +23,15 @@ export function Header({
   onSignOut,
 }: HeaderProps) {
   const { vaultStats } = useVault();
+  const prices = usePriceOracle();
+
+  const formatPrice = (val: number) => 
+    new Intl.NumberFormat('en-US', { 
+      style: 'currency', 
+      currency: 'USD',
+      minimumFractionDigits: val < 10 ? 2 : 0,
+      maximumFractionDigits: 2
+    }).format(val);
   return (
     <motion.header
       initial={{ opacity: 0, y: -12 }}
@@ -58,6 +68,26 @@ export function Header({
             }}>
               Obelisk <span style={{ fontWeight: 400, color: "#888" }}>Q</span>
             </h1>
+          </div>
+        </div>
+
+        {/* Center: Price Ticker */}
+        <div className="hidden lg:flex items-center gap-4 overflow-hidden px-4">
+          <div className="flex items-center gap-3 text-[11px] font-medium tracking-wide text-muted-foreground whitespace-nowrap">
+            <span className="flex items-center gap-1.5">
+              <span className="text-foreground/60 uppercase">USDY</span>
+              <span className="text-foreground">{prices.usdy.loading ? "..." : formatPrice(prices.usdy.price)}</span>
+            </span>
+            <span className="text-border">·</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-foreground/60 uppercase">mETH</span>
+              <span className="text-foreground">{prices.meth.loading ? "..." : formatPrice(prices.meth.price)}</span>
+            </span>
+            <span className="text-border">·</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-foreground/60 uppercase">MNT</span>
+              <span className="text-foreground">{prices.mnt.loading ? "..." : formatPrice(prices.mnt.price)}</span>
+            </span>
           </div>
         </div>
 
