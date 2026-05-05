@@ -242,9 +242,9 @@ function FeaturesSection() {
   const features = [
     {
       num: "01",
-      title: "Control Theory Stability",
-      desc: "Portfolio stability managed via transfer functions. Poles and zeros are audited in real-time to ensure optimal damping ratios during market volatility.",
-      tags: ["Control Theory", "Stability", "h(s) Logic"],
+      title: "Regime Switching Model",
+      desc: "Dynamic market adaptation using Hidden Markov Models. The engine classifies regimes—Expansion, Consolidation, or Contraction—and adjusts control transfer functions with built-in hysteresis to prevent rapid switching.",
+      tags: ["HMM", "Regime Detection", "Hysteresis"],
     },
     {
       num: "02",
