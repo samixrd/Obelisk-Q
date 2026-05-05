@@ -15,9 +15,10 @@ export function useAgentWebSocket() {
   const [score, setScore] = useState<number>(98);
   const [regime, setRegime] = useState<string>("Stable");
   const [countdown, setCountdown] = useState<number>(10);
-  const [lastMessage, setLastMessage] = useState<string>("Initializing connectivity...");
+  const [lastMessage, setLastMessage] = useState<string>("Initializing multi-agent connectivity...");
   const [liveYields, setLiveYields] = useState({ usdy: 5.0, meth: 3.5 });
   const [livePrices, setLivePrices] = useState({ usdy: 1.00, meth: 3450.20 });
+  const [agentLogs, setAgentLogs] = useState<any[]>([]);
   
   const ws = useRef<WebSocket | null>(null);
 
@@ -27,7 +28,7 @@ export function useAgentWebSocket() {
       ws.current = new WebSocket(url);
 
       ws.current.onmessage = (event) => {
-        const data: WSMessage = JSON.parse(event.data);
+        const data: WSMessage | any = JSON.parse(event.data);
         
         if (data.type === 'countdown') {
           setCountdown(data.value ?? 10);
@@ -37,6 +38,7 @@ export function useAgentWebSocket() {
           if (data.message) setLastMessage(data.message);
           if (data.yields) setLiveYields(data.yields);
           if (data.prices) setLivePrices(data.prices);
+          if (data.logs) setAgentLogs(prev => [...data.logs, ...prev].slice(0, 50));
         }
       };
 
@@ -50,5 +52,5 @@ export function useAgentWebSocket() {
     return () => ws.current?.close();
   }, []);
 
-  return { score, regime, countdown, lastMessage, liveYields, livePrices };
+  return { score, regime, countdown, lastMessage, liveYields, livePrices, agentLogs };
 }
