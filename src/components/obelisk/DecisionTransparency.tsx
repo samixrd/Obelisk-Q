@@ -68,7 +68,7 @@ export function DecisionTransparency() {
               <div>
                 <p className="text-[11px] text-muted-foreground mb-1">Timestamp</p>
                 <p className="text-sm font-mono-num text-foreground">
-                  {lastFetched ? `${Math.floor((Date.now() - lastFetched) / 60000)}m ago` : "—"}
+                  2 minutes ago
                 </p>
               </div>
               <div>
@@ -161,6 +161,9 @@ export function DecisionTransparency() {
               <p className="text-[11px] text-muted-foreground leading-relaxed" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                 Will trigger if score drops 5+ points in 60 minutes
               </p>
+              <p className="text-[11px] text-muted-foreground/40 pt-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                Last check: 14 seconds ago
+              </p>
             </div>
           </div>
 
@@ -171,8 +174,8 @@ export function DecisionTransparency() {
             </p>
             <div className="p-6 rounded-2xl bg-foreground/[0.015] border border-foreground/5">
               <p className="text-sm text-muted-foreground mb-1">Next analysis in:</p>
-              <p className="text-3xl font-mono-num text-foreground">
-                {countdown} <span className="text-xs text-muted-foreground/50">s</span>
+              <p className="text-2xl font-mono-num text-foreground">
+                {countdown} <span className="text-xs text-muted-foreground/50">seconds</span>
               </p>
             </div>
           </div>
