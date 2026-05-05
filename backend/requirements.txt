@@ -8,4 +8,4 @@ langchain==0.1.12
 langchain-community==0.0.28
 langchain-openai==0.0.8
 chromadb==0.4.24
-sqlite3-binary==0.0.1
+web3==6.15.1
