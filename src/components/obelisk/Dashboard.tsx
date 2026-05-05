@@ -116,13 +116,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                       +2.41%
                     </span>
                     <button
-                      onClick={() => {
-                        if (!walletAddress || walletAddress === "connected") {
-                          onConnectWallet?.();
-                        } else {
-                          setInvestOpen(true);
-                        }
-                      }}
+                      onClick={() => setInvestOpen(true)}
                       className="px-6 py-2.5 bg-[#0a0a0a] text-white text-[13px] font-bold rounded-full hover:bg-[#222] transition-colors shadow-lg shadow-black/5"
                     >
                       Deposit
