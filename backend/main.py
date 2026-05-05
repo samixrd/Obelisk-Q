@@ -147,6 +147,8 @@ async def websocket_endpoint(websocket: WebSocket):
         global_app_state.active_connections.remove(websocket)
 
 async def run_analysis_cycle():
+    from backend.memory import agent_memory
+    
     while True:
         # Start Countdown
         for i in range(10, 0, -1):
@@ -166,6 +168,7 @@ async def run_analysis_cycle():
         
         # Extract messages for the UI feed
         logs = []
+        analyst_insight = ""
         for msg in final_state["messages"]:
             if isinstance(msg, AIMessage):
                 logs.append({
@@ -174,11 +177,22 @@ async def run_analysis_cycle():
                     "action": "Agent Action",
                     "score": random.randint(85, 99)
                 })
+                if "Yield Scan" in msg.content:
+                    analyst_insight = msg.content
+        
+        # ─── Store in Long-term Memory ───
+        current_score = final_state["data"].get("risk", {}).get("score", 92)
+        agent_memory.store_cycle(
+            score=current_score,
+            regime="Stable",
+            decision=final_state.get("next_agent", "END"),
+            analyst_insight=analyst_insight
+        )
         
         # Broadcast full update
         await broadcast({
             "type": "update",
-            "score": final_state["data"].get("risk", {}).get("score", 92),
+            "score": current_score,
             "regime": "Stable",
             "logs": logs,
             "yields": final_state["data"].get("yields", {"usdy": 5.0, "meth": 3.5}),
