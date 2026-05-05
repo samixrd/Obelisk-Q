@@ -95,25 +95,6 @@ export function Header({
           </nav>
         </div>
 
-        {/* Center: Price Ticker */}
-        <div className="hidden lg:flex items-center gap-4 overflow-hidden px-4">
-          <div className="flex items-center gap-3 text-[11px] font-medium tracking-wide text-muted-foreground whitespace-nowrap">
-            <span className="flex items-center gap-1.5">
-              <span className="text-foreground/60 uppercase">USDY</span>
-              <span className="text-foreground">{prices.usdy.loading ? "..." : formatPrice(prices.usdy.price)}</span>
-            </span>
-            <span className="text-border">·</span>
-            <span className="flex items-center gap-1.5">
-              <span className="text-foreground/60 uppercase">mETH</span>
-              <span className="text-foreground">{prices.meth.loading ? "..." : formatPrice(prices.meth.price)}</span>
-            </span>
-            <span className="text-border">·</span>
-            <span className="flex items-center gap-1.5">
-              <span className="text-foreground/60 uppercase">MNT</span>
-              <span className="text-foreground">{prices.mnt.loading ? "..." : formatPrice(prices.mnt.price)}</span>
-            </span>
-          </div>
-        </div>
 
         {/* Right: network + wallet status + tour + avatar */}
         <div className="flex items-center gap-6">
