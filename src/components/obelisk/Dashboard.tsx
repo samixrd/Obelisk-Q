@@ -111,6 +111,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                     {t === "overview" && "Overview"}
                     {t === "performance" && "Performance"}
                     {t === "safeguards" && "Safeguards"}
+                    {t === "assets" && "Assets"}
                   </span>
                   {tab === t && (
                     <motion.div
@@ -462,45 +463,9 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             A quiet intelligence.
           </span>
           <span className="inline-flex items-center gap-2">
-            <span className="text-[10px] uppercase text-muted-foreground/50 tracking-luxe">
-              Powered by Mantle · v 1.0
-            </span>
+            <span className="h-1 w-1 rounded-full bg-foreground/20" />
+            Powered by Mantle · v 1.0
           </span>
-        </div>
-
-        {/* Compliance badge */}
-        <div
-          className="mt-8 rounded-xl px-5 py-4"
-          style={{
-            background: "rgba(0,0,0,0.02)",
-            border: "1px solid rgba(0,0,0,0.05)",
-          }}
-        >
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-6">
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="rgba(0,0,0,0.3)" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 3 L19 6 V12 C19 16.5 15.5 19.5 12 21 C8.5 19.5 5 16.5 5 12 V6 Z" />
-                <polyline points="9,12 11,14 15,10" />
-              </svg>
-              <span
-                className="text-[8px] uppercase text-muted-foreground/60"
-                style={{ letterSpacing: "0.22em", fontFamily: "'JetBrains Mono', monospace" }}
-              >
-                Compliance
-              </span>
-            </div>
-            <div className="flex flex-col md:flex-row gap-2 md:gap-5">
-              <span className="text-[10px] text-muted-foreground/50" style={{ fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>
-                USDY is issued by Ondo Finance and backed by short-term US Treasuries.
-              </span>
-              <span className="text-[10px] text-muted-foreground/50" style={{ fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>
-                mETH is issued by Mantle LSP — non-custodial ETH staking.
-              </span>
-              <span className="text-[10px] text-muted-foreground/50" style={{ fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>
-                This platform does not provide financial advice.
-              </span>
-            </div>
-          </div>
         </div>
       </div>
       <InvestModal open={investOpen} onClose={() => setInvestOpen(false)} />
@@ -509,11 +474,8 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 }
 
 function QScoreBar() {
-  const { adaptive, setVolatility, engineLoading, components } = useStability();
-  const { usdy, meth } = useYieldData();
+  const { adaptive, setVolatility, engineLoading, engineError, components } = useStability();
   const isHighVol = adaptive.volatility === "high";
-
-  const spread = Math.abs(usdy.apy - meth.apy).toFixed(1);
 
   const metrics = [
     { label: "Yield Score",   value: engineLoading ? "—" : String(Math.round(components.yield_score)),      unit: "/100", color: "hsl(104 100% 45%)" },

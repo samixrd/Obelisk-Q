@@ -54,7 +54,7 @@ export function Header({
             <Logo size={24} className="text-foreground" />
             <h1 style={{
               fontSize: 22, lineHeight: 1, letterSpacing: "-0.03em",
-              color: "#0a0a0a", fontWeight: 500, fontFamily: "'Inter', sans-serif",
+              color: "#0a0a0a", fontWeight: 600, fontFamily: "'Inter', sans-serif",
             }}>
               Obelisk <span style={{ fontWeight: 400, color: "#888" }}>Q</span>
             </h1>

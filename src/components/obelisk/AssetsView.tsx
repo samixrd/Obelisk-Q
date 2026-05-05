@@ -46,14 +46,12 @@ function AssetCard({ title, subtitle, fields, delay, yieldInfo }: AssetCardProps
     >
       <div className="mb-8">
         <h3
-          className="text-3xl text-foreground mb-2"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400 }}
+          className="text-2xl font-semibold text-foreground mb-1"
         >
           {title}
         </h3>
         <p
-          className="text-sm text-muted-foreground italic"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400 }}
+          className="text-sm text-muted-foreground"
         >
           {subtitle}
         </p>
@@ -170,8 +168,7 @@ export function AssetsView() {
         className="glass-card rounded-2xl p-8 md:p-10"
       >
         <h3
-          className="text-2xl text-foreground mb-8"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400 }}
+          className="text-xl font-semibold text-foreground mb-8"
         >
           How the AI allocates between these assets
         </h3>

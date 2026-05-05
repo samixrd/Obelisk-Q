@@ -34,20 +34,19 @@ export function DecisionTransparency() {
   const statusOk = score >= adaptive.confidenceThreshold;
 
   return (
-    <motion.div {...fadeUp} className="col-span-12 glass-card rounded-2xl p-6 md:p-10 space-y-12">
+    <motion.div {...fadeUp} className="col-span-12 glass-card rounded-2xl p-6 md:p-10 space-y-12 mb-12">
       {/* Section Title */}
       <div>
         <p
-          className="text-[10px] uppercase text-muted-foreground mb-3"
+          className="text-[10px] uppercase text-muted-foreground mb-2"
           style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
         >
           AI Decision Transparency
         </p>
         <h2
-          className="text-3xl md:text-4xl text-foreground"
-          style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 400 }}
+          className="text-2xl font-semibold text-foreground"
         >
-          Why the agent <span className="italic">acted</span>
+          Why the agent acted
         </h2>
       </div>
 
@@ -61,24 +60,24 @@ export function DecisionTransparency() {
             </p>
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <p className="text-sm text-muted-foreground mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>Action Taken</p>
-                <p className="text-lg text-foreground" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                <p className="text-[11px] text-muted-foreground mb-1">Action Taken</p>
+                <p className="text-sm font-medium text-foreground">
                   {statusOk ? "Hold — score within safe range" : "Rebalance — risk threshold exceeded"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>Timestamp</p>
-                <p className="text-lg text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {lastFetched ? `${Math.floor((Date.now() - lastFetched) / 60000)} minutes ago` : "—"}
+                <p className="text-[11px] text-muted-foreground mb-1">Timestamp</p>
+                <p className="text-sm font-mono-num text-foreground">
+                  {lastFetched ? `${Math.floor((Date.now() - lastFetched) / 60000)}m ago` : "—"}
                 </p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>Confidence Score</p>
-                <p className="text-lg text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{score}</p>
+                <p className="text-[11px] text-muted-foreground mb-1">Confidence Score</p>
+                <p className="text-sm font-mono-num text-foreground">{score}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>Market Regime</p>
-                <p className="text-lg text-foreground" style={{ fontFamily: "'Cormorant Garamond', serif" }}>{adaptive.modeLabel}</p>
+                <p className="text-[11px] text-muted-foreground mb-1">Market Regime</p>
+                <p className="text-sm font-medium text-foreground">{adaptive.modeLabel}</p>
               </div>
             </div>
           </div>
@@ -111,8 +110,8 @@ export function DecisionTransparency() {
                 note="On-chain liquidity depth is adequate" 
               />
               <div className="flex justify-between items-center pt-4 border-t border-foreground/5">
-                <span className="text-lg text-foreground" style={{ fontFamily: "'Cormorant Garamond', serif" }}>Total System Confidence</span>
-                <span className="text-2xl text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{score.toFixed(1)} / 100</span>
+                <span className="text-sm font-semibold text-foreground">Total System Confidence</span>
+                <span className="text-xl font-mono-num text-foreground">{score.toFixed(1)} / 100</span>
               </div>
             </div>
           </div>
@@ -127,7 +126,7 @@ export function DecisionTransparency() {
             </p>
             <div className="p-6 rounded-2xl bg-foreground/[0.015] border border-foreground/5 space-y-4">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
+                <span className="text-xs text-muted-foreground">
                   Current threshold: {adaptive.confidenceThreshold}% ({adaptive.modeLabel} mode)
                 </span>
                 <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full border ${statusOk ? "text-neon border-neon/20 bg-neon/5" : "text-amber-500 border-amber-500/20 bg-amber-500/5"}`} style={{ fontFamily: "'JetBrains Mono', monospace" }}>
@@ -157,13 +156,10 @@ export function DecisionTransparency() {
             <div className="p-6 rounded-2xl bg-foreground/[0.015] border border-foreground/5 space-y-3">
               <div className="flex items-center gap-2">
                 <div className="h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_8px_hsl(var(--neon))]" />
-                <span className="text-sm text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>Circuit breaker: Armed</span>
+                <span className="text-sm font-medium text-foreground">Circuit breaker: Armed</span>
               </div>
               <p className="text-[11px] text-muted-foreground leading-relaxed" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                 Will trigger if score drops 5+ points in 60 minutes
-              </p>
-              <p className="text-[11px] text-muted-foreground/40 pt-2" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                Last check: 14 seconds ago
               </p>
             </div>
           </div>
@@ -174,19 +170,14 @@ export function DecisionTransparency() {
               Engine Status
             </p>
             <div className="p-6 rounded-2xl bg-foreground/[0.015] border border-foreground/5">
-              <p className="text-sm text-muted-foreground mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>Next analysis in:</p>
-              <p className="text-3xl text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                {countdown} <span className="text-sm text-muted-foreground/50">seconds</span>
+              <p className="text-sm text-muted-foreground mb-1">Next analysis in:</p>
+              <p className="text-3xl font-mono-num text-foreground">
+                {countdown} <span className="text-xs text-muted-foreground/50">s</span>
               </p>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Disclaimer */}
-      <p className="text-center text-[11px] text-muted-foreground/30 pt-8" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-        AI decisions are based on on-chain signals only. This is not financial advice.
-      </p>
     </motion.div>
   );
 }
@@ -197,14 +188,14 @@ function ScoreBar({ label, weight, score, contribution, note }: { label: string;
       <div className="flex justify-between items-end">
         <div>
           <span className="text-[10px] uppercase text-muted-foreground/50 block mb-1" style={{ letterSpacing: "0.1em", fontFamily: "'JetBrains Mono', monospace" }}>{weight} weight</span>
-          <span className="text-base text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>{label}</span>
+          <span className="text-sm font-medium text-foreground">{label}</span>
         </div>
         <div className="text-right">
-          <span className="text-xs text-muted-foreground block mb-1" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{score}/100</span>
-          <span className="text-[11px] text-foreground/60" style={{ fontFamily: "'JetBrains Mono', monospace" }}>contrib: {contribution} pts</span>
+          <span className="text-[10px] text-muted-foreground block mb-1 font-mono-num">{score}/100</span>
+          <span className="text-[10px] text-foreground/60 font-mono-num">+{contribution} pts</span>
         </div>
       </div>
-      <div className="h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
+      <div className="relative h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: `${score}%` }}
@@ -212,7 +203,7 @@ function ScoreBar({ label, weight, score, contribution, note }: { label: string;
           className="absolute inset-y-0 left-0 bg-foreground/20 rounded-full"
         />
       </div>
-      <p className="text-[11px] text-muted-foreground italic" style={{ fontFamily: "'Cormorant Garamond', serif" }}>"{note}"</p>
+      <p className="text-[10px] text-muted-foreground">"{note}"</p>
     </div>
   );
 }
