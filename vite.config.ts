@@ -11,9 +11,8 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
-    proxy: {
+    proxy: mode === "development" ? {
       // Forward /api/* and /health to the FastAPI engine during development.
-      // Remove this block when deploying — set VITE_SCORING_API_URL in .env.
       "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,
@@ -22,7 +21,7 @@ export default defineConfig(({ mode }) => ({
         target: "http://localhost:8000",
         changeOrigin: true,
       },
-    },
+    } : undefined,
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
