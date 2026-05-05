@@ -80,7 +80,7 @@ export function Header({
 
           {/* Nav Links */}
           <nav className="hidden lg:flex items-center gap-8">
-            {(["earn", "portfolio", "performance", "safeguards", "assets"] as DashboardTab[]).map((t) => (
+            {(["earn", "performance", "portfolio", "safeguards", "agent-logs", "assets"] as DashboardTab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => onTabChange(t)}
@@ -89,7 +89,7 @@ export function Header({
                 }`}
                 style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}
               >
-                {t}
+                {t.replace('-', ' ')}
               </button>
             ))}
           </nav>
