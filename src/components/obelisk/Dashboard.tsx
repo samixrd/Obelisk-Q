@@ -11,6 +11,7 @@ import { AgentLogsView } from "./AgentLogsView";
 import { PreferencesView } from "./PreferencesView";
 import { AssetsView } from "./AssetsView";
 import { StabilityScoreCard } from "./StabilityScoreCard";
+import { YieldEstimator } from "./YieldEstimator";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { InvestModal } from "./InvestModal";
 import { Logo } from "./Logo";
@@ -293,6 +294,8 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                   </div>
                 </div>
               </div>
+
+              <YieldEstimator />
 
               <DecisionTransparency />
               
