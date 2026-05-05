@@ -248,7 +248,7 @@ async def websocket_endpoint(websocket: WebSocket):
         global_app_state.active_connections.remove(websocket)
 
 async def run_analysis_cycle():
-    from backend.memory import agent_memory
+    from memory import agent_memory
     while True:
         for i in range(10, 0, -1):
             await broadcast({"type": "countdown", "value": i})
