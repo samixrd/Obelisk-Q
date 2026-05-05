@@ -465,7 +465,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             <span className="text-[10px] uppercase text-muted-foreground/50 tracking-luxe">
               Powered by Mantle · v 1.0
             </span>
-          </div>
+          </span>
         </div>
 
         {/* Compliance badge */}
