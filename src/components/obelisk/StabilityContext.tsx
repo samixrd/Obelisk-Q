@@ -79,7 +79,7 @@ export function StabilityProvider({ children }: { children: ReactNode }) {
         setLastFetched(Date.now());
       } catch (err: unknown) {
         if ((err as Error).name !== "AbortError") {
-          setEngineError("Simulated");
+          setEngineError("Engine offline");
         }
       } finally {
         setEngineLoading(false);
