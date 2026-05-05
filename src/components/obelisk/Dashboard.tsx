@@ -88,30 +88,31 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       <div
         className="sticky z-30 top-[72px]"
         style={{
-          background: "rgba(240, 242, 245, 0.85)",
-          backdropFilter: "blur(20px) saturate(160%)",
-          WebkitBackdropFilter: "blur(20px) saturate(160%)",
-          borderBottom: "1px solid rgba(50, 50, 93, 0.1)",
+          background: "rgba(255, 255, 255, 0.7)",
+          backdropFilter: "blur(24px) saturate(160%)",
+          WebkitBackdropFilter: "blur(24px) saturate(160%)",
+          borderBottom: "1px solid rgba(0, 0, 0, 0.04)",
         }}
       >
         <div className="mx-auto max-w-[1400px] px-4 md:px-14">
-          <div className="flex items-center justify-between py-4">
-            <div className="flex items-center gap-5 md:gap-10 overflow-x-auto no-scrollbar">
-              {(["overview", "performance", "safeguards", "assets"] as DashboardTab[]).map((t) => (
+          <div className="flex items-center justify-between py-3 md:py-4">
+            <div className="flex items-center gap-6 md:gap-12 overflow-x-auto no-scrollbar">
+              {(["overview", "portfolio", "performance", "safeguards", "assets"] as DashboardTab[]).map((t) => (
                 <button key={t} onClick={() => setTab(t)} className="relative group py-2 flex-shrink-0">
                   <span
-                    className={`text-base md:text-xl capitalize transition-colors duration-400 ${
+                    className={`text-sm md:text-[15px] capitalize transition-all duration-500 ${
                       tab === t
                         ? "text-foreground"
-                        : "text-muted-foreground hover:text-foreground/65"
+                        : "text-muted-foreground/50 hover:text-foreground/70"
                     }`}
                     style={{
                       fontFamily: "'Inter', sans-serif",
-                      letterSpacing: "-0.02em",
-                      fontWeight: tab === t ? 600 : 400,
+                      letterSpacing: "-0.01em",
+                      fontWeight: tab === t ? 600 : 500,
                     }}
                   >
                     {t === "overview" && "Overview"}
+                    {t === "portfolio" && "Portfolio"}
                     {t === "performance" && "Performance"}
                     {t === "safeguards" && "Safeguards"}
                     {t === "assets" && "Assets"}
@@ -119,20 +120,21 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                   {tab === t && (
                     <motion.div
                       layoutId="tab-underline"
-                      className="absolute -bottom-[17px] left-0 right-0 h-px bg-foreground"
-                      transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute -bottom-[13px] md:-bottom-[17px] left-0 right-0 h-[2px] bg-foreground rounded-full"
+                      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
                     />
                   )}
                 </button>
               ))}
             </div>
-            <p
-              className="hidden lg:block text-[9px] uppercase text-muted-foreground"
-              style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace",
-                color: engineError ? "hsl(0 70% 60%)" : undefined }}
-            >
-              {syncLabel}
-            </p>
+            <div className="flex items-center gap-3">
+              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500/60 animate-pulse" />
+              <p
+                className="hidden md:block text-[10px] uppercase text-muted-foreground/40 font-mono tracking-[0.2em]"
+              >
+                {syncLabel}
+              </p>
+            </div>
           </div>
         </div>
       </div>
@@ -546,99 +548,111 @@ function QScoreBar() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
-      className="glass-card rounded-2xl px-5 md:px-8 py-4 flex flex-col md:flex-row items-center justify-between gap-6"
+      className="glass-card-premium rounded-[24px] px-6 md:px-10 py-5 flex flex-col lg:flex-row items-center justify-between gap-8 md:gap-12"
+      style={{
+        background: "rgba(255, 255, 255, 0.75)",
+        backdropFilter: "blur(40px) saturate(200%)",
+        border: "1px solid rgba(255, 255, 255, 0.8)",
+        boxShadow: "0 10px 40px -10px rgba(0,0,0,0.03), inset 0 0 20px rgba(255,255,255,0.4)"
+      }}
     >
       {/* Left: identity */}
-      <div className="flex items-center gap-4 flex-shrink-0">
-        <Logo size={24} className="text-foreground" />
-        <span
-          className="text-[9px] uppercase text-muted-foreground"
-          style={{ letterSpacing: "0.35em", fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          ERC-8004 · Q-Score
-        </span>
-        <div className="hidden md:block h-4 w-px bg-foreground/10" />
+      <div className="flex items-center gap-5 flex-shrink-0">
+        <div className="h-10 w-10 rounded-2xl bg-foreground flex items-center justify-center shadow-lg shadow-foreground/10">
+          <Logo size={22} className="text-background" />
+        </div>
+        <div className="flex flex-col">
+          <span
+            className="text-[10px] font-bold uppercase text-foreground/90 tracking-[0.2em]"
+            style={{ fontFamily: "'Inter', sans-serif" }}
+          >
+            Q-Score Engine
+          </span>
+          <span
+            className="text-[9px] uppercase text-muted-foreground/60 tracking-[0.1em] font-mono"
+          >
+            ERC-8004 Protocol
+          </span>
+        </div>
+        <div className="hidden xl:block h-8 w-px bg-foreground/5 ml-2" />
       </div>
 
       {/* Centre: metrics */}
-      <div className="grid grid-cols-2 lg:flex items-center gap-x-10 gap-y-4 md:gap-8 flex-1 justify-center w-full md:w-auto">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:flex items-center gap-x-12 gap-y-6 md:gap-10 flex-1 justify-center w-full md:w-auto">
         {metrics.map((m, i) => (
           <motion.div
             key={m.label}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3 + i * 0.08, duration: 0.7 }}
-            className="flex items-center justify-center md:justify-start gap-3"
+            className="flex flex-col items-center lg:items-start gap-1"
           >
             <span
-              className="text-[9px] uppercase text-muted-foreground hidden lg:block"
-              style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}
+              className="text-[9px] uppercase text-muted-foreground/50 tracking-[0.15em]"
+              style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600 }}
             >
               {m.label}
             </span>
-            <span className="text-[10px] text-muted-foreground hidden lg:block">·</span>
             <span
-              className="text-xs md:text-sm"
+              className="text-sm md:text-base"
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
-                letterSpacing: "-0.02em",
+                letterSpacing: "-0.03em",
                 color: m.color,
-                fontWeight: 500,
+                fontWeight: 600,
               }}
             >
               {m.value}
-              <span className="text-[10px] text-muted-foreground/60 ml-0.5">{m.unit}</span>
+              <span className="text-[10px] text-muted-foreground/40 ml-0.5 font-normal">{m.unit}</span>
             </span>
           </motion.div>
         ))}
       </div>
 
       {/* Right: regime toggle */}
-      <div className="flex items-center gap-3 flex-shrink-0 w-full md:w-auto justify-center md:justify-end border-t md:border-t-0 border-foreground/5 pt-4 md:pt-0">
-        <span
-          className="text-[9px] uppercase text-muted-foreground hidden xl:block"
-          style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}
-        >
-          Regime
-        </span>
+      <div className="flex items-center gap-5 flex-shrink-0 w-full lg:w-auto justify-center lg:justify-end border-t lg:border-t-0 border-foreground/5 pt-6 lg:pt-0">
+        <div className="flex flex-col items-end hidden xl:flex mr-2">
+          <span className="text-[9px] uppercase text-muted-foreground/50 tracking-[0.15em] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
+            Status
+          </span>
+          <span className="text-[10px] text-foreground/40 font-mono">Real-time</span>
+        </div>
         <button
           onClick={() => setVolatility(isHighVol ? "low" : "high")}
-          className="relative flex items-center gap-0 overflow-hidden w-full md:w-auto"
+          className="relative flex items-center overflow-hidden w-full md:w-[180px]"
           style={{
-            background: "rgba(0,0,0,0.03)",
-            border: "1px solid rgba(0,0,0,0.06)",
-            height: "28px",
-            borderRadius: "14px",
+            background: "rgba(0,0,0,0.04)",
+            padding: "3px",
+            height: "36px",
+            borderRadius: "18px",
+            border: "1px solid rgba(0,0,0,0.03)"
           }}
           title="Toggle volatility regime (demo)"
         >
           {(["low", "high"] as const).map((v) => (
             <span
               key={v}
-              className="relative z-10 px-4 text-[9px] uppercase transition-colors duration-500 w-1/2 md:w-auto text-center"
+              className="relative z-10 px-4 text-[10px] font-bold uppercase transition-colors duration-500 w-1/2 text-center"
               style={{
-                letterSpacing: "0.15em",
-                fontFamily: "'JetBrains Mono', monospace",
+                letterSpacing: "0.1em",
+                fontFamily: "'Inter', sans-serif",
                 color:
                   adaptive.volatility === v
-                    ? v === "high"
-                      ? "hsl(30 100% 40%)"
-                      : "hsl(104 100% 35%)"
-                    : "rgba(0,0,0,0.3)",
+                    ? "#000"
+                    : "rgba(0,0,0,0.25)",
               }}
             >
-              {v === "low" ? "Stable" : "High Vol"}
+              {v === "low" ? "Stable" : "Volatile"}
             </span>
           ))}
           <motion.span
-            className="absolute top-0 bottom-0 w-1/2 pointer-events-none"
-            animate={{ x: isHighVol ? "100%" : "0%" }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            className="absolute top-[3px] bottom-[3px] w-[calc(50%-3px)] pointer-events-none"
+            animate={{ x: isHighVol ? "calc(100% + 0px)" : "0%" }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             style={{
-              background: isHighVol
-                ? "rgba(255, 160, 60, 0.08)"
-                : "rgba(100, 255, 120, 0.08)",
-              borderRadius: "14px",
+              background: "#fff",
+              boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
+              borderRadius: "15px",
             }}
           />
         </button>
