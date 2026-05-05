@@ -358,8 +358,8 @@ export function useVault(): VaultState {
         method: "eth_sendTransaction",
         params: [{
           from: address,
-          to:   address, // Send to self if vault contract is missing withdraw()
-          data: "0x",
+          to:   VAULT_ADDRESS,
+          data: "0x3ccfd60b", // keccak256("withdraw()") first 4 bytes
         }],
       }) as string;
 
@@ -447,9 +447,12 @@ export function useVault(): VaultState {
 
     try {
       const amountWei = BigInt(Math.floor(parseFloat(amountMnt) * 1e18));
+      // ABI-encode: selector + uint256 padded to 32 bytes
+      const selector = "8e19899e"; // keccak256("withdrawPartial(uint256)") first 4 bytes
+      const paddedAmount = amountWei.toString(16).padStart(64, "0");
       const hash = await (eth.request as Function)({
         method: "eth_sendTransaction",
-        params: [{ from: address, to: address, data: "0x" }], // Send to self as fallback
+        params: [{ from: address, to: VAULT_ADDRESS, data: "0x" + selector + paddedAmount }],
       }) as string;
 
       setTxHash(hash);
