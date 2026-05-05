@@ -10,22 +10,35 @@ from pydantic import BaseModel
 
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
-from langchain_openai import ChatOpenAI # Can point to Ollama local endpoint
+from langchain_openai import ChatOpenAI, AzureChatOpenAI
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+# ─── LLM Configuration ────────────────────────────────────────────────────────
+
+def get_llm():
+    """Returns the best available LLM. Prioritizes Azure OpenAI."""
+    if os.getenv("AZURE_OPENAI_API_KEY"):
+        print("--- Using Azure OpenAI Engine ---")
+        return AzureChatOpenAI(
+            azure_deployment=os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME", "gpt-4o"),
+            api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01"),
+            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+            temperature=0
+        )
+    print("--- Using Local Ollama Engine ---")
+    return ChatOpenAI(
+        base_url=os.getenv("LLM_API_BASE", "http://localhost:11434/v1"),
+        api_key="ollama",
+        model="qwen2.5:14b"
+    )
+
+llm = get_llm()
 
 # ─── Configuration ────────────────────────────────────────────────────────────
-
-app = FastAPI(title="Obelisk Q Multi-Agent Engine")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# Configuration for Ollama / Local LLM
-# User can set VITE_LLM_API_BASE to http://localhost:11434/v1
-OLLAMA_BASE = "http://localhost:11434/v1" 
 
 # ─── Multi-Agent Graph State ──────────────────────────────────────────────────
 
