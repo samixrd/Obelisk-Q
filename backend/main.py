@@ -49,7 +49,9 @@ class AgentState(TypedDict):
 last_known_state = {
     "yields": {"usdy": 5.0, "meth": 3.5},
     "risk": {"vol": 1.5, "score": 90},
-    "sensitivity": 0.5
+    "sensitivity": 0.5,
+    "regime": "Consolidation",
+    "hysteresis": 0
 }
 
 # ─── Agent Node Implementations ────────────────────────────────────────────────
@@ -59,16 +61,21 @@ async def rwa_analyst_node(state: AgentState):
     try:
         # 500ms timeout for rwa sentiment analysis
         await asyncio.sleep(0.2) # simulated latency
+        
+        # Simulate random walk for volatility (HMM Emission)
+        prev_vol = last_known_state["risk"].get("vol", 1.5)
+        vol_change = random.uniform(-0.4, 0.4)
+        vol = max(0.5, min(3.5, prev_vol + vol_change))
+        
         yield_data = {"usdy": 5.1, "meth": 3.4}
-        vol = 1.2
         state["data"]["yields"] = yield_data
         state["data"]["vol"] = vol
         last_known_state["yields"] = yield_data
-        last_known_state["vol"] = vol
-        content = "analyst: liquidity markers scanned. usdy 5.1%. meth 3.4%. vol 1.2. sentiment bullish."
+        last_known_state["risk"]["vol"] = vol
+        content = f"analyst: liquidity markers scanned. usdy 5.1%. meth 3.4%. vol {vol:.2f}. emission updated."
     except asyncio.TimeoutError:
         state["data"]["yields"] = last_known_state["yields"]
-        state["data"]["vol"] = last_known_state["vol"]
+        state["data"]["vol"] = last_known_state["risk"]["vol"]
         content = "analyst: timeout. using last known yield vector."
     
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
@@ -77,24 +84,66 @@ async def risk_manager_node(state: AgentState):
     print("node: risk")
     try:
         await asyncio.sleep(0.1)
-        risk_score = 92
+        vol = state["data"].get("vol", 1.5)
+        
+        # Calculate dynamic risk score (inverse to volatility)
+        risk_score = max(0, min(100, int(100 - (vol - 0.5) * 30)))
         state["data"]["risk"] = {"score": risk_score}
-        last_known_state["score"] = risk_score
-        content = "risk: pole-zero audit complete. damping 0.85. stability high. concentration pass."
+        last_known_state["risk"]["score"] = risk_score
+        
+        # Regime Identification (HMM & Hysteresis logic)
+        current_regime = last_known_state.get("regime", "Consolidation")
+        hysteresis = last_known_state.get("hysteresis", 0)
+        
+        if hysteresis > 0:
+            new_regime = current_regime
+            last_known_state["hysteresis"] = hysteresis - 1
+        else:
+            if vol < 1.2:
+                new_regime = "Expansion"
+            elif vol > 2.2:
+                new_regime = "Contraction"
+            else:
+                new_regime = "Consolidation"
+                
+            if new_regime != current_regime:
+                last_known_state["hysteresis"] = 3 # Lock state for 3 cycles to prevent chatter
+                
+        last_known_state["regime"] = new_regime
+        state["data"]["regime"] = new_regime
+        
+        content = f"risk: pole-zero audit complete. active regime: {new_regime}. score {risk_score}. circuit breaker standby."
     except asyncio.TimeoutError:
-        state["data"]["risk"] = {"score": last_known_state["score"]}
+        state["data"]["risk"] = {"score": last_known_state["risk"]["score"]}
+        state["data"]["regime"] = last_known_state.get("regime", "Consolidation")
         content = "risk: timeout. using last known stability vector."
     
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def tracker_node(state: AgentState):
     print("node: tracker")
-    # dynamic sensitivity based on analyst volatility
+    regime = state["data"].get("regime", "Consolidation")
+    
+    if regime == "Expansion":
+        h_s = "H(s)_growth"
+        damping = "0.4 (Underdamped)"
+        action = "mETH"
+    elif regime == "Contraction":
+        h_s = "H(s)_hedge"
+        damping = "1.0 (Critically Damped)"
+        action = "USDY"
+    else:
+        h_s = "H(s)_stability"
+        damping = "0.707 (Optimal Damping)"
+        action = "HOLD"
+        
     vol = state["data"].get("vol", 1.5)
     sensitivity = 1.0 / (vol + 0.1)
     state["sensitivity"] = sensitivity
-    content = f"tracker: vol {vol} detected. sensitivity gain adjusted to {sensitivity:.2f}."
-    return {"messages": [AIMessage(content=content)], "sensitivity": sensitivity}
+    state["data"]["action"] = action
+    
+    content = f"tracker: switching control active. {h_s} triggered. action: {action}. damping limits: {damping}."
+    return {"messages": [AIMessage(content=content)], "sensitivity": sensitivity, "data": state["data"]}
 
 async def executor_node(state: AgentState):
     print("node: executor")
@@ -225,17 +274,21 @@ async def run_analysis_cycle():
                     "score": random.randint(90, 99)
                 })
         
+        score = final_state["data"].get("risk", {}).get("score", 92)
+        regime = final_state["data"].get("regime", "Consolidation")
+        action = final_state["data"].get("action", "SYNC")
+        
         agent_memory.store_cycle(
-            score=final_state["data"].get("risk", {}).get("score", 92),
-            regime="Stable",
-            decision="SYNC",
+            score=score,
+            regime=regime,
+            decision=action,
             analyst_insight=final_state["messages"][1].content
         )
         
         await broadcast({
             "type": "update",
-            "score": final_state["data"].get("risk", {}).get("score", 92),
-            "regime": "Stable",
+            "score": score,
+            "regime": regime,
             "logs": logs,
             "yields": final_state["data"].get("yields", {"usdy": 5.0, "meth": 3.5})
         })
