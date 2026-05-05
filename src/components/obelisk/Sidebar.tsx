@@ -6,6 +6,7 @@ import {
   IconPortfolio, 
   IconLogs, 
   IconPreferences,
+  IconAssetInfo,
   IconClose
 } from "./LineIcons";
 import { DashboardTab } from "./Dashboard.tsx";
