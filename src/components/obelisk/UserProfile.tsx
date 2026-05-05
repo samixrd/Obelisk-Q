@@ -126,17 +126,26 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
               {!isWalletConnected && (
                 <button
                   onClick={() => { onConnectWallet?.(); setIsOpen(false); }}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-foreground font-bold hover:bg-foreground/[0.03] mb-1"
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-[#0a0a0a] text-white hover:bg-[#222] transition-all mb-2 shadow-sm group/btn"
                 >
-                  <span className="w-5 text-[10px] font-bold opacity-30">WA</span>
-                  <span className="font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Connect Wallet</span>
+                  <div className="flex items-center gap-2.5">
+                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" className="opacity-60 group-hover/btn:opacity-100 transition-opacity">
+                      <rect x="1" y="4" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
+                      <path d="M1 7h14" stroke="currentColor" strokeWidth="1.2"/>
+                      <circle cx="11.5" cy="10" r="1" fill="currentColor"/>
+                    </svg>
+                    <span className="text-[11px] font-bold uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      Connect Wallet
+                    </span>
+                  </div>
+                  <span className="text-[10px] opacity-30">→</span>
                 </button>
               )}
               <button
                 onClick={onSignOut}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-red-500/80 hover:bg-red-50/50 hover:text-red-500 transition-colors"
+                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[12px] text-red-500/80 hover:bg-red-50/50 hover:text-red-500 transition-colors"
               >
-                <span className="w-5 text-[10px] font-bold opacity-40">LO</span>
+                <span className="w-5 text-[9px] font-bold opacity-40 text-center">SO</span>
                 <span className="font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Sign Out</span>
               </button>
             </div>

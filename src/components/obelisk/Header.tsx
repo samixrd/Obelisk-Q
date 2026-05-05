@@ -148,7 +148,6 @@ export function Header({
               Guided tour
             </button>
           )}
-          <UserProfile onSignOut={onSignOut} />
         </div>
       </div>
       <div style={{
