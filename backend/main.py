@@ -143,7 +143,20 @@ workflow.add_edge("risk", "tracker")
 workflow.add_edge("tracker", "executor")
 workflow.add_edge("executor", END)
 
+# ─── Build Graph ─────────────────────────────────────────────────────────────
+
 graph = workflow.compile()
+
+# ─── Server Configuration ─────────────────────────────────────────────────────
+
+app = FastAPI(title="Obelisk Q Engine")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ─── REST Endpoints ───────────────────────────────────────────────────────────
 
@@ -163,17 +176,6 @@ async def get_stats():
         "active_users": 142,
         "vault_health": "Optimal"
     }
-
-# ─── Server Configuration ─────────────────────────────────────────────────────
-
-app = FastAPI(title="Obelisk Q Engine")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 class AppState:
     def __init__(self):
