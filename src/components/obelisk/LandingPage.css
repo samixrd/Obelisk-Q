@@ -330,15 +330,23 @@
 }
 
 .landing-tag {
-  display: inline-block;
-  padding: 5px 14px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
   font-size: 11px;
-  font-weight: 500;
-  color: #555;
-  background: rgba(0,0,0,0.04);
-  border: 1px solid rgba(0,0,0,0.08);
+  font-weight: 600;
+  color: #0a0a0a;
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.12);
   border-radius: 100px;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+  transition: all 0.3s ease;
+}
+
+.landing-tag:hover {
+  border-color: rgba(0,0,0,0.25);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
@@ -520,15 +528,24 @@
 }
 
 .landing-profile-tag {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   font-size: 10px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #999;
-  padding: 4px 10px;
-  border: 1px solid rgba(0,0,0,0.08);
+  letter-spacing: 0.15em;
+  color: #0a0a0a;
+  background: #f5f5f8;
+  padding: 6px 12px;
+  border: 1px solid rgba(0,0,0,0.06);
   border-radius: 100px;
+  transition: all 0.3s ease;
+}
+
+.landing-profile-card:hover .landing-profile-tag {
+  background: #0a0a0a;
+  color: #ffffff;
+  border-color: #0a0a0a;
 }
 
 .landing-built-bottom {
