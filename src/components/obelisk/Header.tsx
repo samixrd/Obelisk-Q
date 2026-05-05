@@ -116,22 +116,7 @@ export function Header({
         </div>
 
         {/* Right: network + wallet status + tour + avatar */}
-        <div className="flex items-center gap-5">
-
-          <span className="hidden md:inline-flex items-center gap-2" style={{
-            fontSize: 11, fontWeight: 500, letterSpacing: "0.1em",
-            color: "#999", textTransform: "uppercase" as const,
-          }}>
-            <span style={{
-              height: 6, width: 6, borderRadius: "50%",
-              background: "#22c55e", boxShadow: "0 0 6px rgba(34,197,94,0.5)",
-              display: "inline-block",
-            }} />
-            Mantle Network
-          </span>
-          <UserProfile onSignOut={onSignOut} onConnectWallet={onConnectWallet} />
-
-
+        <div className="flex items-center gap-6">
           {onTourClick && (
             <button
               onClick={onTourClick}
@@ -148,6 +133,23 @@ export function Header({
               Guided tour
             </button>
           )}
+
+          <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.06)" }} className="hidden md:block" />
+
+          <div className="flex items-center gap-5">
+            <span className="hidden md:inline-flex items-center gap-2" style={{
+              fontSize: 11, fontWeight: 500, letterSpacing: "0.1em",
+              color: "#999", textTransform: "uppercase" as const,
+            }}>
+              <span style={{
+                height: 6, width: 6, borderRadius: "50%",
+                background: "#22c55e", boxShadow: "0 0 6px rgba(34,197,94,0.5)",
+                display: "inline-block",
+              }} />
+              Mantle Network
+            </span>
+            <UserProfile onSignOut={onSignOut} onConnectWallet={onConnectWallet} />
+          </div>
         </div>
       </div>
       <div style={{
