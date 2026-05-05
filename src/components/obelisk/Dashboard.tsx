@@ -488,11 +488,11 @@ function QScoreBar() {
       label: "Live Yields",   
       value: `USDY ${usdy.apy.toFixed(1)}% · mETH ${meth.apy.toFixed(1)}% · Spread ${spread}%`, 
       unit: "", 
-      color: "hsl(104 100% 45%)" 
+      color: "#000" 
     },
-    { label: "Risk Score",    value: "0.42",                                                                   unit: "σ",    color: "hsl(210 100% 50%)" },
-    { label: "Accuracy",      value: engineLoading ? "—" : String(Math.round(components.volatility_score)),  unit: "%",    color: "hsl(35 100% 50%)"  },
-    { label: "Uptime",        value: "99.9",                                                                   unit: "%",    color: "hsl(270 80% 60%)"  },
+    { label: "Risk Score",    value: "0.42",                                                                   unit: "σ",    color: "#000" },
+    { label: "Accuracy",      value: engineLoading ? "—" : String(Math.round(components.volatility_score)),  unit: "%",    color: "#000" },
+    { label: "Uptime",        value: "99.9",                                                                   unit: "%",    color: "#000" },
   ];
 
   return (
@@ -546,7 +546,7 @@ function QScoreBar() {
               {m.label}
             </span>
             <span
-              className="text-sm md:text-base"
+              className="text-base md:text-lg"
               style={{
                 fontFamily: "'JetBrains Mono', monospace",
                 letterSpacing: "-0.03em",
