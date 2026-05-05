@@ -14,7 +14,7 @@ export function SafeguardsView() {
   const { logs } = useAgentFeed();
   const { score, regime, lastMessage } = useAgentWebSocket();
   
-  const isHighVol = regime === "Volatile";
+  const isHighVol = regime === "Contraction";
   const circuitBreakerArmed = lastMessage.includes("CIRCUIT BREAKER");
 
   const PROTOCOLS = [

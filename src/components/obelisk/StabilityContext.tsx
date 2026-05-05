@@ -12,9 +12,10 @@ import {
   useState,
   ReactNode,
 } from "react";
+import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
 
 export type VolatilityRegime = "low" | "high";
-export type MarketRegime     = "Trending" | "Sideways";
+export type MarketRegime     = "Expansion" | "Consolidation" | "Contraction" | string;
 
 export interface AdaptiveThreshold {
   volatility:          VolatilityRegime;
@@ -56,44 +57,33 @@ export function StabilityProvider({ children }: { children: ReactNode }) {
   const [lastFetched,        setLastFetched]        = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Poll the engine every 10s — silently no-ops if offline
-  useEffect(() => {
-    const fetchScore = async () => {
-      abortRef.current?.abort();
-      abortRef.current = new AbortController();
-      setEngineLoading(true);
-      try {
-        const res = await fetch(`${API_BASE}/api/score`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ yield_spread: 2.8, volatility_72h: 1.4, dex_liquidity: 5200000 }),
-          signal: abortRef.current.signal,
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = await res.json();
-        setEngineScore(data.confidence_score);
-        setEngineThreshold(data.confidence_threshold);
-        setEngineRegime(data.volatility_regime);
-        setComponents(data.components);
-        setEngineError(null);
-        setLastFetched(Date.now());
-      } catch (err: unknown) {
-        if ((err as Error).name !== "AbortError") {
-          setEngineError("Engine offline");
-        }
-      } finally {
-        setEngineLoading(false);
-      }
-    };
+  // Listen to WebSocket instead of polling
+  const { score: wsScore, regime: wsRegime } = useAgentWebSocket();
 
-    fetchScore();
-    const id = setInterval(fetchScore, 10_000);
-    return () => { clearInterval(id); abortRef.current?.abort(); };
-  }, []);
+  useEffect(() => {
+    setEngineScore(wsScore);
+    
+    // Map backend regime to volatility state
+    if (wsRegime === "Contraction") {
+      setEngineRegime("high_volatility");
+      setEngineThreshold(75);
+    } else if (wsRegime === "Expansion") {
+      setEngineRegime("stable");
+      setEngineThreshold(60);
+    } else {
+      setEngineRegime("stable");
+      setEngineThreshold(65); // Consolidation
+    }
+    
+    setEngineLoading(false);
+    setEngineError(null);
+    setLastFetched(Date.now());
+  }, [wsScore, wsRegime]);
 
   const score = scoreOverride ?? engineScore;
   const volatility: VolatilityRegime =
     volatilityOverride ?? (engineRegime === "high_volatility" ? "high" : "low");
+
 
   const adaptive = useMemo<AdaptiveThreshold>(() => {
     const threshold = engineThreshold;
@@ -103,7 +93,7 @@ export function StabilityProvider({ children }: { children: ReactNode }) {
         confidenceThreshold: threshold,
         modeLabel: "High Volatility",
         thresholdLabel: `Mode: High Volatility (Threshold: ${threshold}%)`,
-        marketRegime: "Sideways",
+        marketRegime: wsRegime as MarketRegime,
       };
     }
     return {
@@ -111,9 +101,9 @@ export function StabilityProvider({ children }: { children: ReactNode }) {
       confidenceThreshold: threshold,
       modeLabel: "Stable",
       thresholdLabel: `Mode: Stable (Threshold: ${threshold}%)`,
-      marketRegime: "Trending",
+      marketRegime: wsRegime as MarketRegime,
     };
-  }, [volatility, engineThreshold]);
+  }, [volatility, engineThreshold, wsRegime]);
 
   return (
     <Ctx.Provider value={{
