@@ -5,9 +5,13 @@ import { UserProfile } from "./UserProfile";
 import { useVault } from "@/hooks/useVault";
 import { usePriceOracle } from "@/hooks/usePriceOracle";
 
+import { DashboardTab } from "./Dashboard";
+
 interface HeaderProps {
   onMenuClick:     () => void;
   onTourClick?:    () => void;
+  activeTab:       DashboardTab;
+  onTabChange:     (tab: DashboardTab) => void;
   needsWallet?:    boolean;
   walletAddress?:  string | null;
   onConnectWallet?: () => void;
@@ -17,6 +21,8 @@ interface HeaderProps {
 export function Header({
   onMenuClick,
   onTourClick,
+  activeTab,
+  onTabChange,
   needsWallet,
   walletAddress,
   onConnectWallet,
@@ -62,13 +68,31 @@ export function Header({
           <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.10)" }} />
           <div className="flex items-center gap-3">
             <Logo size={24} className="text-foreground" />
-            <h1 style={{
-              fontSize: 22, lineHeight: 1, letterSpacing: "-0.03em",
+            <h1 className="hidden sm:block" style={{
+              fontSize: 20, lineHeight: 1, letterSpacing: "-0.03em",
               color: "#0a0a0a", fontWeight: 600, fontFamily: "'Inter', sans-serif",
             }}>
               Obelisk <span style={{ fontWeight: 400, color: "#888" }}>Q</span>
             </h1>
           </div>
+
+          <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.06)", margin: "0 10px" }} className="hidden lg:block" />
+
+          {/* Nav Links */}
+          <nav className="hidden lg:flex items-center gap-8">
+            {(["overview", "portfolio", "performance", "safeguards", "assets"] as DashboardTab[]).map((t) => (
+              <button
+                key={t}
+                onClick={() => onTabChange(t)}
+                className={`text-[13px] capitalize transition-colors duration-300 ${
+                  activeTab === t ? "text-foreground font-semibold" : "text-muted-foreground/60 hover:text-foreground/80 font-normal"
+                }`}
+                style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}
+              >
+                {t}
+              </button>
+            ))}
+          </nav>
         </div>
 
         {/* Center: Price Ticker */}
@@ -105,79 +129,8 @@ export function Header({
             }} />
             Mantle Network
           </span>
+          <UserProfile onSignOut={onSignOut} onConnectWallet={onConnectWallet} />
 
-          {/* Wallet status */}
-          {walletAddress ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              className="hidden md:flex items-center gap-2 px-3 py-1.5"
-              style={{
-                background: "rgba(0,0,0,0.03)",
-                border: "1px solid rgba(0,0,0,0.08)",
-                borderRadius: 8,
-              }}
-            >
-              <span style={{
-                height: 6, width: 6, borderRadius: "50%",
-                background: "#22c55e", boxShadow: "0 0 5px rgba(34,197,94,0.5)",
-                flexShrink: 0,
-              }} />
-              <div className="hidden md:flex flex-col items-end mr-3">
-                <span className="text-[10px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em", fontFamily: "'JetBrains Mono', monospace" }}>
-                  Connected
-                </span>
-                <span className="text-xs text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
-                </span>
-              </div>
-              
-              <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-background rounded-full border border-border">
-                <div className="h-1.5 w-1.5 rounded-full bg-neon shadow-[0_0_5px_rgba(34,197,94,0.5)]" />
-                <span className="text-[10px] text-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {vaultStats?.walletBalance ?? "0.0000"} MNT
-                </span>
-              </div>
-            </motion.div>
-          ) : needsWallet ? (
-            <motion.button
-              initial={{ opacity: 0, x: 8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5, delay: 0.4, ease: [0.22, 1, 0.36, 1] }}
-              onClick={onConnectWallet}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="hidden md:flex items-center gap-2.5 px-4 py-1.5 group"
-              style={{
-                background: "#0a0a0a",
-                color: "#fff",
-                border: "none",
-                borderRadius: 100,
-                cursor: "pointer",
-                transition: "all 0.3s ease",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "#222";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLElement).style.background = "#0a0a0a";
-              }}
-            >
-              <svg viewBox="0 0 16 16" width="12" height="12" fill="none" style={{ color: "#fff" }}>
-                <rect x="1" y="4" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.1"/>
-                <path d="M1 7h14" stroke="currentColor" strokeWidth="1.1"/>
-                <circle cx="11.5" cy="10" r="1" fill="currentColor"/>
-                <path d="M11 4V3a1.5 1.5 0 0 1 3 0v1" stroke="currentColor" strokeWidth="1.1"/>
-              </svg>
-              <span style={{
-                fontSize: 11, fontWeight: 500, letterSpacing: "0.05em",
-                textTransform: "uppercase" as const,
-              }}>
-                Connect wallet
-              </span>
-            </motion.button>
-          ) : null}
 
           {onTourClick && (
             <button

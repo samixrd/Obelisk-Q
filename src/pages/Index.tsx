@@ -76,6 +76,8 @@ function AppInner() {
             <Header
               onMenuClick={() => setSidebarOpen(true)}
               onTourClick={() => setTourOpen(true)}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
               needsWallet={needsWallet}
               walletAddress={walletAddress}
               onConnectWallet={() => setWalletModal(true)}
