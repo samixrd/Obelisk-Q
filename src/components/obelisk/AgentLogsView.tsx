@@ -17,6 +17,8 @@ const fadeUp = {
   transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
 };
 
+import { DecisionTransparency } from "./DecisionTransparency";
+
 export function AgentLogsView() {
   const { logs, stats } = useAgentFeed();
   const { txHistory, explorerUrl } = useVault();
@@ -46,8 +48,13 @@ export function AgentLogsView() {
   }, [stats.lastActionAt]);
 
   return (
-    <motion.div {...fadeUp} className="grid grid-cols-12 gap-6">
+    <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-20">
       
+      {/* Decision Transparency - NEW */}
+      <div className="col-span-12">
+        <DecisionTransparency />
+      </div>
+
       {/* Stats row */}
       <div className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4">
         {[

@@ -134,9 +134,6 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
               <StabilityScoreCard />
               <YieldEstimator />
               
-              <div className="col-span-12 lg:col-span-4 glass-card rounded-2xl p-6 md:p-10 flex items-center justify-center">
-                <OptimizationDial />
-              </div>
 
               <ManagedAssets />
             </motion.div>
