@@ -110,8 +110,8 @@ export function DecisionTransparency() {
                 note="On-chain liquidity depth is adequate" 
               />
               <div className="flex justify-between items-center pt-4 border-t border-foreground/5">
-                <span className="text-sm font-semibold text-foreground">Total System Confidence</span>
-                <span className="text-xl font-mono-num text-foreground">{score.toFixed(1)} / 100</span>
+                <span className="text-sm font-semibold text-foreground">Total:</span>
+                <span className="text-xl font-mono-num text-foreground">73.5 / 100</span>
               </div>
             </div>
           </div>
@@ -191,8 +191,8 @@ function ScoreBar({ label, weight, score, contribution, note }: { label: string;
           <span className="text-sm font-medium text-foreground">{label}</span>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-muted-foreground block mb-1 font-mono-num">{score}/100</span>
-          <span className="text-[10px] text-foreground/60 font-mono-num">+{contribution} pts</span>
+          <span className="text-[10px] text-muted-foreground block mb-1 font-mono-num">Score: {score}/100</span>
+          <span className="text-[10px] text-foreground/60 font-mono-num">→ contribution: {contribution} pts</span>
         </div>
       </div>
       <div className="relative h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
