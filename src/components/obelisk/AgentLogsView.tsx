@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useAgentFeed, FeedEntry, AgentAction } from "@/hooks/useAgentFeed";
+import { useVault } from "@/hooks/useVault";
 import { useEffect, useRef, useState } from "react";
 
 const ACTION_CONFIG: Record<AgentAction, { label: string, color: string, textColor: string }> = {
@@ -18,6 +19,7 @@ const fadeUp = {
 
 export function AgentLogsView() {
   const { logs, stats } = useAgentFeed();
+  const { txHistory, explorerUrl } = useVault();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [relativeLastAction, setRelativeLastAction] = useState("");
 
@@ -109,6 +111,52 @@ export function AgentLogsView() {
               Awaiting first signal...
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Transaction History */}
+      <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
+        <div className="flex items-center justify-between mb-8">
+          <p className="text-2xl text-foreground"
+            style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+            Transaction <span style={{ fontWeight: 300 }}>history</span>
+          </p>
+          <span className="text-[9px] uppercase text-muted-foreground/40 font-mono tracking-widest">
+            On-chain ledger
+          </span>
+        </div>
+
+        <div className="space-y-0 overflow-x-auto no-scrollbar">
+          <div className="min-w-[600px] md:min-w-0">
+            {txHistory.map((tx, i) => (
+              <div key={tx.hash + i} className="grid grid-cols-12 items-center py-4 border-t border-foreground/[0.03]">
+                <div className="col-span-3 flex items-center gap-3">
+                  <div className={`h-1.5 w-1.5 rounded-full ${tx.status === 'Confirmed' ? 'bg-emerald-500' : tx.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'}`} />
+                  <span className="text-sm text-foreground font-medium">{tx.type}</span>
+                </div>
+                <div className="col-span-3 text-[11px] text-foreground/60 font-mono">
+                  {tx.amount}
+                </div>
+                <div className="col-span-3 text-[11px] text-muted-foreground/50 font-mono">
+                   {new Date(tx.timestamp).toLocaleTimeString('en-GB', { hour12: false })}
+                </div>
+                <div className="col-span-3 text-right">
+                  <a 
+                    href={explorerUrl(tx.hash)}
+                    target="_blank" rel="noreferrer"
+                    className="text-[10px] uppercase text-muted-foreground hover:text-foreground transition-colors font-mono tracking-wider"
+                  >
+                    View ↗
+                  </a>
+                </div>
+              </div>
+            ))}
+            {txHistory.length === 0 && (
+              <p className="text-center py-8 text-[11px] uppercase text-muted-foreground/30 tracking-widest font-mono">
+                No recent transactions detected
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </motion.div>

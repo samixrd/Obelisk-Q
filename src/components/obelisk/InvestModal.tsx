@@ -20,6 +20,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
     deposit, withdraw, withdrawPartial,
     vaultStats, txState, txHash, txError,
     isConnected, address, connect,
+    confirmations, explorerUrl,
   } = useVault();
   const prices = usePriceOracle();
 
@@ -359,6 +360,34 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       className="text-[10px] text-muted-foreground hover:text-foreground transition-colors break-all"
                       style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                       {txHash.slice(0, 20)}...{txHash.slice(-8)} ↗
+                    </a>
+                  </div>
+                )}
+
+                {/* Confirmations tracker */}
+                {txState === "pending" && txHash && (
+                  <div className="mb-5 px-4 py-3" style={{ background: "rgba(0,0,0,0.03)", border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8 }}>
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-[9px] uppercase text-muted-foreground" style={{ letterSpacing: "0.22em", fontFamily: "'JetBrains Mono', monospace" }}>
+                        Confirmations
+                      </p>
+                      <span className="text-[10px] text-foreground font-mono">
+                        {confirmations}/3
+                      </span>
+                    </div>
+                    <div className="h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
+                      <motion.div 
+                        className="h-full bg-neon"
+                        initial={{ width: 0 }}
+                        animate={{ width: `${(confirmations / 3) * 100}%` }}
+                      />
+                    </div>
+                    <a 
+                      href={explorerUrl(txHash)}
+                      target="_blank" rel="noreferrer"
+                      className="mt-3 block text-[10px] text-muted-foreground hover:text-foreground transition-colors font-mono"
+                    >
+                      {txHash.slice(0, 24)}... ↗
                     </a>
                   </div>
                 )}
