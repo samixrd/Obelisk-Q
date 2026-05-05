@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight } from "./LineIcons";
 import { useYieldData } from "@/hooks/useYieldData";
+import { MagneticText } from "./MagneticText";
 
 interface Asset {
   symbol: string;
@@ -53,9 +54,11 @@ export function ManagedAssets() {
           <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>
             Managed Assets
           </p>
-          <p className="text-2xl text-foreground" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
-            Curated by the <span>Obelisk Q</span> controller
-          </p>
+          <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
+            <MagneticText text="Curated by the" />
+            <div style={{ fontWeight: 300 }}><MagneticText text="Obelisk Q" /></div>
+            <MagneticText text="controller" />
+          </div>
         </div>
         <p className="hidden md:block text-[10px] uppercase text-muted-foreground" style={{ letterSpacing: "0.28em" }}>
           Safety Buffer · Active

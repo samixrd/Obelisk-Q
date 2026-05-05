@@ -13,44 +13,7 @@ import { useState, useEffect } from "react";
 import { Logo } from "./Logo";
 import "./LandingPage.css";
 
-// ─── Floating Symbols ─────────────────────────────────────────────────────────
-
-const SYMBOLS = ["+", "−", "=", "~", "×", "÷", "∑", "∞", "Δ", "π", "√", "∫"];
-
-function FloatingSymbols() {
-  const [symbols] = useState(() =>
-    Array.from({ length: 18 }, (_, i) => ({
-      char: SYMBOLS[i % SYMBOLS.length],
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: 14 + Math.random() * 22,
-      opacity: 0.04 + Math.random() * 0.06,
-      duration: 20 + Math.random() * 30,
-      delay: Math.random() * -20,
-    }))
-  );
-
-  return (
-    <div className="landing-symbols" aria-hidden>
-      {symbols.map((s, i) => (
-        <span
-          key={i}
-          className="landing-symbol"
-          style={{
-            left: `${s.x}%`,
-            top: `${s.y}%`,
-            fontSize: `${s.size}px`,
-            opacity: s.opacity,
-            animationDuration: `${s.duration}s`,
-            animationDelay: `${s.delay}s`,
-          }}
-        >
-          {s.char}
-        </span>
-      ))}
-    </div>
-  );
-}
+import { FloatingSymbols } from "./FloatingSymbols";
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
@@ -106,74 +69,7 @@ function NavBar({ onLaunch }: { onLaunch: () => void }) {
   );
 }
 
-// ─── Liquid Magnetic Typography ──────────────────────────────────────────────
-
-import { useRef } from "react";
-
-function MagneticText({ text, className }: { text: string; className?: string }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
-
-  const words = text.split(" ");
-
-  return (
-    <div ref={containerRef} className={className} style={{ display: "inline-flex", flexWrap: "wrap", columnGap: "0.25em" }}>
-      {words.map((word, wordIndex) => (
-        <span key={wordIndex} style={{ display: "inline-block", whiteSpace: "nowrap" }}>
-          {word.split("").map((char, i) => (
-            <MagneticChar key={i} char={char} mousePos={mousePos} />
-          ))}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function MagneticChar({ char, mousePos }: { char: string; mousePos: { x: number; y: number } }) {
-  const ref = useRef<HTMLSpanElement>(null);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1);
-
-  useEffect(() => {
-    if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const charX = rect.left + rect.width / 2;
-    const charY = rect.top + rect.height / 2;
-
-    const dx = mousePos.x - charX;
-    const dy = mousePos.y - charY;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-
-    const threshold = 120;
-    if (dist < threshold) {
-      const power = (threshold - dist) / threshold;
-      setPosition({ x: dx * power * 0.25, y: dy * power * 0.25 });
-      setScale(1 + power * 0.3);
-    } else {
-      setPosition({ x: 0, y: 0 });
-      setScale(1);
-    }
-  }, [mousePos]);
-
-  return (
-    <motion.span
-      ref={ref}
-      style={{ display: "inline-block", whiteSpace: char === " " ? "pre" : "normal" }}
-      animate={{ x: position.x, y: position.y, scale }}
-      transition={{ type: "spring", stiffness: 120, damping: 15, mass: 0.8 }}
-    >
-      {char}
-    </motion.span>
-  );
-}
+import { MagneticText } from "./MagneticText";
 
 // ─── Section Components ───────────────────────────────────────────────────────
 
