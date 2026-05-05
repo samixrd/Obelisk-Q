@@ -4,6 +4,7 @@ import { useLayoutEffect, useState } from "react";
 import { OptimizationDial } from "./OptimizationDial";
 import { StabilityGraph } from "./StabilityGraph";
 import { ManagedAssets } from "./ManagedAssets";
+import { DecisionTransparency } from "./DecisionTransparency";
 import { SafeguardsView } from "./SafeguardsView";
 import { PortfolioView } from "./PortfolioView";
 import { AgentLogsView } from "./AgentLogsView";
@@ -289,6 +290,8 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                   </div>
                 </div>
               </div>
+
+              <DecisionTransparency />
 
               <ManagedAssets />
             </motion.div>
