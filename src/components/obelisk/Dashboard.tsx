@@ -91,19 +91,10 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-12">
         <AnimatePresence mode="wait">
           {tab === "earn" && (
-            <motion.div key="earn" {...fadeUp} className="flex flex-col items-center gap-8">
+            <motion.div key="earn" {...fadeUp} className="grid grid-cols-12 gap-5 md:gap-6">
 
-              {/* Vault Card — Maple Finance style */}
-              <div
-                className="w-full max-w-[520px]"
-                style={{
-                  background: "#ffffff",
-                  borderRadius: 20,
-                  border: "1px solid rgba(0,0,0,0.08)",
-                  boxShadow: "0 4px 24px -4px rgba(0,0,0,0.06)",
-                  overflow: "hidden",
-                }}
-              >
+              {/* Vault Card — matched to UI glass-card style */}
+              <div className="col-span-12 lg:col-span-6 glass-card rounded-3xl overflow-hidden">
                 {/* Card Header — Token icons + vault name */}
                 <div className="px-8 pt-8 pb-0">
                   <div className="flex items-center justify-between mb-6">
@@ -302,67 +293,23 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
                 </div>
               </div>
 
-              {/* Bottom info cards — matching Maple's minimal style */}
-              <div className="w-full max-w-[520px] grid grid-cols-2 gap-3">
-                <div
-                  className="px-5 py-4"
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: 14,
-                    border: "1px solid rgba(0,0,0,0.08)",
-                  }}
-                >
-                  <p className="text-[11px] text-[#6B7280] mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    Yield Source
-                  </p>
-                  <p className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    USDY + mETH Blend
-                  </p>
+              {/* Info cards — using site-wide glass-card */}
+              <div className="col-span-12 lg:col-span-6 grid grid-cols-2 gap-4 content-start">
+                <div className="glass-card rounded-2xl px-6 py-5">
+                  <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Yield Source</p>
+                  <p className="text-sm font-medium text-foreground">USDY + mETH Blend</p>
                 </div>
-                <div
-                  className="px-5 py-4"
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: 14,
-                    border: "1px solid rgba(0,0,0,0.08)",
-                  }}
-                >
-                  <p className="text-[11px] text-[#6B7280] mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    Strategy
-                  </p>
-                  <p className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    AI-Managed · Auto
-                  </p>
+                <div className="glass-card rounded-2xl px-6 py-5">
+                  <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Strategy</p>
+                  <p className="text-sm font-medium text-foreground">AI-Managed · Auto</p>
                 </div>
-                <div
-                  className="px-5 py-4"
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: 14,
-                    border: "1px solid rgba(0,0,0,0.08)",
-                  }}
-                >
-                  <p className="text-[11px] text-[#6B7280] mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    Q-Score
-                  </p>
-                  <p className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    {engineLoading ? "—" : `${score} / 100`}
-                  </p>
+                <div className="glass-card rounded-2xl px-6 py-5">
+                  <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Q-Score</p>
+                  <p className="text-sm font-medium text-foreground">{engineLoading ? "—" : `${score} / 100`}</p>
                 </div>
-                <div
-                  className="px-5 py-4"
-                  style={{
-                    background: "#ffffff",
-                    borderRadius: 14,
-                    border: "1px solid rgba(0,0,0,0.08)",
-                  }}
-                >
-                  <p className="text-[11px] text-[#6B7280] mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    Lock-up
-                  </p>
-                  <p className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    None · Withdraw anytime
-                  </p>
+                <div className="glass-card rounded-2xl px-6 py-5">
+                  <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Lock-up</p>
+                  <p className="text-sm font-medium text-foreground">None · Withdraw anytime</p>
                 </div>
               </div>
 
