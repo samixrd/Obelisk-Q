@@ -467,3 +467,76 @@
     padding: 60px 24px 32px;
   }
 }
+
+/* ── Built For Section ────────────────────────────────────────────────────── */
+.landing-profiles-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 60px;
+}
+
+.landing-profile-card {
+  display: flex;
+  flex-direction: column;
+  padding: 48px 36px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 2px;
+  transition: all 0.4s ease;
+}
+
+.landing-profile-card:hover {
+  border-color: rgba(0,0,0,0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+}
+
+.landing-profile-icon {
+  color: #0a0a0a;
+  margin-bottom: 32px;
+}
+
+.landing-profile-headline {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+  color: #0a0a0a;
+  margin-bottom: 20px;
+}
+
+.landing-profile-body {
+  font-size: 15px;
+  line-height: 1.6;
+  color: #666;
+  letter-spacing: -0.01em;
+}
+
+.landing-profile-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #999;
+  padding: 4px 10px;
+  border: 1px solid rgba(0,0,0,0.08);
+  border-radius: 100px;
+}
+
+.landing-built-bottom {
+  margin-top: 80px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 450;
+  color: #999;
+  letter-spacing: -0.01em;
+}
+
+@media (max-width: 1024px) {
+  .landing-profiles-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
