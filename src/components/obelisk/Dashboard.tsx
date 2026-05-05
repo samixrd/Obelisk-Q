@@ -46,9 +46,10 @@ interface DashboardProps {
 export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, onConnectWallet }: DashboardProps) {
   const [internalTab, setInternalTab] = useState<DashboardTab>("earn");
   const tab = externalTab ?? internalTab;
-  const { engineError, engineLoading, lastFetched } = useStability();
+  const { engineError, engineLoading, lastFetched, score } = useStability();
   const { vaultStats } = useVault();
   const { logs } = useAgentFeed();
+  const { usdy, meth } = useYieldData();
 
   // Human-readable sync label for the tab bar
   const syncLabel = engineError
@@ -70,6 +71,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   };
 
   const [investOpen, setInvestOpen] = useState(false);
+  const [depositAmount, setDepositAmount] = useState("");
 
   return (
     <main className="relative min-h-screen pb-20">
@@ -89,53 +91,281 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-12">
         <AnimatePresence mode="wait">
           {tab === "earn" && (
-            <motion.div key="earn" {...fadeUp} className="grid grid-cols-12 gap-5 md:gap-6">
-              <div className="col-span-12 lg:col-span-7 glass-card rounded-2xl p-6 md:p-10 min-h-[280px] md:min-h-[320px] flex flex-col justify-between">
-                <div className="flex flex-col md:flex-row items-start md:items-start justify-between gap-6 md:gap-0">
-                  <div>
-                    <p
-                      className="text-[10px] uppercase text-muted-foreground mb-4 md:mb-6"
-                      style={{ letterSpacing: "0.28em" }}
-                    >
-                      Balance (MNT)
-                    </p>
-                    <p
-                      className="text-4xl md:text-7xl text-foreground"
-                      style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}
-                    >
-                      {vaultStats?.userBalance?.split('.')[0] ?? "0"}<span className="text-muted-foreground">.{vaultStats?.userBalance?.split('.')[1] ?? "0000"}</span>
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-4 self-end md:self-auto">
-                    <span
-                      className="inline-flex items-center gap-1 text-[11px] text-neon"
-                      style={{ fontFamily: "'JetBrains Mono', monospace" }}
-                    >
-                      <IconArrowUpRight size={12} />
-                      +2.41%
-                    </span>
+            <motion.div key="earn" {...fadeUp} className="flex flex-col items-center gap-8">
+
+              {/* Vault Card — Maple Finance style */}
+              <div
+                className="w-full max-w-[520px]"
+                style={{
+                  background: "#ffffff",
+                  borderRadius: 20,
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  boxShadow: "0 4px 24px -4px rgba(0,0,0,0.06)",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Card Header — Token icons + vault name */}
+                <div className="px-8 pt-8 pb-0">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      {/* Overlapping token icons */}
+                      <div className="flex items-center -space-x-2">
+                        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#2775CA] to-[#1A5FB4] border-2 border-white flex items-center justify-center text-white text-[10px] font-bold shadow-sm" style={{ zIndex: 2 }}>
+                          MNT
+                        </div>
+                        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-[#00D395] to-[#00A97A] border-2 border-white flex items-center justify-center text-white text-[10px] font-bold shadow-sm" style={{ zIndex: 1 }}>
+                          Q
+                        </div>
+                      </div>
+                      <div>
+                        <p className="text-[15px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
+                          Obelisk Vault
+                        </p>
+                        <p className="text-[11px] text-[#6B7280]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                          Mantle Network · MNT
+                        </p>
+                      </div>
+                    </div>
                     <button
-                      onClick={() => setInvestOpen(true)}
-                      className="px-6 py-2.5 bg-[#0a0a0a] text-white text-[13px] font-bold rounded-full hover:bg-[#222] transition-colors shadow-lg shadow-black/5"
+                      className="text-[12px] text-[#1976D2] hover:text-[#1565C0] transition-colors"
+                      style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
                     >
-                      Deposit
+                      Learn more →
                     </button>
                   </div>
-                </div>
-                <div>
-                  <div className="hairline mb-6" />
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
-                    <Stat label="24h Yield" value="$1,032.18" />
-                    <Stat label="Allocated" value="92.4%" />
-                    <Stat label="In Reserve" value="$32,520" />
+
+                  {/* Stats Row — APY + AUM */}
+                  <div className="flex items-start gap-0 mb-8">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="text-[12px] text-[#6B7280] font-medium uppercase" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "0.04em" }}>
+                          APY
+                        </span>
+                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" className="text-[#1976D2]">
+                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
+                          <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                      <p className="text-[32px] font-bold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                        {usdy.loading ? "—" : `${((usdy.apy + meth.apy) / 2).toFixed(1)}%`}
+                      </p>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 mb-1.5">
+                        <span className="text-[12px] text-[#6B7280] font-medium uppercase" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "0.04em" }}>
+                          AUM
+                        </span>
+                        <svg width="13" height="13" viewBox="0 0 16 16" fill="none" className="text-[#1976D2]">
+                          <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
+                          <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+                        </svg>
+                      </div>
+                      <p className="text-[32px] font-bold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em", lineHeight: 1 }}>
+                        {vaultStats?.totalDeposited ? `${parseFloat(vaultStats.totalDeposited).toFixed(2)}` : "0.00"}
+                        <span className="text-[14px] font-medium text-[#6B7280] ml-1">MNT</span>
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <StabilityScoreCard />
-              <YieldEstimator />
-              
 
-              <ManagedAssets />
+                {/* Deposit Input Area */}
+                <div className="px-8 pb-6">
+                  <div
+                    className="flex items-center justify-between px-5 py-4"
+                    style={{
+                      background: "#F9FAFB",
+                      borderRadius: 14,
+                      border: "1px solid rgba(0,0,0,0.06)",
+                    }}
+                  >
+                    <input
+                      type="number"
+                      placeholder="0"
+                      value={depositAmount}
+                      onChange={(e) => setDepositAmount(e.target.value)}
+                      className="bg-transparent outline-none text-[28px] font-semibold text-[#0a0a0a] w-full"
+                      style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", maxWidth: "60%" }}
+                    />
+                    <div
+                      className="flex items-center gap-2 px-3.5 py-2 cursor-pointer hover:bg-white/80 transition-colors"
+                      style={{
+                        background: "#ffffff",
+                        border: "1px solid rgba(0,0,0,0.10)",
+                        borderRadius: 100,
+                        boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                      }}
+                    >
+                      <div className="h-5 w-5 rounded-full bg-gradient-to-br from-[#2775CA] to-[#1A5FB4] flex items-center justify-center">
+                        <span className="text-[7px] text-white font-bold">M</span>
+                      </div>
+                      <span className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                        <path d="M3 5l3 3 3-3" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  </div>
+
+                  {/* Quick amount buttons */}
+                  <div className="flex gap-2 mt-3">
+                    {["0.01", "0.05", "0.1", "0.5"].map((v) => (
+                      <button
+                        key={v}
+                        onClick={() => setDepositAmount(v)}
+                        className="text-[11px] px-3 py-1.5 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] transition-colors"
+                        style={{
+                          border: "1px solid rgba(0,0,0,0.08)",
+                          borderRadius: 100,
+                          fontFamily: "'Inter', sans-serif",
+                          fontWeight: 500,
+                        }}
+                      >
+                        {v} MNT
+                      </button>
+                    ))}
+                    {vaultStats?.walletBalance && (
+                      <button
+                        onClick={() => setDepositAmount(vaultStats.walletBalance)}
+                        className="text-[11px] px-3 py-1.5 text-[#1976D2] hover:text-[#1565C0] hover:bg-blue-50 transition-colors ml-auto"
+                        style={{
+                          border: "1px solid rgba(25,118,210,0.2)",
+                          borderRadius: 100,
+                          fontFamily: "'Inter', sans-serif",
+                          fontWeight: 500,
+                        }}
+                      >
+                        Max
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Est. Annual Yield */}
+                  <div className="flex items-center justify-between mt-5 px-1">
+                    <span className="text-[12px] text-[#6B7280]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      Est. Annual Yield
+                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        {depositAmount && parseFloat(depositAmount) > 0
+                          ? `${(parseFloat(depositAmount) * ((usdy.apy + meth.apy) / 2) / 100).toFixed(4)} MNT`
+                          : "—"
+                        }
+                      </span>
+                      <div className="h-4 w-4 rounded-full bg-gradient-to-br from-[#2775CA] to-[#1A5FB4] flex items-center justify-center">
+                        <span className="text-[6px] text-white font-bold">M</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Wallet balance info */}
+                  {vaultStats && (
+                    <div className="flex items-center justify-between mt-2 px-1">
+                      <span className="text-[11px] text-[#9CA3AF]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        Wallet Balance
+                      </span>
+                      <span className="text-[11px] text-[#6B7280] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        {vaultStats.walletBalance} MNT
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Vault balance info */}
+                  {vaultStats && (
+                    <div className="flex items-center justify-between mt-1 px-1">
+                      <span className="text-[11px] text-[#9CA3AF]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        Your Vault Balance
+                      </span>
+                      <span className="text-[11px] text-[#6B7280] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        {vaultStats.userBalance} MNT
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Deposit Button — full width, pill shape, solid black */}
+                <div className="px-8 pb-8">
+                  <motion.button
+                    onClick={() => setInvestOpen(true)}
+                    whileHover={{ scale: 1.005 }}
+                    whileTap={{ scale: 0.995 }}
+                    className="w-full py-4 text-[14px] font-semibold text-white transition-all duration-300"
+                    style={{
+                      background: "#0a0a0a",
+                      borderRadius: 100,
+                      fontFamily: "'Inter', sans-serif",
+                      letterSpacing: "-0.01em",
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Deposit
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Bottom info cards — matching Maple's minimal style */}
+              <div className="w-full max-w-[520px] grid grid-cols-2 gap-3">
+                <div
+                  className="px-5 py-4"
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: 14,
+                    border: "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <p className="text-[11px] text-[#6B7280] mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    Yield Source
+                  </p>
+                  <p className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    USDY + mETH Blend
+                  </p>
+                </div>
+                <div
+                  className="px-5 py-4"
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: 14,
+                    border: "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <p className="text-[11px] text-[#6B7280] mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    Strategy
+                  </p>
+                  <p className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    AI-Managed · Auto
+                  </p>
+                </div>
+                <div
+                  className="px-5 py-4"
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: 14,
+                    border: "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <p className="text-[11px] text-[#6B7280] mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    Q-Score
+                  </p>
+                  <p className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    {engineLoading ? "—" : `${score} / 100`}
+                  </p>
+                </div>
+                <div
+                  className="px-5 py-4"
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: 14,
+                    border: "1px solid rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <p className="text-[11px] text-[#6B7280] mb-1" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    Lock-up
+                  </p>
+                  <p className="text-[13px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                    None · Withdraw anytime
+                  </p>
+                </div>
+              </div>
+
             </motion.div>
           )}
 
