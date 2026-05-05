@@ -354,12 +354,29 @@ export function useVault(): VaultState {
     setTxError(null);
 
     try {
+      // Estimate gas to catch reverts early
+      let gasLimit = "0x186A0"; // 100k fallback
+      try {
+        const estimated = await (eth.request as Function)({
+          method: "eth_estimateGas",
+          params: [{
+            from: address,
+            to:   VAULT_ADDRESS,
+            data: "0x3ccfd60b",
+          }],
+        }) as string;
+        gasLimit = estimated;
+      } catch (e) {
+        console.warn("Gas estimation failed, using fallback", e);
+      }
+
       const hash = await (eth.request as Function)({
         method: "eth_sendTransaction",
         params: [{
           from: address,
           to:   VAULT_ADDRESS,
-          data: "0x3ccfd60b", // keccak256("withdraw()") first 4 bytes
+          data: "0x3ccfd60b", // keccak256("withdraw()")
+          gas:  gasLimit,
         }],
       }) as string;
 
@@ -447,12 +464,25 @@ export function useVault(): VaultState {
 
     try {
       const amountWei = BigInt(Math.floor(parseFloat(amountMnt) * 1e18));
-      // ABI-encode: selector + uint256 padded to 32 bytes
-      const selector = "8e19899e"; // keccak256("withdrawPartial(uint256)") first 4 bytes
+      const selector = "8e19899e"; // keccak256("withdrawPartial(uint256)")
       const paddedAmount = amountWei.toString(16).padStart(64, "0");
+      const data = "0x" + selector + paddedAmount;
+
+      // Estimate gas
+      let gasLimit = "0x186A0"; // 100k fallback
+      try {
+        const estimated = await (eth.request as Function)({
+          method: "eth_estimateGas",
+          params: [{ from: address, to: VAULT_ADDRESS, data }],
+        }) as string;
+        gasLimit = estimated;
+      } catch (e) {
+        console.warn("Gas estimation failed", e);
+      }
+
       const hash = await (eth.request as Function)({
         method: "eth_sendTransaction",
-        params: [{ from: address, to: VAULT_ADDRESS, data: "0x" + selector + paddedAmount }],
+        params: [{ from: address, to: VAULT_ADDRESS, data, gas: gasLimit }],
       }) as string;
 
       setTxHash(hash);
