@@ -118,14 +118,14 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         className="landing-hero-content"
       >
         <h1 className="landing-hero-heading">
-          Autonomous wealth
+          Multi-agent wealth
           <br />
-          for the AI agents era.
+          orchestrated by AI.
         </h1>
         <p className="landing-hero-sub">
-          Secure wallet infrastructure for autonomous investments.
+          The first autonomous RWA navigator powered by the Antigravity Protocol.
           <br />
-          Get pure finance, blockchain, and DeFi data. Built on Mantle Network with ERC-8004 protocol.
+          Multi-agent LangGraph architecture on Mantle Network with ERC-8004 identity.
         </p>
         <div className="landing-hero-actions">
           <button onClick={onLaunch} className="landing-hero-cta">
@@ -134,7 +134,7 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
               <path d="M3 8h10M10 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <a href="#features" className="landing-hero-link">Learn more</a>
+          <a href="#features" className="landing-hero-link">Engine logic</a>
         </div>
       </motion.div>
     </section>
@@ -150,19 +150,19 @@ function WalletSection() {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
-        <span className="landing-section-label">WALLET</span>
+        <span className="landing-section-label">ANTIGRAVITY PROTOCOL</span>
         <h2 className="landing-section-heading">
-          A local wallet runtime
+          High-availability
           <br />
-          for autonomous agents
+          agent resilience
         </h2>
         <p className="landing-section-desc">
-          Obelisk Q Wallet gives autonomous agents a hardened execution layer for Mantle.
+          Obelisk Q uses the Antigravity Protocol to ensure 100% uptime through 500ms agent timeouts and state-bypass logic.
         </p>
         <ul className="landing-bullet-list">
-          <li><span className="landing-bullet" /> local runtime for balances, swaps and staking</li>
-          <li><span className="landing-bullet" /> non-custodial key management with ERC-8004</li>
-          <li><span className="landing-bullet" /> real-time stability scoring engine</li>
+          <li><span className="landing-bullet" /> multi-agent supervisor (analyst, risk, tracker)</li>
+          <li><span className="landing-bullet" /> sovereign agent identity with erc-8004</li>
+          <li><span className="landing-bullet" /> stateless 0% local disk execution on azure cloud</li>
         </ul>
       </motion.div>
     </section>
@@ -173,21 +173,21 @@ function FeaturesSection() {
   const features = [
     {
       num: "01",
-      title: "Q-Score Engine",
-      desc: "Real-time stability scoring powered by multi-factor analysis. Yield, volatility, drawdown and momentum — combined into one decision metric.",
-      tags: ["Stability", "Real-time", "ERC-8004"],
+      title: "Control Theory Stability",
+      desc: "Portfolio stability managed via transfer functions. Poles and zeros are audited in real-time to ensure optimal damping ratios during market volatility.",
+      tags: ["Control Theory", "Stability", "h(s) Logic"],
     },
     {
       num: "02",
-      title: "Autonomous Rebalancing",
-      desc: "AI-driven portfolio optimization that adapts to market conditions. Conservative in chaos, ambitious in calm — automatically.",
-      tags: ["AI Agent", "Adaptive", "On-chain"],
+      title: "LangGraph Orchestration",
+      desc: "Specialized agents for RWA analysis and risk management coordinated by a central supervisor. High-frequency reasoning with Azure GPT-4o.",
+      tags: ["Multi-Agent", "LangGraph", "Azure AI"],
     },
     {
       num: "03",
-      title: "Mantle Native",
-      desc: "Built natively on Mantle L2 for ultra-low fees and lightning execution. Every transaction is verifiable, every strategy transparent.",
-      tags: ["Mantle L2", "Low fees", "Transparent"],
+      title: "ERC-8004 Identity",
+      desc: "Trustless on-chain reputation and identity. Every decision is verifiable, creating a portable audit trail of agent competence on Mantle.",
+      tags: ["ERC-8004", "Identity", "Transparent"],
     },
   ];
 
@@ -363,7 +363,7 @@ function Footer() {
 
       <div className="landing-footer-bottom">
         <span className="landing-footer-ca">
-          CA: 0x...Mantle · ERC-8004 Protocol
+          Mantle Network · ERC-8004 Sovereign Identity · Antigravity Protocol
         </span>
       </div>
     </footer>
