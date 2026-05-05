@@ -16,12 +16,13 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   const [googleLoading,  setGoogleLoading]  = useState(false);
   const [walletLoading,  setWalletLoading]  = useState(false);
   const [error,          setError]          = useState<string | null>(null);
+  const [compliance, setCompliance] = useState({
+    "non-us": false,
+    "regulated": false,
+    "terms": false,
+  });
 
-  // Compliance checkboxes — all must be checked to proceed
-  const [checkUS,    setCheckUS]    = useState(false);
-  const [checkReg,   setCheckReg]   = useState(false);
-  const [checkTOS,   setCheckTOS]   = useState(false);
-  const allChecked = checkUS && checkReg && checkTOS;
+  const allChecked = Object.values(compliance).every(v => v);
 
   // ── Real Google sign-in via Firebase ──────────────────────────────────
   const handleGoogle = async () => {
@@ -154,63 +155,6 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           {/* Divider */}
           <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 28 }} />
 
-          {/* Compliance checkboxes */}
-          <motion.div
-            initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            style={{ marginBottom: 24 }}
-          >
-            <p style={{
-              fontSize: 9, fontWeight: 600, letterSpacing: "0.2em", textTransform: "uppercase" as const,
-              color: "#aaa", fontFamily: "'JetBrains Mono', monospace", marginBottom: 14,
-            }}>
-              Compliance Confirmation
-            </p>
-            {[
-              { id: "us", checked: checkUS, set: setCheckUS, label: "I confirm I am not a US person or entity" },
-              { id: "reg", checked: checkReg, set: setCheckReg, label: "I understand USDY is a regulated financial instrument subject to transfer restrictions" },
-              { id: "tos", checked: checkTOS, set: setCheckTOS, label: "I accept the Terms of Service and Risk Disclosure" },
-            ].map((item) => (
-              <label
-                key={item.id}
-                style={{
-                  display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer",
-                  marginBottom: 10, padding: "8px 10px", borderRadius: 8,
-                  background: item.checked ? "rgba(34,197,94,0.04)" : "transparent",
-                  border: `1px solid ${item.checked ? "rgba(34,197,94,0.15)" : "rgba(0,0,0,0.06)"}`,
-                  transition: "all 0.3s ease",
-                }}
-              >
-                <input
-                  type="checkbox"
-                  checked={item.checked}
-                  onChange={() => item.set(!item.checked)}
-                  style={{ display: "none" }}
-                />
-                <span style={{
-                  width: 16, height: 16, borderRadius: 4, flexShrink: 0, marginTop: 1,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  background: item.checked ? "#0a0a0a" : "#fff",
-                  border: `1.5px solid ${item.checked ? "#0a0a0a" : "rgba(0,0,0,0.18)"}`,
-                  transition: "all 0.25s ease",
-                }}>
-                  {item.checked && (
-                    <svg viewBox="0 0 12 12" width="10" height="10" fill="none">
-                      <path d="M2.5 6l2.5 2.5 4.5-5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  )}
-                </span>
-                <span style={{
-                  fontSize: 12, color: item.checked ? "#333" : "#888",
-                  fontFamily: "'Inter', sans-serif", lineHeight: 1.5, letterSpacing: "-0.01em",
-                  transition: "color 0.25s ease",
-                }}>
-                  {item.label}
-                </span>
-              </label>
-            ))}
-          </motion.div>
-
           {/* Error */}
           {error && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}
@@ -223,15 +167,37 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
             </motion.div>
           )}
 
+          {/* Compliance Section */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 28 }}>
+            {[
+              { id: "non-us", label: "I confirm I am not a US person or entity" },
+              { id: "regulated", label: "I understand USDY is a regulated financial instrument subject to transfer restrictions" },
+              { id: "terms", label: "I accept the Terms of Service and Risk Disclosure" },
+            ].map((item) => (
+              <label key={item.id} style={{ display: "flex", alignItems: "start", gap: 10, cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  checked={compliance[item.id as keyof typeof compliance]}
+                  onChange={(e) => setCompliance(prev => ({ ...prev, [item.id]: e.target.checked }))}
+                  style={{ marginTop: 2 }}
+                />
+                <span style={{ fontSize: 12, color: "#888", fontFamily: "'Inter', sans-serif", lineHeight: 1.4 }}>
+                  {item.label}
+                </span>
+              </label>
+            ))}
+          </div>
+
           {/* Auth buttons */}
-          <motion.div style={{ display: "flex", flexDirection: "column", gap: 12, opacity: allChecked ? 1 : 0.45, pointerEvents: allChecked ? "auto" : "none", transition: "opacity 0.4s ease" }}
-            initial={{ opacity: 0 }} animate={{ opacity: allChecked ? 1 : 0.45 }}
+          <motion.div style={{ display: "flex", flexDirection: "column", gap: 12 }}
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.6 }}>
 
             {/* Google */}
             <AuthButton
               onClick={handleGoogle}
               loading={googleLoading}
+              disabled={!allChecked}
               icon={
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                   <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -248,6 +214,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
             <AuthButton
               onClick={handleWallet}
               loading={walletLoading}
+              disabled={!allChecked}
               icon={
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                   <rect x="2" y="6" width="20" height="14" rx="2" stroke="#555" strokeWidth="1.4"/>
@@ -296,15 +263,17 @@ interface AuthButtonProps {
   label:    string;
   sublabel: string;
   accent?:  boolean;
+  disabled?: boolean;
 }
 
-function AuthButton({ onClick, loading, icon, label, sublabel, accent }: AuthButtonProps) {
+function AuthButton({ onClick, loading, icon, label, sublabel, accent, disabled }: AuthButtonProps) {
+  const isReallyDisabled = loading || disabled;
   return (
     <motion.button
       onClick={onClick}
-      disabled={loading}
-      whileHover={loading ? {} : { y: -2 }}
-      whileTap={loading ? {} : { scale: 0.99 }}
+      disabled={isReallyDisabled}
+      whileHover={isReallyDisabled ? {} : { y: -2 }}
+      whileTap={isReallyDisabled ? {} : { scale: 0.99 }}
       transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
       className="group"
       style={{
@@ -317,12 +286,12 @@ function AuthButton({ onClick, loading, icon, label, sublabel, accent }: AuthBut
         background: accent ? "rgba(0,0,0,0.03)" : "#fff",
         border: "1px solid rgba(0,0,0,0.08)",
         borderRadius: 12,
-        opacity: loading ? 0.6 : 1,
-        cursor: loading ? "not-allowed" : "pointer",
+        opacity: isReallyDisabled ? 0.4 : 1,
+        cursor: isReallyDisabled ? "not-allowed" : "pointer",
         transition: "all 0.35s ease",
       }}
       onMouseEnter={(e) => {
-        if (loading) return;
+        if (isReallyDisabled) return;
         (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,0,0,0.18)";
         (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.06)";
       }}

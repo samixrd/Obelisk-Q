@@ -203,6 +203,28 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                         </button>
                       ))}
                     </div>
+
+                    {/* Risk Disclosure Data */}
+                    <div className="mb-6 p-4 rounded-xl bg-foreground/[0.02] border border-foreground/5">
+                      <p className="text-[10px] uppercase text-muted-foreground mb-3" style={{ letterSpacing: "0.2em", fontFamily: "'JetBrains Mono', monospace" }}>
+                        Asset Allocation Logic
+                      </p>
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] text-muted-foreground">Managed Asset 1</span>
+                          <span className="text-[10px] text-foreground font-medium">USDY (Treasuries)</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] text-muted-foreground">Managed Asset 2</span>
+                          <span className="text-[10px] text-foreground font-medium">mETH (Staked ETH)</span>
+                        </div>
+                        <div className="pt-2 border-t border-foreground/5">
+                          <p className="text-[9px] text-muted-foreground leading-relaxed">
+                            By depositing, you agree that the AI agent will rebalance your funds between these assets based on the current Q-Score and market regime.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 )}
 
@@ -307,50 +329,6 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                         color: "hsl(30 100% 70%)", letterSpacing: "0.01em" }}>
                       Confidence score ({score}) is below the {adaptive.confidenceThreshold}% threshold.
                       The agent recommends waiting for market conditions to stabilise.
-                    </p>
-                  </div>
-                )}
-
-                {/* Risk disclosure — caution when score < 70 */}
-                {tab === "deposit" && score < 70 && (
-                  <div className="mb-4 px-4 py-3 flex items-start gap-3"
-                    style={{ background: "rgba(234,179,8,0.06)", border: "1px solid rgba(234,179,8,0.20)", borderRadius: 8 }}>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="hsl(45,96%,53%)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
-                      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                      <line x1="12" y1="9" x2="12" y2="13" />
-                      <line x1="12" y1="17" x2="12.01" y2="17" />
-                    </svg>
-                    <p className="text-[10px] leading-relaxed"
-                      style={{ fontFamily: "'JetBrains Mono', monospace",
-                        color: "hsl(45,96%,40%)", letterSpacing: "0.01em" }}>
-                      Market conditions are uncertain. The AI agent recommends caution.
-                    </p>
-                  </div>
-                )}
-
-                {/* Risk disclosure — vault paused (circuit breaker) */}
-                {tab === "deposit" && vaultStats?.paused && (
-                  <div className="mb-4 px-4 py-3 flex items-start gap-3"
-                    style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.20)", borderRadius: 8 }}>
-                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="hsl(0,84%,60%)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="flex-shrink-0 mt-0.5">
-                      <circle cx="12" cy="12" r="10" />
-                      <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" />
-                    </svg>
-                    <p className="text-[10px] leading-relaxed"
-                      style={{ fontFamily: "'JetBrains Mono', monospace",
-                        color: "hsl(0,84%,55%)", letterSpacing: "0.01em" }}>
-                      The circuit breaker has been triggered. Deposits are temporarily paused.
-                    </p>
-                  </div>
-                )}
-
-                {/* Audit disclaimer — always visible on deposit */}
-                {tab === "deposit" && (
-                  <div className="mb-5 px-4 py-2.5"
-                    style={{ background: "rgba(0,0,0,0.02)", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 8 }}>
-                    <p className="text-[9px] leading-relaxed text-muted-foreground/50"
-                      style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.01em" }}>
-                      Smart contract audits pending. Use at your own risk.
                     </p>
                   </div>
                 )}
