@@ -1,10 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useLayoutEffect, useState } from "react";
 
-import { OptimizationDial } from "./OptimizationDial";
-import { StabilityGraph } from "./StabilityGraph";
 import { ManagedAssets } from "./ManagedAssets";
-import { DecisionTransparency } from "./DecisionTransparency";
 import { SafeguardsView } from "./SafeguardsView";
 import { PortfolioView } from "./PortfolioView";
 import { AgentLogsView } from "./AgentLogsView";
@@ -12,6 +9,7 @@ import { PreferencesView } from "./PreferencesView";
 import { AssetsView } from "./AssetsView";
 import { StabilityScoreCard } from "./StabilityScoreCard";
 import { YieldEstimator } from "./YieldEstimator";
+import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { InvestModal } from "./InvestModal";
 import { Logo } from "./Logo";
