@@ -228,9 +228,9 @@ export function PortfolioView() {
                 className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-2xl group"
               >
                 <div className="col-span-5 flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-white border border-black/[0.04] overflow-hidden flex items-center justify-center transition-all">
+                  <div className="h-10 w-10 rounded-full bg-white border border-black/[0.04] overflow-hidden flex items-center justify-center transition-all p-1.5">
                     {logos[p.id as keyof typeof logos] ? (
-                      <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-cover" />
+                      <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-contain" />
                     ) : (
                       <span className="text-[13px] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.symbol[0]}</span>
                     )}
