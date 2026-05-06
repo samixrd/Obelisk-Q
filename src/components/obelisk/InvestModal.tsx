@@ -8,6 +8,7 @@ import { useVault } from "@/hooks/useVault";
 import { usePriceOracle } from "@/hooks/usePriceOracle";
 import { Logo } from "./Logo";
 import { useStability } from "./StabilityContext";
+import { useTokenLogos } from "@/hooks/useTokenLogos";
 
 interface InvestModalProps {
   open:    boolean;
@@ -22,6 +23,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
     confirmations, explorerUrl,
   } = useVault();
   const prices = usePriceOracle();
+  const logos = useTokenLogos();
 
   const { score, adaptive } = useStability();
   const [tab]              = useState<"deposit">("deposit");
@@ -123,7 +125,13 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                         placeholder="0.00"
                       />
                       <div className="flex items-center gap-2 px-3 py-1.5 bg-black/5 rounded-xl">
-                        <div className="h-4 w-4 rounded-full bg-blue-500" />
+                        <div className="h-4 w-4 rounded-full overflow-hidden bg-white flex items-center justify-center">
+                          {logos.MNT ? (
+                            <img src={logos.MNT} alt="MNT" className="w-full h-full object-contain" />
+                          ) : (
+                            <div className="h-full w-full bg-blue-500" />
+                          )}
+                        </div>
                         <span className="text-xs font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
                       </div>
                     </div>
