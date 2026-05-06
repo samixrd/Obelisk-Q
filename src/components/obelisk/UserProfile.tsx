@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { Logo } from "./Logo";
 
 interface UserProfileProps {
   onSignOut?: () => void;
@@ -45,25 +46,21 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
     <div className="relative" ref={menuRef}>
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="h-10 w-10 rounded-full flex items-center justify-center relative overflow-hidden group border border-border/40 shadow-sm"
-        style={{
-          background: avatarUrl ? "transparent" : "linear-gradient(135deg, #fff 0%, #f0f2f5 100%)",
-        }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className="h-10 pl-3 pr-4 rounded-full flex items-center gap-2.5 relative overflow-hidden group border border-black/5 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
       >
-        {avatarUrl ? (
-          <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
-        ) : (
-          <span
-            className="text-[11px] font-bold text-foreground/40 group-hover:text-foreground/80 transition-colors"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-          >
-            {initials}
-          </span>
-        )}
+        <div className="text-purple-600 flex items-center justify-center">
+          <Logo size={18} />
+        </div>
+        <span
+          className="text-[13px] text-black tabular-nums tracking-tight"
+          style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}
+        >
+          {isWalletConnected ? `${walletAddress?.slice(0, 6)}...${walletAddress?.slice(-4)}` : "Connect Wallet"}
+        </span>
         {isWalletConnected && (
-          <div className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 border-2 border-background shadow-[0_0_5px_rgba(34,197,94,0.3)]" />
+          <div className="absolute top-1/2 -translate-y-1/2 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]" />
         )}
       </motion.button>
 
@@ -93,8 +90,11 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
                 {displayName}
               </p>
               {isWalletConnected ? (
-                <div className="flex items-center gap-2 text-[10px] text-muted-foreground/60 font-mono bg-foreground/[0.03] px-2 py-1 rounded-lg w-fit border border-foreground/[0.03]">
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                <div 
+                  className="flex items-center gap-2 text-[11px] text-muted-foreground/60 tabular-nums bg-black/[0.02] px-2.5 py-1.5 rounded-full w-fit border border-black/[0.04]"
+                  style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}
+                >
+                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]" />
                   {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
                 </div>
               ) : (
