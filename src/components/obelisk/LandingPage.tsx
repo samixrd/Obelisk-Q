@@ -231,7 +231,7 @@ function BuiltForSection() {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
-        <span className="landing-section-label">USER PROFILES</span>
+        <span className="landing-section-label">ARCHETYPES</span>
         <div className="landing-section-heading" style={{ fontWeight: 700 }}>
           <MagneticText text="Built for" />
         </div>
