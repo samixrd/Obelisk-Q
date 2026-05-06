@@ -3,6 +3,7 @@ import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight } from "./LineIcons";
 import { useYieldData } from "@/hooks/useYieldData";
 import { MagneticText } from "./MagneticText";
+import { useTokenLogos } from "@/hooks/useTokenLogos";
 
 interface Asset {
   symbol: string;
@@ -19,6 +20,7 @@ interface Asset {
 
 export function ManagedAssets() {
   const { usdy, meth } = useYieldData();
+  const logos = useTokenLogos();
 
   const assets: Asset[] = [
     {
@@ -78,8 +80,12 @@ export function ManagedAssets() {
             <div className="relative">
               <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-6">
                 <div className="flex items-center gap-4">
-                  <span className="inline-flex items-center justify-center h-11 w-11 rounded-full bg-gradient-metal/20 border border-foreground/10">
-                    <span className="text-sm text-foreground/90" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol[0]}</span>
+                  <span className="inline-flex items-center justify-center h-11 w-11 rounded-full border border-foreground/10 overflow-hidden bg-white">
+                    {logos[a.symbol] ? (
+                      <img src={logos[a.symbol]!} alt={a.symbol} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-sm text-foreground/90 font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol[0]}</span>
+                    )}
                   </span>
                   <div>
                     <p className="text-xl text-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol}</p>
