@@ -1,66 +1,20 @@
 import { useState, useEffect } from 'react';
 
-const TOKEN_IDS_LIST = 'mantle,ondo-us-dollar-yield,mantle-staked-ether';
-
-// Official token logos (reliable raw URLs from TrustWallet assets)
-const METH_OFFICIAL_LOGO = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xd5F7838F5C461fefF7FE49ea5ebaF7728bB0ADfa/logo.png';
-const USDY_OFFICIAL_LOGO = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x96F6eF951840721AdBF46Ac996b59E0235CB985C/logo.png';
+// Reliable TrustWallet URLs for MNT and USDY
 const MNT_OFFICIAL_LOGO = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x3c3a81e81dc49A522A592e7622A7E711c06bf354/logo.png';
+const USDY_OFFICIAL_LOGO = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x96F6eF951840721AdBF46Ac996b59E0235CB985C/logo.png';
+
+// Custom high-fidelity SVG Data URI for mETH (Mantle Green + ETH Diamond)
+const METH_OFFICIAL_LOGO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%2300D395' /%3E%3Cstop offset='100%25' stop-color='%2322C55E' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='400' height='400' rx='200' fill='url(%23g)' /%3E%3Cpath d='M200 60 L100 220 L200 280 L300 220 Z' fill='%23ffffff' opacity='0.9'/%3E%3Cpath d='M200 280 L100 220 L200 340 L300 220 Z' fill='%23ffffff' opacity='0.6'/%3E%3C/svg%3E";
 
 type LogoMap = { [key: string]: string | null };
 
-let cachedLogos: LogoMap | null = null;
-let fetchPromise: Promise<LogoMap> | null = null;
-
 export function useTokenLogos() {
-  const [logos, setLogos] = useState<LogoMap>(cachedLogos || {
-    MNT: null,
-    USDY: null,
-    mETH: null
+  const [logos, setLogos] = useState<LogoMap>({
+    MNT: MNT_OFFICIAL_LOGO,
+    USDY: USDY_OFFICIAL_LOGO,
+    mETH: METH_OFFICIAL_LOGO
   });
-
-  useEffect(() => {
-    if (cachedLogos) {
-      setLogos(cachedLogos);
-      return;
-    }
-
-    async function fetchLogos() {
-      try {
-        const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${TOKEN_IDS_LIST}`);
-        if (res.ok) {
-          const data = await res.json();
-          const results: LogoMap = {};
-          
-          data.forEach((coin: any) => {
-            if (coin.id === 'mantle') results.MNT = coin.image;
-            if (coin.id === 'ondo-us-dollar-yield') results.USDY = coin.image;
-            if (coin.id === 'mantle-staked-ether') results.mETH = coin.image || METH_OFFICIAL_LOGO;
-          });
-          
-          return results;
-        } else {
-           console.warn("CoinGecko API error or rate limit. Using fallbacks.");
-           return { MNT: MNT_OFFICIAL_LOGO, USDY: USDY_OFFICIAL_LOGO, mETH: METH_OFFICIAL_LOGO };
-        }
-      } catch (err) {
-        console.warn("Token logo fetch error:", err);
-        return { MNT: MNT_OFFICIAL_LOGO, USDY: USDY_OFFICIAL_LOGO, mETH: METH_OFFICIAL_LOGO };
-      }
-    }
-
-    if (!fetchPromise) {
-      fetchPromise = fetchLogos().then(results => {
-        cachedLogos = results;
-        return results;
-      });
-    }
-
-    fetchPromise.then(results => {
-      setLogos(prev => ({ ...prev, ...results }));
-    });
-
-  }, []);
 
   return logos;
 }
