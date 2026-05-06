@@ -23,64 +23,84 @@ export function PortfolioView() {
   const { txHistory, explorerUrl, vaultStats, withdrawPartial } = useVault();
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
+  const balance = parseFloat(vaultStats?.userBalance ?? "0");
+  const inputAmount = parseFloat(withdrawAmount) || 0;
+  const isInsufficient = inputAmount > balance;
+
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-8 pb-24">
-      {/* ── Total Balance Bar ── */}
-      <div className="col-span-12 glass-card rounded-[32px] px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] mb-2">
-        <div className="flex items-center gap-10">
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-muted-foreground/40 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>Total Balance</span>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
-                {vaultStats?.userBalance ?? "0.00"}
-              </span>
-              <span className="text-sm font-semibold text-muted-foreground">MNT</span>
-            </div>
-          </div>
-
-          {/* Withdrawal Input Group */}
-          <div className="flex items-center gap-4 bg-black/[0.03] border border-black/[0.05] rounded-2xl px-4 py-2.5 transition-all focus-within:border-black/10 focus-within:bg-black/[0.05]">
-             <input
-              type="number"
-              value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              placeholder="0.0"
-              className="bg-transparent outline-none text-[18px] font-bold text-black w-24 placeholder:text-black/10"
-              style={{ fontFamily: "'Inter', sans-serif" }}
-            />
-            <div className="flex items-center gap-1 border-l border-black/5 pl-4">
-              {["25%", "50%", "Max"].map((label) => (
-                <button
-                  key={label}
-                  onClick={() => {
-                    const balance = parseFloat(vaultStats?.userBalance ?? "0");
-                    if (label === "Max") setWithdrawAmount(balance.toString());
-                    else if (label === "50%") setWithdrawAmount((balance * 0.5).toFixed(4));
-                    else if (label === "25%") setWithdrawAmount((balance * 0.25).toFixed(4));
-                  }}
-                  className="text-[10px] font-bold text-muted-foreground hover:text-black transition-colors px-2.5 py-1.5 rounded-lg hover:bg-black/5"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
+      {/* ── Total Balance Section (Centered) ── */}
+      <div className="col-span-12 glass-card rounded-[48px] px-10 py-20 flex flex-col items-center justify-center text-center shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] mb-2">
+        <div className="flex flex-col items-center mb-12">
+          <span className="text-[11px] uppercase text-muted-foreground/40 font-bold tracking-[0.24em] mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>Portfolio Balance</span>
+          <div className="flex items-baseline justify-center gap-3">
+            <span className="text-[64px] font-bold text-black leading-none" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
+              {vaultStats?.userBalance ?? "0.00"}
+            </span>
+            <span className="text-xl font-semibold text-muted-foreground">MNT</span>
           </div>
         </div>
 
-        <motion.button
-          onClick={() => {
-            if (withdrawAmount && parseFloat(withdrawAmount) > 0) {
-              withdrawPartial(withdrawAmount);
-            }
-          }}
-          whileHover={{ scale: 1.02, y: -1 }}
-          whileTap={{ scale: 0.98 }}
-          className="px-10 py-4 rounded-full bg-[#0a0a0a] text-white text-[13px] font-bold uppercase tracking-[0.15em] transition-all shadow-xl shadow-black/10"
-          style={{ fontFamily: "'Inter', sans-serif", border: "none" }}
-        >
-          Withdraw
-        </motion.button>
+        {/* Withdrawal Stack */}
+        <div className="w-full max-w-[400px] flex flex-col items-center gap-6">
+          <div className="w-full relative">
+            <div className={`flex items-center gap-4 bg-black/[0.03] border ${isInsufficient ? 'border-red-500/20 bg-red-50/10' : 'border-black/[0.05]'} rounded-3xl px-6 py-5 transition-all focus-within:border-black/10 focus-within:bg-black/[0.05]`}>
+               <input
+                type="number"
+                value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                placeholder="0.0"
+                className="bg-transparent outline-none text-[24px] font-bold text-black w-full placeholder:text-black/10 text-center"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              />
+            </div>
+            
+            {/* Error Message */}
+            {isInsufficient && (
+              <motion.p 
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                className="text-[12px] text-red-500 mt-3 font-normal"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                Insufficient balance
+              </motion.p>
+            )}
+          </div>
+
+          {/* Quick Select Buttons */}
+          <div className="flex items-center gap-2">
+            {["25%", "50%", "Max"].map((label) => (
+              <button
+                key={label}
+                onClick={() => {
+                  const balanceVal = parseFloat(vaultStats?.userBalance ?? "0");
+                  if (label === "Max") setWithdrawAmount(balanceVal.toString());
+                  else if (label === "50%") setWithdrawAmount((balanceVal * 0.5).toFixed(4));
+                  else if (label === "25%") setWithdrawAmount((balanceVal * 0.25).toFixed(4));
+                }}
+                className="text-[11px] font-bold text-muted-foreground hover:text-black transition-all px-6 py-3 rounded-2xl bg-black/[0.03] border border-black/[0.05] hover:bg-black/5"
+                style={{ fontFamily: "'Inter', sans-serif" }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <motion.button
+            onClick={() => {
+              if (withdrawAmount && !isInsufficient && parseFloat(withdrawAmount) > 0) {
+                withdrawPartial(withdrawAmount);
+              }
+            }}
+            disabled={isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
+            whileHover={!(isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0) ? { scale: 1.02, y: -1 } : {}}
+            whileTap={!(isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0) ? { scale: 0.98 } : {}}
+            className={`w-full py-5 rounded-full text-[14px] font-bold uppercase tracking-[0.2em] transition-all shadow-2xl shadow-black/10 mt-4 ${isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 ? 'bg-black/20 text-white/40 cursor-not-allowed shadow-none' : 'bg-[#0a0a0a] text-white'}`}
+            style={{ fontFamily: "'Inter', sans-serif", border: "none" }}
+          >
+            Withdraw Funds
+          </motion.button>
+        </div>
       </div>
 
       <div className="col-span-12">
