@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { VaultCard } from "./dashboard/VaultCard";
 import { StabilityScoreCard } from "./StabilityScoreCard";
-import { YieldEstimator } from "./YieldEstimator";
+
 import { ManagedAssets } from "./ManagedAssets";
 import { useStability } from "./StabilityContext";
 import { MagneticText } from "./MagneticText";
