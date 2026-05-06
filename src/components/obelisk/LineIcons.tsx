@@ -130,3 +130,17 @@ export const IconAssetInfo = (p: IconProps) => (
     <polyline points="9,15 11,17 15,13" />
   </svg>
 );
+
+// Shield — architectural protection
+export const IconShield = (p: IconProps) => (
+  <svg {...base(p)}>
+    <path d="M12 2L4 5v6.5c0 5 3.5 9.5 8 11 4.5-1.5 8-6 8-11V5l-8-3z" />
+  </svg>
+);
+
+// Activity — pulse line
+export const IconActivity = (p: IconProps) => (
+  <svg {...base(p)}>
+    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+  </svg>
+);

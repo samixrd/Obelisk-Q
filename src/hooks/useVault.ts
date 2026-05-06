@@ -52,6 +52,7 @@ export interface VaultState {
   withdrawPartial: (amountMnt: string) => Promise<void>;
   vaultStats:      VaultStats | null;
   txState:     TxStatus;
+  setTxState:  (s: TxStatus) => void;
   txHash:      string | null;
   txError:     string | null;
   isConnected: boolean;
@@ -300,7 +301,7 @@ export function useVault(): VaultState {
             
             const currentBlock = BigInt(currentBlockRaw);
             const receiptBlock = BigInt(receipt.blockNumber);
-            const confs = Number(currentBlock - receiptBlock + 1);
+            const confs = Number(currentBlock - receiptBlock + 1n);
             setConfirmations(confs);
 
             if (confs >= 1 && txState !== "success") {
@@ -411,7 +412,7 @@ export function useVault(): VaultState {
             
             const currentBlock = BigInt(currentBlockRaw);
             const receiptBlock = BigInt(receipt.blockNumber);
-            const confs = Number(currentBlock - receiptBlock + 1);
+            const confs = Number(currentBlock - receiptBlock + 1n);
             setConfirmations(confs);
 
             if (confs >= 1 && txState !== "success") {
@@ -516,7 +517,7 @@ export function useVault(): VaultState {
             
             const currentBlock = BigInt(currentBlockRaw);
             const receiptBlock = BigInt(receipt.blockNumber);
-            const confs = Number(currentBlock - receiptBlock + 1);
+            const confs = Number(currentBlock - receiptBlock + 1n);
             setConfirmations(confs);
 
             if (confs >= 1 && txState !== "success") {
@@ -587,7 +588,7 @@ export function useVault(): VaultState {
 
   return { 
     deposit, withdraw, withdrawPartial, 
-    vaultStats, txState, txHash, txError, 
+    vaultStats, txState, setTxState, txHash, txError, 
     isConnected, address, connect, refreshStats,
     confirmations, explorerUrl: getExplorerUrl,
     txHistory

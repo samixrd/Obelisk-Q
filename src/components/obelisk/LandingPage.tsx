@@ -26,7 +26,7 @@ function NavBar({ onLaunch }: { onLaunch: () => void }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = ["Dashboard", "Wallet", "Features", "About"];
+  const navItems = ["Dashboard", "Protocol", "Features", "About"];
 
   return (
     <motion.nav
@@ -107,9 +107,9 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
   );
 }
 
-function WalletSection() {
+function ProtocolSection() {
   return (
-    <section className="landing-section" id="wallet">
+    <section className="landing-section" id="protocol">
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -164,7 +164,7 @@ function FeaturesSection() {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
-        <span className="landing-section-label">FEATURES</span>
+        <span className="landing-section-label">PROTOCOL FEATURES</span>
         <div className="landing-section-heading" style={{ fontWeight: 700 }}>
           <MagneticText text="Intelligence meets" />
           <MagneticText text="infrastructure" />
@@ -298,7 +298,7 @@ function SquareIcon() {
 
 function Footer() {
   const linkGroups = [
-    { title: "", links: ["Dashboard", "Wallet", "Features"] },
+    { title: "", links: ["Dashboard", "Protocol", "Features"] },
     { title: "", links: ["Docs", "GitHub", "Blog"] },
   ];
 
@@ -363,7 +363,7 @@ export function LandingPage({ onEnter }: LandingPageProps) {
 
       {/* Content */}
       <HeroSection onLaunch={onEnter} />
-      <WalletSection />
+      <ProtocolSection />
       <FeaturesSection />
       <BuiltForSection />
       <Footer />

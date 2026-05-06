@@ -7,7 +7,7 @@ interface Props {
 }
 
 export function StabilityGraph({ seed = 1, height = 120 }: Props) {
-  const { path, area, points } = useMemo(() => {
+  const { path, points } = useMemo(() => {
     const w = 800;
     const h = height;
     const n = 60;

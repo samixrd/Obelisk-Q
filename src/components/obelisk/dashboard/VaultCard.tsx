@@ -210,7 +210,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         <motion.button
           onClick={handleDeposit}
           disabled={isPending}
-          whileHover={{ y: isPending ? 0 : -2, shadow: isPending ? "none" : "0 10px 20px rgba(0,0,0,0.1)" }}
+          whileHover={{ y: isPending ? 0 : -2, boxShadow: isPending ? "none" : "0 10px 20px rgba(0,0,0,0.1)" }}
           whileTap={{ scale: isPending ? 1 : 0.98 }}
           className={`w-full py-5 text-[15px] font-semibold text-white transition-all duration-300 ${isPending ? 'opacity-50 cursor-not-allowed bg-[#222]' : 'bg-[#0a0a0a]'}`}
           style={{
