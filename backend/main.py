@@ -13,9 +13,20 @@ from langgraph.graph import StateGraph, END
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from langchain_openai import ChatOpenAI, AzureChatOpenAI
 import os
+import logging
 from dotenv import load_dotenv
 
+try:
+    from web3 import Web3
+    WEB3_AVAILABLE = True
+except ImportError:
+    WEB3_AVAILABLE = False
+    print("Warning: web3 not installed. Executor will run in simulation mode.")
+
 load_dotenv()
+
+logger = logging.getLogger("obelisk-q")
+logging.basicConfig(level=logging.INFO)
 
 # ─── LLM Configuration ────────────────────────────────────────────────────────
 
@@ -121,10 +132,17 @@ async def risk_manager_node(state: AgentState):
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def tracker_node(state: AgentState):
-    print("node: tracker")
+    logger.info("node: tracker")
     regime = state["data"].get("regime", "Consolidation")
+    risk_score = state["data"].get("risk", {}).get("score", 90)
     
-    if regime == "Expansion":
+    # ── HARD-LOCK: if confidence < 85, force HOLD regardless of regime ──
+    if risk_score < 85:
+        h_s = "H(s)_safety"
+        damping = "1.0 (Critically Damped)"
+        action = "HOLD"
+        content = f"tracker: HARD-LOCK engaged. score {risk_score} < 85 threshold. executor locked to HOLD. no rebalance permitted."
+    elif regime == "Expansion":
         h_s = "H(s)_growth"
         damping = "0.4 (Underdamped)"
         action = "mETH"
@@ -136,18 +154,31 @@ async def tracker_node(state: AgentState):
         h_s = "H(s)_stability"
         damping = "0.707 (Optimal Damping)"
         action = "HOLD"
+    
+    if risk_score < 85:
+        content = f"tracker: HARD-LOCK engaged. score {risk_score} < 85 threshold. executor locked to HOLD. no rebalance permitted."
+    else:
+        content = f"tracker: switching control active. {h_s} triggered. action: {action}. damping limits: {damping}."
         
     vol = state["data"].get("vol", 1.5)
     sensitivity = 1.0 / (vol + 0.1)
     state["sensitivity"] = sensitivity
     state["data"]["action"] = action
     
-    content = f"tracker: switching control active. {h_s} triggered. action: {action}. damping limits: {damping}."
     return {"messages": [AIMessage(content=content)], "sensitivity": sensitivity, "data": state["data"]}
 
 async def executor_node(state: AgentState):
-    print("node: executor")
-    from web3 import Web3
+    logger.info("node: executor")
+    
+    action = state["data"].get("action", "HOLD")
+    risk_score = state["data"].get("risk", {}).get("score", 90)
+    
+    # ── HARD-LOCK ENFORCEMENT: double-check at executor level ──
+    if risk_score < 85 or action == "HOLD":
+        return {"messages": [AIMessage(content=f"executor: hold mode. score {risk_score}. no on-chain action taken. state preserved.")], "data": state["data"]}
+    
+    if not WEB3_AVAILABLE:
+        return {"messages": [AIMessage(content="executor: web3 unavailable. operating in simulation.")], "data": state["data"]}
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.sepolia.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
@@ -157,16 +188,19 @@ async def executor_node(state: AgentState):
         return {"messages": [AIMessage(content="executor: pre-flight check. vault address or key missing. operating in simulation.")], "data": state["data"]}
 
     try:
-        w3 = Web3(Web3.HTTPProvider(rpc_url))
-        account = w3.eth.account.from_key(private_key)
+        w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": 5}))
         
-        # logic: calculate target distribution from state['data']
-        # simulation: sign heartbeat tx to verify key connectivity
+        # RPC health check with timeout
+        if not w3.is_connected():
+            return {"messages": [AIMessage(content="executor: rpc unreachable. state locked. retrying next cycle.")], "data": state["data"]}
+        
+        account = w3.eth.account.from_key(private_key)
         content = f"executor: signal synchronized. account {account.address[:6]}... active on mantle. ready for rebalance."
     except Exception as e:
-        content = f"executor: rpc error. state locked. error: {str(e)[:20]}"
+        logger.error(f"executor rpc error: {e}")
+        content = f"executor: rpc error. state locked. error: {str(e)[:40]}"
 
-    return {"messages": [AIMessage(content=content)]}
+    return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def supervisor_node(state: AgentState):
     print("node: supervisor")
@@ -234,9 +268,17 @@ global_app_state = AppState()
 
 async def broadcast(message: dict):
     msg_json = json.dumps(message)
-    for connection in global_app_state.active_connections:
-        try: await connection.send_text(msg_json)
-        except: global_app_state.active_connections.remove(connection)
+    dead_connections = []
+    for connection in list(global_app_state.active_connections):  # copy to avoid mutation during iteration
+        try:
+            await connection.send_text(msg_json)
+        except Exception:
+            dead_connections.append(connection)
+    for conn in dead_connections:
+        try:
+            global_app_state.active_connections.remove(conn)
+        except ValueError:
+            pass
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
@@ -249,49 +291,72 @@ async def websocket_endpoint(websocket: WebSocket):
 
 async def run_analysis_cycle():
     from memory import agent_memory
+    cycle_num = 0
     while True:
-        for i in range(10, 0, -1):
-            await broadcast({"type": "countdown", "value": i})
-            await asyncio.sleep(1)
-        
-        initial_state = {
-            "messages": [HumanMessage(content="init")],
-            "data": {},
-            "cycle_count": 0,
-            "next_agent": "",
-            "sensitivity": 0.5
-        }
-        
-        final_state = await graph.ainvoke(initial_state)
-        
-        logs = []
-        for msg in final_state["messages"]:
-            if isinstance(msg, AIMessage):
-                logs.append({
-                    "timestamp": datetime.now().isoformat(),
-                    "message": msg.content,
-                    "action": "Agent Action",
-                    "score": random.randint(90, 99)
-                })
-        
-        score = final_state["data"].get("risk", {}).get("score", 92)
-        regime = final_state["data"].get("regime", "Consolidation")
-        action = final_state["data"].get("action", "SYNC")
-        
-        agent_memory.store_cycle(
-            score=score,
-            regime=regime,
-            decision=action,
-            analyst_insight=final_state["messages"][1].content
-        )
-        
-        await broadcast({
-            "type": "update",
-            "score": score,
-            "regime": regime,
-            "logs": logs,
-            "yields": final_state["data"].get("yields", {"usdy": 5.0, "meth": 3.5})
-        })
+        try:
+            for i in range(10, 0, -1):
+                await broadcast({"type": "countdown", "value": i})
+                await asyncio.sleep(1)
+            
+            cycle_num += 1
+            initial_state = {
+                "messages": [HumanMessage(content="init")],
+                "data": {},
+                "cycle_count": cycle_num,
+                "next_agent": "",
+                "sensitivity": 0.5
+            }
+            
+            # Guard the graph invocation with a timeout
+            try:
+                final_state = await asyncio.wait_for(
+                    graph.ainvoke(initial_state),
+                    timeout=30.0  # 30s max per cycle
+                )
+            except asyncio.TimeoutError:
+                logger.error(f"cycle {cycle_num}: graph invocation timed out after 30s")
+                await broadcast({"type": "update", "score": last_known_state["risk"]["score"], "regime": last_known_state["regime"], "logs": [], "yields": last_known_state["yields"]})
+                continue
+            
+            logs = []
+            for msg in final_state.get("messages", []):
+                if isinstance(msg, AIMessage):
+                    logs.append({
+                        "timestamp": datetime.now().isoformat(),
+                        "message": msg.content,
+                        "action": "Agent Action",
+                        "score": random.randint(90, 99)
+                    })
+            
+            score = final_state.get("data", {}).get("risk", {}).get("score", 92)
+            regime = final_state.get("data", {}).get("regime", "Consolidation")
+            action = final_state.get("data", {}).get("action", "SYNC")
+            
+            try:
+                messages = final_state.get("messages", [])
+                analyst_insight = messages[1].content if len(messages) > 1 else "no insight"
+                agent_memory.store_cycle(
+                    score=score,
+                    regime=regime,
+                    decision=action,
+                    analyst_insight=analyst_insight
+                )
+            except Exception as e:
+                logger.warning(f"cycle {cycle_num}: memory store failed: {e}")
+            
+            await broadcast({
+                "type": "update",
+                "score": score,
+                "regime": regime,
+                "logs": logs,
+                "yields": final_state.get("data", {}).get("yields", {"usdy": 5.0, "meth": 3.5})
+            })
+            
+            logger.info(f"cycle {cycle_num} complete. score={score} regime={regime} action={action}")
+            
+        except Exception as e:
+            logger.error(f"cycle {cycle_num}: unhandled error: {e}")
+            await asyncio.sleep(5)  # back off before retrying
 
 @app.on_event("startup")
 async def startup():

@@ -15,15 +15,16 @@ class AgentMemory:
             self.collection = None
             return
 
-        # use cloud client if url is provided, otherwise fallback to local (for safety)
-        # in production azure vm, set CHROMA_CLOUD_URL to avoid local disk writes
+        # Cloud-only persistence — 0% local disk writes enforced
         cloud_url = os.getenv("CHROMA_CLOUD_URL")
         if cloud_url:
             print(f"memory: connecting to cloud vector store at {cloud_url}")
             self.client = chromadb.HttpClient(host=cloud_url)
         else:
-            print("memory: using local disk fallback (set CHROMA_CLOUD_URL to skip)")
-            self.client = chromadb.PersistentClient(path=persist_directory)
+            # STATELESS MODE: no local disk writes, in-memory only
+            print("memory: CHROMA_CLOUD_URL not set. running stateless (0% disk persistence).")
+            self.collection = None
+            return
 
         self.ef = embedding_functions.DefaultEmbeddingFunction()
         self.collection = self.client.get_or_create_collection(

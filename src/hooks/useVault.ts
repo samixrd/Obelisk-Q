@@ -14,7 +14,14 @@ import { toast } from "@/hooks/use-toast";
 
 // ── Replace with your deployed contract address after running deploy script ──
 const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS ?? "";
-const CHAIN_ID_HEX  = "0x138B"; // 5003 in hex = Mantle Sepolia
+
+// ── Network Configuration (set VITE_CHAIN_ID=5000 for mainnet, 5003 for testnet) ──
+const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5003";
+const IS_MAINNET = CHAIN_ID === "5000";
+const CHAIN_ID_HEX = IS_MAINNET ? "0x1388" : "0x138B";
+const CHAIN_NAME = IS_MAINNET ? "Mantle" : "Mantle Sepolia Testnet";
+const RPC_URL = IS_MAINNET ? "https://rpc.mantle.xyz" : "https://rpc.sepolia.mantle.xyz";
+const EXPLORER_URL = IS_MAINNET ? "https://mantlescan.xyz" : "https://explorer.sepolia.mantle.xyz";
 
 // Minimal ABI — only what the frontend needs
 const VAULT_ABI = [
@@ -97,11 +104,8 @@ export function useVault(): VaultState {
   const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5003";
 
   const getExplorerUrl = useCallback((hash: string) => {
-    const baseUrl = CHAIN_ID === "5000" 
-      ? "https://mantlescan.xyz" 
-      : "https://explorer.sepolia.mantle.xyz";
-    return `${baseUrl}/tx/${hash}`;
-  }, [CHAIN_ID]);
+    return `${EXPLORER_URL}/tx/${hash}`;
+  }, []);
 
   // Load history
   useEffect(() => {
@@ -140,7 +144,7 @@ export function useVault(): VaultState {
       }) as string[];
       setAddress(accounts[0]);
 
-      // Switch to Mantle Testnet
+      // Switch to configured Mantle network
       try {
         await (eth.request as Function)({
           method: "wallet_switchEthereumChain",
@@ -152,10 +156,10 @@ export function useVault(): VaultState {
           method: "wallet_addEthereumChain",
           params: [{
             chainId:         CHAIN_ID_HEX,
-            chainName:       "Mantle Sepolia Testnet",
+            chainName:       CHAIN_NAME,
             nativeCurrency:  { name: "MNT", symbol: "MNT", decimals: 18 },
-            rpcUrls:         ["https://rpc.sepolia.mantle.xyz"],
-            blockExplorerUrls: ["https://explorer.sepolia.mantle.xyz"],
+            rpcUrls:         [RPC_URL],
+            blockExplorerUrls: [EXPLORER_URL],
           }],
         });
       }
