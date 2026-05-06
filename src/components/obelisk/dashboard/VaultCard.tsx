@@ -36,18 +36,18 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
           <div className="flex items-center gap-4">
             {/* Overlapping token icons */}
             <div className="flex items-center -space-x-3">
-              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm" style={{ zIndex: 2 }}>
+              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-[#00D395] shadow-sm flex items-center justify-center" style={{ zIndex: 2 }}>
                 {logos.mETH ? (
                   <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="h-full w-full bg-[#00D395] flex items-center justify-center text-white text-[10px] font-bold">mE</div>
+                  <span className="text-[10px] text-white font-bold">M</span>
                 )}
               </div>
-              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm" style={{ zIndex: 1 }}>
+              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-[#2775CA] shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
                 {logos.USDY ? (
                   <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" />
                 ) : (
-                  <div className="h-full w-full bg-[#2775CA] flex items-center justify-center text-white text-[10px] font-bold">U</div>
+                  <span className="text-[10px] text-white font-bold">U</span>
                 )}
               </div>
             </div>
