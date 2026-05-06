@@ -95,7 +95,7 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         </p>
         <div className="landing-hero-actions">
           <button onClick={onLaunch} className="landing-hero-cta">
-            Enter Dashboard
+            Launch App
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 8 }}>
               <path d="M3 8h10M10 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
