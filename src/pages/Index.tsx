@@ -42,7 +42,6 @@ function AppInner() {
 
   const handleAuthenticated = (method: "google" | "wallet") => {
     setAuthMethod(method);
-    if (method === "wallet") setWalletAddress("connected");
     setStage("dashboard");
   };
 
