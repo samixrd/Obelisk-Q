@@ -231,7 +231,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               </svg>
               Processing...
             </span>
-          ) : "Deposit"}
+          ) : (isConnected ? "Deposit" : "Connect Wallet")}
         </motion.button>
       </div>
     </div>

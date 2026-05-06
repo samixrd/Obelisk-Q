@@ -24,10 +24,9 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
   const prices = usePriceOracle();
 
   const { score, adaptive } = useStability();
-  const [tab,            setTab]           = useState<"deposit" | "withdraw">("deposit");
+  const [tab]              = useState<"deposit">("deposit");
   const [amount,         setAmount]        = useState("0.1");
-  const [withdrawMode,   setWithdrawMode]  = useState<"full" | "partial">("full");
-  const [withdrawAmount, setWithdrawAmount]= useState("0.1");
+
 
   const isLoading  = txState === "waiting" || txState === "pending";
   const isSuccess  = txState === "success";
@@ -35,15 +34,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
 
   const handleAction = async () => {
     if (!isConnected) { await connect(); return; }
-    if (tab === "deposit") {
-      await deposit(amount);
-    } else {
-      if (withdrawMode === "partial") {
-        await withdrawPartial(withdrawAmount);
-      } else {
-        await withdraw();
-      }
-    }
+    await deposit(amount);
   };
 
   return (
@@ -78,7 +69,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                     </div>
                     <div>
                       <h3 className="text-xl font-bold text-black tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
-                        {tab === "deposit" ? "Add Capital" : "Withdraw"}
+                        Add Capital
                       </h3>
                       <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
                         Obelisk Vault · Mantle
@@ -92,19 +83,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                   </button>
                 </div>
 
-                {/* Tab Switcher */}
-                <div className="flex p-1 bg-black/5 rounded-2xl mb-8">
-                  {(["deposit", "withdraw"] as const).map((t) => (
-                    <button
-                      key={t}
-                      onClick={() => { setTab(t); setTxState?.("idle"); }}
-                      className={`flex-1 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-300 ${tab === t ? "bg-white text-black shadow-sm" : "text-muted-foreground hover:text-black"}`}
-                      style={{ fontFamily: "'Inter', sans-serif" }}
-                    >
-                      {t.charAt(0).toUpperCase() + t.slice(1)}
-                    </button>
-                  ))}
-                </div>
+
 
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 gap-4 mb-8">
@@ -127,70 +106,28 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
 
                 {/* Main Action Area */}
                 <div className="space-y-6">
-                  {tab === "deposit" ? (
-                    <div>
-                      <div className="flex items-center justify-between mb-3 px-1">
-                        <label className="text-[11px] font-bold text-black uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>Deposit Amount</label>
-                        <span className="text-[11px] text-muted-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          Max: {vaultStats?.walletBalance ?? "0"} MNT
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-3 p-4 bg-white border border-black/10 rounded-2xl focus-within:border-black/30 transition-all shadow-sm">
-                        <input
-                          type="number"
-                          value={amount}
-                          onChange={(e) => setAmount(e.target.value)}
-                          className="flex-1 bg-transparent text-2xl font-bold text-black outline-none"
-                          style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
-                          placeholder="0.00"
-                        />
-                        <div className="flex items-center gap-2 px-3 py-1.5 bg-black/5 rounded-xl">
-                          <div className="h-4 w-4 rounded-full bg-blue-500" />
-                          <span className="text-xs font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
-                        </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <label className="text-[11px] font-bold text-black uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>Deposit Amount</label>
+                      <span className="text-[11px] text-muted-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+                        Max: {vaultStats?.walletBalance ?? "0"} MNT
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 p-4 bg-white border border-black/10 rounded-2xl focus-within:border-black/30 transition-all shadow-sm">
+                      <input
+                        type="number"
+                        value={amount}
+                        onChange={(e) => setAmount(e.target.value)}
+                        className="flex-1 bg-transparent text-2xl font-bold text-black outline-none"
+                        style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
+                        placeholder="0.00"
+                      />
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-black/5 rounded-xl">
+                        <div className="h-4 w-4 rounded-full bg-blue-500" />
+                        <span className="text-xs font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
                       </div>
                     </div>
-                  ) : (
-                    <div>
-                      <div className="flex items-center justify-between mb-3 px-1">
-                        <label className="text-[11px] font-bold text-black uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>Withdraw Mode</label>
-                      </div>
-                      <div className="flex gap-3 mb-6">
-                        {(["full", "partial"] as const).map((m) => (
-                          <button
-                            key={m}
-                            onClick={() => setWithdrawMode(m)}
-                            className={`flex-1 py-3 rounded-2xl text-[12px] font-bold transition-all border ${withdrawMode === m ? "bg-black text-white border-black" : "bg-white text-muted-foreground border-black/10 hover:border-black/30"}`}
-                            style={{ fontFamily: "'Inter', sans-serif" }}
-                          >
-                            {m === "full" ? "Withdraw All" : "Partial Amount"}
-                          </button>
-                        ))}
-                      </div>
-                      {withdrawMode === "partial" && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
-                          className="p-4 bg-white border border-black/10 rounded-2xl focus-within:border-black/30 transition-all shadow-sm flex items-center"
-                        >
-                          <input
-                            type="number"
-                            value={withdrawAmount}
-                            onChange={(e) => setWithdrawAmount(e.target.value)}
-                            className="flex-1 bg-transparent text-2xl font-bold text-black outline-none"
-                            style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
-                            placeholder="0.00"
-                          />
-                          <button 
-                            onClick={() => setWithdrawAmount(vaultStats?.userBalance ?? "0")}
-                            className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-tighter"
-                            style={{ fontFamily: "'Inter', sans-serif" }}
-                          >
-                            MAX
-                          </button>
-                        </motion.div>
-                      )}
-                    </div>
-                  )}
+                  </div>
 
                   {/* Feedback Area */}
                   <AnimatePresence mode="wait">
@@ -250,18 +187,13 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       </span>
                     ) : !isConnected ? (
                       "Connect Wallet"
-                    ) : tab === "deposit" ? (
-                      !canDeposit ? "Stability Warning: Low Score" : `Deposit ${amount} MNT`
                     ) : (
-                      withdrawMode === "full" ? "Withdraw All Funds" : `Withdraw ${withdrawAmount} MNT`
+                      !canDeposit ? "Stability Warning: Low Score" : `Deposit ${amount} MNT`
                     )}
                   </motion.button>
 
                   <p className="text-[10px] text-muted-foreground/50 text-center font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
-                    {tab === "deposit" 
-                      ? "Assets are allocated to mETH and USDY based on AI signals." 
-                      : "Withdrawals are processed instantly on-chain."
-                    }
+                    "Assets are allocated to mETH and USDY based on AI signals."
                   </p>
                 </div>
               </div>

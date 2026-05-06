@@ -21,8 +21,8 @@ interface SidebarProps {
 
 const MENU_ITEMS = [
   { icon: IconArrowUpRight, label: "Earn",         tab: "earn"         },
-  { icon: IconPerformance,  label: "Performance",  tab: "performance"  },
   { icon: IconPortfolio,    label: "Portfolio",    tab: "portfolio"    },
+  { icon: IconPerformance,  label: "Performance",  tab: "performance"  },
   { icon: IconSafeguards,   label: "Safeguards",   tab: "safeguards"   },
   { icon: IconLogs,         label: "Agent Logs",   tab: "agent-logs"   },
   { icon: IconAssetInfo,    label: "Assets",       tab: "assets"       },

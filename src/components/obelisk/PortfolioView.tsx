@@ -19,10 +19,34 @@ const POSITIONS = [
 ];
 
 export function PortfolioView() {
-  const { txHistory, explorerUrl } = useVault();
+  const { txHistory, explorerUrl, vaultStats, withdraw } = useVault();
 
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-8 pb-24">
+      {/* ── Total Balance Bar ── */}
+      <div className="col-span-12 glass-card rounded-[32px] px-10 py-6 flex items-center justify-between shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] mb-2">
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase text-muted-foreground/40 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>Total Balance</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+                {vaultStats?.userBalance ?? "0.00"}
+              </span>
+              <span className="text-sm font-semibold text-muted-foreground">MNT</span>
+            </div>
+          </div>
+        </div>
+        <motion.button
+          onClick={() => withdraw()}
+          whileHover={{ scale: 1.02, backgroundColor: "#0a0a0a", color: "#fff" }}
+          whileTap={{ scale: 0.98 }}
+          className="px-8 py-3 rounded-full border border-black/10 text-[12px] font-bold uppercase tracking-widest transition-all"
+          style={{ fontFamily: "'Inter', sans-serif" }}
+        >
+          Withdraw
+        </motion.button>
+      </div>
+
       <div className="col-span-12">
         <PortfolioAllocation />
       </div>
