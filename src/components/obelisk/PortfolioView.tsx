@@ -13,10 +13,8 @@ const fadeUp = {
 };
 
 const POSITIONS = [
-  { symbol: "M", name: "Mantle Core Yield",    strategy: "Conservative · Auto",  balance: "$182,430", change: "+0.82%", up: true,  alloc: 43 },
-  { symbol: "L", name: "Liquid Staking Blend", strategy: "Balanced · Auto",      balance: "$98,210",  change: "+1.24%", up: true,  alloc: 23 },
-  { symbol: "S", name: "Stable Reserves",      strategy: "Capital preservation", balance: "$84,020",  change: "+0.12%", up: true,  alloc: 20 },
-  { symbol: "G", name: "Growth Basket",        strategy: "Ambitious · Manual",   balance: "$63,490",  change: "-0.34%", up: false, alloc: 14 },
+  { symbol: "mETH", name: "Mantle Staked Ether", strategy: "Balanced · Auto",      balance: "$284,420",  change: "+1.24%", up: true,  alloc: 60, id: "mETH" },
+  { symbol: "USDY", name: "Ondo US Dollar Yield", strategy: "Conservative · Auto",  balance: "$144,310", change: "+0.82%", up: true,  alloc: 40, id: "USDY" },
 ];
 
 export function PortfolioView() {
@@ -230,8 +228,12 @@ export function PortfolioView() {
                 className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-2xl group"
               >
                 <div className="col-span-5 flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
-                    <span className="text-[13px] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.symbol}</span>
+                  <div className="h-10 w-10 rounded-full bg-white border border-black/[0.04] overflow-hidden flex items-center justify-center transition-all">
+                    {logos[p.id as keyof typeof logos] ? (
+                      <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-[13px] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.symbol[0]}</span>
+                    )}
                   </div>
                   <span className="text-[15px] text-black font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
                 </div>
