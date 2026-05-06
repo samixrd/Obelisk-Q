@@ -281,18 +281,33 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
                   </button>
                 </div>
-                <div className="space-y-4">
-                  <div className="p-5 bg-[#F9FAFB] rounded-2xl border border-black/[0.04]">
-                    <h4 className="text-[12px] font-bold text-black uppercase tracking-wider mb-2">AI Management</h4>
-                    <p className="text-[13px] text-[#6B7280] leading-relaxed">Your MNT is dynamically balanced between USDY (Treasuries) and mETH (Staking) to optimize for stability.</p>
+                <div className="space-y-6">
+                  <div className="flex gap-4">
+                    <div className="h-8 w-8 rounded-full bg-black/5 flex items-center justify-center shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M2 12h20" /></svg>
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-black mb-1">AI Management</h4>
+                      <p className="text-[12px] text-[#6B7280] leading-relaxed">Dynamic balancing between Treasuries and Staking for optimal stability.</p>
+                    </div>
                   </div>
-                  <div className="p-5 bg-[#F9FAFB] rounded-2xl border border-black/[0.04]">
-                    <h4 className="text-[12px] font-bold text-black uppercase tracking-wider mb-2">Safety Buffer</h4>
-                    <p className="text-[13px] text-[#6B7280] leading-relaxed">A portion of protocol fees is kept as a reserve to protect your principal against market drawdowns.</p>
+                  <div className="flex gap-4">
+                    <div className="h-8 w-8 rounded-full bg-black/5 flex items-center justify-center shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-black mb-1">Safety Buffer</h4>
+                      <p className="text-[12px] text-[#6B7280] leading-relaxed">Protocol reserves protect your principal against market drawdowns.</p>
+                    </div>
                   </div>
-                  <div className="p-5 bg-[#F9FAFB] rounded-2xl border border-black/[0.04]">
-                    <h4 className="text-[12px] font-bold text-black uppercase tracking-wider mb-2">Instant Liquidity</h4>
-                    <p className="text-[13px] text-[#6B7280] leading-relaxed">No lockups. You can withdraw your assets back to MNT at any time with a single transaction.</p>
+                  <div className="flex gap-4">
+                    <div className="h-8 w-8 rounded-full bg-black/5 flex items-center justify-center shrink-0">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
+                    </div>
+                    <div>
+                      <h4 className="text-[14px] font-bold text-black mb-1">Instant Liquidity</h4>
+                      <p className="text-[12px] text-[#6B7280] leading-relaxed">No lockups. Withdraw your assets back to MNT instantly at any time.</p>
+                    </div>
                   </div>
                 </div>
                 <button 
