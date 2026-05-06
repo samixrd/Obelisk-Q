@@ -42,12 +42,20 @@ export function SafeguardsView() {
       lastTrigger: "Continuous",
     },
     {
-      name: "Counterparty Exposure Cap",
-      status: "Active",
+      name: "Antigravity Latency Guard",
+      status: "PASS",
       statusOk: true,
-      description: "No single protocol may represent more than 45% of total allocated capital.",
-      threshold: "45% max",
-      lastTrigger: "4 days ago",
+      description: "Node-to-node telemetry synchronization must remain below 500ms to prevent state-drift.",
+      threshold: "< 500ms",
+      lastTrigger: "Continuous",
+    },
+    {
+      name: "Stateless Cloud Persistence",
+      status: "SYNCED",
+      statusOk: true,
+      description: "Agent state is persisted in cloud vector storage with 0% utilization of local edge-node disk.",
+      threshold: "Vector Sync",
+      lastTrigger: "Active",
     },
   ];
 

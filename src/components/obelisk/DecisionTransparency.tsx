@@ -48,7 +48,8 @@ export function DecisionTransparency() {
           className="text-3xl font-bold text-foreground"
           style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}
         >
-          Why the agent acted
+          <MagneticText disabled text="Supervisory logic" />
+          <MagneticText text="by Obelisk Q" />
         </h2>
       </div>
 
@@ -146,16 +147,22 @@ export function DecisionTransparency() {
             </div>
           </div>
 
-          {/* 5. NEXT SCAN */}
+          {/* 5. SUPERVISORY CONFIGURATION */}
           <div className="space-y-6">
             <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              Engine Status
+              Framework Status
             </p>
-            <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04]">
-              <p className="text-[11px] text-muted-foreground/40 mb-3 font-bold uppercase tracking-wider">Next analysis in:</p>
-              <div className="text-3xl font-bold text-black flex items-baseline gap-2">
-                <MagneticText disabled text={String(countdown)} />
-                <span className="text-xs text-black/20 font-bold uppercase tracking-widest">seconds</span>
+            <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04] space-y-6">
+              <div>
+                <p className="text-[11px] text-muted-foreground/40 mb-3 font-bold uppercase tracking-wider">Antigravity Latency:</p>
+                <div className="text-3xl font-bold text-black flex items-baseline gap-2">
+                  <MagneticText disabled text="412" />
+                  <span className="text-xs text-black/20 font-bold uppercase tracking-widest">ms</span>
+                </div>
+              </div>
+              <div className="pt-6 border-t border-black/5">
+                <p className="text-[11px] text-muted-foreground/40 mb-3 font-bold uppercase tracking-wider">Persistence Layer:</p>
+                <span className="text-[13px] font-bold text-black uppercase tracking-widest">Cloud Vector Storage (0% Local Disk)</span>
               </div>
             </div>
           </div>
