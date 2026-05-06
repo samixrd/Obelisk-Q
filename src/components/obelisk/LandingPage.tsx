@@ -46,7 +46,7 @@ function NavBar({ onLaunch }: { onLaunch: () => void }) {
             <Logo size={32} />
           </span>
           <span className="landing-brand">
-            Obelisk Q <span className="landing-beta">β</span>
+            Obelisk Q
           </span>
         </div>
 
