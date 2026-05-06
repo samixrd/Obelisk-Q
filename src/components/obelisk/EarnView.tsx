@@ -62,9 +62,8 @@ export function EarnView({ onOpenInvest }: EarnViewProps) {
       </div>
 
       {/* Supporting Cards */}
-      <div className="col-span-12 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 mt-4">
+      <div className="col-span-12 grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8 mt-4">
         <StabilityScoreCard />
-        <YieldEstimator />
         <ManagedAssets />
       </div>
     </motion.div>
