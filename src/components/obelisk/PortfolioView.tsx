@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { PortfolioAllocation } from "./PortfolioAllocation";
@@ -19,13 +20,14 @@ const POSITIONS = [
 ];
 
 export function PortfolioView() {
-  const { txHistory, explorerUrl, vaultStats, withdraw } = useVault();
+  const { txHistory, explorerUrl, vaultStats, withdrawPartial } = useVault();
+  const [withdrawAmount, setWithdrawAmount] = useState("");
 
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-8 pb-24">
       {/* ── Total Balance Bar ── */}
-      <div className="col-span-12 glass-card rounded-[32px] px-10 py-6 flex items-center justify-between shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] mb-2">
-        <div className="flex items-center gap-6">
+      <div className="col-span-12 glass-card rounded-[32px] px-10 py-6 flex flex-col md:flex-row items-center justify-between gap-6 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] mb-2">
+        <div className="flex items-center gap-10">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase text-muted-foreground/40 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>Total Balance</span>
             <div className="flex items-baseline gap-2">
@@ -35,13 +37,47 @@ export function PortfolioView() {
               <span className="text-sm font-semibold text-muted-foreground">MNT</span>
             </div>
           </div>
+
+          {/* Withdrawal Input Group */}
+          <div className="flex items-center gap-4 bg-black/[0.03] border border-black/[0.05] rounded-2xl px-4 py-2.5 transition-all focus-within:border-black/10 focus-within:bg-black/[0.05]">
+             <input
+              type="number"
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              placeholder="0.0"
+              className="bg-transparent outline-none text-[18px] font-bold text-black w-24 placeholder:text-black/10"
+              style={{ fontFamily: "'Inter', sans-serif" }}
+            />
+            <div className="flex items-center gap-1 border-l border-black/5 pl-4">
+              {["25%", "50%", "Max"].map((label) => (
+                <button
+                  key={label}
+                  onClick={() => {
+                    const balance = parseFloat(vaultStats?.userBalance ?? "0");
+                    if (label === "Max") setWithdrawAmount(balance.toString());
+                    else if (label === "50%") setWithdrawAmount((balance * 0.5).toFixed(4));
+                    else if (label === "25%") setWithdrawAmount((balance * 0.25).toFixed(4));
+                  }}
+                  className="text-[10px] font-bold text-muted-foreground hover:text-black transition-colors px-2.5 py-1.5 rounded-lg hover:bg-black/5"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
+
         <motion.button
-          onClick={() => withdraw()}
-          whileHover={{ scale: 1.02, backgroundColor: "#0a0a0a", color: "#fff" }}
+          onClick={() => {
+            if (withdrawAmount && parseFloat(withdrawAmount) > 0) {
+              withdrawPartial(withdrawAmount);
+            }
+          }}
+          whileHover={{ scale: 1.02, y: -1 }}
           whileTap={{ scale: 0.98 }}
-          className="px-8 py-3 rounded-full border border-black/10 text-[12px] font-bold uppercase tracking-widest transition-all"
-          style={{ fontFamily: "'Inter', sans-serif" }}
+          className="px-10 py-4 rounded-full bg-[#0a0a0a] text-white text-[13px] font-bold uppercase tracking-[0.15em] transition-all shadow-xl shadow-black/10"
+          style={{ fontFamily: "'Inter', sans-serif", border: "none" }}
         >
           Withdraw
         </motion.button>
