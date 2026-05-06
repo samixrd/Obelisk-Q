@@ -26,7 +26,7 @@ function NavBar({ onLaunch }: { onLaunch: () => void }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = ["Dashboard", "Protocol", "Features", "About"];
+  const navItems = ["Dashboard", "Protocol", "Features", "Archetypes"];
 
   return (
     <motion.nav
@@ -202,21 +202,21 @@ function BuiltForSection() {
   const profiles = [
     {
       id: "idle",
-      icon: <TriangleIcon />,
+      num: "01",
       headline: "You have stablecoins sitting idle",
       body: "USDY and mETH generate real yield backed by US Treasuries and staked ETH. The AI agent puts your capital to work automatically — no manual trading required.",
       tag: "Passive investor",
     },
     {
       id: "defi",
-      icon: <CircleIcon />,
+      num: "02",
       headline: "You want yield without the complexity",
       body: "No need to monitor pools, manage positions, or time the market. Obelisk Q's confidence scoring engine handles allocation decisions based on real-time on-chain signals.",
       tag: "DeFi participant",
     },
     {
       id: "inst",
-      icon: <SquareIcon />,
+      num: "03",
       headline: "You need compliant RWA exposure",
       body: "USDY is a regulated instrument backed by short-term US Treasuries. Full on-chain transparency, automated risk management, and non-custodial architecture.",
       tag: "Institutional",
@@ -224,7 +224,7 @@ function BuiltForSection() {
   ];
 
   return (
-    <section className="landing-section" id="built-for">
+    <section className="landing-section" id="archetypes">
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -237,23 +237,23 @@ function BuiltForSection() {
         </div>
       </motion.div>
 
-      <div className="landing-profiles-grid">
+      <div className="landing-features-grid">
         {profiles.map((p, i) => (
           <motion.div
             key={p.id}
-            className="landing-profile-card"
+            className="landing-feature-card"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div className="landing-profile-icon">{p.icon}</div>
-            <div className="landing-profile-headline" style={{ fontWeight: 600 }}>
+            <span className="landing-feature-num">{p.num}</span>
+            <div className="landing-feature-title" style={{ fontWeight: 600 }}>
               <MagneticText text={p.headline} />
             </div>
-            <p className="landing-profile-body">{p.body}</p>
-            <div className="mt-auto pt-6">
-              <span className="landing-profile-tag">{p.tag}</span>
+            <p className="landing-feature-desc">{p.body}</p>
+            <div className="landing-tags">
+              <span className="landing-tag">{p.tag}</span>
             </div>
           </motion.div>
         ))}
@@ -272,29 +272,7 @@ function BuiltForSection() {
   );
 }
 
-function TriangleIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M12 4L4 20H20L12 4Z" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
-function CircleIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <circle cx="12" cy="12" r="8" />
-    </svg>
-  );
-}
-
-function SquareIcon() {
-  return (
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="4" y="4" width="16" height="16" strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  );
-}
 
 function Footer() {
   const linkGroups = [
