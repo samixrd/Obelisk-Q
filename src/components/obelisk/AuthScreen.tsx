@@ -304,9 +304,6 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
     </motion.div>
   );
 }
-    </motion.div>
-  );
-}
 
 // ── Auth Button ───────────────────────────────────────────────────────────────
 
