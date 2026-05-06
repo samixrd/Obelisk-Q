@@ -149,5 +149,6 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       {/* Global Modals */}
       <InvestModal open={investOpen} onClose={() => setInvestOpen(false)} />
     </main>
+    </>
   );
 }
