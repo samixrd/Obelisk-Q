@@ -173,9 +173,9 @@ async def executor_node(state: AgentState):
     action = state["data"].get("action", "HOLD")
     risk_score = state["data"].get("risk", {}).get("score", 90)
     
-    # ── HARD-LOCK ENFORCEMENT: double-check at executor level ──
+    # ── Q-SCORE FINAL AUTHORITY: executor cannot override the scoring engine ──
     if risk_score < 85 or action == "HOLD":
-        return {"messages": [AIMessage(content=f"executor: hold mode. score {risk_score}. no on-chain action taken. state preserved.")], "data": state["data"]}
+        return {"messages": [AIMessage(content=f"executor: hold mode. score {risk_score}. q-score engine is final authority. no on-chain action taken.")], "data": state["data"]}
     
     if not WEB3_AVAILABLE:
         return {"messages": [AIMessage(content="executor: web3 unavailable. operating in simulation.")], "data": state["data"]}
@@ -187,15 +187,23 @@ async def executor_node(state: AgentState):
     if not private_key or not vault_addr:
         return {"messages": [AIMessage(content="executor: pre-flight check. vault address or key missing. operating in simulation.")], "data": state["data"]}
 
-    try:
-        w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": 5}))
-        
-        # RPC health check with timeout
-        if not w3.is_connected():
-            return {"messages": [AIMessage(content="executor: rpc unreachable. state locked. retrying next cycle.")], "data": state["data"]}
-        
+    # ── 500ms ANTIGRAVITY SLA: all RPC operations must complete within this window ──
+    async def _rpc_execute():
+        loop = asyncio.get_event_loop()
+        w3 = await loop.run_in_executor(None, lambda: Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": 0.5})))
+        connected = await loop.run_in_executor(None, w3.is_connected)
+        if not connected:
+            raise ConnectionError("rpc unreachable")
         account = w3.eth.account.from_key(private_key)
-        content = f"executor: signal synchronized. account {account.address[:6]}... active on mantle. ready for rebalance."
+        return f"executor: signal synchronized. account {account.address[:6]}... active on mantle. rpc latency within 500ms sla."
+
+    try:
+        content = await asyncio.wait_for(_rpc_execute(), timeout=0.5)
+    except asyncio.TimeoutError:
+        logger.warning("executor: rpc call exceeded 500ms sla. state locked.")
+        content = "executor: rpc timeout. 500ms antigravity sla breached. state locked. retrying next cycle."
+    except ConnectionError:
+        content = "executor: rpc unreachable. state locked. retrying next cycle."
     except Exception as e:
         logger.error(f"executor rpc error: {e}")
         content = f"executor: rpc error. state locked. error: {str(e)[:40]}"

@@ -9,7 +9,7 @@
  *   const { deposit, withdraw, vaultStats, txState } = useVault()
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@/hooks/use-toast";
 
 // ── Replace with your deployed contract address after running deploy script ──
@@ -100,6 +100,7 @@ export function useVault(): VaultState {
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
   const [confirmations, setConfirmations] = useState<number>(0);
   const [txHistory, setTxHistory] = useState<TransactionRecord[]>([]);
+  const simBalanceRef = useRef<Record<string, number>>({});  // memory-only sim balance (0% disk)
 
   const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5003";
 
@@ -107,25 +108,13 @@ export function useVault(): VaultState {
     return `${EXPLORER_URL}/tx/${hash}`;
   }, []);
 
-  // Load history
-  useEffect(() => {
-    const saved = localStorage.getItem(`tx_history_${address}`);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setTxHistory(parsed.map((r: any) => ({ ...r, timestamp: new Date(r.timestamp) })));
-      } catch (e) { console.error("Failed to parse tx history", e); }
-    }
-  }, [address]);
-
+  // Transaction history — memory-only, resets each session (0% disk persistence)
   const saveTx = useCallback((record: TransactionRecord) => {
     setTxHistory(prev => {
       const filtered = prev.filter(r => r.hash !== record.hash);
-      const updated = [record, ...filtered].slice(0, 20);
-      localStorage.setItem(`tx_history_${address}`, JSON.stringify(updated));
-      return updated;
+      return [record, ...filtered].slice(0, 20);
     });
-  }, [address]);
+  }, []);
 
   const isConnected = !!address;
 
@@ -209,7 +198,7 @@ export function useVault(): VaultState {
         console.warn("Vault stats call failed, using defaults", e);
       }
 
-      let userBalance = address ? "0.0000" : (localStorage.getItem(`sim_balance_null`) || "0.0000");
+      let userBalance = address ? "0.0000" : (simBalanceRef.current["null"]?.toFixed(4) || "0.0000");
       
       if (address) {
         try {
@@ -340,9 +329,9 @@ export function useVault(): VaultState {
                 hash,
               });
 
-              // Update simulated balance
-              const currentSim = parseFloat(localStorage.getItem(`sim_balance_${address}`) || "0");
-              localStorage.setItem(`sim_balance_${address}`, (currentSim + parseFloat(amountMnt)).toFixed(4));
+              // Update simulated balance (memory-only)
+              const currentSim = simBalanceRef.current[address || "null"] || 0;
+              simBalanceRef.current[address || "null"] = currentSim + parseFloat(amountMnt);
               
               await refreshStats();
               clearInterval(interval);
@@ -461,8 +450,8 @@ export function useVault(): VaultState {
                 hash,
               });
 
-              // Clear simulated balance
-              localStorage.setItem(`sim_balance_${address}`, "0.0000");
+              // Clear simulated balance (memory-only)
+              simBalanceRef.current[address || "null"] = 0;
               await refreshStats();
               clearInterval(interval);
             }
@@ -580,10 +569,10 @@ export function useVault(): VaultState {
                 hash,
               });
 
-              // Update simulated balance
-              const currentSim = parseFloat(localStorage.getItem(`sim_balance_${address}`) || "0");
+              // Update simulated balance (memory-only)
+              const currentSim = simBalanceRef.current[address || "null"] || 0;
               const newSim = Math.max(0, currentSim - parseFloat(amountMnt));
-              localStorage.setItem(`sim_balance_${address}`, newSim.toFixed(4));
+              simBalanceRef.current[address || "null"] = newSim;
               
               await refreshStats();
               clearInterval(interval);
