@@ -1,11 +1,12 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useStability } from "./StabilityContext";
+import { MagneticText } from "./MagneticText";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.7, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
 };
 
 export function DecisionTransparency() {
@@ -34,61 +35,63 @@ export function DecisionTransparency() {
   const statusOk = score >= adaptive.confidenceThreshold;
 
   return (
-    <motion.div {...fadeUp} className="col-span-12 glass-card rounded-3xl p-6 md:p-10 space-y-12 mb-12 transition-all hover:bg-white/80">
-      {/* Section Title */}
-      <div>
+    <motion.div {...fadeUp} className="col-span-12 glass-card rounded-[48px] p-10 md:p-14 space-y-16 mb-12 transition-all shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
+      {/* ── Section Title ────────────────────────────────────────────────── */}
+      <div className="space-y-2">
         <p
-          className="text-[10px] uppercase text-muted-foreground mb-2 font-bold"
-          style={{ letterSpacing: "0.28em", fontFamily: "'Inter', sans-serif" }}
+          className="text-[10px] uppercase text-muted-foreground/40 mb-3 font-bold tracking-[0.28em]"
+          style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          AI Decision Transparency
+          <MagneticText text="AI Decision Transparency" />
         </p>
         <h2
-          className="text-2xl font-bold text-foreground"
-          style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
+          className="text-3xl font-bold text-foreground"
+          style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}
         >
           Why the agent acted
         </h2>
       </div>
 
-      <div className="grid grid-cols-12 gap-8 md:gap-12">
-        {/* Left Column: Decision & Breakdown */}
-        <div className="col-span-12 lg:col-span-7 space-y-12">
+      <div className="grid grid-cols-12 gap-12 md:gap-20">
+        {/* ── Left Column: Decision & Breakdown ────────────────────────────── */}
+        <div className="col-span-12 lg:col-span-7 space-y-16">
           {/* 1. LAST DECISION CARD */}
-          <div className="space-y-4">
-            <p className="text-[11px] uppercase text-muted-foreground/60 font-bold" style={{ letterSpacing: "0.15em", fontFamily: "'Inter', sans-serif" }}>
+          <div className="space-y-6">
+            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
               Last Decision
             </p>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-x-12 gap-y-8">
               <div>
-                <p className="text-[11px] text-muted-foreground mb-1 font-medium">Action Taken</p>
-                <p className="text-sm font-semibold text-foreground">
+                <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Action Taken</p>
+                <p className="text-[15px] font-bold text-foreground leading-snug">
                   {statusOk ? "Hold — score within safe range" : "Rebalance — risk threshold exceeded"}
                 </p>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground mb-1 font-medium">Timestamp</p>
-                <p className="text-sm font-semibold text-foreground">
+                <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Timestamp</p>
+                <p className="text-[15px] font-bold text-foreground">
                   2 minutes ago
                 </p>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground mb-1 font-medium">Confidence Score</p>
-                <p className="text-sm font-bold text-foreground">{score}</p>
+                <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Confidence Score</p>
+                <div className="text-xl font-bold text-foreground">
+                   <MagneticText text={String(score)} />
+                </div>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground mb-1 font-medium">Market Regime</p>
-                <p className="text-sm font-semibold text-foreground">{adaptive.modeLabel}</p>
+                <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Market Regime</p>
+                <p className="text-[15px] font-bold text-foreground">{adaptive.modeLabel}</p>
               </div>
             </div>
           </div>
 
           {/* 2. SCORE BREAKDOWN */}
-          <div className="space-y-6">
-            <p className="text-[11px] uppercase text-muted-foreground/60 font-bold" style={{ letterSpacing: "0.15em", fontFamily: "'Inter', sans-serif" }}>
+          <div className="space-y-8">
+            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
               Score Breakdown
             </p>
-            <div className="space-y-8">
+            <div className="space-y-10">
               <ScoreBar 
                 label="Yield Differential" 
                 weight="40%" 
@@ -110,39 +113,42 @@ export function DecisionTransparency() {
                 contribution={liqCont} 
                 note="On-chain liquidity depth is adequate" 
               />
-              <div className="flex justify-between items-center pt-4 border-t border-foreground/5">
-                <span className="text-sm font-bold text-foreground">Total:</span>
-                <span className="text-xl font-bold text-foreground">73.5 / 100</span>
+              <div className="flex justify-between items-center pt-8 border-t border-black/[0.04]">
+                <span className="text-sm font-bold text-black/40 uppercase tracking-widest">Total:</span>
+                <div className="text-2xl font-bold text-black flex items-baseline gap-2">
+                   <MagneticText text="73.5" />
+                   <span className="text-sm text-black/20">/ 100</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Status & Countdown */}
-        <div className="col-span-12 lg:col-span-5 space-y-12">
+        {/* ── Right Column: Status & Countdown ────────────────────────────── */}
+        <div className="col-span-12 lg:col-span-5 space-y-16">
           {/* 3. THRESHOLD STATUS */}
-          <div className="space-y-4">
-            <p className="text-[11px] uppercase text-muted-foreground/60 font-bold" style={{ letterSpacing: "0.15em", fontFamily: "'Inter', sans-serif" }}>
+          <div className="space-y-6">
+            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
               Threshold Status
             </p>
-            <div className="p-6 rounded-2xl bg-foreground/[0.015] border border-foreground/5 space-y-4">
+            <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04] space-y-6">
               <div className="flex justify-between items-center">
-                <span className="text-xs text-muted-foreground font-medium">
-                  Current threshold: {adaptive.confidenceThreshold}% ({adaptive.modeLabel} mode)
+                <span className="text-[11px] text-muted-foreground/50 font-bold uppercase tracking-wider">
+                  Target: {adaptive.confidenceThreshold}%
                 </span>
-                <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full border font-bold ${statusOk ? "text-emerald-500 border-emerald-500/20 bg-emerald-500/5" : "text-amber-500 border-amber-500/20 bg-amber-500/5"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
-                  {statusOk ? "Allocation approved" : "Rebalance recommended"}
-                </span>
+                <div className={`text-[10px] uppercase px-4 py-1.5 rounded-full border font-bold tracking-widest ${statusOk ? "text-emerald-500 border-emerald-500/20 bg-emerald-500/5" : "text-amber-500 border-amber-500/20 bg-amber-500/5"}`}>
+                  {statusOk ? "Approved" : "Rebalance"}
+                </div>
               </div>
-              <div className="relative h-2 bg-foreground/5 rounded-full overflow-hidden">
+              <div className="relative h-2 bg-black/[0.04] rounded-full overflow-hidden">
                 <motion.div 
                   initial={{ width: 0 }}
                   animate={{ width: `${score}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className={`absolute inset-y-0 left-0 rounded-full ${statusOk ? "bg-emerald-500/40" : "bg-amber-500/40"}`}
+                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                  className={`absolute inset-y-0 left-0 rounded-full ${statusOk ? "bg-emerald-500/30" : "bg-amber-500/30"}`}
                 />
                 <div 
-                  className="absolute inset-y-0 border-l border-foreground/20 z-10" 
+                  className="absolute inset-y-0 border-l-2 border-black/10 z-10" 
                   style={{ left: `${adaptive.confidenceThreshold}%` }} 
                 />
               </div>
@@ -150,34 +156,35 @@ export function DecisionTransparency() {
           </div>
 
           {/* 4. CIRCUIT BREAKER STATUS */}
-          <div className="space-y-4">
-            <p className="text-[11px] uppercase text-muted-foreground/60 font-bold" style={{ letterSpacing: "0.15em", fontFamily: "'Inter', sans-serif" }}>
+          <div className="space-y-6">
+            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
               Safeguards
             </p>
-            <div className="p-6 rounded-2xl bg-foreground/[0.015] border border-foreground/5 space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]" />
-                <span className="text-sm font-bold text-foreground">Circuit breaker: Armed</span>
+            <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04] space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
+                <span className="text-[15px] font-bold text-black">Circuit breaker: Armed</span>
               </div>
-              <p className="text-[11px] text-muted-foreground font-medium leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-xs text-muted-foreground/50 font-medium leading-relaxed">
                 Will trigger if score drops 5+ points in 60 minutes
               </p>
-              <p className="text-[11px] text-muted-foreground/40 pt-2 font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
-                Last check: 14 seconds ago
-              </p>
+              <div className="text-[10px] text-black/20 pt-4 font-bold uppercase tracking-widest">
+                Last check: 14s ago
+              </div>
             </div>
           </div>
 
           {/* 5. NEXT SCAN */}
-          <div className="space-y-4">
-            <p className="text-[11px] uppercase text-muted-foreground/60 font-bold" style={{ letterSpacing: "0.15em", fontFamily: "'Inter', sans-serif" }}>
+          <div className="space-y-6">
+            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
               Engine Status
             </p>
-            <div className="p-6 rounded-2xl bg-foreground/[0.015] border border-foreground/5">
-              <p className="text-sm text-muted-foreground mb-1 font-medium">Next analysis in:</p>
-              <p className="text-2xl font-bold text-foreground">
-                {countdown} <span className="text-xs text-muted-foreground/50 font-medium">seconds</span>
-              </p>
+            <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04]">
+              <p className="text-[11px] text-muted-foreground/40 mb-3 font-bold uppercase tracking-wider">Next analysis in:</p>
+              <div className="text-3xl font-bold text-black flex items-baseline gap-2">
+                <MagneticText text={String(countdown)} />
+                <span className="text-xs text-black/20 font-bold uppercase tracking-widest">seconds</span>
+              </div>
             </div>
           </div>
         </div>
@@ -188,27 +195,30 @@ export function DecisionTransparency() {
 
 function ScoreBar({ label, weight, score, contribution, note }: { label: string; weight: string; score: number; contribution: string; note: string }) {
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex justify-between items-end">
         <div>
-          <span className="text-[10px] uppercase text-muted-foreground/50 block mb-1 font-bold" style={{ letterSpacing: "0.1em", fontFamily: "'Inter', sans-serif" }}>{weight} weight</span>
-          <span className="text-sm font-bold text-foreground">{label}</span>
+          <span className="text-[10px] uppercase text-muted-foreground/30 block mb-1.5 font-bold tracking-[0.1em]">{weight} weight</span>
+          <span className="text-sm font-bold text-black">{label}</span>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-muted-foreground block mb-1 font-bold">Score: {score}/100</span>
-          <span className="text-[10px] text-foreground/60 font-bold">→ contribution: {contribution} pts</span>
+          <span className="text-[10px] text-muted-foreground/40 block mb-1 font-bold">Score: {score}/100</span>
+          <span className="text-[11px] text-black font-bold">
+             +<MagneticText text={contribution} /> pts
+          </span>
         </div>
       </div>
-      <div className="relative h-1.5 w-full bg-foreground/5 rounded-full overflow-hidden">
+      <div className="relative h-1.5 w-full bg-black/[0.04] rounded-full overflow-hidden">
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: `${score}%` }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="absolute inset-y-0 left-0 bg-foreground/20 rounded-full"
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          className="absolute inset-y-0 left-0 bg-black/20 rounded-full"
         />
       </div>
-      <p className="text-[10px] text-muted-foreground font-medium italic">"{note}"</p>
+      <p className="text-[11px] text-muted-foreground/40 font-medium italic leading-relaxed">"{note}"</p>
     </div>
   );
 }
+
 

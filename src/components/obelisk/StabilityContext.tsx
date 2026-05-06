@@ -43,7 +43,7 @@ interface StabilityState {
 
 const Ctx = createContext<StabilityState | null>(null);
 
-const API_BASE = (import.meta as Record<string, Record<string,string>>).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
+const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
 
 export function StabilityProvider({ children }: { children: ReactNode }) {
   const [scoreOverride,      setScoreOverride]      = useState<number | null>(null);
