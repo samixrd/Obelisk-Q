@@ -205,12 +205,8 @@ export function useVault(): VaultState {
         console.warn("Vault stats call failed, using defaults", e);
       }
 
-      let userBalance = "0.0000";
+      let userBalance = address ? "0.0000" : (localStorage.getItem(`sim_balance_null`) || "0.0000");
       
-      // Fallback: Check local storage for simulated deposits if contract doesn't return anything
-      const simulatedBalance = localStorage.getItem(`sim_balance_${address}`) || "0.0000";
-      userBalance = simulatedBalance;
-
       if (address) {
         try {
           const balRaw = await (eth.request as Function)({
@@ -219,13 +215,10 @@ export function useVault(): VaultState {
           }) as string;
           
           if (balRaw && balRaw !== "0x") {
-            const contractBal = formatMnt(BigInt(balRaw));
-            if (parseFloat(contractBal) > 0) {
-              userBalance = contractBal; // Prefer contract balance if it exists
-            }
+            userBalance = formatMnt(BigInt(balRaw));
           }
         } catch (e) {
-          console.warn("Vault user balance call failed, using simulated", e);
+          console.warn("Vault user balance call failed", e);
         }
       }
 
@@ -377,17 +370,14 @@ export function useVault(): VaultState {
 
     try {
       // Estimate gas to catch reverts early
-      let gasLimit = "0x186A0"; // 100k fallback
+      let gasLimit = "0x493E0"; // 300k safer fallback for Mantle
       try {
         const estimated = await (eth.request as Function)({
           method: "eth_estimateGas",
-          params: [{
-            from: address,
-            to:   VAULT_ADDRESS,
-            data: "0x3ccfd60b",
-          }],
+          params: [{ from: address, to: VAULT_ADDRESS, data: "0x3ccfd60b" }],
         }) as string;
-        gasLimit = estimated;
+        // Add 20% buffer
+        gasLimit = "0x" + Math.floor(parseInt(estimated, 16) * 1.2).toString(16);
       } catch (e) {
         console.warn("Gas estimation failed, using fallback", e);
       }
@@ -504,13 +494,14 @@ export function useVault(): VaultState {
       const data = "0x" + selector + paddedAmount;
 
       // Estimate gas
-      let gasLimit = "0x186A0"; // 100k fallback
+      let gasLimit = "0x493E0"; // 300k safer fallback for Mantle
       try {
         const estimated = await (eth.request as Function)({
           method: "eth_estimateGas",
           params: [{ from: address, to: VAULT_ADDRESS, data }],
         }) as string;
-        gasLimit = estimated;
+        // Add 20% buffer
+        gasLimit = "0x" + Math.floor(parseInt(estimated, 16) * 1.2).toString(16);
       } catch (e) {
         console.warn("Gas estimation failed", e);
       }
