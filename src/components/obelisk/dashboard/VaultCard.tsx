@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { useVault } from "@/hooks/useVault";
 import { useYieldData } from "@/hooks/useYieldData";
@@ -14,6 +14,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
   const { usdy, meth } = useYieldData();
   const logos = useTokenLogos();
   const [depositAmount, setDepositAmount] = useState("");
+  const [learnMoreOpen, setLearnMoreOpen] = useState(false);
   const isPending = txState === "waiting" || txState === "pending";
 
   const handleDeposit = async () => {
@@ -54,7 +55,8 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             <div>
               <div className="text-[17px] font-bold text-[#0a0a0a] flex items-center gap-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
                 <MagneticText text="Obelisk Vault" />
-                <div className="px-2 py-0.5 bg-emerald-50 text-[9px] text-emerald-600 font-bold rounded-md border border-emerald-100 uppercase tracking-wider">
+                <div className="px-2 py-0.5 bg-emerald-50 text-[9px] text-emerald-600 font-bold rounded-md border border-emerald-100 uppercase tracking-wider flex items-center gap-1.5">
+                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                    Mantle Optimized
                 </div>
               </div>
@@ -64,6 +66,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             </div>
           </div>
           <button
+            onClick={() => setLearnMoreOpen(true)}
             className="text-[13px] text-[#1976D2] hover:text-[#1565C0] transition-colors"
             style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
           >
@@ -124,7 +127,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", maxWidth: "65%" }}
           />
           <div
-            className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer hover:bg-white/80 transition-colors"
+            className="flex items-center gap-2.5 px-4 py-2.5"
             style={{
               background: "#ffffff",
               border: "1px solid rgba(0,0,0,0.10)",
@@ -140,9 +143,6 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               )}
             </div>
             <span className="text-[14px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
-            <svg width="14" height="14" viewBox="0 0 12 12" fill="none">
-              <path d="M3 5l3 3 3-3" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
           </div>
         </div>
 
@@ -231,7 +231,10 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         <motion.button
           onClick={handleDeposit}
           disabled={isPending}
-          whileHover={{ y: isPending ? 0 : -2, boxShadow: isPending ? "none" : "0 10px 20px rgba(0,0,0,0.1)" }}
+          whileHover={{ 
+            y: isPending ? 0 : -2, 
+            boxShadow: isPending ? "none" : "0 20px 40px rgba(0,0,0,0.2), 0 0 20px rgba(0,211,149,0.15)" 
+          }}
           whileTap={{ scale: isPending ? 1 : 0.98 }}
           className={`w-full py-5 text-[15px] font-semibold text-white transition-all duration-300 ${isPending ? 'opacity-50 cursor-not-allowed bg-[#222]' : 'bg-[#0a0a0a]'}`}
           style={{
@@ -255,6 +258,54 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
           ) : (isConnected ? "Deposit" : "Connect Wallet")}
         </motion.button>
       </div>
+
+      {/* Learn More Modal */}
+      <AnimatePresence>
+        {learnMoreOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setLearnMoreOpen(false)}
+              className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="fixed inset-0 z-[101] flex items-center justify-center pointer-events-none"
+            >
+              <div className="w-[400px] bg-white rounded-[32px] p-8 shadow-2xl pointer-events-auto border border-black/5">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-black">Vault Mechanics</h3>
+                  <button onClick={() => setLearnMoreOpen(false)} className="p-2 hover:bg-black/5 rounded-full">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+                  </button>
+                </div>
+                <div className="space-y-4">
+                  <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
+                    <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider mb-1">AI Management</h4>
+                    <p className="text-[13px] text-blue-900/70 leading-relaxed">Your MNT is dynamically balanced between USDY (Treasuries) and mETH (Staking) to optimize for stability.</p>
+                  </div>
+                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
+                    <h4 className="text-[12px] font-bold text-emerald-700 uppercase tracking-wider mb-1">Safety Buffer</h4>
+                    <p className="text-[13px] text-emerald-900/70 leading-relaxed">A portion of protocol fees is kept as a reserve to protect your principal against market drawdowns.</p>
+                  </div>
+                  <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
+                    <h4 className="text-[12px] font-bold text-orange-700 uppercase tracking-wider mb-1">Instant Liquidity</h4>
+                    <p className="text-[13px] text-orange-900/70 leading-relaxed">No lockups. You can withdraw your assets back to MNT at any time with a single transaction.</p>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setLearnMoreOpen(false)}
+                  className="w-full mt-8 py-4 bg-black text-white font-bold rounded-2xl hover:bg-black/90 transition-all"
+                >
+                  Got it
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
