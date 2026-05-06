@@ -73,17 +73,6 @@ export function PortfolioView() {
               </span>
             </div>
           </div>
-
-          <div className="h-10 w-px bg-black/[0.06]" />
-
-          <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-[#9CA3AF] font-semibold tracking-[0.15em] mb-2">Sharpe Ratio</span>
-            <div className="flex items-baseline gap-1">
-              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.02em" }}>
-                {metrics.sharpe_ratio}
-              </span>
-            </div>
-          </div>
         </div>
 
         <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">

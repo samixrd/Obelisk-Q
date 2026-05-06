@@ -7,7 +7,6 @@ import { AgentLogsView } from "./AgentLogsView";
 import { PreferencesView } from "./PreferencesView";
 import { AssetsView } from "./AssetsView";
 import { EarnView } from "./EarnView";
-import { PerformanceView } from "./PerformanceView";
 import { QScoreBar } from "./dashboard/QScoreBar";
 import { InvestModal } from "./InvestModal";
 import { Logo } from "./Logo";
@@ -17,7 +16,6 @@ import { FloatingSymbols } from "./FloatingSymbols";
 
 export type DashboardTab =
   | "earn"
-  | "performance"
   | "safeguards"
   | "portfolio"
   | "agent-logs"
@@ -64,11 +62,6 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             </div>
           )}
 
-          {tab === "performance" && (
-            <div key="performance">
-              <PerformanceView />
-            </div>
-          )}
 
           {tab === "safeguards" && (
             <div key="safeguards">
