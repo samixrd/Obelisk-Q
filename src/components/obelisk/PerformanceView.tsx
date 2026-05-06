@@ -2,11 +2,12 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight, IconArrowDownRight, IconShield, IconActivity } from "./LineIcons";
+import { MagneticText } from "./MagneticText";
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.65, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
+  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
 };
 
 const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
@@ -34,10 +35,10 @@ export function PerformanceView() {
   }, []);
 
   const perfStats = [
-    { label: "YTD Return", value: `+${metrics.ytd_return}%`, delta: "Outperforming", up: true },
-    { label: "Sharpe Ratio", value: metrics.sharpe_ratio.toString(), delta: "Risk-Adjusted", up: true },
-    { label: "Max Drawdown", value: `${metrics.max_drawdown}%`, delta: "Contained", up: false },
-    { label: "AI Win Rate", value: `${metrics.win_rate}%`, delta: "MoM Growth", up: true },
+    { label: "YTD Return", value: `+${metrics.ytd_return}%`, delta: "Outperforming", up: true, id: "ytd" },
+    { label: "Sharpe Ratio", value: metrics.sharpe_ratio.toString(), delta: "Risk-Adjusted", up: true, id: "sharpe" },
+    { label: "Max Drawdown", value: `${metrics.max_drawdown}%`, delta: "Contained", up: false, id: "drawdown" },
+    { label: "AI Win Rate", value: `${metrics.win_rate}%`, delta: "MoM Growth", up: true, id: "winrate" },
   ];
 
   const months = [
@@ -56,78 +57,87 @@ export function PerformanceView() {
   ];
 
   return (
-    <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-20">
+    <motion.div {...fadeUp} className="grid grid-cols-12 gap-8 pb-24">
       
-      {/* Hero Stats */}
-      <div className="col-span-12 glass-card rounded-3xl p-8 md:p-12">
-        <div className="flex flex-col md:flex-row items-start justify-between gap-10 mb-12">
-          <div>
-            <p className="text-[10px] uppercase text-muted-foreground mb-4 font-semibold tracking-[0.28em]">
-              Cumulative Return · YTD
+      {/* ── Hero Stats ── */}
+      <div className="col-span-12 glass-card rounded-[48px] p-10 md:p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-12 mb-16">
+          <div className="space-y-4">
+            <p className="text-[11px] uppercase text-muted-foreground/40 font-bold tracking-[0.24em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <MagneticText text="Cumulative Return · YTD" />
             </p>
-            <p className="text-6xl md:text-8xl text-foreground font-bold" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
-              +{metrics.ytd_return}<span className="text-muted-foreground/30">%</span>
-            </p>
+            <div className="text-7xl md:text-8xl text-black font-bold flex items-baseline gap-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
+              <MagneticText text={`+${metrics.ytd_return}`} />
+              <span className="text-black/10 font-light">%</span>
+            </div>
           </div>
-          <div className="flex md:block items-center gap-6 md:text-right md:space-y-2">
-            <p className="text-[10px] uppercase text-muted-foreground font-semibold tracking-[0.28em]">
-              Sharpe Ratio
+          <div className="flex md:block items-center gap-8 md:text-right">
+            <p className="text-[11px] uppercase text-muted-foreground/40 font-bold tracking-[0.24em] mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <MagneticText text="Sharpe Ratio" />
             </p>
-            <p className="text-3xl text-foreground font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
-              {metrics.sharpe_ratio}
-            </p>
+            <div className="text-4xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <MagneticText text={String(metrics.sharpe_ratio)} />
+            </div>
+            <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mt-2">Top 5% Global</p>
           </div>
         </div>
-        <div className="h-[280px]">
-          <StabilityGraph seed={3} height={280} />
+        <div className="h-[320px] -mx-4">
+          <StabilityGraph seed={3} height={320} />
         </div>
       </div>
 
-      {/* Grid Stats */}
+      {/* ── Grid Stats ── */}
       {perfStats.map((s, i) => (
         <motion.div
-          key={s.label}
+          key={s.id}
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: i * 0.08, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-          className="col-span-12 sm:col-span-6 lg:col-span-3 glass-card rounded-3xl p-8 transition-all hover:bg-white/80"
+          transition={{ delay: i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+          whileHover={{ y: -4, backgroundColor: "rgba(255,255,255,0.95)" }}
+          className="col-span-12 sm:col-span-6 lg:col-span-3 glass-card rounded-[32px] p-10 transition-all shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]"
         >
-          <p className="text-[10px] uppercase text-muted-foreground mb-5 font-semibold tracking-[0.2em] truncate">
-            {s.label}
+          <p className="text-[10px] uppercase text-muted-foreground/40 mb-6 font-bold tracking-[0.2em] truncate" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <MagneticText text={s.label} />
           </p>
-          <p className="text-3xl md:text-4xl text-foreground font-bold" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
-            {s.value}
-          </p>
-          <div className="flex items-center gap-2 mt-4">
-             <div className={`h-1 w-1 rounded-full ${s.up ? "bg-emerald-500" : "bg-blue-400"}`} />
-             <p className={`text-[11px] font-bold ${s.up ? "text-emerald-600" : "text-blue-500"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+          <div className="text-3xl md:text-4xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}>
+            <MagneticText text={s.value} />
+          </div>
+          <div className="flex items-center gap-2.5 mt-5">
+             <div className={`h-1.5 w-1.5 rounded-full ${s.up ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-black/20"}`} />
+             <p className={`text-[11px] font-bold uppercase tracking-widest ${s.up ? "text-emerald-600" : "text-black/30"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
                {s.delta}
              </p>
           </div>
         </motion.div>
       ))}
 
-      {/* Monthly Chart */}
-      <div className="col-span-12 glass-card rounded-3xl p-8 md:p-12">
-        <p className="text-2xl font-bold text-foreground mb-10" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
-          Monthly <span style={{ fontWeight: 300 }}>Performance</span>
-        </p>
-        <div className="grid grid-cols-12 gap-3 md:gap-6 items-end h-64">
+      {/* ── Monthly Chart ── */}
+      <div className="col-span-12 glass-card rounded-[48px] p-10 md:p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
+        <div className="text-3xl text-black font-bold mb-14 flex flex-wrap gap-x-[0.3em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
+          <MagneticText text="Monthly" />
+          <div className="font-light"><MagneticText text="Performance" /></div>
+        </div>
+
+        <div className="grid grid-cols-12 gap-4 md:gap-8 items-end h-72 px-4">
           {months.map((m, i) => (
-            <div key={m.label + i} className="flex-1 flex flex-col items-center gap-4 group">
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-black text-white text-[9px] px-2 py-1 rounded mb-2">
+            <div key={m.label + i} className="flex-1 flex flex-col items-center gap-6 group">
+              <motion.div 
+                className="opacity-0 group-hover:opacity-100 transition-all bg-black text-white text-[10px] font-bold px-3 py-1.5 rounded-full mb-2 shadow-xl"
+                initial={false}
+                whileHover={{ y: -4 }}
+              >
                 {m.value}%
-              </div>
+              </motion.div>
               <motion.div
                 initial={{ height: 0 }}
                 animate={{ height: `${m.value > 0 ? m.value * 12 : 4}%` }}
-                transition={{ delay: 0.1 + i * 0.04, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                className={`w-full max-w-[20px] transition-all group-hover:opacity-80 rounded-t-lg ${
-                  m.value > 0 ? "bg-black" : "bg-black/5"
+                transition={{ delay: 0.2 + i * 0.05, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                className={`w-full max-w-[24px] transition-all rounded-full ${
+                  m.value > 0 ? "bg-black group-hover:bg-black/80" : "bg-black/5"
                 }`}
-                style={{ minHeight: "3px" }}
+                style={{ minHeight: "6px" }}
               />
-              <span className="text-[10px] font-bold text-muted-foreground/60 uppercase">
+              <span className="text-[11px] font-bold text-black/20 uppercase tracking-[0.1em]">
                 {m.label}
               </span>
             </div>
@@ -137,3 +147,4 @@ export function PerformanceView() {
     </motion.div>
   );
 }
+
