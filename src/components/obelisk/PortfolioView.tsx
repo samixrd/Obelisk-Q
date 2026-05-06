@@ -30,7 +30,7 @@ export function PortfolioView() {
       {/* ── Allocation & Performance row ── */}
       <div className="col-span-12 lg:col-span-5 glass-card rounded-[40px] p-10 flex flex-col justify-between min-h-[320px] transition-all hover:bg-white/80 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
         <p className="text-[11px] uppercase text-muted-foreground/40 mb-8 font-bold tracking-[0.24em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-          <MagneticText text="Allocation Breakdown" />
+          <MagneticText disabled text="Allocation Breakdown" />
         </p>
         <div className="space-y-6 flex-1">
           {POSITIONS.map((p) => (
@@ -57,7 +57,7 @@ export function PortfolioView() {
 
       <div className="col-span-12 lg:col-span-7 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] flex flex-col justify-between">
         <p className="text-[11px] uppercase text-muted-foreground/40 mb-8 font-bold tracking-[0.24em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-          <MagneticText text="30-Day Performance" />
+          <MagneticText disabled text="30-Day Performance" />
         </p>
         <div className="flex-1 flex items-center">
           <StabilityGraph seed={7} height={160} />
@@ -68,8 +68,8 @@ export function PortfolioView() {
       <div className="col-span-12 glass-card rounded-[48px] p-10 md:p-14 transition-all hover:bg-white/80 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
         <div className="text-3xl text-black font-bold mb-12 flex flex-wrap gap-x-[0.3em]"
           style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
-          <MagneticText text="All" />
-          <div className="font-light"><MagneticText text="positions" /></div>
+          <MagneticText disabled text="All" />
+          <div className="font-light"><MagneticText disabled text="positions" /></div>
         </div>
         
         <div className="overflow-x-auto scrollbar-hidden">
@@ -117,8 +117,8 @@ export function PortfolioView() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div className="text-3xl text-black font-bold flex flex-wrap gap-x-[0.3em]"
             style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
-            <MagneticText text="Transaction" />
-            <div className="font-light"><MagneticText text="history" /></div>
+            <MagneticText disabled text="Transaction" />
+            <div className="font-light"><MagneticText disabled text="history" /></div>
           </div>
           <div className="px-6 py-2 bg-black/[0.03] border border-black/[0.04] rounded-full">
             <span className="text-[10px] uppercase text-black/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>

@@ -55,9 +55,9 @@ export function ManagedAssets() {
             Managed Assets
           </p>
           <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
-            <MagneticText text="Curated by the" />
-            <div style={{ fontWeight: 300 }}><MagneticText text="Obelisk Q" /></div>
-            <MagneticText text="controller" />
+            <MagneticText disabled text="Curated by the" />
+            <div style={{ fontWeight: 300 }}><MagneticText disabled text="Obelisk Q" /></div>
+            <MagneticText disabled text="controller" />
           </div>
         </div>
         <p className="hidden md:block text-[10px] uppercase text-muted-foreground" style={{ letterSpacing: "0.28em" }}>

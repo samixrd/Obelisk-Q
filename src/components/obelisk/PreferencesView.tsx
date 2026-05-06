@@ -35,7 +35,7 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
         {/* Identity & Wallet */}
         <div className="glass-card rounded-[40px] p-10 md:p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
           <p className="text-[10px] uppercase text-black/20 mb-10 font-bold tracking-[0.28em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-            <MagneticText text="Identity & Infrastructure" />
+            <MagneticText disabled text="Identity & Infrastructure" />
           </p>
           
           <div className="space-y-12">
@@ -80,7 +80,7 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
         {/* Agent Behaviors */}
         <div className="glass-card rounded-[40px] p-10 md:p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
           <p className="text-[10px] uppercase text-black/20 mb-10 font-bold tracking-[0.28em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-            <MagneticText text="Automation Logic" />
+            <MagneticText disabled text="Automation Logic" />
           </p>
           
           <div className="space-y-12">
@@ -104,7 +104,7 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
       <div className="col-span-12 lg:col-span-4 space-y-8">
         <div className="glass-card rounded-[40px] p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
           <p className="text-[10px] uppercase text-black/20 mb-8 font-bold tracking-[0.28em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-            <MagneticText text="Agent Profile" />
+            <MagneticText disabled text="Agent Profile" />
           </p>
           <div className="flex items-center gap-6 mb-10">
             <div className="h-16 w-16 rounded-[24px] bg-black/5 border border-black/[0.04] flex items-center justify-center relative overflow-hidden text-xl font-bold text-black/20 shadow-inner">

@@ -91,9 +91,9 @@ export function SafeguardsView() {
         <div className="mb-8">
           <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Risk Protocols</p>
           <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
-            <MagneticText text="Automated" />
-            <div style={{ fontWeight: 300 }}><MagneticText text="safeguard" /></div>
-            <MagneticText text="layer" />
+            <MagneticText disabled text="Automated" />
+            <div style={{ fontWeight: 300 }}><MagneticText disabled text="safeguard" /></div>
+            <MagneticText disabled text="layer" />
           </div>
         </div>
 
@@ -135,8 +135,8 @@ export function SafeguardsView() {
           <div>
             <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Risk Exposure · 30 days</p>
             <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 700 }}>
-              <MagneticText text="Consistently" />
-              <div style={{ fontWeight: 300 }}><MagneticText text="within envelope" /></div>
+              <MagneticText disabled text="Consistently" />
+              <div style={{ fontWeight: 300 }}><MagneticText disabled text="within envelope" /></div>
             </div>
           </div>
         </div>
@@ -175,8 +175,8 @@ export function SafeguardsView() {
       <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
         <div className="flex items-center justify-between mb-6">
           <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
-            <MagneticText text="Agent" />
-            <div style={{ fontWeight: 300 }}><MagneticText text="Signals" /></div>
+            <MagneticText disabled text="Agent" />
+            <div style={{ fontWeight: 300 }}><MagneticText disabled text="Signals" /></div>
           </div>
         </div>
         <div className="space-y-2">

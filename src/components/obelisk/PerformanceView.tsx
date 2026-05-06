@@ -64,19 +64,19 @@ export function PerformanceView() {
         <div className="flex flex-col md:flex-row items-start justify-between gap-12 mb-16">
           <div className="space-y-4">
             <p className="text-[11px] uppercase text-muted-foreground/40 font-bold tracking-[0.24em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <MagneticText text="Cumulative Return · YTD" />
+              <MagneticText disabled text="Cumulative Return · YTD" />
             </p>
             <div className="text-7xl md:text-8xl text-black font-bold flex items-baseline gap-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
-              <MagneticText text={`+${metrics.ytd_return}`} />
+              <MagneticText disabled text={`+${metrics.ytd_return}`} />
               <span className="text-black/10 font-light">%</span>
             </div>
           </div>
           <div className="flex md:block items-center gap-8 md:text-right">
             <p className="text-[11px] uppercase text-muted-foreground/40 font-bold tracking-[0.24em] mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <MagneticText text="Sharpe Ratio" />
+              <MagneticText disabled text="Sharpe Ratio" />
             </p>
             <div className="text-4xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              <MagneticText text={String(metrics.sharpe_ratio)} />
+              <MagneticText disabled text={String(metrics.sharpe_ratio)} />
             </div>
             <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mt-2">Top 5% Global</p>
           </div>
@@ -97,10 +97,10 @@ export function PerformanceView() {
           className="col-span-12 sm:col-span-6 lg:col-span-3 glass-card rounded-[32px] p-10 transition-all shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]"
         >
           <p className="text-[10px] uppercase text-muted-foreground/40 mb-6 font-bold tracking-[0.2em] truncate" style={{ fontFamily: "'Inter', sans-serif" }}>
-            <MagneticText text={s.label} />
+            <MagneticText disabled text={s.label} />
           </p>
           <div className="text-3xl md:text-4xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}>
-            <MagneticText text={s.value} />
+            <MagneticText disabled text={s.value} />
           </div>
           <div className="flex items-center gap-2.5 mt-5">
              <div className={`h-1.5 w-1.5 rounded-full ${s.up ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" : "bg-black/20"}`} />
@@ -114,8 +114,8 @@ export function PerformanceView() {
       {/* ── Monthly Chart ── */}
       <div className="col-span-12 glass-card rounded-[48px] p-10 md:p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
         <div className="text-3xl text-black font-bold mb-14 flex flex-wrap gap-x-[0.3em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
-          <MagneticText text="Monthly" />
-          <div className="font-light"><MagneticText text="Performance" /></div>
+          <MagneticText disabled text="Monthly" />
+          <div className="font-light"><MagneticText disabled text="Performance" /></div>
         </div>
 
         <div className="grid grid-cols-12 gap-4 md:gap-8 items-end h-72 px-4">

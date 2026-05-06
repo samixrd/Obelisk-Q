@@ -43,10 +43,10 @@ export function AgentLogsView() {
             className="glass-card rounded-[32px] px-10 py-8 transition-all shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]"
           >
             <p className="text-[10px] uppercase text-muted-foreground/40 mb-4 font-bold tracking-[0.24em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <MagneticText text={s.label} />
+              <MagneticText disabled text={s.label} />
             </p>
             <div className="text-3xl text-black font-bold mb-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
-              <MagneticText text={s.value} />
+              <MagneticText disabled text={s.value} />
             </div>
             <p className="text-[10px] text-muted-foreground/40 font-semibold uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>{s.sub}</p>
           </motion.div>
@@ -58,8 +58,8 @@ export function AgentLogsView() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
           <div className="space-y-1">
             <div className="text-3xl text-black font-bold flex flex-wrap gap-x-[0.3em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
-              <MagneticText text="Multi-Agent" />
-              <div className="font-light"><MagneticText text="Supervisory Feed" /></div>
+              <MagneticText disabled text="Multi-Agent" />
+              <div className="font-light"><MagneticText disabled text="Supervisory Feed" /></div>
             </div>
             <p className="text-xs text-muted-foreground/40 font-medium">Real-time telemetry from the Obelisk controller graph.</p>
           </div>
@@ -72,7 +72,7 @@ export function AgentLogsView() {
                 <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-30" />
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,1)] relative z-10" />
              </div>
-             <MagneticText text="Live Stream" />
+             <MagneticText disabled text="Live Stream" />
           </motion.div>
         </div>
 

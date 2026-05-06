@@ -51,8 +51,8 @@ const Docs = () => {
         >
           <span className="docs-label">DOCUMENTATION</span>
           <h1 className="docs-title">
-            <MagneticText text="Protocol" />
-            <MagneticText text="Specifications" />
+            <MagneticText disabled text="Protocol" />
+            <MagneticText disabled text="Specifications" />
           </h1>
         </motion.div>
 

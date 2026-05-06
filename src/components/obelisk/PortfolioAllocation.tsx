@@ -32,7 +32,7 @@ export function PortfolioAllocation() {
         <div className="col-span-12 lg:col-span-6 space-y-12">
           <div>
             <p className="text-[10px] uppercase text-muted-foreground/30 mb-8 font-bold tracking-[0.28em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <MagneticText text="Current Allocation" />
+              <MagneticText disabled text="Current Allocation" />
             </p>
             
             <div className="space-y-10">
@@ -80,19 +80,19 @@ export function PortfolioAllocation() {
             <div>
               <p className="text-[9px] uppercase text-muted-foreground/40 mb-2 font-bold tracking-[0.15em]">Portfolio Value</p>
               <div className="text-xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                <MagneticText text={`$${totalVal.toLocaleString()}`} />
+                <MagneticText disabled text={`$${totalVal.toLocaleString()}`} />
               </div>
             </div>
             <div>
               <p className="text-[9px] uppercase text-muted-foreground/40 mb-2 font-bold tracking-[0.15em]">Est. Yield (Mo)</p>
               <div className="text-xl text-emerald-500 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                <MagneticText text="+$2,410" />
+                <MagneticText disabled text="+$2,410" />
               </div>
             </div>
             <div>
               <p className="text-[9px] uppercase text-muted-foreground/40 mb-2 font-bold tracking-[0.15em]">Avg. APY</p>
               <div className="text-xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                <MagneticText text={`${blendedApy.toFixed(2)}%`} />
+                <MagneticText disabled text={`${blendedApy.toFixed(2)}%`} />
               </div>
             </div>
           </div>
@@ -103,7 +103,7 @@ export function PortfolioAllocation() {
           <div>
             <div className="flex items-center justify-between mb-8">
               <p className="text-[10px] uppercase text-muted-foreground/30 font-bold tracking-[0.28em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                <MagneticText text="AI Target Allocation" />
+                <MagneticText disabled text="AI Target Allocation" />
               </p>
               <div className="px-4 py-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 text-[10px] text-emerald-600 font-bold uppercase tracking-widest">
                 {adaptive.modeLabel}
@@ -126,7 +126,7 @@ export function PortfolioAllocation() {
 
           <div className="mt-12">
             <p className="text-[10px] uppercase text-muted-foreground/30 mb-6 font-bold tracking-[0.28em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <MagneticText text="7D Allocation History" />
+              <MagneticText disabled text="7D Allocation History" />
             </p>
             <div className="relative h-24 w-full px-2">
               <svg className="w-full h-full overflow-visible" preserveAspectRatio="none">

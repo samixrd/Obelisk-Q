@@ -53,8 +53,8 @@ export function YieldEstimator() {
     <div className="col-span-12 glass-card rounded-3xl p-8 md:p-10">
       <div className="flex items-center justify-between mb-8">
         <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
-          <MagneticText text="Yield" />
-          <div style={{ fontWeight: 300 }}><MagneticText text="estimator" /></div>
+          <MagneticText disabled text="Yield" />
+          <div style={{ fontWeight: 300 }}><MagneticText disabled text="estimator" /></div>
         </div>
         <div className="flex items-center gap-2 px-3 py-1 bg-foreground/[0.03] border border-foreground/[0.08] rounded-full">
            <span className="h-1.5 w-1.5 rounded-full bg-neon animate-pulse" />

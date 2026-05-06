@@ -42,7 +42,7 @@ export function DecisionTransparency() {
           className="text-[10px] uppercase text-muted-foreground/40 mb-3 font-bold tracking-[0.28em]"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          <MagneticText text="AI Decision Transparency" />
+          <MagneticText disabled text="AI Decision Transparency" />
         </p>
         <h2
           className="text-3xl font-bold text-foreground"
@@ -76,7 +76,7 @@ export function DecisionTransparency() {
               <div>
                 <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Confidence Score</p>
                 <div className="text-xl font-bold text-foreground">
-                   <MagneticText text={String(score)} />
+                   <MagneticText disabled text={String(score)} />
                 </div>
               </div>
               <div>
@@ -116,7 +116,7 @@ export function DecisionTransparency() {
               <div className="flex justify-between items-center pt-8 border-t border-black/[0.04]">
                 <span className="text-sm font-bold text-black/40 uppercase tracking-widest">Total:</span>
                 <div className="text-2xl font-bold text-black flex items-baseline gap-2">
-                   <MagneticText text="73.5" />
+                   <MagneticText disabled text="73.5" />
                    <span className="text-sm text-black/20">/ 100</span>
                 </div>
               </div>
@@ -182,7 +182,7 @@ export function DecisionTransparency() {
             <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04]">
               <p className="text-[11px] text-muted-foreground/40 mb-3 font-bold uppercase tracking-wider">Next analysis in:</p>
               <div className="text-3xl font-bold text-black flex items-baseline gap-2">
-                <MagneticText text={String(countdown)} />
+                <MagneticText disabled text={String(countdown)} />
                 <span className="text-xs text-black/20 font-bold uppercase tracking-widest">seconds</span>
               </div>
             </div>
@@ -204,7 +204,7 @@ function ScoreBar({ label, weight, score, contribution, note }: { label: string;
         <div className="text-right">
           <span className="text-[10px] text-muted-foreground/40 block mb-1 font-bold">Score: {score}/100</span>
           <span className="text-[11px] text-black font-bold">
-             +<MagneticText text={contribution} /> pts
+             +<MagneticText disabled text={contribution} /> pts
           </span>
         </div>
       </div>
