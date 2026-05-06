@@ -53,10 +53,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       {/* Push content below fixed header */}
       <div style={{ height: "72px" }} />
 
-      {/* Main Stats Header — Q-Score & Live Metrics */}
-      <div className="relative mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-10 mb-10 z-10">
-        <QScoreBar />
-      </div>
+
 
       {/* Tab Content Area */}
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-10 md:mt-14 relative z-10">
