@@ -282,17 +282,17 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                   </button>
                 </div>
                 <div className="space-y-4">
-                  <div className="p-4 bg-blue-50 rounded-2xl border border-blue-100">
-                    <h4 className="text-[12px] font-bold text-blue-700 uppercase tracking-wider mb-1">AI Management</h4>
-                    <p className="text-[13px] text-blue-900/70 leading-relaxed">Your MNT is dynamically balanced between USDY (Treasuries) and mETH (Staking) to optimize for stability.</p>
+                  <div className="p-5 bg-[#F9FAFB] rounded-2xl border border-black/[0.04]">
+                    <h4 className="text-[12px] font-bold text-black uppercase tracking-wider mb-2">AI Management</h4>
+                    <p className="text-[13px] text-[#6B7280] leading-relaxed">Your MNT is dynamically balanced between USDY (Treasuries) and mETH (Staking) to optimize for stability.</p>
                   </div>
-                  <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100">
-                    <h4 className="text-[12px] font-bold text-emerald-700 uppercase tracking-wider mb-1">Safety Buffer</h4>
-                    <p className="text-[13px] text-emerald-900/70 leading-relaxed">A portion of protocol fees is kept as a reserve to protect your principal against market drawdowns.</p>
+                  <div className="p-5 bg-[#F9FAFB] rounded-2xl border border-black/[0.04]">
+                    <h4 className="text-[12px] font-bold text-black uppercase tracking-wider mb-2">Safety Buffer</h4>
+                    <p className="text-[13px] text-[#6B7280] leading-relaxed">A portion of protocol fees is kept as a reserve to protect your principal against market drawdowns.</p>
                   </div>
-                  <div className="p-4 bg-orange-50 rounded-2xl border border-orange-100">
-                    <h4 className="text-[12px] font-bold text-orange-700 uppercase tracking-wider mb-1">Instant Liquidity</h4>
-                    <p className="text-[13px] text-orange-900/70 leading-relaxed">No lockups. You can withdraw your assets back to MNT at any time with a single transaction.</p>
+                  <div className="p-5 bg-[#F9FAFB] rounded-2xl border border-black/[0.04]">
+                    <h4 className="text-[12px] font-bold text-black uppercase tracking-wider mb-2">Instant Liquidity</h4>
+                    <p className="text-[13px] text-[#6B7280] leading-relaxed">No lockups. You can withdraw your assets back to MNT at any time with a single transaction.</p>
                   </div>
                 </div>
                 <button 
