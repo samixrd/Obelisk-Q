@@ -65,26 +65,6 @@ export function SafeguardsView() {
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-20">
 
-      {/* Header stat row */}
-      <div className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { label: "Protocols Active", value: circuitBreakerArmed ? "3 / 4" : "4 / 4", note: circuitBreakerArmed ? "Circuit triggered" : "All systems normal" },
-          { label: "Risk Score", value: isHighVol ? "0.68σ" : "0.42σ", note: isHighVol ? "High Volatility detected" : "Well within bounds" },
-          { label: "Days Without Incident", value: "186", note: "Consecutive" },
-        ].map((s, i) => (
-          <motion.div
-            key={s.label}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.07, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-card rounded-3xl px-8 py-6"
-          >
-            <p className="text-[10px] uppercase text-muted-foreground mb-4" style={{ letterSpacing: "0.28em" }}>{s.label}</p>
-            <p className="text-3xl md:text-4xl text-foreground font-bold" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>{s.value}</p>
-            <p className="mt-2 text-[10px] text-muted-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{s.note}</p>
-          </motion.div>
-        ))}
-      </div>
 
       {/* Protocol cards */}
       <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">
