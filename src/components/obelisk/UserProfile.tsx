@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
+import { Logo } from "./Logo";
 
-const PurpleAvatar = ({ size = 28 }) => (
-  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="16" cy="16" r="16" fill="#3b1e3e" />
-    <rect x="10" y="8" width="12" height="6" rx="3" fill="#f472b6" />
-    <rect x="9" y="13" width="14" height="6" rx="3" fill="#f472b6" />
-    <rect x="10" y="18" width="12" height="6" rx="3" fill="#f472b6" />
-  </svg>
+const ProjectAvatar = ({ size = 28 }) => (
+  <div 
+    style={{ width: size, height: size, backgroundColor: "#3b1e3e", color: "#f472b6" }}
+    className="rounded-full flex items-center justify-center shadow-inner"
+  >
+    <Logo size={size * 0.55} />
+  </div>
 );
 
 const MetaMaskIcon = ({ size = 16 }) => (
@@ -54,7 +55,7 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
         className="h-10 pl-1.5 pr-4 rounded-full flex items-center gap-2.5 relative overflow-hidden group border border-white/20 shadow-sm transition-all hover:bg-black hover:border-white/30"
         style={{ background: "#151515" }}
       >
-        <PurpleAvatar size={28} />
+        <ProjectAvatar size={28} />
         <span
           className="text-[14px] text-white font-medium"
           style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "0.01em" }}
@@ -97,7 +98,7 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
 
               {/* Large Avatar */}
               <div className="relative w-[60px] h-[60px] mb-4">
-                <PurpleAvatar size={60} />
+                <ProjectAvatar size={60} />
                 <div className="absolute -bottom-1 -right-1 z-10 drop-shadow-sm">
                   <MetaMaskIcon size={20} />
                 </div>
