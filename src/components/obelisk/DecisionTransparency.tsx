@@ -128,24 +128,11 @@ export function DecisionTransparency() {
         {/* ── Right Column: Status & Countdown ────────────────────────────── */}
         <div className="col-span-12 lg:col-span-5 space-y-16">
 
-          {/* 4. CIRCUIT BREAKER STATUS */}
-          <div className="space-y-6">
-            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              Safeguards
-            </p>
-            <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04] space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.8)]" />
-                <span className="text-[15px] font-bold text-black">Circuit breaker: Armed</span>
-              </div>
-              <p className="text-xs text-muted-foreground/50 font-medium leading-relaxed">
-                Will trigger if score drops 5+ points in 60 minutes
-              </p>
-              <div className="text-[10px] text-black/20 pt-4 font-bold uppercase tracking-widest">
-                Last check: 14s ago
-              </div>
-            </div>
-          </div>
+import { RegimeMatrix } from "./RegimeMatrix";
+
+          {/* 4. HMM REGIME MATRIX */}
+          <RegimeMatrix />
+
 
           {/* 5. SUPERVISORY CONFIGURATION */}
           <div className="space-y-6">

@@ -177,41 +177,59 @@ export function AgentLogsView() {
   );
 }
 
+import { AgentAttestation } from "./AgentAttestation";
+
 function LogRow({ log }: { log: any }) {
   const timeStr = new Date(log.timestamp).toLocaleTimeString('en-GB', { hour12: false });
-  const isAction = log.message.includes("Execution") || log.message.includes("Complete");
+  const isAction = log.message.includes("Execution") || log.message.includes("Complete") || log.message.includes("rebalanced");
+
+  // Mock signature/hash for the demo/live feel
+  const mockSig = "0x" + Math.random().toString(16).slice(2, 18) + "..." + Math.random().toString(16).slice(2, 6);
+  const mockHash = "0x" + Math.random().toString(16).slice(2, 42);
 
   return (
     <motion.div
       initial={{ opacity: 0, x: -12 }}
       animate={{ opacity: 1, x: 0 }}
-      className="flex items-center gap-8 py-6 border-b border-black/[0.04] group hover:bg-black/[0.01] transition-colors -mx-4 px-4 rounded-xl"
+      className="flex flex-col py-6 border-b border-black/[0.04] group hover:bg-black/[0.01] transition-colors -mx-4 px-4 rounded-xl"
     >
-      <span className="text-[12px] text-muted-foreground/30 w-20 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-        {timeStr}
-      </span>
-
-      <div className={`px-3 py-1 rounded-full text-[9px] font-bold w-20 text-center tracking-wider transition-all ${isAction ? "bg-emerald-400/10 text-emerald-600 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.1)]" : "bg-black/5 text-black/40"}`}>
-        {isAction ? "ACTION" : "LOG"}
-      </div>
-
-      <span className="flex-1 text-[14px] text-black/70 font-semibold group-hover:text-black transition-colors leading-relaxed" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
-        {log.message}
-      </span>
-
-      <div className="flex items-center gap-4">
-        <div className="h-1 w-16 bg-black/[0.04] rounded-full overflow-hidden">
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${log.score}%` }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="h-full bg-black/20 rounded-full" 
-          />
-        </div>
-        <span className="text-[12px] text-black font-bold w-8 text-right tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          {log.score}
+      <div className="flex items-center gap-8">
+        <span className="text-[12px] text-muted-foreground/30 w-20 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          {timeStr}
         </span>
+
+        <div className={`px-3 py-1 rounded-full text-[9px] font-bold w-20 text-center tracking-wider transition-all ${isAction ? "bg-emerald-400/10 text-emerald-600 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.1)]" : "bg-black/5 text-black/40"}`}>
+          {isAction ? "ACTION" : "LOG"}
+        </div>
+
+        <span className="flex-1 text-[14px] text-black/70 font-semibold group-hover:text-black transition-colors leading-relaxed" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
+          {log.message}
+        </span>
+
+        <div className="flex items-center gap-4">
+          <div className="h-1 w-16 bg-black/[0.04] rounded-full overflow-hidden">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${log.score}%` }}
+              transition={{ duration: 1, delay: 0.2 }}
+              className="h-full bg-black/20 rounded-full" 
+            />
+          </div>
+          <span className="text-[12px] text-black font-bold w-8 text-right tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            {log.score}
+          </span>
+        </div>
       </div>
+
+      {isAction && (
+        <motion.div 
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="pl-[120px] mt-4"
+        >
+          <AgentAttestation signature={mockSig} hash={mockHash} />
+        </motion.div>
+      )}
     </motion.div>
   );
 }

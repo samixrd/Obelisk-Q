@@ -42,11 +42,14 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               </div>
             </div>
             <div>
-              <div className="text-[17px] font-semibold text-[#0a0a0a] flex" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
+              <div className="text-[17px] font-bold text-[#0a0a0a] flex items-center gap-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
                 <MagneticText text="Obelisk Vault" />
+                <div className="px-2 py-0.5 bg-emerald-50 text-[9px] text-emerald-600 font-bold rounded-md border border-emerald-100 uppercase tracking-wider">
+                   Mantle Optimized
+                </div>
               </div>
               <p className="text-[12px] text-[#6B7280]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                Mantle Network · MNT
+                Institutional RWA · mETH + USDY
               </p>
             </div>
           </div>
@@ -165,7 +168,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         {/* Est. Annual Yield */}
         <div className="flex items-center justify-between mt-6 px-1">
           <span className="text-[13px] text-[#6B7280]" style={{ fontFamily: "'Inter', sans-serif" }}>
-            Est. Annual Yield
+            Mantle Native Yield (Est. Annual)
           </span>
           <div className="flex items-center gap-2">
             <span className="text-[14px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
