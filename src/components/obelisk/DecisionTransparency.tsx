@@ -75,7 +75,7 @@ export function DecisionTransparency() {
               </div>
               <div>
                 <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Confidence Score</p>
-                <div className="text-xl font-bold text-foreground tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <div className="text-xl font-bold text-foreground">
                    <MagneticText disabled text={String(score)} />
                 </div>
               </div>
@@ -116,8 +116,8 @@ export function DecisionTransparency() {
               <div className="flex justify-between items-center pt-8 border-t border-black/[0.04]">
                 <span className="text-sm font-bold text-black/40 uppercase tracking-widest">Total:</span>
                 <div className="text-2xl font-bold text-black flex items-baseline gap-2">
-                    <MagneticText disabled text="73.5" />
-                    <span className="text-sm text-black/20 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>/ 100</span>
+                   <MagneticText disabled text="73.5" />
+                   <span className="text-sm text-black/20">/ 100</span>
                 </div>
               </div>
             </div>
@@ -175,7 +175,7 @@ function ScoreBar({ label, weight, score, contribution, note }: { label: string;
         </div>
         <div className="text-right">
           <span className="text-[10px] text-muted-foreground/40 block mb-1 font-bold">Score: {score}/100</span>
-          <span className="text-[11px] text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          <span className="text-[11px] text-black font-bold">
              +<MagneticText disabled text={contribution} /> pts
           </span>
         </div>

@@ -296,7 +296,6 @@
   font-size: 12px;
   font-weight: 500;
   color: #999;
-  font-family: 'JetBrains Mono', monospace;
   letter-spacing: 0.05em;
   margin-bottom: 20px;
   display: block;
@@ -484,6 +483,5 @@
   font-size: 13px;
   font-weight: 450;
   color: #999;
-  font-family: 'JetBrains Mono', monospace;
   letter-spacing: -0.01em;
 }

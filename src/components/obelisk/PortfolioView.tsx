@@ -55,7 +55,7 @@ export function PortfolioView() {
           <div className="flex flex-col">
             <span className="text-[10px] uppercase text-[#9CA3AF] font-semibold tracking-[0.15em] mb-2">Portfolio Balance</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em" }}>
+              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
                 {vaultStats?.userBalance ?? "0.0000"}
               </span>
               <span className="text-[12px] font-semibold text-[#9CA3AF] uppercase">MNT</span>
@@ -67,7 +67,7 @@ export function PortfolioView() {
           <div className="flex flex-col">
             <span className="text-[10px] uppercase text-[#9CA3AF] font-semibold tracking-[0.15em] mb-2">YTD Return</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em" }}>
+              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
                 +{metrics.ytd_return}%
               </span>
             </div>
@@ -109,7 +109,7 @@ export function PortfolioView() {
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
               className="bg-transparent outline-none text-[34px] font-semibold text-[#0a0a0a] w-full"
-              style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em" }}
+              style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
             />
             <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/[0.1] rounded-full shadow-sm">
               <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#2775CA] to-[#1A5FB4] flex items-center justify-center">
