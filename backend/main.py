@@ -180,28 +180,35 @@ async def executor_node(state: AgentState):
     if not WEB3_AVAILABLE:
         return {"messages": [AIMessage(content="executor: web3 unavailable. operating in simulation.")], "data": state["data"]}
     
-    rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.sepolia.mantle.xyz")
+    rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
     vault_addr = os.getenv("VAULT_ADDRESS")
     
     if not private_key or not vault_addr:
         return {"messages": [AIMessage(content="executor: pre-flight check. vault address or key missing. operating in simulation.")], "data": state["data"]}
 
-    # ── 500ms ANTIGRAVITY SLA: all RPC operations must complete within this window ──
+    # ── 500ms ANTIGRAVITY SLA & EXPONENTIAL BACKOFF: 3 attempts ──
     async def _rpc_execute():
         loop = asyncio.get_event_loop()
-        w3 = await loop.run_in_executor(None, lambda: Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": 0.5})))
-        connected = await loop.run_in_executor(None, w3.is_connected)
-        if not connected:
-            raise ConnectionError("rpc unreachable")
-        account = w3.eth.account.from_key(private_key)
-        return f"executor: signal synchronized. account {account.address[:6]}... active on mantle. rpc latency within 500ms sla."
+        for attempt in range(3):
+            try:
+                w3 = await loop.run_in_executor(None, lambda: Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": 0.5})))
+                connected = await loop.run_in_executor(None, w3.is_connected)
+                if not connected:
+                    raise ConnectionError("rpc unreachable")
+                account = w3.eth.account.from_key(private_key)
+                return f"executor: signal synchronized. account {account.address[:6]}... active on mantle mainnet."
+            except Exception as e:
+                if attempt == 2:
+                    raise e
+                logger.warning(f"executor: rpc attempt {attempt + 1} failed, retrying...")
+                await asyncio.sleep(0.1 * (2 ** attempt))
 
     try:
-        content = await asyncio.wait_for(_rpc_execute(), timeout=0.5)
+        content = await asyncio.wait_for(_rpc_execute(), timeout=2.0)
     except asyncio.TimeoutError:
-        logger.warning("executor: rpc call exceeded 500ms sla. state locked.")
-        content = "executor: rpc timeout. 500ms antigravity sla breached. state locked. retrying next cycle."
+        logger.warning("executor: rpc call exceeded total sla limit. state locked.")
+        content = "executor: rpc timeout. sla breached. state locked. retrying next cycle."
     except ConnectionError:
         content = "executor: rpc unreachable. state locked. retrying next cycle."
     except Exception as e:
