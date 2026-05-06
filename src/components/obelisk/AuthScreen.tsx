@@ -1,7 +1,7 @@
 /**
  * AuthScreen — Light-themed auth matching Agent Layer landing style
  */
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Logo } from "./Logo";
 import { signInWithGoogle } from "@/lib/firebase";
