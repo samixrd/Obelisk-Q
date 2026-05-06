@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useAgentFeed } from "@/hooks/useAgentFeed";
 import { DecisionTransparency } from "./DecisionTransparency";
 import { MagneticText } from "./MagneticText";
+import { AgentAttestation } from "./AgentAttestation";
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -177,11 +178,12 @@ export function AgentLogsView() {
   );
 }
 
-import { AgentAttestation } from "./AgentAttestation";
+
 
 function LogRow({ log }: { log: any }) {
   const timeStr = new Date(log.timestamp).toLocaleTimeString('en-GB', { hour12: false });
-  const isAction = log.message.includes("Execution") || log.message.includes("Complete") || log.message.includes("rebalanced");
+  const message = log?.message || "";
+  const isAction = message.includes("Execution") || message.includes("Complete") || message.includes("rebalanced");
 
   // Mock signature/hash for the demo/live feel
   const mockSig = "0x" + Math.random().toString(16).slice(2, 18) + "..." + Math.random().toString(16).slice(2, 6);
@@ -203,7 +205,7 @@ function LogRow({ log }: { log: any }) {
         </div>
 
         <span className="flex-1 text-[14px] text-black/70 font-semibold group-hover:text-black transition-colors leading-relaxed" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
-          {log.message}
+          {message}
         </span>
 
         <div className="flex items-center gap-4">

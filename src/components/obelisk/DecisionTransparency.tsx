@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { useStability } from "./StabilityContext";
 import { MagneticText } from "./MagneticText";
+import { RegimeMatrix } from "./RegimeMatrix";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -128,7 +129,7 @@ export function DecisionTransparency() {
         {/* ── Right Column: Status & Countdown ────────────────────────────── */}
         <div className="col-span-12 lg:col-span-5 space-y-16">
 
-import { RegimeMatrix } from "./RegimeMatrix";
+
 
           {/* 4. HMM REGIME MATRIX */}
           <RegimeMatrix />
