@@ -2,7 +2,6 @@ import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
-import { PortfolioAllocation } from "./PortfolioAllocation";
 import { useVault } from "@/hooks/useVault";
 import { MagneticText } from "./MagneticText";
 
