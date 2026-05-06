@@ -86,6 +86,7 @@ export function PortfolioView() {
       <div className="col-span-12 lg:col-span-6 glass-card rounded-[40px] overflow-hidden flex flex-col shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
         <div className="p-10 pb-0">
           <div className="flex items-center gap-4 mb-10">
+            <div className="flex items-center -space-x-3">
               <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-[#00D395] shadow-sm flex items-center justify-center" style={{ zIndex: 2 }}>
                 {logos.mETH ? (
                   <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" />
