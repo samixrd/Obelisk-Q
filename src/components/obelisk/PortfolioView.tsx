@@ -25,16 +25,16 @@ export function PortfolioView() {
       <PortfolioAllocation />
 
       {/* Allocation donut — text-based since no charting lib imported */}
-      <div className="col-span-12 lg:col-span-5 glass-card rounded-2xl p-6 md:p-10 flex flex-col justify-between min-h-[280px]">
-        <p className="text-[10px] uppercase text-muted-foreground mb-6" style={{ letterSpacing: "0.28em" }}>
+      <div className="col-span-12 lg:col-span-5 glass-card rounded-2xl p-6 md:p-10 flex flex-col justify-between min-h-[280px] transition-all hover:bg-white/80">
+        <p className="text-[10px] uppercase text-muted-foreground mb-6 font-bold" style={{ letterSpacing: "0.28em", fontFamily: "'Inter', sans-serif" }}>
           Allocation
         </p>
         <div className="space-y-4 flex-1">
           {POSITIONS.map((p) => (
             <div key={p.name}>
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-foreground/80 font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
-                <span className="text-[11px] text-muted-foreground" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.alloc}%</span>
+                <span className="text-sm text-foreground/80 font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
+                <span className="text-[11px] text-muted-foreground font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{p.alloc}%</span>
               </div>
               <div className="h-1 bg-foreground/5 rounded-full relative overflow-hidden">
                 <motion.div
@@ -47,22 +47,22 @@ export function PortfolioView() {
             </div>
           ))}
         </div>
-        <p className="mt-6 text-[10px] uppercase text-muted-foreground" style={{ letterSpacing: "0.25em", fontFamily: "'JetBrains Mono', monospace" }}>
+        <p className="mt-6 text-[10px] uppercase text-muted-foreground font-bold" style={{ letterSpacing: "0.25em", fontFamily: "'Inter', sans-serif" }}>
           Total allocated · 92.4%
         </p>
       </div>
 
       {/* Performance snapshot */}
-      <div className="col-span-12 lg:col-span-7 glass-card rounded-2xl p-6 md:p-10">
-        <p className="text-[10px] uppercase text-muted-foreground mb-6" style={{ letterSpacing: "0.28em" }}>
+      <div className="col-span-12 lg:col-span-7 glass-card rounded-2xl p-6 md:p-10 transition-all hover:bg-white/80">
+        <p className="text-[10px] uppercase text-muted-foreground mb-6 font-bold" style={{ letterSpacing: "0.28em", fontFamily: "'Inter', sans-serif" }}>
           30-day performance
         </p>
         <StabilityGraph seed={7} height={140} />
       </div>
 
       {/* Position table */}
-      <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
-        <p className="text-2xl text-foreground mb-8"
+      <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10 transition-all hover:bg-white/80">
+        <p className="text-2xl text-foreground mb-8 font-bold"
           style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
           All <span style={{ fontWeight: 300 }}>positions</span>
         </p>
@@ -76,18 +76,18 @@ export function PortfolioView() {
               >
                 <div className="col-span-5 flex items-center gap-4">
                   <div className="h-8 w-8 rounded-full border border-foreground/10 flex items-center justify-center">
-                    <span className="text-xs text-foreground/70"
+                    <span className="text-xs text-foreground/70 font-bold"
                       style={{ fontFamily: "'Inter', sans-serif" }}>{p.symbol}</span>
                   </div>
-                  <span className="text-base text-foreground font-medium"
+                  <span className="text-base text-foreground font-semibold"
                     style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
                 </div>
-                <div className="col-span-3 text-sm text-muted-foreground"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.strategy}</div>
-                <div className="col-span-2 text-sm text-foreground text-right"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.balance}</div>
-                <div className={`col-span-2 text-sm text-right flex items-center justify-end gap-1 ${p.up ? "text-foreground/75" : "text-muted-foreground"}`}
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <div className="col-span-3 text-sm text-muted-foreground font-medium"
+                  style={{ fontFamily: "'Inter', sans-serif" }}>{p.strategy}</div>
+                <div className="col-span-2 text-sm text-foreground text-right font-bold"
+                  style={{ fontFamily: "'Inter', sans-serif" }}>{p.balance}</div>
+                <div className={`col-span-2 text-sm text-right flex items-center justify-end gap-1 font-bold ${p.up ? "text-emerald-600" : "text-muted-foreground"}`}
+                  style={{ fontFamily: "'Inter', sans-serif" }}>
                   {p.up ? <IconArrowUpRight size={12} /> : <IconArrowDownRight size={12} />}
                   {p.change}
                 </div>
@@ -98,13 +98,13 @@ export function PortfolioView() {
       </div>
 
       {/* Transaction History */}
-      <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
+      <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10 transition-all hover:bg-white/80">
         <div className="flex items-center justify-between mb-8">
-          <p className="text-2xl text-foreground"
+          <p className="text-2xl text-foreground font-bold"
             style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
             Transaction <span style={{ fontWeight: 300 }}>history</span>
           </p>
-          <span className="text-[9px] uppercase text-muted-foreground/40 font-mono tracking-widest">
+          <span className="text-[9px] uppercase text-muted-foreground/40 font-bold tracking-widest" style={{ fontFamily: "'Inter', sans-serif" }}>
             On-chain ledger
           </span>
         </div>
@@ -115,19 +115,20 @@ export function PortfolioView() {
               <div key={tx.hash + i} className="grid grid-cols-12 items-center py-4 border-t border-foreground/[0.03]">
                 <div className="col-span-3 flex items-center gap-3">
                   <div className={`h-1.5 w-1.5 rounded-full ${tx.status === 'Confirmed' ? 'bg-emerald-500' : tx.status === 'Pending' ? 'bg-amber-500' : 'bg-red-500'}`} />
-                  <span className="text-sm text-foreground font-medium">{tx.type}</span>
+                  <span className="text-sm text-foreground font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>{tx.type}</span>
                 </div>
-                <div className="col-span-3 text-[11px] text-foreground/60 font-mono">
+                <div className="col-span-3 text-[11px] text-foreground/60 font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
                   {tx.amount}
                 </div>
-                <div className="col-span-3 text-[11px] text-muted-foreground/50 font-mono">
+                <div className="col-span-3 text-[11px] text-muted-foreground/50 font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
                    {new Date(tx.timestamp).toLocaleTimeString('en-GB', { hour12: false })}
                 </div>
                 <div className="col-span-3 text-right">
                   <a 
                     href={explorerUrl(tx.hash)}
                     target="_blank" rel="noreferrer"
-                    className="text-[10px] uppercase text-muted-foreground hover:text-foreground transition-colors font-mono tracking-wider"
+                    className="text-[10px] uppercase text-muted-foreground hover:text-foreground transition-colors font-bold tracking-wider"
+                    style={{ fontFamily: "'Inter', sans-serif" }}
                   >
                     View ↗
                   </a>
@@ -135,7 +136,7 @@ export function PortfolioView() {
               </div>
             ))}
             {txHistory.length === 0 && (
-              <p className="text-center py-8 text-[11px] uppercase text-muted-foreground/30 tracking-widest font-mono">
+              <p className="text-center py-8 text-[11px] uppercase text-muted-foreground/30 tracking-widest font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>
                 No recent transactions detected
               </p>
             )}
@@ -145,3 +146,4 @@ export function PortfolioView() {
     </motion.div>
   );
 }
+

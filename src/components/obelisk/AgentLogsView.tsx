@@ -38,21 +38,21 @@ export function AgentLogsView() {
           <motion.div key={s.label}
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.07, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-card rounded-3xl px-8 py-6"
+            className="glass-card rounded-3xl px-8 py-6 transition-all hover:bg-white/80"
           >
-            <p className="text-[10px] uppercase text-muted-foreground mb-3 font-bold tracking-[0.2em]">
+            <p className="text-[10px] uppercase text-muted-foreground mb-3 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
               {s.label}
             </p>
             <p className="text-3xl text-black font-bold mb-1" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
               {s.value}
             </p>
-            <p className="text-[10px] text-muted-foreground font-medium uppercase">{s.sub}</p>
+            <p className="text-[10px] text-muted-foreground font-semibold uppercase" style={{ fontFamily: "'Inter', sans-serif" }}>{s.sub}</p>
           </motion.div>
         ))}
       </div>
 
       {/* Log stream */}
-      <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10 flex flex-col min-h-[600px] max-h-[800px]">
+      <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10 flex flex-col min-h-[600px] max-h-[800px] transition-all hover:bg-white/80">
         <div className="flex items-center justify-between mb-8">
           <p className="text-2xl text-black font-bold" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
             Multi-Agent <span className="font-light">Supervisory Feed</span>
@@ -94,7 +94,7 @@ function LogRow({ log }: { log: any }) {
       animate={{ opacity: 1, x: 0 }}
       className="flex items-center gap-6 py-4 border-b border-black/[0.03] group"
     >
-      <span className="text-[11px] text-muted-foreground/40 w-16 font-mono">
+      <span className="text-[11px] text-muted-foreground/40 w-16 font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>
         {timeStr}
       </span>
 
@@ -102,7 +102,7 @@ function LogRow({ log }: { log: any }) {
         {isAction ? "ACTION" : "LOG"}
       </div>
 
-      <span className="flex-1 text-[13px] text-black/70 font-medium group-hover:text-black transition-colors" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <span className="flex-1 text-[13px] text-black/70 font-semibold group-hover:text-black transition-colors" style={{ fontFamily: "'Inter', sans-serif" }}>
         {log.message}
       </span>
 
@@ -110,10 +110,11 @@ function LogRow({ log }: { log: any }) {
         <div className="h-1 w-12 bg-black/[0.05] rounded-full overflow-hidden">
           <div className="h-full bg-black/20" style={{ width: `${log.score}%` }} />
         </div>
-        <span className="text-[11px] text-black font-bold font-mono w-6 text-right">
+        <span className="text-[11px] text-black font-bold w-6 text-right" style={{ fontFamily: "'Inter', sans-serif" }}>
           {log.score}
         </span>
       </div>
     </motion.div>
   );
 }
+
