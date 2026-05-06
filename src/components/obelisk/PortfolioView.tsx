@@ -20,13 +20,14 @@ const POSITIONS = [
 ];
 
 export function PortfolioView() {
-  const { txHistory, explorerUrl, vaultStats, withdrawPartial } = useVault();
+  const { txHistory, explorerUrl, vaultStats, withdrawPartial, txState } = useVault();
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [metrics, setMetrics] = useState({
     ytd_return: 14.82,
     sharpe_ratio: 2.41,
   });
 
+  const isPending = txState === "waiting" || txState === "pending";
   const balance = parseFloat(vaultStats?.userBalance ?? "0");
   const inputAmount = parseFloat(withdrawAmount) || 0;
   const isInsufficient = inputAmount > balance;
@@ -48,161 +49,173 @@ export function PortfolioView() {
 
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-24">
-      {/* ── Consolidated Metrics Bar ── */}
-      <div className="col-span-12 glass-card rounded-[32px] px-8 py-5 flex flex-wrap items-center justify-between gap-10 shadow-[0_4px_24px_-10px_rgba(0,0,0,0.04)] mb-2">
-        <div className="flex items-center gap-12">
-          {/* Balance */}
+      
+      {/* ── Top Metrics Bar (Slim & Minimalist) ── */}
+      <div className="col-span-12 glass-card rounded-[32px] px-10 py-7 flex flex-wrap items-center justify-between shadow-[0_4px_24px_-10px_rgba(0,0,0,0.04)] mb-2">
+        <div className="flex items-center gap-16">
           <div className="flex flex-col">
-            <span className="text-[9px] uppercase text-muted-foreground/40 font-bold tracking-[0.15em] mb-1">Portfolio Balance</span>
-            <div className="flex items-baseline gap-1.5">
-              <span className="text-[22px] font-bold text-black tabular-nums" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
-                {vaultStats?.userBalance ?? "0.00"}
+            <span className="text-[10px] uppercase text-[#9CA3AF] font-semibold tracking-[0.15em] mb-2">Portfolio Balance</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+                {vaultStats?.userBalance ?? "0.0000"}
               </span>
-              <span className="text-[10px] font-semibold text-muted-foreground uppercase">MNT</span>
+              <span className="text-[12px] font-semibold text-[#9CA3AF] uppercase">MNT</span>
             </div>
           </div>
           
-          <div className="h-8 w-px bg-black/[0.04]" />
+          <div className="h-10 w-px bg-black/[0.06]" />
 
-          {/* YTD Return */}
           <div className="flex flex-col">
-            <span className="text-[9px] uppercase text-muted-foreground/40 font-bold tracking-[0.15em] mb-1">YTD Return</span>
+            <span className="text-[10px] uppercase text-[#9CA3AF] font-semibold tracking-[0.15em] mb-2">YTD Return</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-[22px] font-bold text-black tabular-nums" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
                 +{metrics.ytd_return}%
               </span>
             </div>
           </div>
 
-          <div className="h-8 w-px bg-black/[0.04]" />
+          <div className="h-10 w-px bg-black/[0.06]" />
 
-          {/* Sharpe Ratio */}
           <div className="flex flex-col">
-            <span className="text-[9px] uppercase text-muted-foreground/40 font-bold tracking-[0.15em] mb-1">Sharpe Ratio</span>
+            <span className="text-[10px] uppercase text-[#9CA3AF] font-semibold tracking-[0.15em] mb-2">Sharpe Ratio</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-[22px] font-bold text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.02em" }}>
+              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.02em" }}>
                 {metrics.sharpe_ratio}
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-           <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 rounded-full border border-emerald-500/10">
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-              <span className="text-[9px] font-bold text-emerald-600 uppercase tracking-widest">Optimized</span>
-           </div>
+        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
+           <div className="h-2 w-2 rounded-full bg-emerald-400" />
+           <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Vault Optimized</span>
         </div>
       </div>
 
-      {/* ── Withdrawal Section (Minimized & Centered) ── */}
-      <div className="col-span-12 glass-card rounded-[40px] px-10 py-12 flex flex-col items-center justify-center text-center shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] mb-2">
-        <div className="w-full max-w-[340px] flex flex-col items-center gap-5">
-          <div className="w-full relative">
-            <div className={`flex items-center gap-4 bg-black/[0.02] border ${isInsufficient ? 'border-red-500/20 bg-red-50/10' : 'border-black/[0.04]'} rounded-2xl px-5 py-3.5 transition-all focus-within:border-black/10 focus-within:bg-black/[0.04]`}>
-               <input
-                type="number"
-                value={withdrawAmount}
-                onChange={(e) => setWithdrawAmount(e.target.value)}
-                placeholder="Amount"
-                className="bg-transparent outline-none text-[18px] font-bold text-black w-full placeholder:text-black/10 text-center"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              />
+      {/* ── Withdrawal Card Interface (Mirroring VaultCard) ── */}
+      <div className="col-span-12 lg:col-span-6 glass-card rounded-[40px] overflow-hidden flex flex-col shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
+        <div className="p-10 pb-0">
+          <div className="flex items-center gap-4 mb-10">
+            <div className="flex items-center -space-x-3">
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#2775CA] to-[#1A5FB4] border-2 border-white flex items-center justify-center text-white text-[11px] font-bold shadow-sm" style={{ zIndex: 2 }}>
+                MNT
+              </div>
+              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#00D395] to-[#00A97A] border-2 border-white flex items-center justify-center text-white text-[11px] font-bold shadow-sm" style={{ zIndex: 1 }}>
+                Q
+              </div>
             </div>
-            {isInsufficient && (
-              <motion.p 
-                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
-                className="text-[10px] text-red-500 mt-2 font-normal"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              >
-                Insufficient balance
-              </motion.p>
-            )}
+            <div>
+              <div className="text-[18px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                Portfolio Withdrawal
+              </div>
+              <p className="text-[12px] text-[#6B7280]" style={{ fontFamily: "'Inter', sans-serif" }}>
+                Withdraw to Mantle Network
+              </p>
+            </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center justify-between px-7 py-6 bg-[#F9FAFB] rounded-[24px] border border-black/[0.04]">
+            <input
+              type="number"
+              placeholder="0"
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              className="bg-transparent outline-none text-[34px] font-semibold text-[#0a0a0a] w-full"
+              style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
+            />
+            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/[0.1] rounded-full shadow-sm">
+              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#2775CA] to-[#1A5FB4] flex items-center justify-center">
+                <span className="text-[8px] text-white font-bold">M</span>
+              </div>
+              <span className="text-[14px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 mt-5">
             {["25%", "50%", "Max"].map((label) => (
               <button
                 key={label}
                 onClick={() => {
-                  const b = parseFloat(vaultStats?.userBalance ?? "0");
-                  if (label === "Max") setWithdrawAmount(b.toString());
-                  else if (label === "50%") setWithdrawAmount((b * 0.5).toFixed(4));
-                  else if (label === "25%") setWithdrawAmount((b * 0.25).toFixed(4));
+                  if (label === "Max") setWithdrawAmount(balance.toString());
+                  else if (label === "50%") setWithdrawAmount((balance * 0.5).toFixed(4));
+                  else if (label === "25%") setWithdrawAmount((balance * 0.25).toFixed(4));
                 }}
-                className="text-[10px] font-bold text-muted-foreground/60 hover:text-black transition-all px-4 py-2 rounded-xl bg-black/[0.02] border border-black/[0.04] hover:bg-black/5"
+                className="text-[12px] px-5 py-2.5 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] border border-black/[0.06] rounded-full transition-all font-medium"
                 style={{ fontFamily: "'Inter', sans-serif" }}
               >
                 {label}
               </button>
             ))}
+            {isInsufficient && (
+              <span className="text-[12px] text-red-500/70 ml-auto font-normal" style={{ fontFamily: "'Inter', sans-serif" }}>
+                Insufficient balance
+              </span>
+            )}
           </div>
+        </div>
 
+        <div className="p-10 pt-10">
           <motion.button
             onClick={() => {
               if (withdrawAmount && !isInsufficient && parseFloat(withdrawAmount) > 0) {
                 withdrawPartial(withdrawAmount);
               }
             }}
-            disabled={isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
-            whileHover={!(isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0) ? { scale: 1.01, y: -1 } : {}}
-            whileTap={!(isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0) ? { scale: 0.99 } : {}}
-            className={`w-full py-4 rounded-full text-[12px] font-bold uppercase tracking-[0.15em] transition-all shadow-lg shadow-black/5 mt-2 ${isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 ? 'bg-black/10 text-white/40 cursor-not-allowed' : 'bg-[#0a0a0a] text-white'}`}
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            disabled={isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isPending}
+            whileHover={!(isInsufficient || !withdrawAmount || isPending) ? { y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" } : {}}
+            whileTap={!(isInsufficient || !withdrawAmount || isPending) ? { scale: 0.98 } : {}}
+            className={`w-full py-5 rounded-full text-[15px] font-semibold transition-all duration-300 ${isInsufficient || !withdrawAmount || isPending ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
+            style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}
           >
-            Withdraw Funds
+            {isPending ? "Processing..." : "Withdraw Funds"}
           </motion.button>
         </div>
       </div>
 
-      <div className="col-span-12">
-        <PortfolioAllocation />
-      </div>
-
-      {/* ── Allocation & Performance row ── */}
-      <div className="col-span-12 lg:col-span-5 glass-card rounded-[32px] p-8 flex flex-col justify-between min-h-[280px] transition-all hover:bg-white/80 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
-        <p className="text-[10px] uppercase text-muted-foreground/40 mb-6 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-          Allocation Breakdown
-        </p>
-        <div className="space-y-5 flex-1">
-          {POSITIONS.map((p) => (
-            <div key={p.name} className="group">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[13px] text-foreground font-semibold group-hover:text-black transition-colors" style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
-                <span className="text-[11px] text-muted-foreground/50 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.alloc}%</span>
+      {/* ── Stats & Breakdown Grid ── */}
+      <div className="col-span-12 lg:col-span-6 grid grid-cols-1 gap-6">
+        <div className="glass-card rounded-[32px] p-8 flex flex-col justify-between transition-all hover:bg-white/80 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] h-full">
+          <p className="text-[10px] uppercase text-[#9CA3AF] mb-8 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            Allocation Breakdown
+          </p>
+          <div className="space-y-6 flex-1">
+            {POSITIONS.map((p) => (
+              <div key={p.name} className="group">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[14px] text-black font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
+                  <span className="text-[12px] text-[#9CA3AF] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.alloc}%</span>
+                </div>
+                <div className="h-1.5 bg-black/[0.03] rounded-full relative overflow-hidden">
+                  <motion.div
+                    className="absolute top-0 left-0 h-full bg-black/20 rounded-full"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${p.alloc}%` }}
+                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                  />
+                </div>
               </div>
-              <div className="h-1 bg-black/[0.03] rounded-full relative overflow-hidden">
-                <motion.div
-                  className="absolute top-0 left-0 h-full bg-black/20 rounded-full"
-                  initial={{ width: 0 }}
-                  animate={{ width: `${p.alloc}%` }}
-                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                />
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="col-span-12 lg:col-span-7 glass-card rounded-[32px] p-8 transition-all hover:bg-white/80 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] flex flex-col justify-between">
-        <p className="text-[10px] uppercase text-muted-foreground/40 mb-6 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-          30-Day Performance
+      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)]">
+        <p className="text-[11px] uppercase text-[#9CA3AF] mb-8 font-bold tracking-[0.24em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+          30-Day Performance History
         </p>
-        <div className="flex-1 flex items-center">
-          <StabilityGraph seed={7} height={140} />
+        <div className="h-[180px]">
+          <StabilityGraph seed={7} height={180} />
         </div>
       </div>
 
       {/* ── Position Table ── */}
-      <div className="col-span-12 glass-card rounded-[40px] p-8 transition-all hover:bg-white/80 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)]">
-        <div className="text-2xl text-black font-bold mb-8 flex flex-wrap gap-x-[0.3em]"
-          style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
-          All <span className="font-light text-muted-foreground/40">positions</span>
+      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
+        <div className="text-[24px] text-black font-bold mb-10 flex items-baseline gap-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+          Active <span className="font-light text-[#9CA3AF]">Positions</span>
         </div>
-        
         <div className="overflow-x-auto scrollbar-hidden">
           <div className="min-w-[800px]">
-            <div className="grid grid-cols-12 mb-4 px-4 text-[9px] uppercase text-muted-foreground/40 font-bold tracking-[0.15em]">
+            <div className="grid grid-cols-12 mb-6 px-4 text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em]">
               <div className="col-span-5">Asset</div>
               <div className="col-span-3">Strategy</div>
               <div className="col-span-2 text-right">Balance</div>
@@ -210,27 +223,20 @@ export function PortfolioView() {
             </div>
             {POSITIONS.map((p, i) => (
               <motion.div key={p.name}
-                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-                className="grid grid-cols-12 items-center py-4 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-xl group"
+                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.05, duration: 0.8 }}
+                className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-2xl group"
               >
                 <div className="col-span-5 flex items-center gap-4">
-                  <div className="h-8 w-8 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
-                    <span className="text-[11px] font-bold tabular-nums"
-                      style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.symbol}</span>
+                  <div className="h-10 w-10 rounded-full bg-black/5 flex items-center justify-center group-hover:bg-black group-hover:text-white transition-all">
+                    <span className="text-[13px] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.symbol}</span>
                   </div>
-                  <div>
-                    <span className="text-[14px] text-black font-bold block"
-                      style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
-                  </div>
+                  <span className="text-[15px] text-black font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
                 </div>
-                <div className="col-span-3 text-[12px] text-muted-foreground font-semibold"
-                  style={{ fontFamily: "'Inter', sans-serif" }}>{p.strategy}</div>
-                <div className="col-span-2 text-[14px] text-black text-right font-bold tabular-nums"
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.balance}</div>
-                <div className={`col-span-2 text-[12px] text-right flex items-center justify-end gap-1.5 font-bold tabular-nums ${p.up ? "text-emerald-500" : "text-muted-foreground/40"}`}
-                  style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {p.up ? <IconArrowUpRight size={12} /> : <IconArrowDownRight size={12} />}
+                <div className="col-span-3 text-[13px] text-[#6B7280] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{p.strategy}</div>
+                <div className="col-span-2 text-[15px] text-black text-right font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.balance}</div>
+                <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-bold tabular-nums ${p.up ? "text-emerald-500" : "text-[#9CA3AF]"}`} style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  {p.up ? <IconArrowUpRight size={14} /> : <IconArrowDownRight size={14} />}
                   {p.change}
                 </div>
               </motion.div>
@@ -240,57 +246,29 @@ export function PortfolioView() {
       </div>
 
       {/* ── Transaction History ── */}
-      <div className="col-span-12 glass-card rounded-[40px] p-8 transition-all hover:bg-white/80 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)]">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-          <div className="text-2xl text-black font-bold flex flex-wrap gap-x-[0.3em]"
-            style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
-            Transaction <span className="font-light text-muted-foreground/40">history</span>
-          </div>
+      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
+        <div className="text-[24px] text-black font-bold mb-10 flex items-baseline gap-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+          Recent <span className="font-light text-[#9CA3AF]">Transactions</span>
         </div>
-
         <div className="overflow-x-auto scrollbar-hidden">
           <div className="min-w-[700px]">
             {txHistory.map((tx, i) => (
-              <motion.div 
-                key={tx.hash + i}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: i * 0.03 }}
-                className="grid grid-cols-12 items-center py-4 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-colors rounded-xl"
-              >
+              <div key={tx.hash + i} className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-colors rounded-xl">
                 <div className="col-span-3 flex items-center gap-4">
-                  <div className={`h-1.5 w-1.5 rounded-full ${tx.status === 'Confirmed' ? 'bg-emerald-400' : tx.status === 'Pending' ? 'bg-amber-400' : 'bg-red-400'}`} />
-                  <span className="text-[13px] text-black font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{tx.type}</span>
+                  <div className={`h-2 w-2 rounded-full ${tx.status === 'Confirmed' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+                  <span className="text-[14px] text-black font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{tx.type}</span>
                 </div>
-                <div className="col-span-3 text-[12px] text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {tx.amount}
-                </div>
-                <div className="col-span-3 text-[11px] text-muted-foreground/30 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                   {new Date(tx.timestamp).toLocaleTimeString('en-GB', { hour12: false })}
-                </div>
+                <div className="col-span-3 text-[14px] text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{tx.amount}</div>
+                <div className="col-span-3 text-[12px] text-[#9CA3AF] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{new Date(tx.timestamp).toLocaleTimeString()}</div>
                 <div className="col-span-3 text-right">
-                  <motion.a 
-                    whileHover={{ x: 2 }}
-                    href={explorerUrl(tx.hash)}
-                    target="_blank" rel="noreferrer"
-                    className="text-[10px] uppercase text-muted-foreground/40 hover:text-black transition-colors font-bold tracking-[0.1em] flex items-center justify-end gap-1"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    Details <span className="text-[12px]">↗</span>
-                  </motion.a>
+                  <a href={explorerUrl(tx.hash)} target="_blank" rel="noreferrer" className="text-[11px] uppercase text-[#9CA3AF] hover:text-black transition-colors font-bold tracking-[0.1em]">Details ↗</a>
                 </div>
-              </motion.div>
-            ))}
-            {txHistory.length === 0 && (
-              <div className="py-12 flex flex-col items-center justify-center opacity-10">
-                <p className="text-[9px] uppercase text-black font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  Empty Ledger
-                </p>
               </div>
-            )}
+            ))}
           </div>
         </div>
       </div>
+
     </motion.div>
   );
 }
