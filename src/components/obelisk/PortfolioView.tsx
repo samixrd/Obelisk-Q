@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { PortfolioAllocation } from "./PortfolioAllocation";
