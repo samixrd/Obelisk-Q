@@ -1,7 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useLayoutEffect, useState } from "react";
 
-import { SafeguardsView } from "./SafeguardsView";
 import { PortfolioView } from "./PortfolioView";
 import { AgentLogsView } from "./AgentLogsView";
 import { PreferencesView } from "./PreferencesView";
@@ -16,7 +15,6 @@ import { FloatingSymbols } from "./FloatingSymbols";
 
 export type DashboardTab =
   | "earn"
-  | "safeguards"
   | "portfolio"
   | "agent-logs"
   | "preferences"
@@ -63,11 +61,6 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
           )}
 
 
-          {tab === "safeguards" && (
-            <div key="safeguards">
-              <SafeguardsView />
-            </div>
-          )}
 
           {tab === "portfolio" && (
             <div key="portfolio">
