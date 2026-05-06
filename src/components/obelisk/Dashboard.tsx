@@ -28,11 +28,8 @@ interface DashboardProps {
   walletAddress?: string | null;
   onConnectWallet?: () => void;
 }
-import { ComplianceGate } from "./ComplianceGate";
-
 export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, onConnectWallet }: DashboardProps) {
   const [internalTab, setInternalTab] = useState<DashboardTab>("earn");
-  const [isVerified, setIsVerified] = useState(false);
   const tab = externalTab ?? internalTab;
   
   // When tab changes, always snap to top so the content is immediately visible
@@ -43,14 +40,8 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   const [investOpen, setInvestOpen] = useState(false);
 
   return (
-    <>
-      <AnimatePresence mode="wait">
-        {!isVerified && (
-          <ComplianceGate key="gate" onVerified={() => setIsVerified(true)} />
-        )}
-      </AnimatePresence>
+    <main className="relative min-h-screen pb-20 landing-root">
 
-      <main className="relative min-h-screen pb-20 landing-root">
 
       {/* Blue viewport glow border */}
       <div className="landing-glow-border" aria-hidden />

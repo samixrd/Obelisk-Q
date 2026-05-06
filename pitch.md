@@ -21,7 +21,6 @@ Obelisk Q demonstrates excellence across technology, innovation, and ecosystem c
 
 ### 4. Product Completeness
 - **Institutional UX**: A premium, "Apple Liquid OS" inspired interface built for professional investors.
-- **Compliance Integrated**: Automated KYC/AML gates ensuring regulatory friction is handled seamlessly within the RWA flow.
 
 ---
 **Obelisk Q is not just a demo; it is the blueprint for the next generation of autonomous finance.**
