@@ -276,8 +276,16 @@ function BuiltForSection() {
 
 function Footer() {
   const linkGroups = [
-    { title: "", links: ["Dashboard", "Protocol", "Features"] },
-    { title: "", links: ["Docs", "GitHub", "Blog"] },
+    { title: "", links: [
+      { name: "Dashboard", href: "#dashboard" },
+      { name: "Protocol", href: "#protocol" },
+      { name: "Features", href: "#features" }
+    ]},
+    { title: "", links: [
+      { name: "Docs", href: "/docs", external: false },
+      { name: "GitHub", href: "https://github.com/samixrd/Obelisk-Q", external: true },
+      { name: "X", href: "https://x.com/ObeliskQAi", external: true }
+    ]},
   ];
 
   return (
@@ -298,7 +306,15 @@ function Footer() {
           {linkGroups.map((group, gi) => (
             <div key={gi} className="landing-footer-col">
               {group.links.map((link) => (
-                <a key={link} href="#" className="landing-footer-link">{link}</a>
+                <a 
+                  key={link.name} 
+                  href={link.href} 
+                  className="landing-footer-link"
+                  target={link.external ? "_blank" : "_self"}
+                  rel={link.external ? "noopener noreferrer" : undefined}
+                >
+                  {link.name}
+                </a>
               ))}
             </div>
           ))}
