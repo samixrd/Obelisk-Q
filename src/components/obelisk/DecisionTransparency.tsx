@@ -126,34 +126,6 @@ export function DecisionTransparency() {
 
         {/* ── Right Column: Status & Countdown ────────────────────────────── */}
         <div className="col-span-12 lg:col-span-5 space-y-16">
-          {/* 3. THRESHOLD STATUS */}
-          <div className="space-y-6">
-            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              Threshold Status
-            </p>
-            <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04] space-y-6">
-              <div className="flex justify-between items-center">
-                <span className="text-[11px] text-muted-foreground/50 font-bold uppercase tracking-wider">
-                  Target: {adaptive.confidenceThreshold}%
-                </span>
-                <div className={`text-[10px] uppercase px-4 py-1.5 rounded-full border font-bold tracking-widest ${statusOk ? "text-emerald-500 border-emerald-500/20 bg-emerald-500/5" : "text-amber-500 border-amber-500/20 bg-amber-500/5"}`}>
-                  {statusOk ? "Approved" : "Rebalance"}
-                </div>
-              </div>
-              <div className="relative h-2 bg-black/[0.04] rounded-full overflow-hidden">
-                <motion.div 
-                  initial={{ width: 0 }}
-                  animate={{ width: `${score}%` }}
-                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                  className={`absolute inset-y-0 left-0 rounded-full ${statusOk ? "bg-emerald-500/30" : "bg-amber-500/30"}`}
-                />
-                <div 
-                  className="absolute inset-y-0 border-l-2 border-black/10 z-10" 
-                  style={{ left: `${adaptive.confidenceThreshold}%` }} 
-                />
-              </div>
-            </div>
-          </div>
 
           {/* 4. CIRCUIT BREAKER STATUS */}
           <div className="space-y-6">

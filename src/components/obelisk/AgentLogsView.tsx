@@ -3,6 +3,7 @@ import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
 import { useVault } from "@/hooks/useVault";
 import { useEffect, useRef, useState } from "react";
 import { useAgentFeed } from "@/hooks/useAgentFeed";
+import { DecisionTransparency } from "./DecisionTransparency";
 import { MagneticText } from "./MagneticText";
 
 const fadeUp = {
@@ -24,6 +25,11 @@ export function AgentLogsView() {
 
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 md:gap-8 pb-24">
+      
+      {/* ── Decision Transparency ─────────────────────────────────────────── */}
+      <div className="col-span-12">
+        <DecisionTransparency />
+      </div>
       
       {/* ── Agent Signals ────────────────────────────────────────────────── */}
       <div className="col-span-12 glass-card rounded-[32px] p-8 md:p-10 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
