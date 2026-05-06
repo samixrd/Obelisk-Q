@@ -13,9 +13,25 @@ const fadeUp = {
   transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
 };
 
+const STATUS_COLORS: Record<string, string> = {
+  active: 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]',
+  calculating: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]',
+  streaming: 'bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.5)]',
+  arbitrating: 'bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.5)]',
+  idle: 'bg-gray-300',
+};
+
+const STATUS_LABELS: Record<string, string> = {
+  active: 'Active',
+  calculating: 'Calculating',
+  streaming: 'Streaming',
+  arbitrating: 'Arbitrating',
+  idle: 'Idle',
+};
+
 export function AgentLogsView() {
   const { logs } = useAgentFeed();
-  const { agentLogs, score, countdown } = useAgentWebSocket();
+  const { agentLogs, score, countdown, nodes } = useAgentWebSocket();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,14 +45,8 @@ export function AgentLogsView() {
       
       {/* ── Supervisory Node Status ────────────────────────────────────────── */}
       <div className="col-span-12 grid grid-cols-2 md:grid-cols-5 gap-4">
-        {[
-          { label: "Regime Detection", status: "Active", sub: "Market State Analysis" },
-          { label: "Risk Assessment", status: "Active", sub: "Exposure Calculation" },
-          { label: "Q-Score Engine", status: "Active", sub: "Confidence Scoring" },
-          { label: "Telemetry Aggregator", status: "Active", sub: "Live Feedback Loop" },
-          { label: "Supervisory Controller", status: "Active", sub: "Node Arbitration" },
-        ].map((node, i) => (
-          <motion.div key={node.label}
+        {nodes.map((node, i) => (
+          <motion.div key={node.id}
             initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
             className="glass-card rounded-[24px] px-6 py-5 transition-all shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] border border-black/5"
@@ -45,10 +55,10 @@ export function AgentLogsView() {
               <p className="text-[9px] uppercase text-muted-foreground/40 font-bold tracking-[0.15em]">
                 {node.label}
               </p>
-              <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]" />
+              <div className={`h-1.5 w-1.5 rounded-full ${STATUS_COLORS[node.status] || STATUS_COLORS.idle}`} />
             </div>
             <div className="text-sm text-black font-bold mb-1">
-              {node.status}
+              {STATUS_LABELS[node.status] || node.status}
             </div>
             <p className="text-[9px] text-muted-foreground/40 font-medium">{node.sub}</p>
           </motion.div>
@@ -150,27 +160,9 @@ export function AgentLogsView() {
           className="flex-1 overflow-y-auto pr-6 space-y-0 scroll-smooth scrollbar-hidden"
         >
           <AnimatePresence initial={false}>
-            {agentLogs.length > 0 ? (
-              agentLogs.map((log, i) => (
-                <LogRow key={i} log={log} />
-              ))
-            ) : (
-              <div className="h-full min-h-[400px] flex flex-col items-center justify-center gap-6">
-                <div className="relative">
-                  <motion.div 
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                    className="h-12 w-12 rounded-full border-t-2 border-black/10 border-r-2 border-transparent"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="h-1.5 w-1.5 rounded-full bg-black/20 animate-pulse" />
-                  </div>
-                </div>
-                <div className="text-muted-foreground/30 text-[10px] font-bold uppercase tracking-[0.25em] animate-pulse">
-                  Connecting to agent graph...
-                </div>
-              </div>
-            )}
+            {agentLogs.map((log, i) => (
+              <LogRow key={`${log.cycle}-${i}`} log={log} />
+            ))}
           </AnimatePresence>
         </div>
       </div>
@@ -195,13 +187,19 @@ function LogRow({ log }: { log: any }) {
       animate={{ opacity: 1, x: 0 }}
       className="flex flex-col py-6 border-b border-black/[0.04] group hover:bg-black/[0.01] transition-colors -mx-4 px-4 rounded-xl"
     >
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-4 md:gap-6 flex-wrap">
         <span className="text-[12px] text-muted-foreground/30 w-20 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           {timeStr}
         </span>
 
+        {log.node && (
+          <span className="text-[9px] text-black/30 font-bold uppercase tracking-[0.1em] w-28 truncate hidden md:inline" style={{ fontFamily: "'Inter', sans-serif" }}>
+            {log.node}
+          </span>
+        )}
+
         <div className={`px-3 py-1 rounded-full text-[9px] font-bold w-20 text-center tracking-wider transition-all ${isAction ? "bg-emerald-400/10 text-emerald-600 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.1)]" : "bg-black/5 text-black/40"}`}>
-          {isAction ? "ACTION" : "LOG"}
+          {isAction ? "ACTION" : log.cycle ? `C${String(log.cycle).padStart(3, '0')}` : "LOG"}
         </div>
 
         <span className="flex-1 text-[14px] text-black/70 font-semibold group-hover:text-black transition-colors leading-relaxed" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
