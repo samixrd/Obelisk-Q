@@ -5,8 +5,8 @@ import { SafeguardsView } from "./SafeguardsView";
 import { PortfolioView } from "./PortfolioView";
 import { AgentLogsView } from "./AgentLogsView";
 import { PreferencesView } from "./PreferencesView";
-import { AssetsView } from "./AssetsView";
 import { EarnView } from "./EarnView";
+import { HistoryView } from "./HistoryView";
 import { QScoreBar } from "./dashboard/QScoreBar";
 import { InvestModal } from "./InvestModal";
 import { Logo } from "./Logo";
@@ -20,7 +20,7 @@ export type DashboardTab =
   | "portfolio"
   | "agent-logs"
   | "preferences"
-  | "assets";
+  | "history";
 
 interface DashboardProps {
   activeTab?: DashboardTab;
@@ -87,9 +87,9 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             </div>
           )}
 
-          {tab === "assets" && (
-            <div key="assets">
-              <AssetsView />
+          {tab === "history" && (
+            <div key="history">
+              <HistoryView />
             </div>
           )}
         </AnimatePresence>
