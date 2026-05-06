@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
-import { DecisionTransparency } from "./DecisionTransparency";
 import { useAgentFeed } from "@/hooks/useAgentFeed";
 import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
 
@@ -148,8 +147,6 @@ export function SafeguardsView() {
           ))}
         </div>
       </div>
-
-      <DecisionTransparency />
 
       {/* Mini Agent Feed */}
       <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
