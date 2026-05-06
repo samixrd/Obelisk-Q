@@ -75,7 +75,7 @@ export function PerformanceView() {
             <p className="text-[11px] uppercase text-muted-foreground/40 font-bold tracking-[0.24em] mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
               <MagneticText disabled text="Sharpe Ratio" />
             </p>
-            <div className="text-4xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+            <div className="text-4xl text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
               <MagneticText disabled text={String(metrics.sharpe_ratio)} />
             </div>
             <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mt-2">Top 5% Global</p>
@@ -99,7 +99,7 @@ export function PerformanceView() {
           <p className="text-[10px] uppercase text-muted-foreground/40 mb-6 font-bold tracking-[0.2em] truncate" style={{ fontFamily: "'Inter', sans-serif" }}>
             <MagneticText disabled text={s.label} />
           </p>
-          <div className="text-3xl md:text-4xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.04em" }}>
+          <div className="text-3xl md:text-4xl text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300, letterSpacing: "-0.04em" }}>
             <MagneticText disabled text={s.value} />
           </div>
           <div className="flex items-center gap-2.5 mt-5">

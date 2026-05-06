@@ -70,7 +70,7 @@ export function AssetsView() {
                       <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)] animate-pulse" />
                       <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Live</span>
                     </div>
-                    <div className="text-2xl font-bold text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <div className="text-2xl text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
                       <MagneticText disabled text={isUSDY ? `$${price.toFixed(2)}` : `$${price.toLocaleString()}`} />
                     </div>
                   </div>
@@ -80,13 +80,13 @@ export function AssetsView() {
                 <div className="grid grid-cols-2 gap-6 mb-12">
                   <div className="p-8 bg-black/[0.02] border border-black/[0.04] rounded-[32px]">
                     <p className="text-[10px] uppercase text-black/20 font-bold tracking-[0.24em] mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>Current APY</p>
-                    <div className="text-3xl font-bold text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <div className="text-3xl text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
                       <MagneticText disabled text={`${apy}%`} />
                     </div>
                   </div>
                   <div className="p-8 bg-black/[0.02] border border-black/[0.04] rounded-[32px]">
                     <p className="text-[10px] uppercase text-black/20 font-bold tracking-[0.24em] mb-3" style={{ fontFamily: "'Inter', sans-serif" }}>Market Cap</p>
-                    <div className="text-3xl font-bold text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <div className="text-3xl text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
                       <MagneticText disabled text={isUSDY ? "~24M" : "~29K"} />
                       <span className="text-xs text-black/10 font-bold ml-1 uppercase">{asset.symbol}</span>
                     </div>
@@ -134,7 +134,7 @@ export function AssetsView() {
                 <span className="text-[10px] font-bold text-black/20 uppercase tracking-[0.24em]">Score Range</span>
                 <div className={`h-2.5 w-2.5 rounded-full ${rule.color} shadow-sm transition-transform group-hover:scale-125`} />
               </div>
-              <div className="text-2xl font-bold text-black mb-1 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <div className="text-2xl text-black mb-1 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
                 <MagneticText disabled text={rule.range} />
               </div>
               <p className="text-[11px] font-bold text-black/30 uppercase tracking-widest mb-6">{rule.desc}</p>

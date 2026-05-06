@@ -47,7 +47,7 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
               </div>
               {walletAddress ? (
                 <div className="px-6 py-3 bg-black/[0.03] border border-black/[0.04] rounded-2xl">
-                  <span className="text-[13px] font-bold tabular-nums text-black/60" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{walletAddress}</span>
+                  <span className="text-[13px] tabular-nums text-black/60" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{walletAddress}</span>
                 </div>
               ) : (
                 <motion.button 

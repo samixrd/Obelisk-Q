@@ -183,7 +183,7 @@ export function PortfolioView() {
               <div key={p.name} className="group">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[14px] text-black font-semibold" style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
-                  <span className="text-[12px] text-[#9CA3AF] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.alloc}%</span>
+                  <span className="text-[12px] text-[#9CA3AF] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{p.alloc}%</span>
                 </div>
                 <div className="h-1.5 bg-black/[0.03] rounded-full relative overflow-hidden">
                   <motion.div
@@ -232,14 +232,14 @@ export function PortfolioView() {
                     {logos[p.id as keyof typeof logos] ? (
                       <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-contain" />
                     ) : (
-                      <span className="text-[13px] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.symbol[0]}</span>
+                      <span className="text-[13px] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{p.symbol[0]}</span>
                     )}
                   </div>
                   <span className="text-[15px] text-black font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{p.name}</span>
                 </div>
                 <div className="col-span-3 text-[13px] text-[#6B7280] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{p.strategy}</div>
-                <div className="col-span-2 text-[15px] text-black text-right font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.balance}</div>
-                <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-bold tabular-nums ${p.up ? "text-emerald-500" : "text-[#9CA3AF]"}`} style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <div className="col-span-2 text-[15px] text-black text-right tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{p.balance}</div>
+                <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 tabular-nums ${p.up ? "text-emerald-500" : "text-[#9CA3AF]"}`} style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
                   {p.up ? <IconArrowUpRight size={14} /> : <IconArrowDownRight size={14} />}
                   {p.change}
                 </div>

@@ -41,8 +41,8 @@ export function PortfolioAllocation() {
                 <div className="flex justify-between items-end">
                   <span className="text-[11px] text-black/40 font-bold uppercase tracking-widest" style={{ fontFamily: "'Inter', sans-serif" }}>USDY</span>
                   <div className="text-right">
-                    <span className="text-[14px] text-black font-bold tabular-nums mr-4" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{current.usdy.pct}%</span>
-                    <span className="text-[12px] text-black/20 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>${current.usdy.val.toLocaleString()}</span>
+                    <span className="text-[14px] text-black tabular-nums mr-4" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{current.usdy.pct}%</span>
+                    <span className="text-[12px] text-black/20 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>${current.usdy.val.toLocaleString()}</span>
                   </div>
                 </div>
                 <div className="h-2.5 bg-black/[0.03] rounded-full overflow-hidden">
@@ -60,8 +60,8 @@ export function PortfolioAllocation() {
                 <div className="flex justify-between items-end">
                   <span className="text-[11px] text-black/40 font-bold uppercase tracking-widest" style={{ fontFamily: "'Inter', sans-serif" }}>mETH</span>
                   <div className="text-right">
-                    <span className="text-[14px] text-black font-bold tabular-nums mr-4" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{current.meth.pct}%</span>
-                    <span className="text-[12px] text-black/20 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>${current.meth.val.toLocaleString()}</span>
+                    <span className="text-[14px] text-black tabular-nums mr-4" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{current.meth.pct}%</span>
+                    <span className="text-[12px] text-black/20 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>${current.meth.val.toLocaleString()}</span>
                   </div>
                 </div>
                 <div className="h-2.5 bg-black/[0.03] rounded-full overflow-hidden">
@@ -79,19 +79,19 @@ export function PortfolioAllocation() {
           <div className="pt-10 border-t border-black/[0.04] grid grid-cols-3 gap-8">
             <div>
               <p className="text-[9px] uppercase text-muted-foreground/40 mb-2 font-bold tracking-[0.15em]">Portfolio Value</p>
-              <div className="text-xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <div className="text-xl text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
                 <MagneticText disabled text={`$${totalVal.toLocaleString()}`} />
               </div>
             </div>
             <div>
               <p className="text-[9px] uppercase text-muted-foreground/40 mb-2 font-bold tracking-[0.15em]">Est. Yield (Mo)</p>
-              <div className="text-xl text-emerald-500 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <div className="text-xl text-emerald-500 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
                 <MagneticText disabled text="+$2,410" />
               </div>
             </div>
             <div>
               <p className="text-[9px] uppercase text-muted-foreground/40 mb-2 font-bold tracking-[0.15em]">Avg. APY</p>
-              <div className="text-xl text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+              <div className="text-xl text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
                 <MagneticText disabled text={`${blendedApy.toFixed(2)}%`} />
               </div>
             </div>
@@ -113,7 +113,7 @@ export function PortfolioAllocation() {
             <div className="bg-black/[0.02] border border-black/[0.04] rounded-[32px] p-8 space-y-6">
               <div className="flex justify-between items-center">
                 <span className="text-[13px] text-black/40 font-semibold">Recommended Target</span>
-                <span className="text-[13px] text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{target.usdy}% USDY · {target.meth}% mETH</span>
+                <span className="text-[13px] text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{target.usdy}% USDY · {target.meth}% mETH</span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)] animate-pulse" />

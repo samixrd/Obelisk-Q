@@ -25,8 +25,8 @@ export function HistoryView() {
                   <div className={`h-2 w-2 rounded-full ${tx.status === 'Confirmed' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
                   <span className="text-[16px] text-black font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{tx.type}</span>
                 </div>
-                <div className="col-span-3 text-[16px] text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{tx.amount}</div>
-                <div className="col-span-3 text-[14px] text-[#9CA3AF] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                <div className="col-span-3 text-[16px] text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{tx.amount}</div>
+                <div className="col-span-3 text-[14px] text-[#9CA3AF] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
                   {new Date(tx.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
                 </div>
                 <div className="col-span-3 text-right">
