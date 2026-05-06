@@ -70,7 +70,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                 <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
             </div>
-            <p className="text-[36px] font-bold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            <p className="text-[36px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em", lineHeight: 1 }}>
               {usdy.loading ? "—" : `${((usdy.apy + meth.apy) / 2).toFixed(1)}%`}
             </p>
           </div>
@@ -84,9 +84,9 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                 <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
             </div>
-            <p className="text-[36px] font-bold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            <p className="text-[36px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em", lineHeight: 1 }}>
               {vaultStats?.totalDeposited ? `${parseFloat(vaultStats.totalDeposited).toFixed(2)}` : "0.00"}
-              <span className="text-[16px] font-medium text-[#6B7280] ml-1.5">MNT</span>
+              <span className="text-[16px] font-medium text-[#6B7280] ml-1.5" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
             </p>
           </div>
         </div>
@@ -107,8 +107,8 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             placeholder="0"
             value={depositAmount}
             onChange={(e) => setDepositAmount(e.target.value)}
-            className="bg-transparent outline-none text-[32px] font-semibold text-[#0a0a0a] w-full"
-            style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", maxWidth: "65%" }}
+            className="bg-transparent outline-none text-[32px] font-semibold text-[#0a0a0a] w-full tabular-nums"
+            style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em", maxWidth: "65%" }}
           />
           <div
             className="flex items-center gap-2.5 px-4 py-2.5 cursor-pointer hover:bg-white/80 transition-colors"
@@ -139,8 +139,8 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               style={{
                 border: "1px solid rgba(0,0,0,0.08)",
                 borderRadius: 100,
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 500,
+                fontFamily: "'JetBrains Mono', monospace",
+                fontWeight: 600,
               }}
             >
               {v} MNT
@@ -168,7 +168,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             Est. Annual Yield
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-[14px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <span className="text-[14px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {depositAmount && parseFloat(depositAmount) > 0
                 ? `${(parseFloat(depositAmount) * ((usdy.apy + meth.apy) / 2) / 100).toFixed(4)} MNT`
                 : "—"
@@ -186,7 +186,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             <span className="text-[12px] text-[#9CA3AF]" style={{ fontFamily: "'Inter', sans-serif" }}>
               Wallet Balance
             </span>
-            <span className="text-[12px] text-[#6B7280] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <span className="text-[12px] text-[#6B7280] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {vaultStats.walletBalance} MNT
             </span>
           </div>
@@ -198,7 +198,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             <span className="text-[12px] text-[#9CA3AF]" style={{ fontFamily: "'Inter', sans-serif" }}>
               Your Vault Balance
             </span>
-            <span className="text-[12px] text-[#6B7280] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <span className="text-[12px] text-[#6B7280] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
               {vaultStats.userBalance} MNT
             </span>
           </div>

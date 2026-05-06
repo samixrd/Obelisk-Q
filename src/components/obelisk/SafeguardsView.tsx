@@ -94,7 +94,7 @@ export function SafeguardsView() {
               <div className="flex items-center justify-between mt-auto pt-4 border-t border-black/5">
                 <div>
                   <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Threshold</p>
-                  <p className="text-sm text-black font-bold">{p.threshold}</p>
+                  <p className="text-sm text-black font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{p.threshold}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Last event</p>
@@ -136,7 +136,7 @@ export function SafeguardsView() {
               <div className="flex-1 min-w-0">
                 <p className="text-[13px] text-black font-medium leading-snug">{ev.event}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{ev.time}</span>
+                  <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{ev.time}</span>
                   <span className="text-[9px] text-muted-foreground/30">·</span>
                   <span className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-widest">{ev.category}</span>
                 </div>

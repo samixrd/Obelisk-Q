@@ -42,10 +42,10 @@ export function AgentLogsView() {
             <p className="text-[10px] uppercase text-muted-foreground/40 mb-4 font-bold tracking-[0.24em]" style={{ fontFamily: "'Inter', sans-serif" }}>
               <MagneticText disabled text={s.label} />
             </p>
-            <div className="text-3xl text-black font-bold mb-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
+            <div className="text-3xl text-black font-bold mb-2 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em" }}>
               <MagneticText disabled text={s.value} />
             </div>
-            <p className="text-[10px] text-muted-foreground/40 font-semibold uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>{s.sub}</p>
+            <p className="text-[10px] text-muted-foreground/40 font-semibold uppercase tracking-wider tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{s.sub}</p>
           </motion.div>
         ))}
       </div>

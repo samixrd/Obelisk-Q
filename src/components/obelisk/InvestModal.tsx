@@ -89,14 +89,14 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="p-5 bg-black/[0.03] border border-black/[0.05] rounded-3xl">
                     <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5" style={{ fontFamily: "'Inter', sans-serif" }}>Your Balance</p>
-                    <p className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
-                      {vaultStats?.userBalance ?? "0.00"} <span className="text-xs font-medium text-muted-foreground ml-0.5">MNT</span>
+                    <p className="text-2xl font-bold text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em" }}>
+                      {vaultStats?.userBalance ?? "0.00"} <span className="text-xs font-medium text-muted-foreground ml-0.5" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
                     </p>
                   </div>
                   <div className="p-5 bg-black/[0.03] border border-black/[0.05] rounded-3xl">
                     <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5" style={{ fontFamily: "'Inter', sans-serif" }}>Confidence</p>
                     <div className="flex items-center gap-2">
-                      <p className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>{score}</p>
+                      <p className="text-2xl font-bold text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em" }}>{score}</p>
                       <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${canDeposit ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
                         {canDeposit ? "SAFE" : "RISK"}
                       </span>
@@ -109,7 +109,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                   <div>
                     <div className="flex items-center justify-between mb-3 px-1">
                       <label className="text-[11px] font-bold text-black uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>Deposit Amount</label>
-                      <span className="text-[11px] text-muted-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <span className="text-[11px] text-muted-foreground font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                         Max: {vaultStats?.walletBalance ?? "0"} MNT
                       </span>
                     </div>
@@ -118,8 +118,8 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="flex-1 bg-transparent text-2xl font-bold text-black outline-none"
-                        style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
+                        className="flex-1 bg-transparent text-2xl font-bold text-black outline-none tabular-nums"
+                        style={{ fontFamily: "'JetBrains Mono', monospace", letterSpacing: "-0.05em" }}
                         placeholder="0.00"
                       />
                       <div className="flex items-center gap-2 px-3 py-1.5 bg-black/5 rounded-xl">
@@ -151,7 +151,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       >
                         <div className="flex items-center justify-between mb-3">
                           <p className="text-[11px] font-bold text-black uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>Confirmations</p>
-                          <span className="text-[14px] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{confirmations}/3</span>
+                          <span className="text-[14px] font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{confirmations}/3</span>
                         </div>
                         <div className="h-2 w-full bg-black/5 rounded-full overflow-hidden">
                           <motion.div 
