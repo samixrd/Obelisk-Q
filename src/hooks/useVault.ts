@@ -287,7 +287,13 @@ export function useVault(): VaultState {
       });
 
       // poll for receipt and confirmations
+      let isFinalized = false;
       const interval = setInterval(async () => {
+        if (isFinalized) {
+          clearInterval(interval);
+          return;
+        }
+
         try {
           const receipt = await (eth.request as Function)({
             method: "eth_getTransactionReceipt",
@@ -295,6 +301,21 @@ export function useVault(): VaultState {
           });
 
           if (receipt) {
+            // Check if tx failed at contract level
+            if (receipt.status === "0x0") {
+              isFinalized = true;
+              setTxState("error");
+              setTxError("Transaction reverted on-chain");
+              toast({
+                title: "Transaction failed ✕",
+                description: "The transaction was reverted. Click to view on Explorer.",
+                variant: "destructive",
+                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+              } as any);
+              clearInterval(interval);
+              return;
+            }
+
             const currentBlockRaw = await (eth.request as Function)({
               method: "eth_blockNumber",
             }) as string;
@@ -304,12 +325,14 @@ export function useVault(): VaultState {
             const confs = Number(currentBlock - receiptBlock + 1n);
             setConfirmations(confs);
 
-            if (confs >= 1 && txState !== "success") {
+            if (confs >= 1 && !isFinalized) {
+              isFinalized = true;
               setTxState("success");
               toast({
                 title: "Transaction confirmed ✓",
                 description: "View on Mantlescan ↗",
-              });
+                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+              } as any);
               
               saveTx({
                 id: hash,
@@ -325,9 +348,6 @@ export function useVault(): VaultState {
               localStorage.setItem(`sim_balance_${address}`, (currentSim + parseFloat(amountMnt)).toFixed(4));
               
               await refreshStats();
-            }
-
-            if (confs >= 3) {
               clearInterval(interval);
             }
           }
@@ -340,11 +360,12 @@ export function useVault(): VaultState {
       setTxError(msg);
       toast({
         title: "Transaction failed",
-        description: "View details ↗",
+        description: "View details on Explorer ↗",
         variant: "destructive",
-      });
+        onClick: () => txHash && window.open(getExplorerUrl(txHash), "_blank"),
+      } as any);
     }
-  }, [address, connect, refreshStats, saveTx, txState]);
+  }, [address, connect, refreshStats, saveTx, getExplorerUrl]);
 
   // ── Withdraw ────────────────────────────────────────────────────────────
   const withdraw = useCallback(async () => {
@@ -406,6 +427,20 @@ export function useVault(): VaultState {
             params: [hash],
           });
           if (receipt) {
+            // Check failure
+            if (receipt.status === "0x0") {
+              setTxState("error");
+              setTxError("Withdrawal reverted on-chain");
+              toast({
+                title: "Withdrawal failed ✕",
+                description: "Transaction was reverted. Click to view on Explorer.",
+                variant: "destructive",
+                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+              } as any);
+              clearInterval(interval);
+              return;
+            }
+
             const currentBlockRaw = await (eth.request as Function)({
               method: "eth_blockNumber",
             }) as string;
@@ -415,12 +450,13 @@ export function useVault(): VaultState {
             const confs = Number(currentBlock - receiptBlock + 1n);
             setConfirmations(confs);
 
-            if (confs >= 1 && txState !== "success") {
+            if (confs >= 1) {
               setTxState("success");
               toast({
                 title: "Withdrawal confirmed ✓",
-                description: "Funds returned to wallet",
-              });
+                description: "Funds returned to wallet. View on Explorer ↗",
+                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+              } as any);
               
               saveTx({
                 id: hash,
@@ -434,9 +470,6 @@ export function useVault(): VaultState {
               // Clear simulated balance
               localStorage.setItem(`sim_balance_${address}`, "0.0000");
               await refreshStats();
-            }
-
-            if (confs >= 3) {
               clearInterval(interval);
             }
           }
@@ -449,11 +482,12 @@ export function useVault(): VaultState {
       setTxError(msg);
       toast({
         title: "Withdrawal failed",
-        description: "View details ↗",
+        description: "View details on Explorer ↗",
         variant: "destructive",
-      });
+        onClick: () => txHash && window.open(getExplorerUrl(txHash), "_blank"),
+      } as any);
     }
-  }, [address, refreshStats, saveTx, txState, vaultStats?.userBalance]);
+  }, [address, refreshStats, saveTx, getExplorerUrl, vaultStats?.userBalance]);
 
   // ── Withdraw Partial ───────────────────────────────────────────────────
   const withdrawPartial = useCallback(async (amountMnt: string) => {
@@ -511,6 +545,20 @@ export function useVault(): VaultState {
             params: [hash],
           });
           if (receipt) {
+            // Check failure
+            if (receipt.status === "0x0") {
+              setTxState("error");
+              setTxError("Partial withdrawal reverted");
+              toast({
+                title: "Withdrawal failed ✕",
+                description: "Transaction was reverted. View on Explorer ↗",
+                variant: "destructive",
+                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+              } as any);
+              clearInterval(interval);
+              return;
+            }
+
             const currentBlockRaw = await (eth.request as Function)({
               method: "eth_blockNumber",
             }) as string;
@@ -520,12 +568,13 @@ export function useVault(): VaultState {
             const confs = Number(currentBlock - receiptBlock + 1n);
             setConfirmations(confs);
 
-            if (confs >= 1 && txState !== "success") {
+            if (confs >= 1) {
               setTxState("success");
               toast({
                 title: "Withdrawal confirmed ✓",
-                description: `Withdrew ${amountMnt} MNT`,
-              });
+                description: `Withdrew ${amountMnt} MNT. View on Explorer ↗`,
+                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+              } as any);
               
               saveTx({
                 id: hash,
@@ -542,9 +591,6 @@ export function useVault(): VaultState {
               localStorage.setItem(`sim_balance_${address}`, newSim.toFixed(4));
               
               await refreshStats();
-            }
-
-            if (confs >= 3) {
               clearInterval(interval);
             }
           }
@@ -557,11 +603,12 @@ export function useVault(): VaultState {
       setTxError(msg);
       toast({
         title: "Withdrawal failed",
-        description: "View details ↗",
+        description: "View details on Explorer ↗",
         variant: "destructive",
-      });
+        onClick: () => txHash && window.open(getExplorerUrl(txHash), "_blank"),
+      } as any);
     }
-  }, [address, refreshStats, saveTx, txState]);
+  }, [address, refreshStats, saveTx, getExplorerUrl]);
   useEffect(() => {
     if (!address) return;
     refreshStats();
