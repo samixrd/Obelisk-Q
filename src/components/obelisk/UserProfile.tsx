@@ -1,7 +1,22 @@
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/context/AuthContext";
-import { Logo } from "./Logo";
+
+const PurpleAvatar = ({ size = 28 }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#3b1e3e" />
+    <rect x="10" y="8" width="12" height="6" rx="3" fill="#f472b6" />
+    <rect x="9" y="13" width="14" height="6" rx="3" fill="#f472b6" />
+    <rect x="10" y="18" width="12" height="6" rx="3" fill="#f472b6" />
+  </svg>
+);
+
+const MetaMaskIcon = ({ size = 16 }) => (
+  <svg width={size} height={size} viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="16" cy="16" r="16" fill="#fff" />
+    <path d="M22.5 12.3L23.4 9.4L19.5 11.2C18.4 10.8 17.2 10.6 16 10.6C14.8 10.6 13.6 10.8 12.5 11.2L8.6 9.4L9.5 12.3C7.9 13.6 6.9 15.6 6.9 17.9C6.9 22.2 11 25.7 16 25.7C21 25.7 25.1 22.2 25.1 17.9C25.1 15.6 24.1 13.6 22.5 12.3ZM12 18.6C11 18.6 10.1 17.7 10.1 16.7C10.1 15.6 11 14.8 12 14.8C13 14.8 13.9 15.6 13.9 16.7C13.9 17.7 13 18.6 12 18.6ZM20 18.6C19 18.6 18.1 17.7 18.1 16.7C18.1 15.6 19 14.8 20 14.8C21 14.8 21.9 15.6 21.9 16.7C21.9 17.7 21 18.6 20 18.6Z" fill="#F6851B" />
+  </svg>
+);
 
 interface UserProfileProps {
   onSignOut?: () => void;
@@ -9,22 +24,12 @@ interface UserProfileProps {
 }
 
 export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
-  const { displayName, avatarUrl, walletAddress } = useAuth();
+  const { walletAddress } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isWalletConnected = walletAddress && walletAddress !== "connected";
-
-  // Get initials from display name
-  const initials = displayName === "Guest Identity" 
-    ? "GU" 
-    : displayName
-        .split(" ")
-        .filter(Boolean)
-        .map((n) => n[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase();
+  const displayAddress = isWalletConnected ? `${walletAddress?.slice(0, 6)}...${walletAddress?.slice(-4)}` : "Connect Wallet";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -36,119 +41,87 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const menuItems = [
-    { label: "Identity Settings", icon: "ID" },
-    { label: "Notification Prefs", icon: "NT" },
-    { label: "Audit Logs", icon: "AL" },
-  ];
-
   return (
     <div className="relative" ref={menuRef}>
+      {/* Navbar Pill Button */}
       <motion.button
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isWalletConnected && onConnectWallet) onConnectWallet();
+          else setIsOpen(!isOpen);
+        }}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="h-10 pl-3 pr-4 rounded-full flex items-center gap-2.5 relative overflow-hidden group border border-black/5 bg-white shadow-[0_2px_10px_rgba(0,0,0,0.02)] transition-all hover:shadow-[0_4px_16px_rgba(0,0,0,0.04)]"
+        className="h-10 pl-1.5 pr-4 rounded-full flex items-center gap-2.5 relative overflow-hidden group border border-white/20 shadow-sm transition-all hover:bg-black hover:border-white/30"
+        style={{ background: "#151515" }}
       >
-        <div className="text-purple-600 flex items-center justify-center">
-          <Logo size={18} />
-        </div>
+        <PurpleAvatar size={28} />
         <span
-          className="text-[13px] text-black tabular-nums tracking-tight"
-          style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}
+          className="text-[14px] text-white font-medium"
+          style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "0.01em" }}
         >
-          {isWalletConnected ? `${walletAddress?.slice(0, 6)}...${walletAddress?.slice(-4)}` : "Connect Wallet"}
+          {displayAddress}
         </span>
-        {isWalletConnected && (
-          <div className="absolute top-1/2 -translate-y-1/2 right-1.5 h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(34,197,94,0.4)]" />
-        )}
       </motion.button>
 
+      {/* Dropdown Menu */}
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && isWalletConnected && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute right-0 mt-3 w-64 rounded-[24px] p-2 z-50 overflow-hidden"
+            className="absolute right-0 mt-3 w-[320px] rounded-[24px] p-2 z-50 overflow-hidden"
             style={{
-              background: "rgba(255, 255, 255, 0.98)",
-              backdropFilter: "blur(40px)",
-              border: "1px solid rgba(0,0,0,0.05)",
-              boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+              background: "#151515",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "0 24px 48px rgba(0,0,0,0.4)",
             }}
           >
-            <div className="px-4 py-5 mb-1">
-              <p className="text-[9px] uppercase text-muted-foreground/40 font-bold mb-2 tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-                Active Session
-              </p>
-              <p
-                className="text-[15px] text-foreground font-semibold mb-1"
-                style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}
-              >
-                {displayName}
-              </p>
-              {isWalletConnected ? (
-                <div 
-                  className="flex items-center gap-2 text-[11px] text-muted-foreground/60 tabular-nums bg-black/[0.02] px-2.5 py-1.5 rounded-full w-fit border border-black/[0.04]"
-                  style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}
-                >
-                  <div className="h-1.5 w-1.5 rounded-full bg-emerald-500 shadow-[0_0_4px_rgba(34,197,94,0.4)]" />
-                  {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
+            <div className="px-5 py-6 relative">
+              {/* Top right settings/power icons */}
+              <div className="absolute top-6 right-6 flex items-center gap-4 text-white/50">
+                <button className="hover:text-white transition-colors" aria-label="Settings">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
+                </button>
+                <button onClick={onSignOut} className="hover:text-white transition-colors" aria-label="Sign Out">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/>
+                    <line x1="12" y1="2" x2="12" y2="12"/>
+                  </svg>
+                </button>
+              </div>
+
+              {/* Large Avatar */}
+              <div className="relative w-[60px] h-[60px] mb-4">
+                <PurpleAvatar size={60} />
+                <div className="absolute -bottom-1 -right-1 z-10 drop-shadow-sm">
+                  <MetaMaskIcon size={20} />
                 </div>
-              ) : (
-                <button 
-                  onClick={() => { onConnectWallet?.(); setIsOpen(false); }}
-                  className="flex items-center gap-2 text-[10px] text-primary font-bold hover:opacity-80 transition-opacity uppercase tracking-wider"
-                >
-                  <div className="h-1.5 w-1.5 rounded-full bg-muted" />
-                  Link Wallet
-                </button>
-              )}
+              </div>
+
+              {/* Wallet Address */}
+              <p className="text-[18px] text-white font-medium mb-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+                {displayAddress}
+              </p>
+
+              {/* Portfolio Value */}
+              <div className="flex items-baseline gap-1">
+                <p className="text-[36px] text-white font-bold tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  $0<span className="text-white/40">.00</span>
+                </p>
+              </div>
             </div>
 
-            <div className="space-y-0.5">
-              {menuItems.map((item) => (
-                <button
-                  key={item.label}
-                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] text-foreground/60 hover:text-foreground hover:bg-foreground/[0.03] transition-all group"
-                >
-                  <span className="w-5 text-[9px] font-bold text-muted-foreground/30 group-hover:text-foreground/50 transition-colors">
-                    {item.icon}
-                  </span>
-                  <span className="font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{item.label}</span>
-                </button>
-              ))}
+            <div className="mx-4 mb-2">
+              <div className="w-full h-px bg-white/[0.08]" />
             </div>
-
-            <div className="mt-2 pt-2 border-t border-foreground/5">
-              {!isWalletConnected && (
-                <button
-                  onClick={() => { onConnectWallet?.(); setIsOpen(false); }}
-                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-[#0a0a0a] text-white hover:bg-[#222] transition-all mb-2 shadow-sm group/btn"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <svg viewBox="0 0 16 16" width="12" height="12" fill="none" className="opacity-60 group-hover/btn:opacity-100 transition-opacity">
-                      <rect x="1" y="4" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.2"/>
-                      <path d="M1 7h14" stroke="currentColor" strokeWidth="1.2"/>
-                      <circle cx="11.5" cy="10" r="1" fill="currentColor"/>
-                    </svg>
-                    <span className="text-[11px] font-bold uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
-                      Connect Wallet
-                    </span>
-                  </div>
-                  <span className="text-[10px] opacity-30">→</span>
-                </button>
-              )}
-              <button
-                onClick={onSignOut}
-                className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-[12px] text-red-500/80 hover:bg-red-50/50 hover:text-red-500 transition-colors"
-              >
-                <span className="w-5 text-[9px] font-bold opacity-40 text-center">SO</span>
-                <span className="font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>Sign Out</span>
-              </button>
-            </div>
+            
+            {/* Minimal spacing at the bottom since the user's image shows a separator line but no menu items below in the immediate viewport */}
+            <div className="h-2" />
           </motion.div>
         )}
       </AnimatePresence>
