@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
-import { useAgentFeed } from "@/hooks/useAgentFeed";
 import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
 
 const fadeUp = {
@@ -12,7 +11,6 @@ const fadeUp = {
 import { MagneticText } from "./MagneticText";
 
 export function SafeguardsView() {
-  const { logs } = useAgentFeed();
   const { score, regime, lastMessage } = useAgentWebSocket();
   
   const isHighVol = regime === "Contraction";
@@ -148,43 +146,7 @@ export function SafeguardsView() {
         </div>
       </div>
 
-      {/* Mini Agent Feed */}
-      <div className="col-span-12 glass-card rounded-2xl p-6 md:p-10">
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
-            <MagneticText disabled text="Agent" />
-            <div style={{ fontWeight: 300 }}><MagneticText disabled text="Signals" /></div>
-          </div>
-        </div>
-        <div className="space-y-2">
-          {logs.slice(0, 5).map((log, i) => (
-            <div key={i} className="flex items-center gap-4 py-3 border-t border-foreground/[0.03]">
-              <span className="text-[10px] text-muted-foreground/40 font-mono w-16">
-                {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
-              </span>
-              <div className="px-2 py-0.5 rounded text-[8px] font-bold w-14 text-center tracking-tighter"
-                style={{ 
-                  background: log.action === 'rebalance' ? 'hsl(104 100% 68% / 0.1)' : 'rgba(0,0,0,0.05)',
-                  color: log.action === 'rebalance' ? 'hsl(104 100% 30%)' : 'rgba(0,0,0,0.5)'
-                }}
-              >
-                {log.action.toUpperCase()}
-              </div>
-              <span className="flex-1 text-xs text-foreground/60 font-mono truncate">
-                {log.message}
-              </span>
-              <span className="text-[10px] text-foreground font-mono">
-                {log.score}
-              </span>
-            </div>
-          ))}
-          {logs.length === 0 && (
-            <p className="text-center py-4 text-[10px] uppercase text-muted-foreground/30 tracking-widest">
-              Initializing agent feed...
-            </p>
-          )}
-        </div>
-      </div>
+
 
     </motion.div>
   );

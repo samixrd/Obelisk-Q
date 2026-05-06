@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
 import { useVault } from "@/hooks/useVault";
 import { useEffect, useRef, useState } from "react";
-import { DecisionTransparency } from "./DecisionTransparency";
+import { useAgentFeed } from "@/hooks/useAgentFeed";
 import { MagneticText } from "./MagneticText";
 
 const fadeUp = {
@@ -12,6 +12,7 @@ const fadeUp = {
 };
 
 export function AgentLogsView() {
+  const { logs } = useAgentFeed();
   const { agentLogs, score, countdown } = useAgentWebSocket();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -24,9 +25,42 @@ export function AgentLogsView() {
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 md:gap-8 pb-24">
       
-      {/* ── Decision Transparency ─────────────────────────────────────────── */}
-      <div className="col-span-12">
-        <DecisionTransparency />
+      {/* ── Agent Signals ────────────────────────────────────────────────── */}
+      <div className="col-span-12 glass-card rounded-[32px] p-8 md:p-10 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
+        <div className="flex items-center justify-between mb-8">
+          <div className="text-2xl text-black font-bold flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+            <MagneticText disabled text="Agent" />
+            <div className="font-light text-muted-foreground"><MagneticText disabled text="Signals" /></div>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {logs.slice(0, 5).map((log, i) => (
+            <div key={i} className="flex items-center gap-4 py-4 border-t border-black/[0.03]">
+              <span className="text-[11px] text-muted-foreground/40 font-mono w-20 font-bold">
+                {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
+              </span>
+              <div className="px-3 py-1 rounded-full text-[9px] font-bold w-16 text-center tracking-wider"
+                style={{ 
+                  background: log.action === 'rebalance' ? 'rgba(52, 211, 153, 0.1)' : 'rgba(0,0,0,0.05)',
+                  color: log.action === 'rebalance' ? 'rgb(5, 150, 105)' : 'rgba(0,0,0,0.4)'
+                }}
+              >
+                {log.action.toUpperCase()}
+              </div>
+              <span className="flex-1 text-[13px] text-black/60 font-medium truncate" style={{ fontFamily: "'Inter', sans-serif" }}>
+                {log.message}
+              </span>
+              <span className="text-[11px] text-black font-bold font-mono w-8 text-right">
+                {log.score}
+              </span>
+            </div>
+          ))}
+          {logs.length === 0 && (
+            <p className="text-center py-8 text-[10px] uppercase text-muted-foreground/30 font-bold tracking-[0.25em]">
+              Initializing agent telemetry...
+            </p>
+          )}
+        </div>
       </div>
 
       {/* ── Stats Row ────────────────────────────────────────────────────── */}
