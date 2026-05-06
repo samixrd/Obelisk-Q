@@ -2,10 +2,10 @@ import { useState, useEffect } from 'react';
 
 const TOKEN_IDS_LIST = 'mantle,ondo-us-dollar-yield,mantle-staked-ether';
 
-// Official Mantle mETH logo (white background/authentic) fallback
+// Official token logos (reliable raw URLs from TrustWallet assets)
 const METH_OFFICIAL_LOGO = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xd5F7838F5C461fefF7FE49ea5ebaF7728bB0ADfa/logo.png';
-const USDY_OFFICIAL_LOGO = 'https://assets.coingecko.com/coins/images/31415/standard/usdy.png?1696530274';
-const MNT_OFFICIAL_LOGO = 'https://assets.coingecko.com/coins/images/30980/standard/token-logo.png?1696529826';
+const USDY_OFFICIAL_LOGO = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x96F6eF951840721AdBF46Ac996b59E0235CB985C/logo.png';
+const MNT_OFFICIAL_LOGO = 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0x3c3a81e81dc49A522A592e7622A7E711c06bf354/logo.png';
 
 type LogoMap = { [key: string]: string | null };
 
