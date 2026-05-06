@@ -26,6 +26,30 @@ export function AgentLogsView() {
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 md:gap-8 pb-24">
       
+      {/* ── Stats Row ────────────────────────────────────────────────────── */}
+      <div className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+        {[
+          { label: "Active Nodes", value: "5 Agent Nodes", sub: "LangGraph Orchestrated" },
+          { label: "Stability Score", value: String(score), sub: "AI Weighted Confidence" },
+          { label: "Next Analysis", value: `${countdown}s`, sub: "Scheduled Heartbeat" },
+        ].map((s, i) => (
+          <motion.div key={s.label}
+            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={{ y: -4, backgroundColor: "rgba(255,255,255,0.95)" }}
+            className="glass-card rounded-[32px] px-10 py-8 transition-all shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]"
+          >
+            <p className="text-[10px] uppercase text-muted-foreground/40 mb-4 font-bold tracking-[0.24em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <MagneticText disabled text={s.label} />
+            </p>
+            <div className="text-3xl text-black font-bold mb-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
+              <MagneticText disabled text={s.value} />
+            </div>
+            <p className="text-[10px] text-muted-foreground/40 font-semibold uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>{s.sub}</p>
+          </motion.div>
+        ))}
+      </div>
+
       {/* ── Decision Transparency ─────────────────────────────────────────── */}
       <div className="col-span-12">
         <DecisionTransparency />
@@ -67,30 +91,6 @@ export function AgentLogsView() {
             </p>
           )}
         </div>
-      </div>
-
-      {/* ── Stats Row ────────────────────────────────────────────────────── */}
-      <div className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-        {[
-          { label: "Active Nodes", value: "5 Agent Nodes", sub: "LangGraph Orchestrated" },
-          { label: "Stability Score", value: String(score), sub: "AI Weighted Confidence" },
-          { label: "Next Analysis", value: `${countdown}s`, sub: "Scheduled Heartbeat" },
-        ].map((s, i) => (
-          <motion.div key={s.label}
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            whileHover={{ y: -4, backgroundColor: "rgba(255,255,255,0.95)" }}
-            className="glass-card rounded-[32px] px-10 py-8 transition-all shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]"
-          >
-            <p className="text-[10px] uppercase text-muted-foreground/40 mb-4 font-bold tracking-[0.24em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <MagneticText disabled text={s.label} />
-            </p>
-            <div className="text-3xl text-black font-bold mb-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.04em" }}>
-              <MagneticText disabled text={s.value} />
-            </div>
-            <p className="text-[10px] text-muted-foreground/40 font-semibold uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>{s.sub}</p>
-          </motion.div>
-        ))}
       </div>
 
       {/* ── Log Stream ───────────────────────────────────────────────────── */}
