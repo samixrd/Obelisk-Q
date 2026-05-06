@@ -4,6 +4,7 @@ import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { useVault } from "@/hooks/useVault";
 import { MagneticText } from "./MagneticText";
+import { useTokenLogos } from "@/hooks/useTokenLogos";
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -20,6 +21,7 @@ const POSITIONS = [
 
 export function PortfolioView() {
   const { txHistory, explorerUrl, vaultStats, withdrawPartial, txState } = useVault();
+  const logos = useTokenLogos();
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [metrics, setMetrics] = useState({
     ytd_return: 14.82,
@@ -85,11 +87,19 @@ export function PortfolioView() {
         <div className="p-10 pb-0">
           <div className="flex items-center gap-4 mb-10">
             <div className="flex items-center -space-x-3">
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#2775CA] to-[#1A5FB4] border-2 border-white flex items-center justify-center text-white text-[11px] font-bold shadow-sm" style={{ zIndex: 2 }}>
-                MNT
+              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm" style={{ zIndex: 2 }}>
+                {logos.mETH ? (
+                  <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="h-full w-full bg-[#00D395] flex items-center justify-center text-white text-[10px] font-bold">mE</div>
+                )}
               </div>
-              <div className="h-10 w-10 rounded-full bg-gradient-to-br from-[#00D395] to-[#00A97A] border-2 border-white flex items-center justify-center text-white text-[11px] font-bold shadow-sm" style={{ zIndex: 1 }}>
-                Q
+              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm" style={{ zIndex: 1 }}>
+                {logos.USDY ? (
+                  <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="h-full w-full bg-[#2775CA] flex items-center justify-center text-white text-[10px] font-bold">U</div>
+                )}
               </div>
             </div>
             <div>
@@ -112,9 +122,13 @@ export function PortfolioView() {
               style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
             />
             <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/[0.1] rounded-full shadow-sm">
-              <div className="h-6 w-6 rounded-full bg-gradient-to-br from-[#2775CA] to-[#1A5FB4] flex items-center justify-center">
-                <span className="text-[8px] text-white font-bold">M</span>
-              </div>
+            <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center border border-black/5">
+              {logos.MNT ? (
+                <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" />
+              ) : (
+                <span className="text-[8px] text-black font-bold">M</span>
+              )}
+            </div>
               <span className="text-[14px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
             </div>
           </div>
