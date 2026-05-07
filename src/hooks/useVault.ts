@@ -15,12 +15,13 @@ import { toast } from "@/hooks/use-toast";
 // ── Replace with your deployed contract address after running deploy script ──
 const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS ?? "";
 
-// ── Network Configuration (set VITE_CHAIN_ID=5000 for mainnet, 5003 for testnet) ──
 const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5000";
 const IS_MAINNET = CHAIN_ID === "5000";
 const CHAIN_ID_HEX = IS_MAINNET ? "0x1388" : "0x138B";
 const CHAIN_NAME = IS_MAINNET ? "Mantle" : "Mantle Sepolia Testnet";
-const RPC_URL = IS_MAINNET ? "https://rpc.mantle.xyz" : "https://rpc.sepolia.mantle.xyz";
+
+// Use QuickNode RPC from env as primary, fallback to public only if necessary
+const RPC_URL = import.meta.env.VITE_RPC_URL || (IS_MAINNET ? "https://rpc.mantle.xyz" : "https://rpc.sepolia.mantle.xyz");
 const EXPLORER_URL = IS_MAINNET ? "https://mantlescan.xyz" : "https://explorer.sepolia.mantle.xyz";
 
 // Minimal ABI — only what the frontend needs
@@ -88,6 +89,24 @@ function encodeGetBalance(address: string): string {
 function encodeGetVaultStats(): string {
   // keccak256("getVaultStats()") first 4 bytes = 0x3f4c3e1f
   return "0x3f4c3e1f";
+}
+
+// ── Direct RPC Helper (Wallet Independent) ───────────────────────────────────
+async function rpcCall(method: string, params: any[]): Promise<any> {
+  if (!RPC_URL) return null;
+  try {
+    const response = await fetch(RPC_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+    });
+    const json = await response.json();
+    if (json.error) throw new Error(json.error.message);
+    return json.result;
+  } catch (err) {
+    console.error("RPC Call failed:", err);
+    return null;
+  }
 }
 
 // ── Hook ──────────────────────────────────────────────────────────────────────
@@ -159,17 +178,13 @@ export function useVault(): VaultState {
 
   // ── Read vault stats ────────────────────────────────────────────────────
   const refreshStats = useCallback(async () => {
-    const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
-    if (!eth || !VAULT_ADDRESS) return;
+    if (!VAULT_ADDRESS) return;
 
     try {
       let walletBalance = "0.0000";
       if (address) {
         try {
-          const rawBal = await (eth.request as Function)({
-            method: "eth_getBalance",
-            params: [address, "latest"],
-          }) as string;
+          const rawBal = await rpcCall("eth_getBalance", [address, "latest"]);
           if (rawBal && rawBal !== "0x") {
             walletBalance = formatMnt(BigInt(rawBal));
           }
@@ -182,31 +197,29 @@ export function useVault(): VaultState {
       let paused = false;
 
       try {
-        const statsRaw = await (eth.request as Function)({
-          method: "eth_call",
-          params: [{ to: VAULT_ADDRESS, data: encodeGetVaultStats() }, "latest"],
-        }) as string;
+        const statsRaw = await rpcCall("eth_call", [
+          { to: VAULT_ADDRESS, data: encodeGetVaultStats() },
+          "latest",
+        ]);
 
         if (statsRaw && statsRaw !== "0x") {
-          const hex   = statsRaw.replace("0x", "");
+          const hex = statsRaw.replace("0x", "");
           total = BigInt("0x" + hex.slice(0, 64));
           count = parseInt(hex.slice(64, 128), 16);
           score = parseInt(hex.slice(128, 192), 16);
           paused = parseInt(hex.slice(192, 256), 16) !== 0;
         }
       } catch (e) {
-        console.warn("Vault stats call failed, using defaults", e);
+        console.warn("Vault stats call failed", e);
       }
 
-      let userBalance = address ? "0.0000" : (simBalanceRef.current["null"]?.toFixed(4) || "0.0000");
-      
+      let userBalance = "0.0000";
       if (address) {
         try {
-          const balRaw = await (eth.request as Function)({
-            method: "eth_call",
-            params: [{ to: VAULT_ADDRESS, data: encodeGetBalance(address) }, "latest"],
-          }) as string;
-          
+          const balRaw = await rpcCall("eth_call", [
+            { to: VAULT_ADDRESS, data: encodeGetBalance(address) },
+            "latest",
+          ]);
           if (balRaw && balRaw !== "0x") {
             userBalance = formatMnt(BigInt(balRaw));
           }
@@ -594,11 +607,10 @@ export function useVault(): VaultState {
     }
   }, [address, refreshStats, saveTx, getExplorerUrl]);
   useEffect(() => {
-    if (!address) return;
     refreshStats();
     const id = setInterval(refreshStats, 15_000);
     return () => clearInterval(id);
-  }, [address, refreshStats]);
+  }, [refreshStats]);
 
   // ── Listen for account changes ──────────────────────────────────────────
   useEffect(() => {
