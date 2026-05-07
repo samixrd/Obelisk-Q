@@ -69,7 +69,7 @@ last_known_state = {
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 async def rwa_analyst_node(state: AgentState):
-    print("node: analyst")
+    logger.info("node: rwa_analyst | starting market scan")
     try:
         # 500ms timeout for rwa sentiment analysis
         await asyncio.sleep(0.2) # simulated latency
@@ -93,7 +93,7 @@ async def rwa_analyst_node(state: AgentState):
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def risk_manager_node(state: AgentState):
-    print("node: risk")
+    logger.info("node: risk_manager | starting regime audit")
     try:
         await asyncio.sleep(0.1)
         vol = state["data"].get("vol", 1.5)
@@ -133,7 +133,7 @@ async def risk_manager_node(state: AgentState):
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def tracker_node(state: AgentState):
-    logger.info("node: tracker")
+    logger.info("node: tracker | evaluating control transfer")
     regime = state["data"].get("regime", "Consolidation")
     risk_score = state["data"].get("risk", {}).get("score", 90)
     
@@ -169,7 +169,7 @@ async def tracker_node(state: AgentState):
     return {"messages": [AIMessage(content=content)], "sensitivity": sensitivity, "data": state["data"]}
 
 async def executor_node(state: AgentState):
-    logger.info("node: executor")
+    logger.info("node: executor | validating q-score authority")
     
     action = state["data"].get("action", "HOLD")
     risk_score = state["data"].get("risk", {}).get("score", 90)
@@ -219,7 +219,7 @@ async def executor_node(state: AgentState):
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def supervisor_node(state: AgentState):
-    print("node: supervisor")
+    logger.info("node: supervisor | arbitrating next state")
     messages = state.get("messages", [])
     if not messages: return {"next_agent": "analyst"}
     last_msg = messages[-1].content
@@ -429,7 +429,9 @@ async def websocket_endpoint(websocket: WebSocket):
 async def run_analysis_cycle():
     from memory import agent_memory
     cycle_num = 0
+    logger.info("run_analysis_cycle: initialization successful. entering main loop.")
     while True:
+        logger.info(f"cycle {cycle_num + 1}: pre-flight countdown starting")
         try:
             for i in range(10, 0, -1):
                 await broadcast({"type": "countdown", "value": i})
