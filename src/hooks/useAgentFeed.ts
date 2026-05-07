@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
 
 export type AgentAction = "scan" | "hold" | "rebalance" | "circuit_breaker" | "warn";
 
@@ -75,6 +76,7 @@ function generateSignal(): FeedEntry {
 }
 
 export function useAgentFeed() {
+  const { sessionToken, logout } = useAuth();
   const [logs, setLogs] = useState<FeedEntry[]>([]);
   const [stats, setStats] = useState<AgentStats>({
     totalScans: 0,
@@ -89,8 +91,17 @@ export function useAgentFeed() {
     let interval: ReturnType<typeof setInterval> | null = null;
 
     const fetchFromBackend = async () => {
+      if (!sessionToken) return false;
       try {
-        const res = await fetch(`${API_BASE}/api/agent/logs`);
+        const res = await fetch(`${API_BASE}/api/agent/logs`, {
+          headers: {
+            'X-Session-Token': sessionToken
+          }
+        });
+        if (res.status === 401) {
+          logout();
+          return false;
+        }
         if (res.ok) {
           const data = await res.json();
           if (Array.isArray(data) && data.length > 0) {

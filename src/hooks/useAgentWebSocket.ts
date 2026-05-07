@@ -93,6 +93,7 @@ const NODE_LABELS: Record<string, string> = {
 
 // ── Hook ────────────────────────────────────────────────────────────────────
 export function useAgentWebSocket() {
+  const { sessionToken, logout } = useAuth();
   const [score, setScore] = useState<number>(94);
   const [regime, setRegime] = useState<string>("Stable");
   const [countdown, setCountdown] = useState<number>(10);
@@ -198,8 +199,10 @@ export function useAgentWebSocket() {
     const url = (import.meta as any).env?.VITE_WS_URL ?? "ws://localhost:8000/ws";
 
     const connectWs = () => {
+      if (!sessionToken) return;
       try {
-        wsRef.current = new WebSocket(url);
+        const urlWithToken = `${url}${url.includes('?') ? '&' : '?'}token=${sessionToken}`;
+        wsRef.current = new WebSocket(urlWithToken);
 
         const timeout = setTimeout(() => {
           // If WS hasn't opened within 2s, fall back to autonomous mode
@@ -243,8 +246,13 @@ export function useAgentWebSocket() {
           } catch { /* malformed message */ }
         };
 
-        wsRef.current.onclose = () => {
+        wsRef.current.onclose = (event) => {
           connectedRef.current = false;
+          // Handle 401 / Session Expired
+          if (event.code === 4001) {
+            logout();
+            return;
+          }
           // Fall back to autonomous telemetry on disconnect
           if (!telemetryRef.current) {
             startTelemetryEngine();

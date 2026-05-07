@@ -5,6 +5,7 @@ import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { useVault } from "@/hooks/useVault";
 import { MagneticText } from "./MagneticText";
 import { useTokenLogos } from "@/hooks/useTokenLogos";
+import { useAuth } from "@/context/AuthContext";
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -18,6 +19,7 @@ const POSITIONS = [
 ];
 
 export function PortfolioView() {
+  const { sessionToken, logout } = useAuth();
   const { txHistory, explorerUrl, vaultStats, withdrawPartial, txState } = useVault();
   const logos = useTokenLogos();
   const [withdrawAmount, setWithdrawAmount] = useState("");
@@ -34,8 +36,15 @@ export function PortfolioView() {
   useEffect(() => {
     const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
     const loadMetrics = async () => {
+      if (!sessionToken) return;
       try {
-        const res = await fetch(`${API_BASE}/api/performance`);
+        const res = await fetch(`${API_BASE}/api/performance`, {
+          headers: { 'X-Session-Token': sessionToken }
+        });
+        if (res.status === 401) {
+          logout();
+          return;
+        }
         if (!res.ok) throw new Error("API error");
         const data = await res.json();
         if (data) setMetrics(data);

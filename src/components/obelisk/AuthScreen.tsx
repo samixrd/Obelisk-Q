@@ -10,7 +10,7 @@ interface AuthScreenProps {
   onAuthenticated: (method: "google" | "wallet") => void;
 }
 export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
-  const { setAuthMethod, setWalletAddress } = useAuth();
+  const { setAuthMethod, setWalletAddress, setSessionToken } = useAuth();
   const [step,          setStep]           = useState<1 | 2>(1);
   const [walletLoading,  setWalletLoading]  = useState(false);
   const [error,          setError]          = useState<string | null>(null);
@@ -22,9 +22,9 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
   const allChecked = Object.values(compliance).every(v => v);
 
-  // ── MetaMask wallet connect ────────────────────────────────────────────
+  // ── Antigravity Login Flow (Signature Required) ────────────────────────
   const handleWallet = async () => {
-    const eth = (window as Window & { ethereum?: Record<string,unknown> }).ethereum;
+    const eth = (window as any).ethereum;
     if (!eth) {
       setError("MetaMask not found. Please install it.");
       return;
@@ -32,36 +32,38 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
     setWalletLoading(true);
     setError(null);
     try {
-      const accounts = await (eth.request as Function)({
-        method: "eth_requestAccounts",
-      }) as string[];
-
+      const accounts = await eth.request({ method: "eth_requestAccounts" }) as string[];
       if (!accounts[0]) throw new Error("No account returned.");
+      const address = accounts[0];
 
-      // Switch to Mantle Sepolia
-      try {
-        await (eth.request as Function)({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x138B" }],
-        });
-      } catch {
-        await (eth.request as Function)({
-          method: "wallet_addEthereumChain",
-          params: [{
-            chainId:          "0x138B",
-            chainName:        "Mantle Sepolia Testnet",
-            nativeCurrency:   { name: "MNT", symbol: "MNT", decimals: 18 },
-            rpcUrls:          ["https://rpc.sepolia.mantle.xyz"],
-            blockExplorerUrls: ["https://explorer.sepolia.mantle.xyz"],
-          }],
-        });
+      // Request signature for session validation
+      const message = `Antigravity Protocol Login\n\nSession Duration: 5 Minutes\nWallet: ${address}\nTimestamp: ${Date.now()}`;
+      const signature = await eth.request({
+        method: "personal_sign",
+        params: [message, address],
+      });
+
+      // Submit to backend for temporal token issuance
+      const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const resp = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ address, signature, message }),
+      });
+
+      if (!resp.ok) {
+        const data = await resp.json();
+        throw new Error(data.detail || "Cloud validation failed.");
       }
 
-      setWalletAddress(accounts[0]);
+      const { token } = await resp.json();
+
+      setWalletAddress(address);
+      setSessionToken(token);
       setAuthMethod("wallet");
       onAuthenticated("wallet");
     } catch (err: unknown) {
-      const msg = (err as Error).message ?? "Wallet connection failed.";
+      const msg = (err as Error).message ?? "Auth failed.";
       if (!msg.includes("rejected")) setError(msg);
     } finally {
       setWalletLoading(false);

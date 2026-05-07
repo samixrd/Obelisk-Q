@@ -19,10 +19,12 @@ interface AuthState {
   user:          User | null;          // Firebase Google user
   authMethod:    AuthMethod;
   walletAddress: string | null;
+  sessionToken:  string | null;
   loading:       boolean;
 
   setAuthMethod:    (m: AuthMethod) => void;
   setWalletAddress: (a: string | null) => void;
+  setSessionToken:  (t: string | null) => void;
   logout:           () => Promise<void>;
 
   // Display name — Google name or shortened wallet address
@@ -36,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user,          setUser]          = useState<User | null>(null);
   const [authMethod,    setAuthMethod]    = useState<AuthMethod>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [sessionToken,  setSessionToken]  = useState<string | null>(localStorage.getItem("obelisk_session"));
   const [loading,       setLoading]       = useState(true);
 
   // Listen to Firebase auth state
@@ -48,11 +51,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, []);
 
+  // Persist session token
+  useEffect(() => {
+    if (sessionToken) localStorage.setItem("obelisk_session", sessionToken);
+    else localStorage.removeItem("obelisk_session");
+  }, [sessionToken]);
+
   const logout = async () => {
     await signOutUser();
     setUser(null);
     setAuthMethod(null);
     setWalletAddress(null);
+    setSessionToken(null);
   };
 
   const displayName =
@@ -68,9 +78,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       user,
       authMethod,
       walletAddress,
+      sessionToken,
       loading,
       setAuthMethod,
       setWalletAddress,
+      setSessionToken,
       logout,
       displayName,
       avatarUrl,

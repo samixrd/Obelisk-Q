@@ -4,9 +4,9 @@ import random
 import asyncio
 from typing import Annotated, List, TypedDict, Union, Literal
 from datetime import datetime
-
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.middleware.cors import CORSMiddleware
+import secrets
+import time
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException, Depends
 from pydantic import BaseModel
 
 from langgraph.graph import StateGraph, END
@@ -256,10 +256,72 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ─── Session Management (Antigravity Protocol) ────────────────────────────────
+
+SESSIONS = {}
+SESSION_TIMEOUT = 300 # 5 minutes inactivity window
+
+class AuthRequest(BaseModel):
+    address: str
+    signature: str
+    message: str
+
+@app.post("/api/auth/login")
+async def login(auth: AuthRequest):
+    """
+    Antigravity Temporal Token Issuance
+    Requires a valid Mantle/Ethereum wallet signature.
+    """
+    try:
+        if not WEB3_AVAILABLE:
+            # Simulation mode fallback
+            token = secrets.token_hex(32)
+            SESSIONS[token] = {"address": auth.address, "last_seen": time.time()}
+            return {"token": token, "address": auth.address}
+
+        from eth_account.messages import encode_defensive_message
+        w3 = Web3()
+        message_encoded = encode_defensive_message(text=auth.message)
+        recovered_address = w3.eth.account.recover_message(message_encoded, signature=auth.signature)
+        
+        if recovered_address.lower() != auth.address.lower():
+            raise HTTPException(status_code=401, detail="Invalid_Signature")
+            
+        token = secrets.token_hex(32)
+        SESSIONS[token] = {
+            "address": auth.address,
+            "last_seen": time.time()
+        }
+        logger.info(f"Session issued: {auth.address[:10]}... [Token: {token[:6]}...]")
+        return {"token": token, "address": auth.address}
+    except Exception as e:
+        logger.error(f"Auth failure: {e}")
+        raise HTTPException(status_code=401, detail="Authentication_Failed")
+
+async def verify_session(x_session_token: str = Header(None)):
+    """
+    Heartbeat & Validation Mechanism
+    Enforces the 300s inactivity window.
+    """
+    if not x_session_token or x_session_token not in SESSIONS:
+        raise HTTPException(status_code=401, detail="Session_Expired")
+    
+    session = SESSIONS[x_session_token]
+    now = time.time()
+    
+    if now - session["last_seen"] > SESSION_TIMEOUT:
+        logger.info(f"Session expired: {session['address'][:10]}...")
+        del SESSIONS[x_session_token]
+        raise HTTPException(status_code=401, detail="Session_Expired")
+    
+    # Heartbeat: update last_seen on interaction
+    session["last_seen"] = now
+    return session
+
 # ─── REST Endpoints ───────────────────────────────────────────────────────────
 
 @app.get("/api/performance")
-async def get_performance():
+async def get_performance(session: dict = Depends(verify_session)):
     return {
         "ytd_return": 14.82,
         "sharpe_ratio": 2.41,
@@ -268,7 +330,7 @@ async def get_performance():
     }
 
 @app.get("/api/stats")
-async def get_stats():
+async def get_stats(session: dict = Depends(verify_session)):
     return {
         "total_aum": "1,240,500",
         "active_users": 142,
@@ -297,12 +359,32 @@ async def broadcast(message: dict):
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
+    # Extract token from query params or subprotocols
+    token = websocket.query_params.get("token")
+    
+    if not token or token not in SESSIONS:
+        await websocket.accept() # Must accept before closing with code
+        await websocket.close(code=4001) # Session_Expired
+        return
+    
+    # Verify timeout even on WS handshake
+    session = SESSIONS[token]
+    if time.time() - session["last_seen"] > SESSION_TIMEOUT:
+        await websocket.accept()
+        await websocket.close(code=4001)
+        return
+
     await websocket.accept()
     global_app_state.active_connections.append(websocket)
     try:
-        while True: await websocket.receive_text()
+        while True: 
+            # Heartbeat via WS activity
+            data = await websocket.receive_text()
+            if token in SESSIONS:
+                SESSIONS[token]["last_seen"] = time.time()
     except WebSocketDisconnect:
-        global_app_state.active_connections.remove(websocket)
+        if websocket in global_app_state.active_connections:
+            global_app_state.active_connections.remove(websocket)
 
 async def run_analysis_cycle():
     from memory import agent_memory
