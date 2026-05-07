@@ -62,21 +62,27 @@ function AppInner() {
         {stage === "landing" && (
           <LandingPage key="landing" onEnter={() => setStage("auth")} />
         )}
-        
         {stage === "auth" && (
-          <AuthScreen key="auth" onAuthenticated={() => setStage("dashboard")} />
+          <AuthScreen key="auth" onAuthenticated={handleAuthenticated} />
         )}
+      </AnimatePresence>
 
+      <AnimatePresence>
         {stage === "dashboard" && (
-          <motion.div key="dashboard"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-            className="relative"
+          <motion.div
+            key="dashboard"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
           >
-            <div aria-hidden
+            <div
+              aria-hidden
               className="pointer-events-none fixed inset-0 opacity-[0.035] mix-blend-overlay"
-              style={{ backgroundImage: "radial-gradient(hsl(0 0% 100%) 1px, transparent 1px)", backgroundSize: "3px 3px" }} />
+              style={{
+                backgroundImage: "radial-gradient(hsl(0 0% 100%) 1px, transparent 1px)",
+                backgroundSize: "3px 3px",
+              }}
+            />
             <StatePlot className="fixed inset-0 z-0 opacity-[0.55]" />
 
             <Header
@@ -87,13 +93,19 @@ function AppInner() {
               needsWallet={needsWallet}
               walletAddress={walletAddress}
               onConnectWallet={() => setWalletModal(true)}
-              onSignOut={async () => { await logout(); setStage("landing"); }}
+              onSignOut={async () => {
+                await logout();
+                setStage("landing");
+              }}
             />
 
             <Sidebar
               open={sidebarOpen}
               activeTab={activeTab}
-              onTabChange={(tab) => { setActiveTab(tab); setSidebarOpen(false); }}
+              onTabChange={(tab) => {
+                setActiveTab(tab);
+                setSidebarOpen(false);
+              }}
               onClose={() => setSidebarOpen(false)}
             />
 
@@ -110,7 +122,10 @@ function AppInner() {
             <WalletConnectModal
               open={walletModal}
               onClose={() => setWalletModal(false)}
-              onConnected={(addr) => { setWalletAddress(addr); setWalletModal(false); }}
+              onConnected={(addr) => {
+                setWalletAddress(addr);
+                setWalletModal(false);
+              }}
             />
           </motion.div>
         )}
