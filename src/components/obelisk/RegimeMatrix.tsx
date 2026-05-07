@@ -6,7 +6,7 @@ export function RegimeMatrix() {
   return (
     <div className="space-y-6">
       <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
-        HMM Regime Transition Matrix
+        HMM Regime Transition Matrix (Simulated)
       </p>
       <div className="grid grid-cols-3 gap-2">
         {regimes.map((row, i) => (

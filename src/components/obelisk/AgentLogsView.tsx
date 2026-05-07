@@ -60,7 +60,6 @@ export function AgentLogsView() {
             <div className="flex items-center justify-between mb-2.5">
               <p className="text-[9px] uppercase text-black/40 tracking-[0.15em]" style={SANS}>
                 {node.label}
-              </p>
               <div className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[node.status] || STATUS_DOT.idle}`} />
             </div>
             <div className="text-[13px] text-[#0a0a0a] mb-0.5" style={SANS}>
@@ -133,7 +132,7 @@ export function AgentLogsView() {
           ))}
           {logs.length === 0 && (
             <p className="text-center py-8 text-[10px] uppercase text-[#9CA3AF] tracking-[0.25em]" style={SANS}>
-              Awaiting signal feed...
+              Awaiting signal feed (Simulated)...
             </p>
           )}
         </div>
@@ -147,7 +146,7 @@ export function AgentLogsView() {
               <MagneticText disabled text="Multi-Agent" />
               <span className="text-black/40"><MagneticText disabled text="Supervisory Feed" /></span>
             </div>
-            <p className="text-[11px] text-black/40" style={SANS}>Arbitrated cross-node telemetry from the Obelisk controller. 0% local disk persistence.</p>
+            <p className="text-[11px] text-black/40" style={SANS}>Real-time LangGraph audit stream (Simulated Inputs). 0% local disk persistence.</p>
           </div>
           
           <motion.div 

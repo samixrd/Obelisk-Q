@@ -43,7 +43,7 @@ export function DecisionTransparency() {
           className="text-[10px] uppercase text-muted-foreground/40 mb-3 font-bold tracking-[0.28em]"
           style={{ fontFamily: "'Inter', sans-serif" }}
         >
-          <MagneticText disabled text="AI Decision Transparency" />
+          <MagneticText disabled text="AI Decision Transparency (Simulated)" />
         </p>
         <h2
           className="text-3xl font-bold text-foreground"
@@ -66,7 +66,7 @@ export function DecisionTransparency() {
               <div>
                 <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Action Taken</p>
                 <p className="text-[15px] font-bold text-foreground leading-snug">
-                  {statusOk ? "Hold — score within safe range" : "Rebalance — risk threshold exceeded"}
+                  {statusOk ? `HOLD (Score ${score} ≥ ${adaptive.confidenceThreshold})` : `SYNC (Score ${score} < ${adaptive.confidenceThreshold})`}
                 </p>
               </div>
               <div>
