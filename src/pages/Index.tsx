@@ -17,12 +17,25 @@ type AppStage = "landing" | "auth" | "dashboard";
 function AppInner() {
   const { walletAddress, setWalletAddress, setAuthMethod, logout } = useAuth();
 
-  const [stage,          setStage]          = useState<AppStage>("landing");
+  const [stage, setStage] = useState<AppStage>(() => {
+    const hasSession = localStorage.getItem("obelisk_session");
+    // If we have a session, we might want to start at 'auth' to prompt wallet connect
+    // or 'dashboard' if we assume they are already good (but they need walletAddress).
+    return hasSession ? "auth" : "landing";
+  });
+  
   const [walletModal,    setWalletModal]     = useState(false);
   const [sidebarOpen,    setSidebarOpen]     = useState(false);
   const [tourOpen,       setTourOpen]        = useState(false);
   const [activeTab,      setActiveTab]       = useState<DashboardTab>("earn");
   
+  // Auto-transition to dashboard if we have both wallet and session
+  useEffect(() => {
+    if (walletAddress && localStorage.getItem("obelisk_session")) {
+      setStage("dashboard");
+    }
+  }, [walletAddress]);
+
   // Global scroll restoration: snap to top on tab or stage change
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -45,23 +58,22 @@ function AppInner() {
   return (
     <div className="relative min-h-screen overflow-x-hidden" style={{ background: "#f5f5f8" }}>
 
-      {/* Landing → Auth */}
       <AnimatePresence mode="wait">
         {stage === "landing" && (
           <LandingPage key="landing" onEnter={() => setStage("auth")} />
         )}
+        
         {stage === "auth" && (
-          <AuthScreen key="auth" onAuthenticated={handleAuthenticated} />
+          <AuthScreen key="auth" onAuthenticated={() => setStage("dashboard")} />
         )}
-      </AnimatePresence>
 
-      {/* Dashboard */}
-      <AnimatePresence>
         {stage === "dashboard" && (
           <motion.div key="dashboard"
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            transition={{ duration: 1.0, ease: [0.22, 1, 0.36, 1] }}>
-
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            className="relative"
+          >
             <div aria-hidden
               className="pointer-events-none fixed inset-0 opacity-[0.035] mix-blend-overlay"
               style={{ backgroundImage: "radial-gradient(hsl(0 0% 100%) 1px, transparent 1px)", backgroundSize: "3px 3px" }} />

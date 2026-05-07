@@ -4,6 +4,8 @@ import { IconArrowUpRight } from "./LineIcons";
 import { useYieldData } from "@/hooks/useYieldData";
 import { MagneticText } from "./MagneticText";
 import { useTokenLogos } from "@/hooks/useTokenLogos";
+import { useVault } from "@/hooks/useVault";
+import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
 
 interface Asset {
   symbol: string;
@@ -41,8 +43,9 @@ export function ManagedAssets() {
   if (regime === "Expansion") methRatio = 0.7;
   if (regime === "Contraction") methRatio = 0.3;
 
-  const usdyAllocated = investable * (1 - methRatio);
-  const methAllocated = investable * methRatio;
+  const usdyAllocated = isNaN(investable) ? 0 : Math.max(0, investable * (1 - methRatio));
+  const methAllocated = isNaN(investable) ? 0 : Math.max(0, investable * methRatio);
+  const safeBuffer = isNaN(totalBuffer) ? 0 : Math.max(0, totalBuffer);
 
   const assets: Asset[] = [
     {
