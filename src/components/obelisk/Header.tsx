@@ -78,9 +78,8 @@ export function Header({
 
           <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.06)", margin: "0 10px" }} className="hidden lg:block" />
 
-          {/* Nav Links */}
           <nav className="hidden lg:flex items-center gap-8">
-            {(["earn", "portfolio", "history", "safeguards", "agent-logs"] as DashboardTab[]).map((t) => (
+            {(["earn", "portfolio", "safeguards", "agent-logs"] as DashboardTab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => onTabChange(t)}

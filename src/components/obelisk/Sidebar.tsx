@@ -22,7 +22,6 @@ const MENU_ITEMS = [
   { icon: IconPortfolio,    label: "Portfolio",    tab: "portfolio"    },
   { icon: IconSafeguards,   label: "Safeguards",   tab: "safeguards"   },
   { icon: IconLogs,         label: "Agent Logs",   tab: "agent-logs"   },
-  { icon: IconLogs,         label: "History",      tab: "history"      },
   { icon: IconPreferences,  label: "Preferences",  tab: "preferences"  },
 ];
 
