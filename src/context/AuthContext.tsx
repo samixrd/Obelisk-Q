@@ -1,6 +1,6 @@
 /**
  * AuthContext — global authentication state
- * Tracks Google user + wallet address across the entire app
+ * Tracks wallet address and session token across the entire app
  */
 
 import {
@@ -10,13 +10,10 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { type User } from "firebase/auth";
-import { onAuthChange, signOutUser } from "@/lib/firebase";
 
-export type AuthMethod = "google" | "wallet" | null;
+export type AuthMethod = "wallet" | null;
 
 interface AuthState {
-  user:          User | null;          // Firebase Google user
   authMethod:    AuthMethod;
   walletAddress: string | null;
   sessionToken:  string | null;
@@ -27,29 +24,17 @@ interface AuthState {
   setSessionToken:  (t: string | null) => void;
   logout:           () => Promise<void>;
 
-  // Display name — Google name or shortened wallet address
+  // Display name — shortened wallet address or Guest
   displayName: string;
-  avatarUrl:   string | null;
 }
 
 const Ctx = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user,          setUser]          = useState<User | null>(null);
   const [authMethod,    setAuthMethod]    = useState<AuthMethod>(null);
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
   const [sessionToken,  setSessionToken]  = useState<string | null>(localStorage.getItem("obelisk_session"));
-  const [loading,       setLoading]       = useState(true);
-
-  // Listen to Firebase auth state
-  useEffect(() => {
-    const unsub = onAuthChange((firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) setAuthMethod("google");
-      setLoading(false);
-    });
-    return unsub;
-  }, []);
+  const [loading,       setLoading]       = useState(false); // No longer loading firebase
 
   // Persist session token
   useEffect(() => {
@@ -57,25 +42,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     else localStorage.removeItem("obelisk_session");
   }, [sessionToken]);
 
+  // If we have a session token but no wallet address, we might need to re-fetch or clear
+  // For now, if session exists, we assume wallet was linked or is being tracked elsewhere
+
   const logout = async () => {
-    await signOutUser();
-    setUser(null);
     setAuthMethod(null);
     setWalletAddress(null);
     setSessionToken(null);
   };
 
-  const displayName =
-    user?.displayName ||
-    (walletAddress
-      ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
-      : "Guest Identity");
-
-  const avatarUrl = user?.photoURL || null;
+  const displayName = walletAddress
+    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+    : "Guest Identity";
 
   return (
     <Ctx.Provider value={{
-      user,
       authMethod,
       walletAddress,
       sessionToken,
@@ -85,7 +66,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSessionToken,
       logout,
       displayName,
-      avatarUrl,
     }}>
       {children}
     </Ctx.Provider>

@@ -17,7 +17,7 @@ const fadeUp = {
 export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesViewProps) {
   const [notifications, setNotifications] = useState(true);
   const [autoRebalance, setAutoRebalance] = useState(true);
-  const { displayName, avatarUrl } = useAuth();
+  const { displayName } = useAuth();
 
   const initials = displayName
     .split(" ")
@@ -108,11 +108,7 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
           </p>
           <div className="flex items-center gap-6 mb-10">
             <div className="h-16 w-16 rounded-[24px] bg-black/5 border border-black/[0.04] flex items-center justify-center relative overflow-hidden text-xl font-bold text-black/20 shadow-inner">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={displayName} className="h-full w-full object-cover" />
-              ) : (
-                initials
-              )}
+              {initials}
             </div>
             <div>
               <p className="text-xl text-black font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{displayName}</p>

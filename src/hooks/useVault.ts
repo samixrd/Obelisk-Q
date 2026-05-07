@@ -16,7 +16,7 @@ import { toast } from "@/hooks/use-toast";
 const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS ?? "";
 
 // ── Network Configuration (set VITE_CHAIN_ID=5000 for mainnet, 5003 for testnet) ──
-const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5003";
+const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5000";
 const IS_MAINNET = CHAIN_ID === "5000";
 const CHAIN_ID_HEX = IS_MAINNET ? "0x1388" : "0x138B";
 const CHAIN_NAME = IS_MAINNET ? "Mantle" : "Mantle Sepolia Testnet";
@@ -102,7 +102,7 @@ export function useVault(): VaultState {
   const [txHistory, setTxHistory] = useState<TransactionRecord[]>([]);
   const simBalanceRef = useRef<Record<string, number>>({});  // memory-only sim balance (0% disk)
 
-  const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5003";
+  const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5000";
 
   const getExplorerUrl = useCallback((hash: string) => {
     return `${EXPLORER_URL}/tx/${hash}`;

@@ -15,7 +15,7 @@ import type { DashboardTab } from "@/components/obelisk/Dashboard";
 type AppStage = "landing" | "auth" | "dashboard";
 
 function AppInner() {
-  const { user, walletAddress, setWalletAddress, setAuthMethod, logout } = useAuth();
+  const { walletAddress, setWalletAddress, setAuthMethod, logout } = useAuth();
 
   const [stage,          setStage]          = useState<AppStage>("landing");
   const [walletModal,    setWalletModal]     = useState(false);
@@ -28,11 +28,6 @@ function AppInner() {
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [activeTab, stage]);
 
-  // If Firebase auto-restores a Google session, skip auth screen
-  useEffect(() => {
-    if (user && stage === "auth") setStage("dashboard");
-  }, [user, stage]);
-
   useEffect(() => {
     if (stage === "dashboard" && shouldShowTour()) {
       const id = setTimeout(() => setTourOpen(true), 800);
@@ -40,12 +35,12 @@ function AppInner() {
     }
   }, [stage]);
 
-  const handleAuthenticated = (method: "google" | "wallet") => {
-    setAuthMethod(method);
+  const handleAuthenticated = () => {
+    setAuthMethod("wallet");
     setStage("dashboard");
   };
 
-  const needsWallet = !!user && !walletAddress;
+  const needsWallet = !walletAddress;
 
   return (
     <div className="relative min-h-screen overflow-x-hidden" style={{ background: "#f5f5f8" }}>

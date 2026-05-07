@@ -7,7 +7,7 @@ import { Logo } from "./Logo";
 import { useAuth } from "@/context/AuthContext";
 
 interface AuthScreenProps {
-  onAuthenticated: (method: "google" | "wallet") => void;
+  onAuthenticated: () => void;
 }
 export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   const { setAuthMethod, setWalletAddress, setSessionToken } = useAuth();
@@ -61,7 +61,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
       setWalletAddress(address);
       setSessionToken(token);
       setAuthMethod("wallet");
-      onAuthenticated("wallet");
+      onAuthenticated();
     } catch (err: unknown) {
       const msg = (err as Error).message ?? "Auth failed.";
       if (!msg.includes("rejected")) setError(msg);
