@@ -11,7 +11,7 @@ const fadeUp = {
 import { MagneticText } from "./MagneticText";
 
 export function SafeguardsView() {
-  const { score, regime, lastMessage } = useAgentWebSocket();
+  const { score, regime, lastMessage, agentLogs } = useAgentWebSocket();
   
   const isHighVol = regime === "Contraction";
   const circuitBreakerArmed = lastMessage.includes("CIRCUIT BREAKER");
@@ -59,13 +59,22 @@ export function SafeguardsView() {
     },
   ];
 
-  const AUDIT_EVENTS = [
-    { time: "Just now", event: lastMessage, category: "AI Decision", ok: !circuitBreakerArmed },
-    { time: "14:32:01", event: "Volatility scan passed", category: "Routine", ok: true },
-    { time: "14:31:45", event: "mETH position rebalanced –0.8%", category: "Auto-adjust", ok: true },
-    { time: "09:14:22", event: "Liquidity check · reserve at 8.2%", category: "Routine", ok: true },
-    { time: "Yesterday", event: "Drawdown circuit test · PASS", category: "Scheduled", ok: true },
-  ];
+  const AUDIT_EVENTS = agentLogs.slice(0, 5).map((l, i) => ({
+    time: i === 0 ? "Just now" : new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    event: l.message,
+    category: l.node || "System",
+    ok: !l.message.includes("FAIL") && !l.message.includes("ERROR"),
+  }));
+
+  // If no logs yet, show a placeholder
+  if (AUDIT_EVENTS.length === 0) {
+    AUDIT_EVENTS.push({ 
+      time: "Initializing", 
+      event: "Establishing Antigravity Protocol connection...", 
+      category: "Network", 
+      ok: true 
+    });
+  }
 
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-20">

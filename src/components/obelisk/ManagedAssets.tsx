@@ -21,6 +21,28 @@ interface Asset {
 export function ManagedAssets() {
   const { usdy, meth } = useYieldData();
   const logos = useTokenLogos();
+  const { vaultStats } = useVault();
+  const { regime } = useAgentWebSocket();
+
+  // 1. Calculate Real Totals from Vault Contract
+  const totalMnt = parseFloat(vaultStats?.totalDeposited ?? "0");
+  const mntPrice = 1.0; // MNT is roughly $1.0, could fetch from API if needed
+
+  // 2. Define Buffer (7.5% as per Safeguards protocol)
+  const bufferRatio = 0.075;
+  const totalBuffer = totalMnt * bufferRatio;
+  const investable = totalMnt - totalBuffer;
+
+  // 3. Define Allocation Ratio based on Regime
+  // Expansion: 70% mETH / 30% USDY
+  // Contraction: 30% mETH / 70% USDY
+  // Consolidation/Stable: 50% / 50%
+  let methRatio = 0.5;
+  if (regime === "Expansion") methRatio = 0.7;
+  if (regime === "Contraction") methRatio = 0.3;
+
+  const usdyAllocated = investable * (1 - methRatio);
+  const methAllocated = investable * methRatio;
 
   const assets: Asset[] = [
     {
@@ -29,9 +51,9 @@ export function ManagedAssets() {
       blurb: "Tokenized US treasuries. Conservative, dollar-denominated.",
       yield: `${usdy.apy.toFixed(2)}%`,
       yieldLabel: "Real-time APY",
-      buffer: "$24,180",
-      bufferPct: 78,
-      tvl: "$182,430",
+      buffer: `$${(totalBuffer * (1 - methRatio)).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      bufferPct: Math.round((1 - methRatio) * 100),
+      tvl: `$${(usdyAllocated).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       seed: 7,
       trend: usdy.trend7d?.toFixed(2),
     },
@@ -41,9 +63,9 @@ export function ManagedAssets() {
       blurb: "Liquid-staked ETH on Mantle. Balanced growth with hedged downside.",
       yield: `${meth.apy.toFixed(2)}%`,
       yieldLabel: "Staking yield",
-      buffer: "$11,640",
-      bufferPct: 62,
-      tvl: "$98,210",
+      buffer: `$${(totalBuffer * methRatio).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      bufferPct: Math.round(methRatio * 100),
+      tvl: `$${(methAllocated).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       seed: 11,
       trend: meth.trend7d?.toFixed(2),
     },

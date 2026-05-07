@@ -13,15 +13,51 @@ const fadeUp = {
   transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
 };
 
-const POSITIONS = [
-  { symbol: "mETH", name: "Mantle Staked Ether", strategy: "Balanced · Auto",      balance: "$284,420",  change: "+1.24%", up: true,  alloc: 60, id: "mETH" },
-  { symbol: "USDY", name: "Ondo US Dollar Yield", strategy: "Conservative · Auto",  balance: "$144,310", change: "+0.82%", up: true,  alloc: 40, id: "USDY" },
-];
-
 export function PortfolioView() {
   const { sessionToken, logout } = useAuth();
   const { txHistory, explorerUrl, vaultStats, withdraw, withdrawPartial, txState } = useVault();
+  const { regime } = useAgentWebSocket();
   const logos = useTokenLogos();
+
+  // 1. Calculate Real Totals from Vault Contract
+  const totalMnt = parseFloat(vaultStats?.totalDeposited ?? "0");
+  const mntPrice = 1.0; 
+
+  // 2. Define Buffer (7.5% as per Safeguards protocol)
+  const bufferRatio = 0.075;
+  const totalBuffer = totalMnt * bufferRatio;
+  const investable = totalMnt - totalBuffer;
+
+  // 3. Define Allocation Ratio based on Regime
+  let methRatio = 0.5;
+  if (regime === "Expansion") methRatio = 0.7;
+  if (regime === "Contraction") methRatio = 0.3;
+
+  const usdyAllocated = investable * (1 - methRatio);
+  const methAllocated = investable * methRatio;
+
+  const POSITIONS = [
+    { 
+      symbol: "mETH", 
+      name: "Mantle Staked Ether", 
+      strategy: "Balanced · Auto",      
+      balance: `$${methAllocated.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,  
+      change: "+1.24%", 
+      up: true,  
+      alloc: Math.round(methRatio * 100), 
+      id: "mETH" 
+    },
+    { 
+      symbol: "USDY", 
+      name: "Ondo US Dollar Yield", 
+      strategy: "Conservative · Auto",  
+      balance: `$${usdyAllocated.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, 
+      change: "+0.82%", 
+      up: true,  
+      alloc: Math.round((1 - methRatio) * 100), 
+      id: "USDY" 
+    },
+  ];
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [metrics, setMetrics] = useState({
     ytd_return: 14.82,
