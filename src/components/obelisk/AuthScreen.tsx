@@ -48,7 +48,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
               chainName:       "Mantle",
               nativeCurrency:  { name: "MNT", symbol: "MNT", decimals: 18 },
               rpcUrls:         ["https://rpc.mantle.xyz"],
-              blockExplorerUrls: ["https://mantlescan.xyz"],
+              blockExplorerUrls: ["https://explorer.mantle.xyz"],
             }],
           });
         } else {

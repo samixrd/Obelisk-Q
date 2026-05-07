@@ -15,14 +15,13 @@ import { toast } from "@/hooks/use-toast";
 // ── Replace with your deployed contract address after running deploy script ──
 const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS ?? "";
 
-const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5000";
-const IS_MAINNET = CHAIN_ID === "5000";
-const CHAIN_ID_HEX = IS_MAINNET ? "0x1388" : "0x138B";
-const CHAIN_NAME = IS_MAINNET ? "Mantle" : "Mantle Sepolia Testnet";
+const CHAIN_ID = "5000";
+const CHAIN_ID_HEX = "0x1388";
+const CHAIN_NAME = "Mantle";
+const EXPLORER_URL = "https://explorer.mantle.xyz";
 
-// Use QuickNode RPC from env as primary, fallback to public only if necessary
-const RPC_URL = import.meta.env.VITE_RPC_URL || (IS_MAINNET ? "https://rpc.mantle.xyz" : "https://rpc.sepolia.mantle.xyz");
-const EXPLORER_URL = IS_MAINNET ? "https://mantlescan.xyz" : "https://explorer.sepolia.mantle.xyz";
+// Use QuickNode RPC from env as primary, fallback to public Mantle RPC
+const RPC_URL = import.meta.env.VITE_RPC_URL || "https://rpc.mantle.xyz";
 
 // Minimal ABI — only what the frontend needs
 const VAULT_ABI = [
@@ -123,7 +122,7 @@ export function useVault(): VaultState {
   const [isWrongNetwork, setIsWrongNetwork] = useState(false);
   const simBalanceRef = useRef<Record<string, number>>({});  // memory-only sim balance (0% disk)
 
-  const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5000";
+  const CHAIN_ID = "5000";
 
   const getExplorerUrl = useCallback((hash: string) => {
     return `${EXPLORER_URL}/tx/${hash}`;
