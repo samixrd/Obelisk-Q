@@ -41,13 +41,12 @@ export function DecisionTransparency() {
       <div className="space-y-2">
         <p
           className="text-[10px] uppercase text-muted-foreground/40 mb-3 font-bold tracking-[0.28em]"
-          style={{ fontFamily: "'Inter', sans-serif" }}
         >
           <MagneticText disabled text="AI Decision Transparency (Simulated)" />
         </p>
         <h2
           className="text-3xl font-bold text-foreground"
-          style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}
+          style={{ letterSpacing: "-0.03em" }}
         >
           <MagneticText disabled text="Supervisory logic" />
           <MagneticText text="by Obelisk Q" />
@@ -59,7 +58,7 @@ export function DecisionTransparency() {
         <div className="col-span-12 lg:col-span-7 space-y-16">
           {/* 1. LAST DECISION CARD */}
           <div className="space-y-6">
-            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]">
               Last Decision
             </p>
             <div className="grid grid-cols-2 gap-x-12 gap-y-8">
@@ -90,7 +89,7 @@ export function DecisionTransparency() {
 
           {/* 2. SCORE BREAKDOWN */}
           <div className="space-y-8">
-            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]">
               Score Breakdown
             </p>
             <div className="space-y-10">
@@ -137,7 +136,7 @@ export function DecisionTransparency() {
 
           {/* 5. SUPERVISORY CONFIGURATION */}
           <div className="space-y-6">
-            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]">
               Framework Status
             </p>
             <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04] space-y-6">

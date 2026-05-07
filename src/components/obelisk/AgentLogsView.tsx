@@ -8,8 +8,8 @@ import { MagneticText } from "./MagneticText";
 import { AgentAttestation } from "./AgentAttestation";
 
 // ── Unified Typography ─────────────────────────────────────────────────────
-const MONO: React.CSSProperties = { fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 };
-const SANS: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 300 };
+const MONO: React.CSSProperties = { fontWeight: 300 };
+const SANS: React.CSSProperties = { fontWeight: 300 };
 const SANS_TIGHT: React.CSSProperties = { ...SANS, letterSpacing: "-0.02em" };
 
 const fadeUp = {
@@ -181,8 +181,8 @@ export function AgentLogsView() {
 
 
 function LogRow({ log }: { log: any }) {
-  const MONO: React.CSSProperties = { fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 };
-  const SANS: React.CSSProperties = { fontFamily: "'Inter', sans-serif", fontWeight: 300 };
+  const MONO: React.CSSProperties = { fontWeight: 300 };
+  const SANS: React.CSSProperties = { fontWeight: 300 };
 
   const timeStr = new Date(log.timestamp).toLocaleTimeString('en-GB', { hour12: false });
   const message = log?.message || "";
