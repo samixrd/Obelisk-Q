@@ -58,7 +58,7 @@ export function AgentLogsView() {
             className="glass-card rounded-[24px] px-5 py-4 transition-all border border-black/[0.04]"
           >
             <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[9px] uppercase text-[#9CA3AF] tracking-[0.15em]" style={SANS}>
+              <p className="text-[9px] uppercase text-black/40 tracking-[0.15em]" style={SANS}>
                 {node.label}
               </p>
               <div className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[node.status] || STATUS_DOT.idle}`} />
@@ -66,7 +66,7 @@ export function AgentLogsView() {
             <div className="text-[13px] text-[#0a0a0a] mb-0.5" style={SANS}>
               {STATUS_LABELS[node.status] || node.status}
             </div>
-            <p className="text-[9px] text-[#9CA3AF]" style={SANS}>{node.sub}</p>
+            <p className="text-[9px] text-black/30" style={SANS}>{node.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -84,13 +84,13 @@ export function AgentLogsView() {
             whileHover={{ y: -4, backgroundColor: "rgba(255,255,255,0.95)" }}
             className="glass-card rounded-[32px] px-10 py-8 transition-all"
           >
-            <p className="text-[10px] uppercase text-[#9CA3AF] mb-4 tracking-[0.24em]" style={SANS}>
+            <p className="text-[10px] uppercase text-black/40 mb-4 tracking-[0.24em]" style={SANS}>
               <MagneticText disabled text={s.label} />
             </p>
             <div className="text-[28px] text-[#0a0a0a] mb-2 tabular-nums" style={{ ...SANS, letterSpacing: "-0.04em" }}>
               <MagneticText disabled text={s.value} />
             </div>
-            <p className="text-[10px] text-[#9CA3AF] uppercase tracking-wider" style={SANS}>{s.sub}</p>
+            <p className="text-[10px] text-black/30 uppercase tracking-wider" style={SANS}>{s.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -111,22 +111,22 @@ export function AgentLogsView() {
         <div className="space-y-0">
           {logs.slice(0, 5).map((log, i) => (
             <div key={i} className="flex items-center gap-4 py-3.5 border-t border-black/[0.03]">
-              <span className="text-[11px] text-[#9CA3AF] w-20 tabular-nums" style={MONO}>
+              <span className="text-[11px] text-black/50 w-20 tabular-nums" style={MONO}>
                 {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
               </span>
               <div className="px-3 py-1 rounded-full text-[9px] w-16 text-center tracking-wider"
                 style={{ 
                   ...SANS,
                   background: log.action === 'rebalance' ? 'rgba(52, 211, 153, 0.08)' : 'rgba(0,0,0,0.03)',
-                  color: log.action === 'rebalance' ? 'rgb(5, 150, 105)' : 'rgba(0,0,0,0.3)'
+                  color: log.action === 'rebalance' ? 'rgb(5, 150, 105)' : 'rgba(0,0,0,0.5)'
                 }}
               >
                 {log.action.toUpperCase()}
               </div>
-              <span className="flex-1 text-[13px] text-[#0a0a0a]/60 truncate" style={SANS}>
+              <span className="flex-1 text-[13px] text-[#0a0a0a]/80 truncate" style={SANS}>
                 {log.message}
               </span>
-              <span className="text-[11px] text-[#0a0a0a]/40 w-8 text-right tabular-nums" style={MONO}>
+              <span className="text-[11px] text-[#0a0a0a]/60 w-8 text-right tabular-nums" style={MONO}>
                 {log.score}
               </span>
             </div>
@@ -145,9 +145,9 @@ export function AgentLogsView() {
           <div className="space-y-1">
             <div className="text-[22px] text-[#0a0a0a] flex flex-wrap gap-x-[0.3em]" style={SANS_TIGHT}>
               <MagneticText disabled text="Multi-Agent" />
-              <span className="text-[#9CA3AF]"><MagneticText disabled text="Supervisory Feed" /></span>
+              <span className="text-black/40"><MagneticText disabled text="Supervisory Feed" /></span>
             </div>
-            <p className="text-[11px] text-[#9CA3AF]" style={SANS}>Arbitrated cross-node telemetry from the Obelisk controller. 0% local disk persistence.</p>
+            <p className="text-[11px] text-black/40" style={SANS}>Arbitrated cross-node telemetry from the Obelisk controller. 0% local disk persistence.</p>
           </div>
           
           <motion.div 
@@ -198,12 +198,12 @@ function LogRow({ log }: { log: any }) {
       className="flex flex-col py-4 border-b border-black/[0.03] group hover:bg-black/[0.01] transition-colors -mx-3 px-3 rounded-xl"
     >
       <div className="flex items-center gap-4 md:gap-5">
-        <span className="text-[11px] text-[#9CA3AF] w-[72px] tabular-nums" style={MONO}>
+        <span className="text-[11px] text-black/50 w-[72px] tabular-nums" style={MONO}>
           {timeStr}
         </span>
 
         {log.node && (
-          <span className="text-[9px] text-[#0a0a0a]/25 uppercase tracking-[0.08em] w-28 truncate hidden md:inline" style={SANS}>
+          <span className="text-[9px] text-[#0a0a0a]/40 uppercase tracking-[0.08em] w-28 truncate hidden md:inline" style={SANS}>
             {log.node}
           </span>
         )}
@@ -219,7 +219,7 @@ function LogRow({ log }: { log: any }) {
           {isAction ? "ACTION" : log.cycle ? `C${String(log.cycle).padStart(3, '0')}` : "LOG"}
         </div>
 
-        <span className="flex-1 text-[13px] text-[#0a0a0a]/50 group-hover:text-[#0a0a0a]/70 transition-colors leading-relaxed truncate" style={SANS}>
+        <span className="flex-1 text-[13px] text-[#0a0a0a]/80 group-hover:text-[#0a0a0a] transition-colors leading-relaxed truncate" style={SANS}>
           {message}
         </span>
 
@@ -232,7 +232,7 @@ function LogRow({ log }: { log: any }) {
               className="h-full bg-black/10 rounded-full" 
             />
           </div>
-          <span className="text-[11px] text-[#0a0a0a]/30 w-7 text-right tabular-nums" style={MONO}>
+          <span className="text-[11px] text-[#0a0a0a]/60 w-7 text-right tabular-nums" style={MONO}>
             {log.score}
           </span>
         </div>
