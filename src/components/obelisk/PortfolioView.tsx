@@ -20,7 +20,7 @@ const POSITIONS = [
 
 export function PortfolioView() {
   const { sessionToken, logout } = useAuth();
-  const { txHistory, explorerUrl, vaultStats, withdrawPartial, txState } = useVault();
+  const { txHistory, explorerUrl, vaultStats, withdraw, withdrawPartial, txState } = useVault();
   const logos = useTokenLogos();
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [metrics, setMetrics] = useState({
@@ -167,7 +167,12 @@ export function PortfolioView() {
           <motion.button
             onClick={() => {
               if (withdrawAmount && !isInsufficient && parseFloat(withdrawAmount) > 0) {
-                withdrawPartial(withdrawAmount);
+                // If it's a full withdrawal (or very close), use the no-args withdraw() for safety
+                if (parseFloat(withdrawAmount) >= balance) {
+                  withdraw();
+                } else {
+                  withdrawPartial(withdrawAmount);
+                }
               }
             }}
             disabled={isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isPending}

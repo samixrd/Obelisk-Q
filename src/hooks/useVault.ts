@@ -86,6 +86,21 @@ function encodeGetBalance(address: string): string {
   return "0x" + sig + padded;
 }
 
+/** 
+ * Safe parse units for 18 decimals without floating point issues 
+ */
+function parseMntToWei(amount: string): bigint {
+  try {
+    const parts = amount.split(".");
+    let whole = parts[0] || "0";
+    let fraction = parts[1] || "";
+    fraction = fraction.slice(0, 18).padEnd(18, "0");
+    return BigInt(whole + fraction);
+  } catch (e) {
+    return 0n;
+  }
+}
+
 function encodeGetVaultStats(): string {
   // keccak256("getVaultStats()") first 4 bytes = 0x3f4c3e1f
   return "0x3f4c3e1f";
@@ -300,9 +315,8 @@ export function useVault(): VaultState {
     setTxHash(null);
 
     try {
-      const valueHex = "0x" + (
-        BigInt(Math.floor(parseFloat(amountMnt) * 1e18)).toString(16)
-      );
+      const amountWei = parseMntToWei(amountMnt);
+      const valueHex = "0x" + amountWei.toString(16);
 
       const hash = await (eth.request as Function)({
         method: "eth_sendTransaction",
@@ -563,7 +577,7 @@ export function useVault(): VaultState {
     setTxError(null);
 
     try {
-      const amountWei = BigInt(Math.floor(parseFloat(amountMnt) * 1e18));
+      const amountWei = parseMntToWei(amountMnt);
       const selector = "8e19899e"; // keccak256("withdrawPartial(uint256)")
       const paddedAmount = amountWei.toString(16).padStart(64, "0");
       const data = "0x" + selector + paddedAmount;
