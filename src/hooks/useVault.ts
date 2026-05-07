@@ -59,13 +59,14 @@ export interface VaultState {
   withdraw:        () => Promise<void>;
   withdrawPartial: (amountMnt: string) => Promise<void>;
   vaultStats:      VaultStats | null;
-  txState:     TxStatus;
-  setTxState:  (s: TxStatus) => void;
-  txHash:      string | null;
-  txError:     string | null;
-  isConnected: boolean;
-  address:     string | null;
-  connect:     () => Promise<void>;
+  txState:         TxStatus;
+  setTxState:      (s: TxStatus) => void;
+  txHash:          string | null;
+  txError:         string | null;
+  isConnected:     boolean;
+  isWrongNetwork:  boolean;
+  address:         string | null;
+  connect:         () => Promise<void>;
   refreshStats: () => Promise<void>;
   confirmations: number;
   explorerUrl: (hash: string) => string;
@@ -119,6 +120,7 @@ export function useVault(): VaultState {
   const [vaultStats, setVaultStats] = useState<VaultStats | null>(null);
   const [confirmations, setConfirmations] = useState<number>(0);
   const [txHistory, setTxHistory] = useState<TransactionRecord[]>([]);
+  const [isWrongNetwork, setIsWrongNetwork] = useState(false);
   const simBalanceRef = useRef<Record<string, number>>({});  // memory-only sim balance (0% disk)
 
   const CHAIN_ID = import.meta.env.VITE_CHAIN_ID || "5000";
@@ -137,6 +139,57 @@ export function useVault(): VaultState {
 
   const isConnected = !!address;
 
+  // ── Network Guard Helper ────────────────────────────────────────────────
+  const checkAndSwitchNetwork = useCallback(async (): Promise<boolean> => {
+    const eth = (window as Window & { ethereum?: any }).ethereum;
+    if (!eth) return false;
+
+    try {
+      const currentChainId = await eth.request({ method: "eth_chainId" });
+      if (currentChainId === CHAIN_ID_HEX) {
+        setIsWrongNetwork(false);
+        return true;
+      }
+
+      setIsWrongNetwork(true);
+      
+      // Try to switch
+      try {
+        await eth.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: CHAIN_ID_HEX }],
+        });
+        setIsWrongNetwork(false);
+        return true;
+      } catch (switchError: any) {
+        // This error code indicates that the chain has not been added to MetaMask.
+        if (switchError.code === 4902) {
+          try {
+            await eth.request({
+              method: "wallet_addEthereumChain",
+              params: [{
+                chainId:         CHAIN_ID_HEX,
+                chainName:       CHAIN_NAME,
+                nativeCurrency:  { name: "MNT", symbol: "MNT", decimals: 18 },
+                rpcUrls:         [RPC_URL],
+                blockExplorerUrls: [EXPLORER_URL],
+              }],
+            });
+            setIsWrongNetwork(false);
+            return true;
+          } catch (addError) {
+            console.error("Failed to add network:", addError);
+          }
+        }
+        console.error("Failed to switch network:", switchError);
+      }
+      return false;
+    } catch (err) {
+      console.error("Network check failed:", err);
+      return false;
+    }
+  }, []);
+
   // ── Connect wallet ──────────────────────────────────────────────────────
   const connect = useCallback(async () => {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
@@ -152,29 +205,12 @@ export function useVault(): VaultState {
       }) as string[];
       setAddress(accounts[0]);
 
-      // Switch to configured Mantle network
-      try {
-        await (eth.request as Function)({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: CHAIN_ID_HEX }],
-        });
-      } catch {
-        // Chain not added yet — add it
-        await (eth.request as Function)({
-          method: "wallet_addEthereumChain",
-          params: [{
-            chainId:         CHAIN_ID_HEX,
-            chainName:       CHAIN_NAME,
-            nativeCurrency:  { name: "MNT", symbol: "MNT", decimals: 18 },
-            rpcUrls:         [RPC_URL],
-            blockExplorerUrls: [EXPLORER_URL],
-          }],
-        });
-      }
+      // Guard network immediately after connecting
+      await checkAndSwitchNetwork();
     } catch (err) {
       console.error("Connect failed:", err);
     }
-  }, []);
+  }, [checkAndSwitchNetwork]);
 
   // ── Read vault stats ────────────────────────────────────────────────────
   const refreshStats = useCallback(async () => {
@@ -246,6 +282,18 @@ export function useVault(): VaultState {
   const deposit = useCallback(async (amountMnt: string) => {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
     if (!eth || !address) { await connect(); return; }
+    
+    // Safety check before processing
+    const onCorrectNetwork = await checkAndSwitchNetwork();
+    if (!onCorrectNetwork) {
+      toast({
+        title: "Wrong Network",
+        description: "Please switch to Mantle Mainnet to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!VAULT_ADDRESS)   { alert("Contract not deployed yet."); return; }
 
     setTxState("waiting");
@@ -371,6 +419,17 @@ export function useVault(): VaultState {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
     if (!eth || !address) return;
 
+    // Safety check
+    const onCorrectNetwork = await checkAndSwitchNetwork();
+    if (!onCorrectNetwork) {
+      toast({
+        title: "Wrong Network",
+        description: "Please switch to Mantle Mainnet to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setTxState("waiting");
     setTxError(null);
 
@@ -489,6 +548,17 @@ export function useVault(): VaultState {
   const withdrawPartial = useCallback(async (amountMnt: string) => {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
     if (!eth || !address) return;
+
+    // Safety check
+    const onCorrectNetwork = await checkAndSwitchNetwork();
+    if (!onCorrectNetwork) {
+      toast({
+        title: "Wrong Network",
+        description: "Please switch to Mantle Mainnet to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     setTxState("waiting");
     setTxError(null);
@@ -625,14 +695,21 @@ export function useVault(): VaultState {
       .catch(console.error);
 
     const handler = (accounts: string[]) => setAddress(accounts[0] ?? null);
+    const chainHandler = () => checkAndSwitchNetwork();
+
     (eth as Record<string, Function>).on?.("accountsChanged", handler);
-    return () => (eth as Record<string, Function>).removeListener?.("accountsChanged", handler);
-  }, []);
+    (eth as Record<string, Function>).on?.("chainChanged", chainHandler);
+
+    return () => {
+      (eth as Record<string, Function>).removeListener?.("accountsChanged", handler);
+      (eth as Record<string, Function>).removeListener?.("chainChanged", chainHandler);
+    };
+  }, [checkAndSwitchNetwork]);
 
   return { 
     deposit, withdraw, withdrawPartial, 
     vaultStats, txState, setTxState, txHash, txError, 
-    isConnected, address, connect, refreshStats,
+    isConnected, isWrongNetwork, address, connect, refreshStats,
     confirmations, explorerUrl: getExplorerUrl,
     txHistory
   };

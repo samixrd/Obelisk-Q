@@ -10,7 +10,7 @@ interface VaultCardProps {
 }
 
 export function VaultCard({ onOpenInvest }: VaultCardProps) {
-  const { vaultStats, deposit, connect, isConnected, txState } = useVault();
+  const { vaultStats, deposit, connect, isConnected, isWrongNetwork, txState } = useVault();
   const { usdy, meth } = useYieldData();
   const logos = useTokenLogos();
   const [depositAmount, setDepositAmount] = useState("");
@@ -255,7 +255,13 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               </svg>
               Processing...
             </span>
-          ) : (isConnected ? "Deposit" : "Connect Wallet")}
+          ) : isWrongNetwork ? (
+            "Switch to Mantle"
+          ) : isConnected ? (
+            "Deposit"
+          ) : (
+            "Connect Wallet"
+          )}
         </motion.button>
       </div>
 

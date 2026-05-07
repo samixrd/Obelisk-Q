@@ -32,6 +32,30 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
     setWalletLoading(true);
     setError(null);
     try {
+      // Force Mantle Mainnet switch before sign-in
+      const chainIdHex = "0x1388"; // 5000
+      try {
+        await eth.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: chainIdHex }],
+        });
+      } catch (switchError: any) {
+        if (switchError.code === 4902) {
+          await eth.request({
+            method: "wallet_addEthereumChain",
+            params: [{
+              chainId:         chainIdHex,
+              chainName:       "Mantle",
+              nativeCurrency:  { name: "MNT", symbol: "MNT", decimals: 18 },
+              rpcUrls:         ["https://rpc.mantle.xyz"],
+              blockExplorerUrls: ["https://mantlescan.xyz"],
+            }],
+          });
+        } else {
+          throw new Error("Please switch to Mantle Mainnet to continue.");
+        }
+      }
+
       const accounts = await eth.request({ method: "eth_requestAccounts" }) as string[];
       if (!accounts[0]) throw new Error("No account returned.");
       const address = accounts[0];
