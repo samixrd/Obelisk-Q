@@ -45,7 +45,7 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
   }, []);
 
   // Use real-time balance or fallback to 0
-  const balanceValue = vaultStats?.totalBalance ?? "0.00";
+  const balanceValue = vaultStats?.userBalance ?? "0.00";
   const [whole, decimal] = balanceValue.split(".");
 
   return (

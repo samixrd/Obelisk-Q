@@ -9,3 +9,4 @@ langchain-community==0.0.28
 langchain-openai==0.0.8
 chromadb==0.4.24
 web3==6.15.1
+python-dotenv==1.0.1

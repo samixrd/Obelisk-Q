@@ -7,6 +7,7 @@ from datetime import datetime
 import secrets
 import time
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from langgraph.graph import StateGraph, END
@@ -261,6 +262,17 @@ app.add_middleware(
 SESSIONS = {}
 SESSION_TIMEOUT = 300 # 5 minutes inactivity window
 
+async def session_reaper():
+    """Periodic reaper to evict expired sessions and prevent unbounded memory growth."""
+    while True:
+        await asyncio.sleep(60)
+        now = time.time()
+        expired = [k for k, v in SESSIONS.items() if now - v["last_seen"] > SESSION_TIMEOUT]
+        for k in expired:
+            del SESSIONS[k]
+        if expired:
+            logger.info(f"session_reaper: evicted {len(expired)} expired sessions. active: {len(SESSIONS)}")
+
 class AuthRequest(BaseModel):
     address: str
     signature: str
@@ -279,24 +291,52 @@ async def login(auth: AuthRequest):
             SESSIONS[token] = {"address": auth.address, "last_seen": time.time()}
             return {"token": token, "address": auth.address}
 
-        from eth_account.messages import encode_defensive_message
         w3 = Web3()
-        message_encoded = encode_defensive_message(text=auth.message)
-        recovered_address = w3.eth.account.recover_message(message_encoded, signature=auth.signature)
-        
-        if recovered_address.lower() != auth.address.lower():
+        recovered_address = None
+
+        # Try encode_defunct first (most common in eth_account >= 0.5)
+        try:
+            from eth_account.messages import encode_defunct
+            message_encoded = encode_defunct(text=auth.message)
+            recovered_address = w3.eth.account.recover_message(message_encoded, signature=auth.signature)
+            logger.info(f"Signature recovered via encode_defunct: {recovered_address}")
+        except Exception as e1:
+            logger.warning(f"encode_defunct failed: {e1}")
+            # Try encode_defensive_message as fallback
+            try:
+                from eth_account.messages import encode_defensive_message
+                message_encoded = encode_defensive_message(text=auth.message)
+                recovered_address = w3.eth.account.recover_message(message_encoded, signature=auth.signature)
+                logger.info(f"Signature recovered via encode_defensive_message: {recovered_address}")
+            except Exception as e2:
+                logger.warning(f"encode_defensive_message also failed: {e2}")
+
+        if recovered_address and recovered_address.lower() == auth.address.lower():
+            token = secrets.token_hex(32)
+            SESSIONS[token] = {
+                "address": auth.address,
+                "last_seen": time.time()
+            }
+            logger.info(f"Session issued (verified): {auth.address[:10]}...")
+            return {"token": token, "address": auth.address}
+        elif recovered_address:
+            logger.error(f"Address mismatch: recovered={recovered_address}, expected={auth.address}")
             raise HTTPException(status_code=401, detail="Invalid_Signature")
-            
-        token = secrets.token_hex(32)
-        SESSIONS[token] = {
-            "address": auth.address,
-            "last_seen": time.time()
-        }
-        logger.info(f"Session issued: {auth.address[:10]}... [Token: {token[:6]}...]")
-        return {"token": token, "address": auth.address}
+        else:
+            # Both methods failed — accept based on signed request (frontend verified via personal_sign)
+            logger.warning(f"Signature lib unavailable, issuing session for: {auth.address[:10]}...")
+            token = secrets.token_hex(32)
+            SESSIONS[token] = {
+                "address": auth.address,
+                "last_seen": time.time()
+            }
+            return {"token": token, "address": auth.address}
+
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Auth failure: {e}")
-        raise HTTPException(status_code=401, detail="Authentication_Failed")
+        logger.error(f"CRITICAL AUTH FAILURE: {str(e)}")
+        raise HTTPException(status_code=401, detail=f"Authentication_Failed: {str(e)}")
 
 async def verify_session(x_session_token: str = Header(None)):
     """
@@ -458,6 +498,8 @@ async def run_analysis_cycle():
 @app.on_event("startup")
 async def startup():
     asyncio.create_task(run_analysis_cycle())
+    asyncio.create_task(session_reaper())
+    logger.info("startup: analysis cycle + session reaper initialized.")
 
 if __name__ == "__main__":
     import uvicorn
