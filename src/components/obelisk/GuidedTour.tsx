@@ -29,7 +29,7 @@ const steps = [
       </>
     ),
     body: "Your Stability Score is a composite of three weighted signals: 40% Yield Differential, 35% Volatility Penalty, and 25% Liquidity Depth. A 5% circuit breaker halts all allocation if the score drops 5 points within any 60-minute window. In Contraction regimes the confidence threshold rises to 75%; in Expansion or Consolidation markets it sits at 60-65%.",
-    accent: "Today, you're at 98.",
+    accent: null,
     note: "The engine identifies Market Regimes (Expansion/Consolidation/Contraction) through Hidden Markov Model analysis of volatility to dynamically assign Control Transfer Functions (H(s)).",
   },
   {
@@ -109,10 +109,16 @@ export function GuidedTour({ open, onClose }: Props) {
                 <p className="text-[10px] uppercase tracking-luxe text-muted-foreground mb-8">
                   {s.eyebrow} · A guided tour
                 </p>
-                <h2 className="text-4xl md:text-5xl font-medium tracking-tight text-foreground leading-[1.1] text-balance">
+                <h2 
+                  className="text-4xl md:text-5xl font-medium tracking-tight text-foreground leading-[1.1] text-balance"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
                   {s.title}
                 </h2>
-                <p className="mt-8 text-base text-muted-foreground max-w-md mx-auto leading-relaxed text-balance">
+                <p 
+                  className="mt-8 text-base text-muted-foreground max-w-md mx-auto leading-relaxed text-balance"
+                  style={{ fontFamily: "'Inter', sans-serif" }}
+                >
                   {s.body}
                 </p>
                 {s.note && (
@@ -128,7 +134,7 @@ export function GuidedTour({ open, onClose }: Props) {
                   >
                     <p
                       className="text-[9px] uppercase text-muted-foreground mb-2"
-                      style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace" }}
+                      style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}
                     >
                       Regime Detection
                     </p>
@@ -136,6 +142,7 @@ export function GuidedTour({ open, onClose }: Props) {
                       className="text-[11px] leading-relaxed"
                       style={{
                         fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: 300,
                         color: "var(--muted-foreground)",
                         letterSpacing: "0.01em",
                       }}
@@ -144,7 +151,7 @@ export function GuidedTour({ open, onClose }: Props) {
                     </p>
                   </motion.div>
                 )}
-                <p className="mt-6 italic text-sm text-primary">{s.accent}</p>
+                {s.accent && <p className="mt-6 italic text-sm text-primary" style={{ fontFamily: "'Inter', sans-serif" }}>{s.accent}</p>}
               </motion.div>
             </AnimatePresence>
 
@@ -152,6 +159,7 @@ export function GuidedTour({ open, onClose }: Props) {
               <button
                 onClick={next}
                 className="group inline-flex items-center gap-3 px-8 py-3 bg-black rounded-full text-[11px] uppercase tracking-luxe text-white hover:bg-black/90 transition-colors duration-300"
+                style={{ fontFamily: "'Inter', sans-serif" }}
               >
                 {step === steps.length - 1 ? "Begin" : "Continue"}
                 <IconArrowRight size={12} />
