@@ -17,12 +17,7 @@ type AppStage = "landing" | "auth" | "dashboard";
 function AppInner() {
   const { walletAddress, setWalletAddress, setAuthMethod, logout } = useAuth();
 
-  const [stage, setStage] = useState<AppStage>(() => {
-    const hasSession = localStorage.getItem("obelisk_session");
-    // If we have a session, we might want to start at 'auth' to prompt wallet connect
-    // or 'dashboard' if we assume they are already good (but they need walletAddress).
-    return hasSession ? "auth" : "landing";
-  });
+  const [stage, setStage] = useState<AppStage>("landing");
   
   const [walletModal,    setWalletModal]     = useState(false);
   const [sidebarOpen,    setSidebarOpen]     = useState(false);

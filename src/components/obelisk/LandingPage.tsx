@@ -85,13 +85,13 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         className="landing-hero-content"
       >
         <div className="landing-hero-heading" style={{ fontWeight: 700 }}>
-          <MagneticText text="Multi-agent wealth" />
-          <MagneticText text="orchestrated by AI." />
+          <MagneticText text="Autonomous Investment" />
+          <MagneticText text="Intelligence on Mantle." />
         </div>
         <p className="landing-hero-sub">
-          The first autonomous RWA navigator powered by the Antigravity Protocol.
+          The first autonomous RWA navigator orchestrated by Obelisk Q.
           <br />
-          Multi-agent LangGraph architecture on Mantle Network with ERC-8004 identity.
+          Experience institutional-grade yield through a multi-agent LangGraph architecture.
         </p>
         <div className="landing-hero-actions">
           <button onClick={onLaunch} className="landing-hero-cta">
@@ -138,21 +138,27 @@ function FeaturesSection() {
   const features = [
     {
       num: "01",
-      title: "Regime Switching Model",
-      desc: "Dynamic market adaptation using Hidden Markov Models. The engine classifies regimes—Expansion, Consolidation, or Contraction—and adjusts control transfer functions with built-in hysteresis to prevent rapid switching.",
-      tags: ["HMM", "Regime Detection", "Hysteresis"],
+      title: "AI-Managed",
+      desc: "Dynamic market adaptation using Hidden Markov Models. The engine classifies regimes—Expansion, Consolidation, or Contraction—and adjusts allocations automatically.",
+      tags: ["HMM", "Regime Detection", "Autonomous"],
     },
     {
       num: "02",
-      title: "LangGraph Orchestration",
-      desc: "Specialized agents for RWA analysis and risk management coordinated by a central supervisor. High-frequency reasoning with Azure GPT-4o.",
-      tags: ["Multi-Agent", "LangGraph", "Azure AI"],
+      title: "Real Yield",
+      desc: "Access institutional-grade yields from tokenized US Treasuries (USDY) and liquid-staked ETH (mETH) on Mantle Network.",
+      tags: ["USDY", "mETH", "Mantle"],
     },
     {
       num: "03",
-      title: "ERC-8004 Identity",
-      desc: "Trustless on-chain reputation and identity. Every decision is verifiable, creating a portable audit trail of agent competence on Mantle.",
-      tags: ["ERC-8004", "Identity", "Transparent"],
+      title: "Instant Withdrawal",
+      desc: "Non-custodial architecture allows you to withdraw your capital at any time. No lock-up periods or minimum deposit requirements.",
+      tags: ["Non-Custodial", "Liquid", "Instant"],
+    },
+    {
+      num: "04",
+      title: "Mantle Optimized",
+      desc: "Built exclusively for the Mantle ecosystem to leverage high-performance execution and deep liquidity for RWA assets.",
+      tags: ["L2", "Performance", "Ecosystem"],
     },
   ];
 
