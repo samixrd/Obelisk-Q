@@ -60,6 +60,7 @@ export function AgentLogsView() {
             <div className="flex items-center justify-between mb-2.5">
               <p className="text-[9px] uppercase text-black/40 tracking-[0.15em]" style={SANS}>
                 {node.label}
+              </p>
               <div className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[node.status] || STATUS_DOT.idle}`} />
             </div>
             <div className="text-[13px] text-[#0a0a0a] mb-0.5" style={SANS}>
