@@ -14,7 +14,7 @@ export interface YieldData {
 
 const FALLBACK_USDY = 5.0;
 const FALLBACK_METH = 3.5;
-const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
+const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "";
 
 export function useYieldData(): YieldData {
   const [data, setData] = useState<YieldData>({

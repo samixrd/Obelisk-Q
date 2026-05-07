@@ -84,7 +84,7 @@ export function useAgentFeed() {
     lastActionAt: null,
   });
 
-  const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
+  const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "";
 
   useEffect(() => {
     let useAutonomous = false;
