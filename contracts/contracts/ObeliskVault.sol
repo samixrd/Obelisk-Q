@@ -69,6 +69,9 @@ contract ObeliskVault {
 
     function deposit() external payable {
         require(!vaultPaused, "Paused");
+        if (balances[msg.sender] == 0) {
+            depositors.push(msg.sender);
+        }
         balances[msg.sender] += msg.value;
         totalDeposited += msg.value;
         emit Deposited(msg.sender, msg.value, block.timestamp);
@@ -161,6 +164,21 @@ contract ObeliskVault {
 
     function togglePause() external onlyOwner {
         vaultPaused = !vaultPaused;
+    }
+
+    // ── View ──────────────────────────────────────────────────────────────
+
+    function getBalance(address user) external view returns (uint256) {
+        return balances[user];
+    }
+
+    function getVaultStats() external view returns (
+        uint256 _totalDeposited,
+        uint256 _depositorCount,
+        uint256 _lastScore,
+        bool    _paused
+    ) {
+        return (totalDeposited, depositors.length, 85, vaultPaused); // Fixed 85 for score as it's handled by agent now
     }
 
     receive() external payable {}

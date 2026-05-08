@@ -27,7 +27,6 @@ const RPC_URL = import.meta.env.VITE_RPC_URL || "https://rpc.mantle.xyz";
 const VAULT_ABI = [
   "function deposit() payable",
   "function withdraw()",
-  "function withdrawPartial(uint256 amount)",
   "function getBalance(address user) view returns (uint256)",
   "function getVaultStats() view returns (uint256, uint256, uint256, bool)",
   "function vaultPaused() view returns (bool)",
