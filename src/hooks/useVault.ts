@@ -143,13 +143,28 @@ export function useVault(): VaultState {
     return `${EXPLORER_URL}/tx/${hash}`;
   }, []);
 
-  // Transaction history — memory-only, resets each session (0% disk persistence)
+  // Load history from localStorage on mount
+  useEffect(() => {
+    if (!address) return;
+    const saved = localStorage.getItem(`obelisk_txs_${address}`);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setTxHistory(parsed.map((tx: any) => ({ ...tx, timestamp: new Date(tx.timestamp) })));
+      } catch (e) { console.error("Failed to parse history", e); }
+    }
+  }, [address]);
+
+  // Transaction history — persisted to localStorage
   const saveTx = useCallback((record: TransactionRecord) => {
+    if (!address) return;
     setTxHistory(prev => {
       const filtered = prev.filter(r => r.hash !== record.hash);
-      return [record, ...filtered].slice(0, 20);
+      const updated = [record, ...filtered].slice(0, 20);
+      localStorage.setItem(`obelisk_txs_${address}`, JSON.stringify(updated));
+      return updated;
     });
-  }, []);
+  }, [address]);
 
   const isConnected = !!address;
 
