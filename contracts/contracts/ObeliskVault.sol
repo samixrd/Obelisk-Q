@@ -118,18 +118,22 @@ contract ObeliskVault {
         } else {
             // Swap MNT to target
             uint256 mntToSwap = address(this).balance;
-            if (mntToSwap > 0.01 ether) { // Leave some dust for gas if needed (though vault doesn't pay gas)
-                address[] memory path = new address[](2);
-                path[0] = WMNT;
-                path[1] = targetToken;
-                
-                ROUTER.swapExactETHForTokens{value: mntToSwap}(
-                    0, 
-                    path, 
-                    address(this), 
-                    block.timestamp + 600
-                );
-            }
+            require(mntToSwap > 0.01 ether, "Insufficient MNT for swap");
+
+            uint256 amountToSwap = mntToSwap - 0.01 ether; // Keep 0.01 MNT buffer
+            
+            address[] memory path = new address[](2);
+            path[0] = WMNT;
+            path[1] = targetToken;
+            
+            uint[] memory amounts = ROUTER.swapExactETHForTokens{value: amountToSwap}(
+                0, 
+                path, 
+                address(this), 
+                block.timestamp + 600
+            );
+
+            emit Rebalanced(targetToken, amountToSwap, amounts[1]);
         }
     }
 
