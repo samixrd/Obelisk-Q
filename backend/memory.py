@@ -44,13 +44,20 @@ class AgentMemory:
 
         # Cloud-only connection — no local fallback exists
         logger.info(f"memory: connecting to cloud vector store at {cloud_url}")
-        self.client = chromadb.HttpClient(host=cloud_url)
-        self.ef = embedding_functions.DefaultEmbeddingFunction()
-        self.collection = self.client.get_or_create_collection(
-            name="obelisk_memories",
-            embedding_function=self.ef
-        )
-        logger.info("memory: cloud vector store connected. 0% local disk.")
+        try:
+            self.client = chromadb.HttpClient(host=cloud_url)
+            self.ef = embedding_functions.DefaultEmbeddingFunction()
+            self.collection = self.client.get_or_create_collection(
+                name="obelisk_memories",
+                embedding_function=self.ef
+            )
+            logger.info("memory: cloud vector store connected. 0% local disk.")
+        except Exception as e:
+            logger.warning(f"memory: could not connect to cloud vector store: {e}")
+            if require_cloud:
+                raise EnvironmentError("FATAL: CHROMA_CLOUD_URL_REQUIRED=true but connection failed.") from e
+            logger.warning("memory: falling back to stateless mode.")
+            self.collection = None
 
     def store_cycle(self, score: int, regime: str, decision: str, analyst_insight: str):
         if not self.collection:
