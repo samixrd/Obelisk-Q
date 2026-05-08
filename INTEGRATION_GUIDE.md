@@ -1,10 +1,9 @@
-/**
- * Obelisk Q — Deployment & Integration Guide
- * Follow these steps to "Make it Real".
- */
+# Obelisk Q — Deployment & Integration Guide
 
-# 1. Start the AI Engine (Python Backend)
-The AI Engine handles Q-Score, Market Regimes, and Performance calculations.
+Follow these steps to synchronize the AI engine, smart contracts, and frontend on Mantle Mainnet.
+
+## 1. Start the AI Engine (Python Backend)
+The AI Engine handles Q-Score, Market Regimes, and On-chain Rebalancing.
 
 ```bash
 cd backend
@@ -17,10 +16,10 @@ source venv/bin/activate
 pip install -r requirements.txt
 python main.py
 ```
-*Backend will run at http://localhost:8000*
+*Ensure `.env` in `backend/` contains your `AGENT_PRIVATE_KEY` and `VAULT_ADDRESS`.*
 
-# 2. Start the Frontend (Vite)
-Ensure your `.env.local` has the correct `VITE_SCORING_API_URL`.
+## 2. Start the Frontend (Vite)
+Ensure your `.env.local` has the correct `VITE_VAULT_ADDRESS` and `VITE_RPC_URL`.
 
 ```bash
 # In the root directory
@@ -28,16 +27,24 @@ npm install
 npm run dev
 ```
 
-# 3. Deploy the Smart Contract (Mantle Network)
-If you haven't deployed the `ObeliskVault.sol` yet, use a tool like Remix or Hardhat with the following parameters:
+## 3. Deployment Configuration (Mantle Mainnet)
+The project is optimized for Mantle Mainnet (Chain ID: 5000).
 
-- **Contract**: `ObeliskVault.sol`
-- **Network**: Mantle Sepolia (Chain ID: 5003)
-- **Constructor Argument**: Your Agent/Owner address.
+*   **Current Vault**: `0xfEDA159aA1E6fE3aEDd0AD566d492D2C94591389`
+*   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`
+*   **Buffer**: 0.01 MNT (Hardcoded for safety)
 
-Update `VITE_VAULT_ADDRESS` in `.env.local` after deployment.
+### Agent Authorization
+If you redeploy, you must authorize the agent address in the vault:
+```bash
+cd contracts
+npx hardhat run scripts/setAgent.js --network mantle
+```
 
-# 4. Verification
-- **Purple Cards**: Now fetch live data from the Mantle blockchain.
-- **Yellow Cards**: Now fetch live data from the FastAPI backend.
-- **Activity Feed**: Real-time logs are now pushed from the AI Engine.
+## 4. Verification & Telemetry
+*   **Vault Stats**: Fetch live on-chain data (MNT/mETH/USDY balances).
+*   **Agent Logs**: Real-time decision transparency via the FastAPI websocket.
+*   **Rebalance Cooldown**: Configured to 300 seconds (5 minutes) by default in `main.py`.
+
+---
+**Warning**: Never commit your `.env` files. The `INTEGRATION_GUIDE.md` is for architecture reference.
