@@ -89,9 +89,9 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
           <MagneticText text="Intelligence on Mantle." />
         </div>
         <p className="landing-hero-sub">
-          The first autonomous RWA navigator orchestrated by Obelisk Q.
+          The first autonomous wealth navigator optimized for Mantle Mainnet.
           <br />
-          Experience institutional-grade yield through a multi-agent LangGraph architecture.
+          Experience automated yields from mETH and USDY through a verified multi-agent LangGraph architecture.
         </p>
         <div className="landing-hero-actions">
           <button onClick={onLaunch} className="landing-hero-cta">
@@ -122,12 +122,12 @@ function ProtocolSection() {
           <MagneticText text="agent resilience" />
         </div>
         <p className="landing-section-desc">
-          Obelisk Q uses the Antigravity Protocol to ensure 100% uptime through 500ms agent timeouts and state-bypass logic.
+          Obelisk Q uses the Antigravity Protocol to ensure 100% uptime and deterministic rebalancing through verified cross-token unwind logic on Mantle Mainnet.
         </p>
         <ul className="landing-bullet-list">
-          <li><span className="landing-bullet" /> multi-agent supervisor (analyst, risk, tracker)</li>
-          <li><span className="landing-bullet" /> sovereign agent identity with erc-8004</li>
-          <li><span className="landing-bullet" /> stateless 0% local disk execution on azure cloud</li>
+          <li><span className="landing-bullet" /> multi-agent supervisor (analyst, risk, tracker, executor)</li>
+          <li><span className="landing-bullet" /> verified swapExactNativeForTokens DEX integration</li>
+          <li><span className="landing-bullet" /> automatic cross-token switching (mETH ↔ USDY)</li>
         </ul>
       </motion.div>
     </section>
@@ -150,15 +150,15 @@ function FeaturesSection() {
     },
     {
       num: "03",
-      title: "Instant Withdrawal",
-      desc: "Non-custodial architecture allows you to withdraw your capital at any time. No lock-up periods or minimum deposit requirements.",
-      tags: ["Non-Custodial", "Liquid", "Instant"],
+      title: "Liquid Buffer",
+      desc: "Optimized gas management with a fixed 0.01 MNT buffer. The engine ensures the vault always remains liquid and ready for rebalancing without external intervention.",
+      tags: ["Gas Optimized", "Liquid", "Verified"],
     },
     {
       num: "04",
-      title: "Mantle Optimized",
-      desc: "Built exclusively for the Mantle ecosystem to leverage high-performance execution and deep liquidity for RWA assets.",
-      tags: ["L2", "Performance", "Ecosystem"],
+      title: "Mantle Mainnet",
+      desc: "Fully operational at 0xfEDA...1389. Orchestrated rebalancing with Merchant Moe to capture deep liquidity and institutional RWA spreads.",
+      tags: ["Mainnet", "Verified", "Merchant Moe"],
     },
   ];
 
