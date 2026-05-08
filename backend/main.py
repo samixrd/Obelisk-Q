@@ -396,7 +396,8 @@ workflow.add_edge("executor", END)
 graph = workflow.compile()
 
 # ─── Server Configuration ─────────────────────────────────────────────────────
-TRANSACTIONS_FILE = "transactions.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+TRANSACTIONS_FILE = os.path.join(BASE_DIR, "transactions.json")
 AGENT_TRANSACTIONS = []
 
 def load_transactions():
@@ -405,7 +406,6 @@ def load_transactions():
         try:
             with open(TRANSACTIONS_FILE, "r") as f:
                 AGENT_TRANSACTIONS = json.load(f)
-                logger.info(f"Loaded {len(AGENT_TRANSACTIONS)} transactions from disk.")
         except Exception as e:
             logger.error(f"Failed to load transactions: {e}")
 
@@ -416,6 +416,7 @@ app = FastAPI(title="Obelisk Q Engine")
 @app.get("/api/agent/transactions")
 async def get_agent_transactions():
     """Returns the last 10 agent transactions, newest first."""
+    load_transactions() # Reload from disk to sync across PM2 workers
     return AGENT_TRANSACTIONS[::-1][:10]
 
 def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A"):
