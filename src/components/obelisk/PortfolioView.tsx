@@ -7,6 +7,7 @@ import { MagneticText } from "./MagneticText";
 import { useTokenLogos } from "@/hooks/useTokenLogos";
 import { useAuth } from "@/context/AuthContext";
 import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { AgentTransactions } from "./AgentTransactions";
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -298,7 +299,7 @@ export function PortfolioView() {
             ))}
           </div>
         </div>
-      </div>
+      <AgentTransactions />
 
     </motion.div>
   );

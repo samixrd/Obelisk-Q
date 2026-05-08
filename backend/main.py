@@ -180,9 +180,25 @@ async def executor_node(state: AgentState):
     # ── Q-SCORE FINAL AUTHORITY: executor cannot override the scoring engine ──
     if risk_score < 60 or action == "HOLD":
         logger.info(f"executor: standby mode. score={risk_score}, action={action}. threshold=60. skipping.")
+        record_transaction(
+            action=action, 
+            score=risk_score, 
+            regime=state["data"].get("regime", "N/A"), 
+            cycle=state.get("cycle_count", 0),
+            status="hold",
+            tx_hash="N/A"
+        )
         return {"messages": [AIMessage(content=f"executor: hold mode. score {risk_score}. q-score engine is final authority. no on-chain action taken.")], "data": state["data"]}
     
     if not WEB3_AVAILABLE:
+        record_transaction(
+            action=action, 
+            score=risk_score, 
+            regime=state["data"].get("regime", "N/A"), 
+            cycle=state.get("cycle_count", 0),
+            status="simulation",
+            tx_hash="SIM_0x" + secrets.token_hex(20)
+        )
         return {"messages": [AIMessage(content="executor: web3 unavailable. operating in simulation.")], "data": state["data"]}
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
@@ -271,7 +287,30 @@ async def executor_node(state: AgentState):
 
                 res = await loop.run_in_executor(None, sync_tx)
                 if "aborting" in res:
+                    record_transaction(
+                        action=action, 
+                        score=risk_score, 
+                        regime=state["data"].get("regime", "N/A"), 
+                        cycle=state.get("cycle_count", 0),
+                        status="failed",
+                        tx_hash="N/A"
+                    )
                     return res
+                
+                # Extract hash if present
+                h = "N/A"
+                if "0x" in res:
+                    h = res.split("0x")[-1]
+                    if not h.startswith("0x"): h = "0x" + h
+
+                record_transaction(
+                    action=action, 
+                    score=risk_score, 
+                    regime=state["data"].get("regime", "N/A"), 
+                    cycle=state.get("cycle_count", 0),
+                    status="success",
+                    tx_hash=h
+                )
                 LAST_REBALANCE_TIME = time.time()
                 return res
             except Exception as e:
@@ -323,8 +362,32 @@ workflow.add_edge("executor", END)
 graph = workflow.compile()
 
 # ─── Server Configuration ─────────────────────────────────────────────────────
+AGENT_TRANSACTIONS = []
 
 app = FastAPI(title="Obelisk Q Engine")
+
+@app.get("/api/agent/transactions")
+async def get_agent_transactions(session: dict = Depends(verify_session)):
+    """Returns the last 10 agent transactions, newest first."""
+    return AGENT_TRANSACTIONS[::-1][:10]
+
+def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A"):
+    global AGENT_TRANSACTIONS
+    vault_addr = os.getenv("VAULT_ADDRESS", "0xfEDA159aA1E6fE3aEDd0AD566d492D2C94591389")
+    entry = {
+        "tx_hash": tx_hash,
+        "action": action,
+        "score": score,
+        "regime": regime,
+        "timestamp": datetime.now().isoformat(),
+        "status": status,
+        "vault_address": vault_addr,
+        "cycle_number": cycle
+    }
+    AGENT_TRANSACTIONS.append(entry)
+    if len(AGENT_TRANSACTIONS) > 50:
+        AGENT_TRANSACTIONS.pop(0)
+    logger.info(f"tx_recorded: cycle={cycle} action={action} status={status}")
 
 app.add_middleware(
     CORSMiddleware,
