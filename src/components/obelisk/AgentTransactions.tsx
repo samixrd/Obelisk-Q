@@ -18,6 +18,7 @@ export function AgentTransactions() {
   const { sessionToken } = useAuth();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const fetchTransactions = async () => {
     try {
@@ -26,9 +27,14 @@ export function AgentTransactions() {
       if (res.ok) {
         const data = await res.json();
         setTransactions(data);
+        setErrorMsg(null);
+      } else {
+        setErrorMsg(`HTTP Error: ${res.status} from ${API_BASE}`);
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to fetch transactions:", err);
+      const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
+      setErrorMsg(`Fetch failed to ${API_BASE}. Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -90,7 +96,9 @@ export function AgentTransactions() {
           </div>
 
           <div className="space-y-1">
-            {loading && transactions.length === 0 ? (
+            {errorMsg ? (
+              <div className="py-20 text-center text-[12px] uppercase text-rose-500 font-bold tracking-widest">{errorMsg}</div>
+            ) : loading && transactions.length === 0 ? (
               <div className="py-20 text-center text-[12px] uppercase text-black/20 tracking-widest">Initializing Feed...</div>
             ) : transactions.length === 0 ? (
               <div className="py-20 text-center text-[12px] uppercase text-black/20 tracking-widest">No Transactions Recorded</div>
