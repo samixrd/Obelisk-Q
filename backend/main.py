@@ -187,7 +187,7 @@ async def executor_node(state: AgentState):
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
-    vault_addr = os.getenv("VAULT_ADDRESS", "0xEF3513E91098e893b6a925A018120d920aF90cD4")
+    vault_addr = os.getenv("VAULT_ADDRESS", "0xfEDA159aA1E6fE3aEDd0AD566d492D2C94591389")
     
     if not private_key or not vault_addr:
         logger.error(f"executor: pre-flight check failed. private_key={bool(private_key)}, vault_addr={vault_addr}")
@@ -195,9 +195,9 @@ async def executor_node(state: AgentState):
 
     current_time = time.time()
     elapsed = current_time - LAST_REBALANCE_TIME
-    if elapsed < 3600:
-        logger.info(f"executor: cooldown active. {int(3600 - elapsed)}s remaining. skipping.")
-        return {"messages": [AIMessage(content="executor: rebalance cooldown active (1h). skipping on-chain execution.")], "data": state["data"]}
+    if elapsed < 300:
+        logger.info(f"executor: cooldown active. {int(300 - elapsed)}s remaining. skipping.")
+        return {"messages": [AIMessage(content="executor: rebalance cooldown active (300s). skipping on-chain execution.")], "data": state["data"]}
     
     logger.info(f"executor: preparing transaction for action={action} on vault={vault_addr}")
 

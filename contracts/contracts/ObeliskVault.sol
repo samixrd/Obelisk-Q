@@ -116,7 +116,14 @@ contract ObeliskVault {
             _unwindToken(METH, type(uint256).max);
             _unwindToken(USDY, type(uint256).max);
         } else {
-            // Swap MNT to target
+            // 1. Unwind the OTHER token if we have any
+            if (targetToken == METH) {
+                _unwindToken(USDY, type(uint256).max);
+            } else if (targetToken == USDY) {
+                _unwindToken(METH, type(uint256).max);
+            }
+
+            // 2. Swap MNT to target
             uint256 mntToSwap = address(this).balance;
             require(mntToSwap > 0.01 ether, "Insufficient MNT for swap");
 
