@@ -179,6 +179,7 @@ async def executor_node(state: AgentState):
     
     # ── Q-SCORE FINAL AUTHORITY: executor cannot override the scoring engine ──
     if risk_score < 60 or action == "HOLD":
+        logger.info(f"executor: standby mode. score={risk_score}, action={action}. threshold=60. skipping.")
         return {"messages": [AIMessage(content=f"executor: hold mode. score {risk_score}. q-score engine is final authority. no on-chain action taken.")], "data": state["data"]}
     
     if not WEB3_AVAILABLE:
@@ -186,14 +187,19 @@ async def executor_node(state: AgentState):
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
-    vault_addr = os.getenv("VAULT_ADDRESS", "0x884527a8Be884989C8f69Cf1A563a4B138743908")
+    vault_addr = os.getenv("VAULT_ADDRESS", "0x5a8Ea5c771cA62BdA32F0D18809f2E79186e170B")
     
     if not private_key or not vault_addr:
+        logger.error(f"executor: pre-flight check failed. private_key={bool(private_key)}, vault_addr={vault_addr}")
         return {"messages": [AIMessage(content="executor: pre-flight check. vault address or key missing. operating in simulation.")], "data": state["data"]}
 
     current_time = time.time()
-    if current_time - LAST_REBALANCE_TIME < 3600:
+    elapsed = current_time - LAST_REBALANCE_TIME
+    if elapsed < 3600:
+        logger.info(f"executor: cooldown active. {int(3600 - elapsed)}s remaining. skipping.")
         return {"messages": [AIMessage(content="executor: rebalance cooldown active (1h). skipping on-chain execution.")], "data": state["data"]}
+    
+    logger.info(f"executor: preparing transaction for action={action} on vault={vault_addr}")
 
     vault_abi = [{
         "inputs": [
@@ -229,14 +235,19 @@ async def executor_node(state: AgentState):
                     vault_address = w3.to_checksum_address(vault_addr)
                     # Check vault balance
                     balance = w3.eth.get_balance(vault_address)
+                    logger.info(f"executor: rpc check - vault balance = {w3.from_wei(balance, 'ether')} MNT")
+                    
                     if balance == 0:
                         return "executor: vault balance is 0. aborting execution."
                         
                     account = w3.eth.account.from_key(private_key)
+                    logger.info(f"executor: rpc check - account {account.address[:10]}... ready")
+                    
                     contract = w3.eth.contract(address=vault_address, abi=vault_abi)
                     
                     nonce = w3.eth.get_transaction_count(account.address)
                     gas_price = w3.eth.gas_price
+                    logger.info(f"executor: rpc check - nonce={nonce}, gas_price={w3.from_wei(gas_price, 'gwei')} gwei")
                     
                     tx = contract.functions.rebalance(target_token).build_transaction({
                         'chainId': 5000,
@@ -247,6 +258,8 @@ async def executor_node(state: AgentState):
                     
                     signed_tx = w3.eth.account.sign_transaction(tx, private_key=private_key)
                     raw_tx = getattr(signed_tx, 'rawTransaction', getattr(signed_tx, 'raw_transaction', None))
+                    
+                    logger.info("executor: broadcasting transaction to mantle...")
                     tx_hash = w3.eth.send_raw_transaction(raw_tx)
                     
                     return f"executor: signal synchronized. tx sent on mantle mainnet: {w3.to_hex(tx_hash)}"
