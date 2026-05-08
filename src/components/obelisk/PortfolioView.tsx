@@ -299,6 +299,7 @@ export function PortfolioView() {
             ))}
           </div>
         </div>
+      </div>
       <AgentTransactions />
 
     </motion.div>
