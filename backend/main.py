@@ -249,12 +249,17 @@ async def executor_node(state: AgentState):
                     gas_price = w3.eth.gas_price
                     logger.info(f"executor: rpc check - nonce={nonce}, gas_price={w3.from_wei(gas_price, 'gwei')} gwei")
                     
+                    # ── Build transaction with explicit parameters ──
                     tx = contract.functions.rebalance(target_token).build_transaction({
+                        'from': account.address,
+                        'value': 0,
                         'chainId': 5000,
-                        'gas': 500000, # DEX swaps need more gas
+                        'gas': 500000, 
                         'gasPrice': gas_price,
                         'nonce': nonce,
                     })
+                    
+                    logger.info(f"executor: tx built. value={tx.get('value')}, to={tx.get('to')}")
                     
                     signed_tx = w3.eth.account.sign_transaction(tx, private_key=private_key)
                     raw_tx = getattr(signed_tx, 'rawTransaction', getattr(signed_tx, 'raw_transaction', None))
