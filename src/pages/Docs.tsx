@@ -9,22 +9,22 @@ const Docs = () => {
     {
       id: "overview",
       title: "Overview",
-      content: "Obelisk Q is an institutional-grade RWA (Real World Asset) navigator powered by the Antigravity Protocol. It leverages a multi-agent LangGraph architecture to orchestrate wealth management with autonomous precision on the Mantle Network.",
+      content: "Obelisk Q is an institutional-grade wealth navigator optimized for Mantle Mainnet. It leverages a multi-agent LangGraph architecture to orchestrate capital across growth assets like mETH and yield-bearing RWAs like USDY with autonomous precision.",
     },
     {
       id: "protocol",
       title: "Antigravity Protocol",
-      content: "The Antigravity Protocol ensures 100% high-availability for agent operations. By implementing 500ms timeout windows and state-bypass logic, the protocol guarantees that agent intelligence remains resilient even under extreme network conditions.",
+      content: "The Antigravity Protocol ensures 100% high-availability and deterministic execution. By implementing verified cross-token unwind logic, the protocol guarantees that transitions between assets (e.g., mETH ↔ USDY) are executed with zero idle capital and optimized gas efficiency.",
     },
     {
       id: "architecture",
       title: "Multi-Agent Architecture",
-      content: "Our system utilizes specialized agents—Analyst, Risk, and Tracker—coordinated by a central supervisor. This 'swarm' intelligence allows for high-frequency reasoning and real-time adaptation to market regimes using Hidden Markov Models.",
+      content: "The system utilizes a specialized swarm—Analyst, Risk, Tracker, and Executor—hosted on Azure. This architecture allows for real-time market regime detection (Expansion, Contraction, Consolidation) and automated on-chain rebalancing whenever market confidence thresholds are met.",
     },
     {
-      id: "identity",
-      title: "ERC-8004 Identity",
-      content: "Every decision made by an Obelisk agent is tied to a sovereign on-chain identity via ERC-8004. This creates a portable, immutable audit trail of competence and ensures full transparency for institutional participants.",
+      id: "mainnet",
+      title: "Mantle Mainnet Integration",
+      content: "Obelisk Q is fully operational on Mantle Mainnet. The protocol utilizes a custom ObeliskVault (0xfEDA...1389) integrated with Merchant Moe liquidity pools, maintaining a 0.01 MNT safety buffer for continuous, touchless rebalancing.",
     },
   ];
 
