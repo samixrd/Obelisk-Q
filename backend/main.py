@@ -533,6 +533,12 @@ async def get_agent_transactions():
 
 def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A"):
     global AGENT_TRANSACTIONS
+    
+    # Only record real on-chain transactions (must start with 0x)
+    if not tx_hash or not str(tx_hash).startswith("0x") or str(tx_hash).startswith("SIM_"):
+        logger.info(f"tx_recorded: skipped {status} log for cycle {cycle} (no real on-chain hash)")
+        return
+
     vault_addr = os.getenv("VAULT_ADDRESS", "0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa")
     entry = {
         "tx_hash": tx_hash,

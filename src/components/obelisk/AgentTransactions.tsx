@@ -25,10 +25,16 @@ export function AgentTransactions() {
       const res = await fetch("/api/agent/transactions");
       if (res.ok) {
         const data = await res.json();
-        setTransactions(data);
+        // Frontend-side safety filter for real on-chain transactions
+        const realTxs = data.filter((tx: Transaction) => 
+          tx.tx_hash && 
+          tx.tx_hash !== "N/A" && 
+          !tx.tx_hash.startsWith("SIM_")
+        );
+        setTransactions(realTxs);
         setErrorMsg(null);
       } else {
-        setErrorMsg(`HTTP Error: ${res.status} from ${API_BASE}`);
+        setErrorMsg(`HTTP Error: ${res.status}`);
       }
     } catch (err: any) {
       console.error("Failed to fetch transactions:", err);
@@ -40,7 +46,7 @@ export function AgentTransactions() {
 
   useEffect(() => {
     fetchTransactions();
-    const interval = setInterval(fetchTransactions, 15000);
+    const interval = setInterval(fetchTransactions, 60000);
     return () => clearInterval(interval);
   }, [sessionToken]);
 
@@ -99,7 +105,7 @@ export function AgentTransactions() {
             ) : loading && transactions.length === 0 ? (
               <div className="py-20 text-center text-[12px] uppercase text-black/20 tracking-widest">Initializing Feed...</div>
             ) : transactions.length === 0 ? (
-              <div className="py-20 text-center text-[12px] uppercase text-black/20 tracking-widest">No Transactions Recorded</div>
+              <div className="py-20 text-center text-[12px] uppercase text-black/20 tracking-widest text-center">No transactions yet</div>
             ) : (
               transactions.map((tx, i) => (
                 <motion.div
