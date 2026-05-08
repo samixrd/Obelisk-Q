@@ -43,7 +43,7 @@ contract ObeliskVault {
     IRouter public constant ROUTER = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a);
     address public constant WMNT   = 0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8;
     address public constant METH   = 0xcDA86A272531e8640cD7F1a92c01839911B90bb0;
-    address public constant USDY   = 0x5bE26527e817998A7206475496fDE1e68957c5A6;
+    address public constant USDY   = 0x5bE26527e817998A7206475496fDE1E68957c5A6;
 
     mapping(address => uint256) public balances;
     address[] private depositors;
@@ -132,7 +132,7 @@ contract ObeliskVault {
 
     // ── Internal ──────────────────────────────────────────────────────────
 
-    function _unwindToken(address token, uint256 amountMntNeeded) internal {
+    function _unwindToken(address token, uint256 /* amountMntNeeded */) internal {
         uint256 tokenBal = IERC20(token).balanceOf(address(this));
         if (tokenBal == 0) return;
 
