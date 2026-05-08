@@ -69,6 +69,10 @@ last_known_state = {
 LAST_REBALANCE_TIME = 0
 CURRENT_POSITION = "MNT"  # Global position state
 
+ERC20_ABI = [
+    {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+]
+
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 async def rwa_analyst_node(state: AgentState):
@@ -260,7 +264,7 @@ async def executor_node(state: AgentState):
 
     # ── 500ms ANTIGRAVITY SLA & EXPONENTIAL BACKOFF: 3 attempts ──
     async def _rpc_execute():
-        global LAST_REBALANCE_TIME
+        global LAST_REBALANCE_TIME, CURRENT_POSITION
         loop = asyncio.get_event_loop()
         for attempt in range(3):
             try:
@@ -275,7 +279,18 @@ async def executor_node(state: AgentState):
                     logger.info(f"executor: rpc check - vault balance = {w3.from_wei(balance, 'ether')} MNT")
                     
                     if balance == 0:
-                        return "executor: vault balance is 0. aborting execution."
+                        return "aborting|executor: vault balance is 0. aborting execution."
+                    
+                    # ── PRE-FLIGHT BALANCE CHECKS ──
+                    if action == "mETH" and balance < w3.to_wei(0.01, 'ether'):
+                        return "aborting|executor: insufficient MNT for mETH swap. skipping."
+                    
+                    if action == "USDY":
+                        # Check mETH balance before swapping to USDY
+                        m_contract = w3.eth.contract(address=w3.to_checksum_address(METH_ADDR), abi=ERC20_ABI)
+                        m_balance = m_contract.functions.balanceOf(vault_address).call()
+                        if m_balance == 0:
+                            return "aborting|executor: insufficient mETH for USDY swap. skipping."
                         
                     account = w3.eth.account.from_key(private_key)
                     logger.info(f"executor: rpc check - account {account.address[:10]}... ready")
@@ -327,37 +342,48 @@ async def executor_node(state: AgentState):
                     except Exception as re:
                         logger.warning(f"executor: regime sync failed (non-critical): {re}")
 
-                    return f"executor: signal synchronized. tx sent on mantle mainnet: {w3.to_hex(tx_hash)}"
+                    tx_hash_hex = w3.to_hex(tx_hash)
+                    logger.info(f"executor: waiting for receipt for {tx_hash_hex}...")
+                    try:
+                        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+                        status = "success" if receipt.status == 1 else "failed"
+                        return f"{status}|{tx_hash_hex}|executor: signal synchronized. tx {'confirmed' if status == 'success' else 'reverted'} on mantle mainnet: {tx_hash_hex}"
+                    except Exception as te:
+                        logger.warning(f"executor: receipt timeout or error: {te}")
+                        return f"failed|{tx_hash_hex}|executor: tx sent but receipt check failed: {str(te)[:40]}"
 
                 res = await loop.run_in_executor(None, sync_tx)
                 if "aborting" in res:
-                    record_transaction(
-                        action=action, 
-                        score=risk_score, 
-                        regime=state["data"].get("regime", "N/A"), 
-                        cycle=state.get("cycle_count", 0),
-                        status="failed",
-                        tx_hash="N/A"
-                    )
-                    return res
+                    msg = res.split("|")[-1] if "|" in res else res
+                    logger.info(msg)
+                    return {"messages": [AIMessage(content=msg)], "data": state["data"]}
                 
-                # Extract hash if present
-                h = "N/A"
-                if "0x" in res:
-                    h = res.split("0x")[-1]
-                    if not h.startswith("0x"): h = "0x" + h
+                # Extract status and hash from piped response
+                try:
+                    parts = res.split("|")
+                    status = parts[0]
+                    h = parts[1]
+                    msg = parts[2]
+                except Exception:
+                    status = "failed"
+                    h = "N/A"
+                    msg = res
 
                 record_transaction(
                     action=action, 
                     score=risk_score, 
                     regime=state["data"].get("regime", "N/A"), 
                     cycle=state.get("cycle_count", 0),
-                    status="success",
+                    status=status,
                     tx_hash=h
                 )
-                LAST_REBALANCE_TIME = time.time()
-                CURRENT_POSITION = action # Update current position state
-                return res
+                
+                if status == "success":
+                    old_pos = CURRENT_POSITION
+                    LAST_REBALANCE_TIME = time.time()
+                    CURRENT_POSITION = action # Update current position state
+                    logger.info(f"executor: position updated: {old_pos} → {CURRENT_POSITION}")
+                return msg
             except Exception as e:
                 if attempt == 2:
                     raise e
@@ -710,8 +736,47 @@ async def run_analysis_cycle():
             logger.error(f"cycle {cycle_num}: unhandled error: {e}")
             await asyncio.sleep(5)  # back off before retrying
 
+async def sync_current_position():
+    """Reads vault state from blockchain on startup to set CURRENT_POSITION."""
+    global CURRENT_POSITION
+    if not WEB3_AVAILABLE:
+        logger.warning("sync_current_position: web3 unavailable. starting in MNT.")
+        return
+
+    rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
+    vault_addr = os.getenv("VAULT_ADDRESS", "0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa")
+    METH_ADDR = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0"
+    USDY_ADDR = "0x5bE26527e817998A7206475496fDE1e68957c5A6"
+
+    try:
+        loop = asyncio.get_event_loop()
+        def _check_balances():
+            w3 = Web3(Web3.HTTPProvider(rpc_url))
+            if not w3.is_connected(): return "MNT"
+            
+            abi = ERC20_ABI
+            v_sum = w3.to_checksum_address(vault_addr)
+            
+            meth = w3.eth.contract(address=w3.to_checksum_address(METH_ADDR), abi=abi)
+            usdy = w3.eth.contract(address=w3.to_checksum_address(USDY_ADDR), abi=abi)
+            
+            m_bal = meth.functions.balanceOf(v_sum).call()
+            u_bal = usdy.functions.balanceOf(v_sum).call()
+            
+            logger.info(f"sync_current_position: vault balances - mETH: {m_bal}, USDY: {u_bal}")
+            if m_bal > 10**14: return "mETH" # > 0.0001
+            if u_bal > 10**14: return "USDY"
+            return "MNT"
+
+        pos = await loop.run_in_executor(None, _check_balances)
+        CURRENT_POSITION = pos
+        logger.info(f"sync_current_position: synchronized. CURRENT_POSITION={CURRENT_POSITION}")
+    except Exception as e:
+        logger.error(f"sync_current_position: failed to sync: {e}")
+
 @app.on_event("startup")
 async def startup():
+    await sync_current_position() # Determine current position from blockchain
     asyncio.create_task(run_analysis_cycle())
     asyncio.create_task(session_reaper())
     logger.info("startup: analysis cycle + session reaper initialized.")
