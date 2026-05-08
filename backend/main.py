@@ -66,6 +66,8 @@ last_known_state = {
     "hysteresis": 0
 }
 
+LAST_REBALANCE_TIME = 0
+
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 async def rwa_analyst_node(state: AgentState):
@@ -170,12 +172,13 @@ async def tracker_node(state: AgentState):
 
 async def executor_node(state: AgentState):
     logger.info("node: executor | validating q-score authority")
+    global LAST_REBALANCE_TIME
     
     action = state["data"].get("action", "HOLD")
     risk_score = state["data"].get("risk", {}).get("score", 90)
     
     # ── Q-SCORE FINAL AUTHORITY: executor cannot override the scoring engine ──
-    if risk_score < 85 or action == "HOLD":
+    if risk_score < 60 or action == "HOLD":
         return {"messages": [AIMessage(content=f"executor: hold mode. score {risk_score}. q-score engine is final authority. no on-chain action taken.")], "data": state["data"]}
     
     if not WEB3_AVAILABLE:
@@ -183,22 +186,67 @@ async def executor_node(state: AgentState):
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
-    vault_addr = os.getenv("VAULT_ADDRESS")
+    vault_addr = os.getenv("VAULT_ADDRESS", "0x884527a8Be884989C8f69Cf1A563a4B138743908")
     
     if not private_key or not vault_addr:
         return {"messages": [AIMessage(content="executor: pre-flight check. vault address or key missing. operating in simulation.")], "data": state["data"]}
 
+    current_time = time.time()
+    if current_time - LAST_REBALANCE_TIME < 3600:
+        return {"messages": [AIMessage(content="executor: rebalance cooldown active (1h). skipping on-chain execution.")], "data": state["data"]}
+
+    vault_abi = [{
+        "inputs": [
+            {"internalType": "uint256", "name": "confidenceScore", "type": "uint256"},
+            {"internalType": "bool", "name": "shouldRebalance", "type": "bool"}
+        ],
+        "name": "recordAllocation",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    }]
+
     # ── 500ms ANTIGRAVITY SLA & EXPONENTIAL BACKOFF: 3 attempts ──
     async def _rpc_execute():
+        global LAST_REBALANCE_TIME
         loop = asyncio.get_event_loop()
         for attempt in range(3):
             try:
-                w3 = await loop.run_in_executor(None, lambda: Web3(Web3.HTTPProvider(rpc_url, request_kwargs={"timeout": 0.5})))
-                connected = await loop.run_in_executor(None, w3.is_connected)
-                if not connected:
-                    raise ConnectionError("rpc unreachable")
-                account = w3.eth.account.from_key(private_key)
-                return f"executor: signal synchronized. account {account.address[:6]}... active on mantle mainnet."
+                def sync_tx():
+                    w3 = Web3(Web3.HTTPProvider(rpc_url))
+                    if not w3.is_connected():
+                        raise ConnectionError("rpc unreachable")
+                        
+                    vault_address = w3.to_checksum_address(vault_addr)
+                    # Check vault balance
+                    balance = w3.eth.get_balance(vault_address)
+                    if balance == 0:
+                        return "executor: vault balance is 0. aborting execution."
+                        
+                    account = w3.eth.account.from_key(private_key)
+                    contract = w3.eth.contract(address=vault_address, abi=vault_abi)
+                    
+                    nonce = w3.eth.get_transaction_count(account.address)
+                    gas_price = w3.eth.gas_price
+                    
+                    tx = contract.functions.recordAllocation(risk_score, True).build_transaction({
+                        'chainId': 5000,
+                        'gas': 300000,
+                        'gasPrice': gas_price,
+                        'nonce': nonce,
+                    })
+                    
+                    signed_tx = w3.eth.account.sign_transaction(tx, private_key=private_key)
+                    raw_tx = getattr(signed_tx, 'rawTransaction', getattr(signed_tx, 'raw_transaction', None))
+                    tx_hash = w3.eth.send_raw_transaction(raw_tx)
+                    
+                    return f"executor: signal synchronized. tx sent on mantle mainnet: {w3.to_hex(tx_hash)}"
+
+                res = await loop.run_in_executor(None, sync_tx)
+                if "aborting" in res:
+                    return res
+                LAST_REBALANCE_TIME = time.time()
+                return res
             except Exception as e:
                 if attempt == 2:
                     raise e
@@ -206,7 +254,8 @@ async def executor_node(state: AgentState):
                 await asyncio.sleep(0.1 * (2 ** attempt))
 
     try:
-        content = await asyncio.wait_for(_rpc_execute(), timeout=2.0)
+        content = await asyncio.wait_for(_rpc_execute(), timeout=10.0)
+        logger.info(content)
     except asyncio.TimeoutError:
         logger.warning("executor: rpc call exceeded total sla limit. state locked.")
         content = "executor: rpc timeout. sla breached. state locked. retrying next cycle."
