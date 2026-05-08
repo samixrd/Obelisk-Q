@@ -271,14 +271,33 @@ export function useAgentWebSocket() {
     };
 
     connectWs();
+    
+    // ── Polling Fallback: Fetch real stats from /api/stats every 10s ──
+    const statsInterval = setInterval(async () => {
+      if (!sessionToken) return;
+      try {
+        const res = await fetch('/api/stats', {
+          headers: { 'x-session-token': sessionToken }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          // Prioritize backend data over autonomous drift
+          if (typeof data.score === 'number') setScore(data.score);
+          if (typeof data.regime === 'string') setRegime(data.regime);
+        }
+      } catch (err) {
+        console.warn("Polling /api/stats failed:", err);
+      }
+    }, 10000);
 
     return () => {
       wsRef.current?.close();
+      clearInterval(statsInterval);
       if (heartbeatRef.current) clearInterval(heartbeatRef.current);
       if (telemetryRef.current) clearInterval(telemetryRef.current);
       if (countdownRef.current) clearInterval(countdownRef.current);
     };
-  }, [startTelemetryEngine]);
+  }, [startTelemetryEngine, sessionToken, logout]);
 
   return { score, regime, countdown, lastMessage, liveYields, livePrices, agentLogs, nodes };
 }

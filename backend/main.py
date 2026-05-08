@@ -613,7 +613,9 @@ async def get_stats(session: dict = Depends(verify_session)):
     return {
         "total_aum": "1,240,500",
         "active_users": 142,
-        "vault_health": "Optimal"
+        "vault_health": "Optimal",
+        "score": last_known_state["risk"]["score"],
+        "regime": last_known_state["regime"]
     }
 
 class AppState:

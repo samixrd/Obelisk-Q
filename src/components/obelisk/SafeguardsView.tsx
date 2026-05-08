@@ -133,6 +133,17 @@ export function SafeguardsView() {
               <div style={{ fontWeight: 300 }}><MagneticText disabled text="within envelope" /></div>
             </div>
           </div>
+          
+          <div className="text-right">
+            <p className="text-[10px] uppercase text-muted-foreground mb-1 font-bold" style={{ letterSpacing: "0.2em" }}>Stability Score</p>
+            <div className="flex items-baseline justify-end gap-1">
+              <span className="text-3xl font-bold text-foreground">{score}</span>
+              <span className="text-[12px] text-muted-foreground font-medium">/ 100</span>
+            </div>
+            <p className={`text-[10px] uppercase font-bold mt-1 ${isHighVol ? "text-orange-600" : "text-emerald-600"}`} style={{ letterSpacing: "0.15em" }}>
+              Regime: {regime}
+            </p>
+          </div>
         </div>
         <StabilityGraph seed={17} height={160} />
       </div>
