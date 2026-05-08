@@ -1,0 +1,28 @@
+{
+  "name": "Obelisk Q Wealth Navigator",
+  "description": "Autonomous AI agent optimized for Mantle Mainnet yield rebalancing across mETH and USDY. Operates on a multi-agent LangGraph architecture with real-time market regime detection.",
+  "image": "https://raw.githubusercontent.com/samixrd/Obelisk-Q/main/public/logo.png",
+  "external_url": "https://github.com/samixrd/Obelisk-Q",
+  "capabilities": [
+    "yield_optimization",
+    "rwa_rebalancing",
+    "mantle_lsp_integration",
+    "market_regime_detection"
+  ],
+  "architecture": "LangGraph / multi-agent-swarm",
+  "version": "1.0.0",
+  "attributes": [
+    {
+      "trait_type": "Network",
+      "value": "Mantle Mainnet"
+    },
+    {
+      "trait_type": "Regime Detection",
+      "value": "HMM-inspired"
+    },
+    {
+      "trait_type": "Custodian",
+      "value": "ObeliskVault"
+    }
+  ]
+}

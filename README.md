@@ -4,8 +4,9 @@ Obelisk Q is the first autonomous wealth navigator optimized for Mantle Mainnet.
 
 ### 🏦 On-Chain Identity
 *   **Vault Address**: `0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa`
+*   **ERC-8004 Agent ID**: `0x5698E89Ec2396e02679ddde33c2BA78de88F7fce`
+*   **Identity Registry**: [ERC-8004 Explorer](https://explorer.mantle.xyz/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432)
 *   **Network**: Mantle Mainnet (Chain ID: 5000)
-*   **Registry**: [Mantle Explorer](https://explorer.mantle.xyz/address/0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa)
 
 ## 🏗️ System Architecture
 

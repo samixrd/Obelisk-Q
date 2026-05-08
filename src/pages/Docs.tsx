@@ -35,6 +35,11 @@ const Docs = () => {
       id: "target",
       title: "Target User Archetypes",
       content: "Obelisk Q serves three core segments: Passive Investors looking to automate idle capital, DeFi Participants seeking institutional-grade pool management, and Institutional Users requiring transparent, non-custodial RWA exposure on Mantle.",
+    },
+    {
+      id: "identity",
+      title: "Sovereign Agent Identity (ERC-8004)",
+      content: "The Obelisk Q agent is registered with a unique on-chain identity under the ERC-8004 standard (0x5698...7fce). This provides a decentralized trust layer and sovereign manifest that publicly defines the agent's capabilities, architecture, and rebalancing authority on Mantle Mainnet.",
     }
   ];
 

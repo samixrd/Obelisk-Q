@@ -365,7 +365,7 @@ function Footer() {
 
       <div className="landing-footer-bottom">
         <span className="landing-footer-ca">
-          Mantle Network · ERC-8004 Sovereign Identity · Antigravity Protocol
+          Mantle Mainnet · ERC-8004 Sovereign Identity · Antigravity Protocol
         </span>
       </div>
     </footer>
