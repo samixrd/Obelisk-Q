@@ -245,6 +245,7 @@ export function useVault(): VaultState {
       let count = 0;
       let score = 85;
       let paused = false;
+      let currentRegime = "Expansion";
 
       try {
         const statsRaw = await rpcCall("eth_call", [
@@ -259,14 +260,17 @@ export function useVault(): VaultState {
           score = parseInt(hex.slice(128, 192), 16);
           paused = parseInt(hex.slice(192, 256), 16) !== 0;
           
-          // Strings in ABI are dynamic; they have an offset and a length
-          // For simplicity since it's the 5th param:
-          const offset = parseInt(hex.slice(256, 320), 16) * 2;
-          const length = parseInt(hex.slice(offset, offset + 64), 16) * 2;
-          const strHex = hex.slice(offset + 64, offset + 64 + length);
           try {
-            const bytes = new Uint8Array(strHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
-            currentRegime = new TextDecoder().decode(bytes);
+            // dynamic string decoding (param 5)
+            const offset = parseInt(hex.slice(256, 320), 16) * 2;
+            if (hex.length >= offset + 64) {
+              const length = parseInt(hex.slice(offset, offset + 64), 16) * 2;
+              const strHex = hex.slice(offset + 64, offset + 64 + length);
+              if (strHex) {
+                const bytes = new Uint8Array(strHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+                currentRegime = new TextDecoder().decode(bytes).replace(/\0/g, ''); // cleanup null bytes
+              }
+            }
           } catch (e) {
             console.warn("Failed to decode regime string", e);
           }
