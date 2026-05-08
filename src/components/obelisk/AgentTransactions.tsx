@@ -22,8 +22,7 @@ export function AgentTransactions() {
 
   const fetchTransactions = async () => {
     try {
-      const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
-      const res = await fetch(`${API_BASE}/api/agent/transactions`);
+      const res = await fetch("/api/agent/transactions");
       if (res.ok) {
         const data = await res.json();
         setTransactions(data);
@@ -33,8 +32,7 @@ export function AgentTransactions() {
       }
     } catch (err: any) {
       console.error("Failed to fetch transactions:", err);
-      const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
-      setErrorMsg(`Fetch failed to ${API_BASE}. Error: ${err.message}`);
+      setErrorMsg(`Fetch failed. Error: ${err.message}`);
     } finally {
       setLoading(false);
     }

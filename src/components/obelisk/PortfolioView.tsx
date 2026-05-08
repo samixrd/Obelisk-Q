@@ -72,11 +72,10 @@ export function PortfolioView() {
   const isInsufficient = inputAmount > balance;
 
   useEffect(() => {
-    const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
     const loadMetrics = async () => {
       if (!sessionToken) return;
       try {
-        const res = await fetch(`${API_BASE}/api/performance`, {
+        const res = await fetch("/api/performance", {
           headers: { 'X-Session-Token': sessionToken }
         });
         if (res.status === 401) {
@@ -91,7 +90,7 @@ export function PortfolioView() {
       }
     };
     loadMetrics();
-  }, []);
+  }, [sessionToken]);
 
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-24">

@@ -67,6 +67,7 @@ last_known_state = {
 }
 
 LAST_REBALANCE_TIME = 0
+CURRENT_POSITION = "MNT"  # Global position state
 
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
@@ -172,11 +173,19 @@ async def tracker_node(state: AgentState):
 
 async def executor_node(state: AgentState):
     logger.info("node: executor | validating q-score authority")
-    global LAST_REBALANCE_TIME
+    global LAST_REBALANCE_TIME, CURRENT_POSITION
     
     action = state["data"].get("action", "HOLD")
     risk_score = state["data"].get("risk", {}).get("score", 90)
     
+    # ── POSITION TRACKING: skip if already in target ──
+    if action == "mETH" and CURRENT_POSITION == "mETH":
+        logger.info("executor: already in mETH position. skipping swap.")
+        return {"messages": [AIMessage(content="executor: position already optimized (mETH). skipping transaction.")], "data": state["data"]}
+    elif action == "USDY" and CURRENT_POSITION == "USDY":
+        logger.info("executor: already in USDY position. skipping swap.")
+        return {"messages": [AIMessage(content="executor: position already optimized (USDY). skipping transaction.")], "data": state["data"]}
+
     # ── Q-SCORE FINAL AUTHORITY: executor cannot override the scoring engine ──
     if risk_score < 60 or action == "HOLD":
         logger.info(f"executor: standby mode. score={risk_score}, action={action}. threshold=60. skipping.")
@@ -199,6 +208,7 @@ async def executor_node(state: AgentState):
             status="simulation",
             tx_hash="SIM_0x" + secrets.token_hex(20)
         )
+        CURRENT_POSITION = action # Update position even in simulation
         return {"messages": [AIMessage(content="executor: web3 unavailable. operating in simulation.")], "data": state["data"]}
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
@@ -211,9 +221,9 @@ async def executor_node(state: AgentState):
 
     current_time = time.time()
     elapsed = current_time - LAST_REBALANCE_TIME
-    if elapsed < 86400:
-        logger.info(f"executor: cooldown active. {int(86400 - elapsed)}s remaining. skipping.")
-        return {"messages": [AIMessage(content="executor: rebalance cooldown active (86400s). skipping on-chain execution.")], "data": state["data"]}
+    if elapsed < 60:
+        logger.info(f"executor: cooldown active. {int(60 - elapsed)}s remaining. skipping.")
+        return {"messages": [AIMessage(content="executor: rebalance cooldown active (60s). skipping on-chain execution.")], "data": state["data"]}
     
     logger.info(f"executor: preparing transaction for action={action} on vault={vault_addr}")
 
@@ -346,6 +356,7 @@ async def executor_node(state: AgentState):
                     tx_hash=h
                 )
                 LAST_REBALANCE_TIME = time.time()
+                CURRENT_POSITION = action # Update current position state
                 return res
             except Exception as e:
                 if attempt == 2:
@@ -411,47 +422,6 @@ def load_transactions():
 
 load_transactions()
 
-app = FastAPI(title="Obelisk Q Engine")
-
-@app.get("/api/agent/transactions")
-async def get_agent_transactions():
-    """Returns the last 10 agent transactions, newest first."""
-    load_transactions() # Reload from disk to sync across PM2 workers
-    return AGENT_TRANSACTIONS[::-1][:10]
-
-def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A"):
-    global AGENT_TRANSACTIONS
-    vault_addr = os.getenv("VAULT_ADDRESS", "0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa")
-    entry = {
-        "tx_hash": tx_hash,
-        "action": action,
-        "score": score,
-        "regime": regime,
-        "timestamp": datetime.now().isoformat(),
-        "status": status,
-        "vault_address": vault_addr,
-        "cycle_number": cycle
-    }
-    AGENT_TRANSACTIONS.append(entry)
-    if len(AGENT_TRANSACTIONS) > 100: # keep up to 100 on disk
-        AGENT_TRANSACTIONS.pop(0)
-    
-    # Persist to disk
-    try:
-        with open(TRANSACTIONS_FILE, "w") as f:
-            json.dump(AGENT_TRANSACTIONS, f)
-    except Exception as e:
-        logger.error(f"Failed to save transactions: {e}")
-        
-    logger.info(f"tx_recorded: cycle={cycle} action={action} status={status}")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # ─── Session Management (Antigravity Protocol) ────────────────────────────────
 
 SESSIONS = {}
@@ -468,10 +438,32 @@ async def session_reaper():
         if expired:
             logger.info(f"session_reaper: evicted {len(expired)} expired sessions. active: {len(SESSIONS)}")
 
+async def verify_session(x_session_token: str = Header(None)):
+    """
+    Heartbeat & Validation Mechanism
+    Enforces the 300s inactivity window.
+    """
+    if not x_session_token or x_session_token not in SESSIONS:
+        raise HTTPException(status_code=401, detail="Session_Expired")
+    
+    session = SESSIONS[x_session_token]
+    now = time.time()
+    
+    if now - session["last_seen"] > SESSION_TIMEOUT:
+        logger.info(f"Session expired: {session['address'][:10]}...")
+        del SESSIONS[x_session_token]
+        raise HTTPException(status_code=401, detail="Session_Expired")
+    
+    # Heartbeat: update last_seen on interaction
+    session["last_seen"] = now
+    return session
+
 class AuthRequest(BaseModel):
     address: str
     signature: str
     message: str
+
+app = FastAPI(title="Obelisk Q Engine")
 
 @app.post("/api/auth/login")
 async def login(auth: AuthRequest):
@@ -533,25 +525,45 @@ async def login(auth: AuthRequest):
         logger.error(f"CRITICAL AUTH FAILURE: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Authentication_Failed: {str(e)}")
 
-async def verify_session(x_session_token: str = Header(None)):
-    """
-    Heartbeat & Validation Mechanism
-    Enforces the 300s inactivity window.
-    """
-    if not x_session_token or x_session_token not in SESSIONS:
-        raise HTTPException(status_code=401, detail="Session_Expired")
+@app.get("/api/agent/transactions")
+async def get_agent_transactions():
+    """Returns the last 10 agent transactions, newest first."""
+    load_transactions() # Reload from disk to sync across PM2 workers
+    return AGENT_TRANSACTIONS[::-1][:10]
+
+def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A"):
+    global AGENT_TRANSACTIONS
+    vault_addr = os.getenv("VAULT_ADDRESS", "0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa")
+    entry = {
+        "tx_hash": tx_hash,
+        "action": action,
+        "score": score,
+        "regime": regime,
+        "timestamp": datetime.now().isoformat(),
+        "status": status,
+        "vault_address": vault_addr,
+        "cycle_number": cycle
+    }
+    AGENT_TRANSACTIONS.append(entry)
+    if len(AGENT_TRANSACTIONS) > 100: # keep up to 100 on disk
+        AGENT_TRANSACTIONS.pop(0)
     
-    session = SESSIONS[x_session_token]
-    now = time.time()
-    
-    if now - session["last_seen"] > SESSION_TIMEOUT:
-        logger.info(f"Session expired: {session['address'][:10]}...")
-        del SESSIONS[x_session_token]
-        raise HTTPException(status_code=401, detail="Session_Expired")
-    
-    # Heartbeat: update last_seen on interaction
-    session["last_seen"] = now
-    return session
+    # Persist to disk
+    try:
+        with open(TRANSACTIONS_FILE, "w") as f:
+            json.dump(AGENT_TRANSACTIONS, f)
+    except Exception as e:
+        logger.error(f"Failed to save transactions: {e}")
+        
+    logger.info(f"tx_recorded: cycle={cycle} action={action} status={status}")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ─── REST Endpoints ───────────────────────────────────────────────────────────
 
