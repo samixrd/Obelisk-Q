@@ -1,7 +1,7 @@
 const hre = require("hardhat");
 
 async function main() {
-  const vaultAddress = "0x43A07169f7f15A1d3dEC0fC0C0Dab5efE8dee1aB";
+  const vaultAddress = "0x5Bf03F32219fe8bC1D7666c65bf26C26f70bD3b3";
   const agentAddress = "0x5698E89Ec2396e02679ddde33c2BA78de88F7fce";
 
   console.log(`Setting agent to ${agentAddress} on vault ${vaultAddress}...`);
