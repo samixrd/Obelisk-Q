@@ -211,9 +211,9 @@ async def executor_node(state: AgentState):
 
     current_time = time.time()
     elapsed = current_time - LAST_REBALANCE_TIME
-    if elapsed < 60:
-        logger.info(f"executor: cooldown active. {int(60 - elapsed)}s remaining. skipping.")
-        return {"messages": [AIMessage(content="executor: rebalance cooldown active (60s). skipping on-chain execution.")], "data": state["data"]}
+    if elapsed < 300:
+        logger.info(f"executor: cooldown active. {int(300 - elapsed)}s remaining. skipping.")
+        return {"messages": [AIMessage(content="executor: rebalance cooldown active (300s). skipping on-chain execution.")], "data": state["data"]}
     
     logger.info(f"executor: preparing transaction for action={action} on vault={vault_addr}")
 
