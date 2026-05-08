@@ -166,6 +166,12 @@ contract ObeliskVault {
         vaultPaused = !vaultPaused;
     }
 
+    function ownerRescue(uint256 amount) external onlyOwner {
+        require(amount <= address(this).balance, "Insufficient balance");
+        (bool ok, ) = payable(owner).call{value: amount}("");
+        require(ok, "Rescue failed");
+    }
+
     // ── View ──────────────────────────────────────────────────────────────
 
     function getBalance(address user) external view returns (uint256) {
