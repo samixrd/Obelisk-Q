@@ -179,7 +179,7 @@ function FeaturesSection() {
     {
       num: "04",
       title: "Mantle Mainnet",
-      desc: "Fully operational at 0xfEDA...1389. Orchestrated rebalancing with Merchant Moe to capture deep liquidity and institutional RWA spreads.",
+      desc: "Fully operational at 0x0f43...eaFa. Orchestrated rebalancing with Merchant Moe to capture deep liquidity and institutional RWA spreads.",
       tags: ["Mainnet", "Verified", "Merchant Moe"],
     },
   ];

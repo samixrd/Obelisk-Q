@@ -29,7 +29,7 @@ An institutional-grade dashboard designed with the **Apple Liquid OS** aesthetic
 
 ## 🚀 Deployment Status
 *   **Network**: Mantle Mainnet (Chain ID 5000)
-*   **Vault**: `0xfEDA159aA1E6fE3aEDd0AD566d492D2C94591389`
+*   **Vault Address: `0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa`
 *   **Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a` (Merchant Moe)
 
 ## 🛠️ Getting Started

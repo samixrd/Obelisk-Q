@@ -28,7 +28,7 @@ const VAULT_ABI = [
   "function deposit() payable",
   "function withdraw()",
   "function getBalance(address user) view returns (uint256)",
-  "function getVaultStats() view returns (uint256, uint256, uint256, bool)",
+  "function getVaultStats() view returns (uint256, uint256, uint256, bool, string)",
   "function vaultPaused() view returns (bool)",
 ];
 
@@ -39,6 +39,7 @@ export interface VaultStats {
   depositorCount:  number;
   lastScore:       number;
   paused:          boolean;
+  currentRegime:   string;
   userBalance:     string;   // in MNT (formatted)
   walletBalance:   string;   // native MNT balance
 }
@@ -257,6 +258,18 @@ export function useVault(): VaultState {
           count = parseInt(hex.slice(64, 128), 16);
           score = parseInt(hex.slice(128, 192), 16);
           paused = parseInt(hex.slice(192, 256), 16) !== 0;
+          
+          // Strings in ABI are dynamic; they have an offset and a length
+          // For simplicity since it's the 5th param:
+          const offset = parseInt(hex.slice(256, 320), 16) * 2;
+          const length = parseInt(hex.slice(offset, offset + 64), 16) * 2;
+          const strHex = hex.slice(offset + 64, offset + 64 + length);
+          try {
+            const bytes = new Uint8Array(strHex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+            currentRegime = new TextDecoder().decode(bytes);
+          } catch (e) {
+            console.warn("Failed to decode regime string", e);
+          }
         }
       } catch (e) {
         console.warn("Vault stats call failed", e);
@@ -282,6 +295,7 @@ export function useVault(): VaultState {
         depositorCount: count,
         lastScore:      score,
         paused,
+        currentRegime,
         userBalance,
         walletBalance,
       });

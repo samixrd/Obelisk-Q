@@ -31,6 +31,7 @@ contract ObeliskVault {
     event Rebalanced(address indexed targetToken, uint256 amountIn, uint256 amountOut);
     event AgentUpdated(address indexed newAgent);
     event VaultPaused(uint256 timestamp);
+    event RegimeUpdated(string newRegime, uint256 timestamp);
 
     // ── State ─────────────────────────────────────────────────────────────
     address public owner;
@@ -38,6 +39,7 @@ contract ObeliskVault {
 
     uint256 public totalDeposited;
     bool    public vaultPaused;
+    string  public currentRegime = "Expansion"; // Default
 
     // Tokens & Router (Mantle Mainnet)
     IRouter public constant ROUTER = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a);
@@ -144,6 +146,11 @@ contract ObeliskVault {
         }
     }
 
+    function setRegime(string calldata _regime) external onlyAgent {
+        currentRegime = _regime;
+        emit RegimeUpdated(_regime, block.timestamp);
+    }
+
     // ── Internal ──────────────────────────────────────────────────────────
 
     function _unwindToken(address token, uint256 /* amountMntNeeded */) internal {
@@ -193,9 +200,10 @@ contract ObeliskVault {
         uint256 _totalDeposited,
         uint256 _depositorCount,
         uint256 _lastScore,
-        bool    _paused
+        bool    _paused,
+        string  memory _regime
     ) {
-        return (totalDeposited, depositors.length, 85, vaultPaused); // Fixed 85 for score as it's handled by agent now
+        return (totalDeposited, depositors.length, 85, vaultPaused, currentRegime);
     }
 
     receive() external payable {}

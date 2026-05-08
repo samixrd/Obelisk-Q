@@ -203,7 +203,7 @@ async def executor_node(state: AgentState):
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
-    vault_addr = os.getenv("VAULT_ADDRESS", "0xfEDA159aA1E6fE3aEDd0AD566d492D2C94591389")
+    vault_addr = os.getenv("VAULT_ADDRESS", "0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa")
     
     if not private_key or not vault_addr:
         logger.error(f"executor: pre-flight check failed. private_key={bool(private_key)}, vault_addr={vault_addr}")
@@ -217,15 +217,26 @@ async def executor_node(state: AgentState):
     
     logger.info(f"executor: preparing transaction for action={action} on vault={vault_addr}")
 
-    vault_abi = [{
-        "inputs": [
-            {"internalType": "address", "name": "targetToken", "type": "address"}
-        ],
-        "name": "rebalance",
-        "outputs": [],
-        "stateMutability": "nonpayable",
-        "type": "function"
-    }]
+    vault_abi = [
+        {
+            "inputs": [
+                {"internalType": "address", "name": "targetToken", "type": "address"}
+            ],
+            "name": "rebalance",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        },
+        {
+            "inputs": [
+                {"internalType": "string", "name": "_regime", "type": "string"}
+            ],
+            "name": "setRegime",
+            "outputs": [],
+            "stateMutability": "nonpayable",
+            "type": "function"
+        }
+    ]
 
     METH_ADDR = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0"
     USDY_ADDR = "0x5bE26527e817998A7206475496fDE1e68957c5A6"
@@ -265,7 +276,13 @@ async def executor_node(state: AgentState):
                     gas_price = w3.eth.gas_price
                     logger.info(f"executor: rpc check - nonce={nonce}, gas_price={w3.from_wei(gas_price, 'gwei')} gwei")
                     
+                    # ── Optional: Update regime on-chain if changed ──
+                    current_regime = state["data"].get("regime", "Consolidation")
+                    
                     # ── Build transaction with explicit parameters ──
+                    # We can bundle multiple calls if needed, but for now we'll just rebalance
+                    # To land regime on-chain, we can call setRegime first if it's a new regime
+                    
                     tx = contract.functions.rebalance(target_token).build_transaction({
                         'from': account.address,
                         'value': 0,
@@ -283,6 +300,22 @@ async def executor_node(state: AgentState):
                     logger.info("executor: broadcasting transaction to mantle...")
                     tx_hash = w3.eth.send_raw_transaction(raw_tx)
                     
+                    # If success, also try to set regime in a separate tx or later
+                    # (In production, you'd batch these or use a multicall)
+                    try:
+                        logger.info(f"executor: syncing regime '{current_regime}' on-chain...")
+                        regime_tx = contract.functions.setRegime(current_regime).build_transaction({
+                            'from': account.address,
+                            'nonce': nonce + 1,
+                            'gas': 200000,
+                            'gasPrice': gas_price,
+                            'chainId': 5000
+                        })
+                        signed_regime_tx = w3.eth.account.sign_transaction(regime_tx, private_key=private_key)
+                        w3.eth.send_raw_transaction(signed_regime_tx.rawTransaction)
+                    except Exception as re:
+                        logger.warning(f"executor: regime sync failed (non-critical): {re}")
+
                     return f"executor: signal synchronized. tx sent on mantle mainnet: {w3.to_hex(tx_hash)}"
 
                 res = await loop.run_in_executor(None, sync_tx)
@@ -373,7 +406,7 @@ async def get_agent_transactions():
 
 def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A"):
     global AGENT_TRANSACTIONS
-    vault_addr = os.getenv("VAULT_ADDRESS", "0xfEDA159aA1E6fE3aEDd0AD566d492D2C94591389")
+    vault_addr = os.getenv("VAULT_ADDRESS", "0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa")
     entry = {
         "tx_hash": tx_hash,
         "action": action,
