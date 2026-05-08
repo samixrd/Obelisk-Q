@@ -237,8 +237,8 @@ function BuiltForSection() {
     {
       id: "idle",
       num: "01",
-      headline: "You have stablecoins sitting idle",
-      body: "USDY and mETH generate real yield backed by US Treasuries and staked ETH. The AI agent puts your capital to work automatically — no manual trading required.",
+      headline: "You have capital sitting idle",
+      body: "Maximize your Mantle assets. The AI agent automatically rebalances your MNT into USDY and mETH to capture real yield from US Treasuries and staked ETH.",
       tag: "Passive investor",
     },
     {
