@@ -139,12 +139,12 @@ async def tracker_node(state: AgentState):
     regime = state["data"].get("regime", "Consolidation")
     risk_score = state["data"].get("risk", {}).get("score", 90)
     
-    # ── HARD-LOCK: if confidence < 85, force HOLD regardless of regime ──
-    if risk_score < 85:
+    # ── HARD-LOCK: if confidence < 60, force HOLD regardless of regime ──
+    if risk_score < 60:
         h_s = "H(s)_safety"
         damping = "1.0 (Critically Damped)"
         action = "HOLD"
-        content = f"tracker: HARD-LOCK engaged. score {risk_score} < 85 threshold. executor locked to HOLD. no rebalance permitted."
+        content = f"tracker: HARD-LOCK engaged. score {risk_score} < 60 threshold. executor locked to HOLD. no rebalance permitted."
     elif regime == "Expansion":
         h_s = "H(s)_growth"
         damping = "0.4 (Underdamped)"
@@ -158,8 +158,8 @@ async def tracker_node(state: AgentState):
         damping = "0.707 (Optimal Damping)"
         action = "HOLD"
     
-    if risk_score < 85:
-        content = f"tracker: HARD-LOCK engaged. score {risk_score} < 85 threshold. executor locked to HOLD. no rebalance permitted."
+    if risk_score < 60:
+        content = f"tracker: HARD-LOCK engaged. score {risk_score} < 60 threshold. executor locked to HOLD. no rebalance permitted."
     else:
         content = f"tracker: switching control active. {h_s} triggered. action: {action}. damping limits: {damping}."
         
