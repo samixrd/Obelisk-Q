@@ -395,7 +395,20 @@ workflow.add_edge("executor", END)
 graph = workflow.compile()
 
 # ─── Server Configuration ─────────────────────────────────────────────────────
+TRANSACTIONS_FILE = "transactions.json"
 AGENT_TRANSACTIONS = []
+
+def load_transactions():
+    global AGENT_TRANSACTIONS
+    if os.path.exists(TRANSACTIONS_FILE):
+        try:
+            with open(TRANSACTIONS_FILE, "r") as f:
+                AGENT_TRANSACTIONS = json.load(f)
+                logger.info(f"Loaded {len(AGENT_TRANSACTIONS)} transactions from disk.")
+        except Exception as e:
+            logger.error(f"Failed to load transactions: {e}")
+
+load_transactions()
 
 app = FastAPI(title="Obelisk Q Engine")
 
@@ -418,8 +431,16 @@ def record_transaction(action, score, regime, cycle, status="success", tx_hash="
         "cycle_number": cycle
     }
     AGENT_TRANSACTIONS.append(entry)
-    if len(AGENT_TRANSACTIONS) > 50:
+    if len(AGENT_TRANSACTIONS) > 100: # keep up to 100 on disk
         AGENT_TRANSACTIONS.pop(0)
+    
+    # Persist to disk
+    try:
+        with open(TRANSACTIONS_FILE, "w") as f:
+            json.dump(AGENT_TRANSACTIONS, f)
+    except Exception as e:
+        logger.error(f"Failed to save transactions: {e}")
+        
     logger.info(f"tx_recorded: cycle={cycle} action={action} status={status}")
 
 app.add_middleware(
