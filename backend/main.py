@@ -197,14 +197,23 @@ async def executor_node(state: AgentState):
 
     vault_abi = [{
         "inputs": [
-            {"internalType": "uint256", "name": "confidenceScore", "type": "uint256"},
-            {"internalType": "bool", "name": "shouldRebalance", "type": "bool"}
+            {"internalType": "address", "name": "targetToken", "type": "address"}
         ],
-        "name": "recordAllocation",
+        "name": "rebalance",
         "outputs": [],
         "stateMutability": "nonpayable",
         "type": "function"
     }]
+
+    METH_ADDR = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0"
+    USDY_ADDR = "0x5bE26527e817998A7206475496fDE1e68957c5A6"
+    ZERO_ADDR = "0x0000000000000000000000000000000000000000"
+
+    target_token = ZERO_ADDR
+    if action == "mETH":
+        target_token = METH_ADDR
+    elif action == "USDY":
+        target_token = USDY_ADDR
 
     # ── 500ms ANTIGRAVITY SLA & EXPONENTIAL BACKOFF: 3 attempts ──
     async def _rpc_execute():
@@ -229,9 +238,9 @@ async def executor_node(state: AgentState):
                     nonce = w3.eth.get_transaction_count(account.address)
                     gas_price = w3.eth.gas_price
                     
-                    tx = contract.functions.recordAllocation(risk_score, True).build_transaction({
+                    tx = contract.functions.rebalance(target_token).build_transaction({
                         'chainId': 5000,
-                        'gas': 300000,
+                        'gas': 500000, # DEX swaps need more gas
                         'gasPrice': gas_price,
                         'nonce': nonce,
                     })

@@ -1,40 +1,52 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
+interface IERC20 {
+    function balanceOf(address account) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transfer(address to, uint256 amount) external returns (bool);
+}
+
+interface IRouter {
+    function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
+        external
+        payable
+        returns (uint[] memory amounts);
+    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+        external
+        returns (uint[] memory amounts);
+    function WETH() external pure returns (address);
+}
+
 /**
- * ObeliskVault — Mantle Testnet Investment Vault
+ * ObeliskVault — Mantle Mainnet Autonomous Vault
  *
- * Users deposit MNT, the agent allocates based on the confidence score.
- * The vault tracks each depositor's balance and allows withdrawal at any time.
- *
- * Deployment target: Mantle Sepolia Testnet (Chain ID: 5003)
+ * Users deposit MNT, the agent rebalances across mETH and USDY via Merchant Moe.
  */
 contract ObeliskVault {
 
     // ── Events ────────────────────────────────────────────────────────────
     event Deposited(address indexed user, uint256 amount, uint256 timestamp);
     event Withdrawn(address indexed user, uint256 amount, uint256 timestamp);
-    event AllocationUpdated(uint256 confidenceScore, bool rebalanced, uint256 timestamp);
+    event Rebalanced(address indexed targetToken, uint256 amountIn, uint256 amountOut);
     event AgentUpdated(address indexed newAgent);
     event VaultPaused(uint256 timestamp);
-    event VaultResumed(uint256 timestamp);
 
     // ── State ─────────────────────────────────────────────────────────────
     address public owner;
     address public agent;
 
     uint256 public totalDeposited;
-    uint256 public lastConfidenceScore;
-    uint256 public lastRebalanceTimestamp;
     bool    public vaultPaused;
 
-    mapping(address => uint256) public balances;
-    mapping(address => uint256) public depositTimestamps;
-    address[] private depositors;
+    // Tokens & Router (Mantle Mainnet)
+    IRouter public constant ROUTER = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a);
+    address public constant WMNT   = 0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8;
+    address public constant METH   = 0xcDA86A272531e8640cD7F1a92c01839911B90bb0;
+    address public constant USDY   = 0x5bE26527e817998A7206475496fDE1e68957c5A6;
 
-    // ── Constants ─────────────────────────────────────────────────────────
-    uint256 public constant MIN_DEPOSIT     = 0.001 ether;
-    uint256 public constant CIRCUIT_BREAKER = 5;
+    mapping(address => uint256) public balances;
+    address[] private depositors;
 
     // ── Constructor ───────────────────────────────────────────────────────
     constructor(address _agent) {
@@ -49,111 +61,106 @@ contract ObeliskVault {
     }
 
     modifier onlyAgent() {
-        require(
-            msg.sender == agent || msg.sender == owner,
-            "ObeliskVault: not agent"
-        );
-        _;
-    }
-
-    modifier notPaused() {
-        require(!vaultPaused, "ObeliskVault: vault is paused");
+        require(msg.sender == agent || msg.sender == owner, "ObeliskVault: not agent");
         _;
     }
 
     // ── User Actions ──────────────────────────────────────────────────────
 
-    function deposit() external payable notPaused {
-        require(msg.value >= MIN_DEPOSIT, "ObeliskVault: below minimum deposit");
-
-        if (balances[msg.sender] == 0) {
-            depositors.push(msg.sender);
-        }
-
-        balances[msg.sender]         += msg.value;
-        depositTimestamps[msg.sender]  = block.timestamp;
-        totalDeposited                += msg.value;
-
+    function deposit() external payable {
+        require(!vaultPaused, "Paused");
+        balances[msg.sender] += msg.value;
+        totalDeposited += msg.value;
         emit Deposited(msg.sender, msg.value, block.timestamp);
     }
 
     function withdraw() external {
         uint256 amount = balances[msg.sender];
-        require(amount > 0, "ObeliskVault: nothing to withdraw");
+        require(amount > 0, "No balance");
 
-        balances[msg.sender]  = 0;
-        totalDeposited       -= amount;
+        // If not enough MNT, unwind mETH first
+        uint256 mntBalance = address(this).balance;
+        if (mntBalance < amount) {
+            uint256 needed = amount - mntBalance;
+            _unwindToken(METH, needed);
+            mntBalance = address(this).balance;
+        }
+        
+        // Still not enough? Unwind USDY
+        if (mntBalance < amount) {
+            uint256 needed = amount - mntBalance;
+            _unwindToken(USDY, needed);
+            mntBalance = address(this).balance;
+        }
 
-        (bool ok, ) = payable(msg.sender).call{value: amount}("");
-        require(ok, "ObeliskVault: transfer failed");
+        uint256 toPay = mntBalance < amount ? mntBalance : amount;
+        balances[msg.sender] -= toPay;
+        totalDeposited -= toPay;
 
-        emit Withdrawn(msg.sender, amount, block.timestamp);
-    }
+        (bool ok, ) = payable(msg.sender).call{value: toPay}("");
+        require(ok, "Transfer failed");
 
-    function withdrawPartial(uint256 amount) external {
-        require(balances[msg.sender] >= amount, "ObeliskVault: insufficient balance");
-        require(amount > 0, "ObeliskVault: zero amount");
-
-        balances[msg.sender]  -= amount;
-        totalDeposited        -= amount;
-
-        (bool ok, ) = payable(msg.sender).call{value: amount}("");
-        require(ok, "ObeliskVault: transfer failed");
-
-        emit Withdrawn(msg.sender, amount, block.timestamp);
+        emit Withdrawn(msg.sender, toPay, block.timestamp);
     }
 
     // ── Agent Actions ─────────────────────────────────────────────────────
 
-    function recordAllocation(
-        uint256 confidenceScore,
-        bool    shouldRebalance
-    ) external onlyAgent {
-        if (
-            lastConfidenceScore > CIRCUIT_BREAKER &&
-            confidenceScore < lastConfidenceScore - CIRCUIT_BREAKER
-        ) {
-            vaultPaused = true;
-            emit VaultPaused(block.timestamp);
+    function rebalance(address targetToken) external onlyAgent {
+        require(targetToken == METH || targetToken == USDY || targetToken == address(0), "Invalid target");
+        
+        if (targetToken == address(0)) {
+            // Unwind everything to MNT
+            _unwindToken(METH, type(uint256).max);
+            _unwindToken(USDY, type(uint256).max);
+        } else {
+            // Swap MNT to target
+            uint256 mntToSwap = address(this).balance;
+            if (mntToSwap > 0.01 ether) { // Leave some dust for gas if needed (though vault doesn't pay gas)
+                address[] memory path = new address[](2);
+                path[0] = WMNT;
+                path[1] = targetToken;
+                
+                ROUTER.swapExactETHForTokens{value: mntToSwap}(
+                    0, 
+                    path, 
+                    address(this), 
+                    block.timestamp + 600
+                );
+            }
         }
+    }
 
-        lastConfidenceScore    = confidenceScore;
-        lastRebalanceTimestamp = block.timestamp;
+    // ── Internal ──────────────────────────────────────────────────────────
 
-        emit AllocationUpdated(confidenceScore, shouldRebalance, block.timestamp);
+    function _unwindToken(address token, uint256 amountMntNeeded) internal {
+        uint256 tokenBal = IERC20(token).balanceOf(address(this));
+        if (tokenBal == 0) return;
+
+        address[] memory path = new address[](2);
+        path[0] = token;
+        path[1] = WMNT;
+
+        IERC20(token).approve(address(ROUTER), tokenBal);
+        
+        // Swap as much as needed or everything
+        ROUTER.swapExactTokensForETH(
+            tokenBal,
+            0,
+            path,
+            address(this),
+            block.timestamp + 600
+        );
     }
 
     // ── Admin ─────────────────────────────────────────────────────────────
 
-    function resumeVault() external onlyOwner {
-        vaultPaused = false;
-        emit VaultResumed(block.timestamp);
-    }
-
-    function pauseVault() external onlyOwner {
-        vaultPaused = true;
-        emit VaultPaused(block.timestamp);
-    }
-
     function setAgent(address _agent) external onlyOwner {
-        require(_agent != address(0), "ObeliskVault: zero address");
         agent = _agent;
         emit AgentUpdated(_agent);
     }
 
-    // ── View ──────────────────────────────────────────────────────────────
-
-    function getBalance(address user) external view returns (uint256) {
-        return balances[user];
-    }
-
-    function getVaultStats() external view returns (
-        uint256 _totalDeposited,
-        uint256 _depositorCount,
-        uint256 _lastScore,
-        bool    _paused
-    ) {
-        return (totalDeposited, depositors.length, lastConfidenceScore, vaultPaused);
+    function togglePause() external onlyOwner {
+        vaultPaused = !vaultPaused;
     }
 
     receive() external payable {}
