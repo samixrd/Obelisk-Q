@@ -367,7 +367,7 @@ AGENT_TRANSACTIONS = []
 app = FastAPI(title="Obelisk Q Engine")
 
 @app.get("/api/agent/transactions")
-async def get_agent_transactions(session: dict = Depends(verify_session)):
+async def get_agent_transactions():
     """Returns the last 10 agent transactions, newest first."""
     return AGENT_TRANSACTIONS[::-1][:10]
 

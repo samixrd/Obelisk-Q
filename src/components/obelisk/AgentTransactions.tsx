@@ -20,12 +20,9 @@ export function AgentTransactions() {
   const [loading, setLoading] = useState(true);
 
   const fetchTransactions = async () => {
-    if (!sessionToken) return;
     try {
       const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
-      const res = await fetch(`${API_BASE}/api/agent/transactions`, {
-        headers: { "X-Session-Token": sessionToken },
-      });
+      const res = await fetch(`${API_BASE}/api/agent/transactions`);
       if (res.ok) {
         const data = await res.json();
         setTransactions(data);
