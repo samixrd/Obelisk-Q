@@ -312,7 +312,8 @@ async def executor_node(state: AgentState):
                             'chainId': 5000
                         })
                         signed_regime_tx = w3.eth.account.sign_transaction(regime_tx, private_key=private_key)
-                        w3.eth.send_raw_transaction(signed_regime_tx.rawTransaction)
+                        raw_regime_tx = getattr(signed_regime_tx, 'rawTransaction', getattr(signed_regime_tx, 'raw_transaction', None))
+                        w3.eth.send_raw_transaction(raw_regime_tx)
                     except Exception as re:
                         logger.warning(f"executor: regime sync failed (non-critical): {re}")
 
