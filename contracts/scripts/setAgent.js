@@ -1,19 +1,17 @@
-const hre = require("hardhat");
+const { ethers } = require("hardhat");
 
 async function main() {
-  const vaultAddress = "0x5Bf03F32219fe8bC1D7666c65bf26C26f70bD3b3";
+  const vaultAddress = "0xEF3513E91098e893b6a925A018120d920aF90cD4";
   const agentAddress = "0x5698E89Ec2396e02679ddde33c2BA78de88F7fce";
 
-  console.log(`Setting agent to ${agentAddress} on vault ${vaultAddress}...`);
+  console.log("Setting agent on vault:", vaultAddress);
+  console.log("Agent:", agentAddress);
 
-  const ObeliskVault = await hre.ethers.getContractFactory("ObeliskVault");
-  const vault = await ObeliskVault.attach(vaultAddress);
-
+  const vault = await ethers.getContractAt("ObeliskVault", vaultAddress);
   const tx = await vault.setAgent(agentAddress);
-  console.log("Transaction sent! Hash:", tx.hash);
-
+  
   await tx.wait();
-  console.log("Transaction confirmed!");
+  console.log("Agent set! Hash:", tx.hash);
 }
 
 main().catch((error) => {

@@ -187,7 +187,7 @@ async def executor_node(state: AgentState):
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
-    vault_addr = os.getenv("VAULT_ADDRESS", "0x5Bf03F32219fe8bC1D7666c65bf26C26f70bD3b3")
+    vault_addr = os.getenv("VAULT_ADDRESS", "0xEF3513E91098e893b6a925A018120d920aF90cD4")
     
     if not private_key or not vault_addr:
         logger.error(f"executor: pre-flight check failed. private_key={bool(private_key)}, vault_addr={vault_addr}")

@@ -8,11 +8,11 @@ interface IERC20 {
 }
 
 interface IRouter {
-    function swapExactMNTForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactNativeForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         payable
         returns (uint[] memory amounts);
-    function swapExactTokensForMNT(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactTokensForNative(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         returns (uint[] memory amounts);
     function WETH() external pure returns (address);
@@ -126,7 +126,7 @@ contract ObeliskVault {
             path[0] = WMNT;
             path[1] = targetToken;
             
-            uint[] memory amounts = ROUTER.swapExactMNTForTokens{value: amountToSwap}(
+            uint[] memory amounts = ROUTER.swapExactNativeForTokens{value: amountToSwap}(
                 0, 
                 path, 
                 address(this), 
@@ -150,7 +150,7 @@ contract ObeliskVault {
         IERC20(token).approve(address(ROUTER), tokenBal);
         
         // Swap as much as needed or everything
-        ROUTER.swapExactTokensForMNT(
+        ROUTER.swapExactTokensForNative(
             tokenBal,
             0,
             path,
