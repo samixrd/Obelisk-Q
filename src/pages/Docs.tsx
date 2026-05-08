@@ -24,8 +24,18 @@ const Docs = () => {
     {
       id: "mainnet",
       title: "Mantle Mainnet Integration",
-      content: "Obelisk Q is fully operational on Mantle Mainnet. The protocol utilizes a custom ObeliskVault (0xfEDA...1389) integrated with Merchant Moe liquidity pools, maintaining a 0.01 MNT safety buffer for continuous, touchless rebalancing.",
+      content: "Obelisk Q is fully operational on Mantle Mainnet. The protocol utilizes a custom ObeliskVault (0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa) integrated with Merchant Moe liquidity pools, maintaining a 0.01 MNT safety buffer for continuous, touchless rebalancing.",
     },
+    {
+      id: "rwa",
+      title: "RWA & Yield Framework",
+      content: "The protocol is purpose-built for compliant Real World Asset (RWA) exposure. By leveraging USDY (Ondo Finance), users gain native exposure to US Treasury yield. The AI engine dynamically pivots between USDY and mETH based on market volatility, ensuring your capital is always positioned in the most optimal yield environment.",
+    },
+    {
+      id: "target",
+      title: "Target User Archetypes",
+      content: "Obelisk Q serves three core segments: Passive Investors looking to automate idle capital, DeFi Participants seeking institutional-grade pool management, and Institutional Users requiring transparent, non-custodial RWA exposure on Mantle.",
+    }
   ];
 
   return (

@@ -1,36 +1,59 @@
-# Obelisk Q: Wealth Navigator
+# Obelisk Q — Autonomous Wealth Intelligence on Mantle
 
-Obelisk Q is an **Autonomous Wealth Management Protocol** built on the Mantle Network. It combines sophisticated control theory (PID-inspired logic), multi-agent AI orchestration, and institutional-grade smart contracts to manage capital with high-frequency precision and transparency.
+Obelisk Q is the first autonomous wealth navigator optimized for Mantle Mainnet. It leverages a multi-agent LangGraph architecture to provide institutional-grade yield optimization across mETH and USDY (RWA).
 
-## 🏛️ Core Architecture
+### 🏦 On-Chain Identity
+*   **Vault Address**: `0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa`
+*   **Network**: Mantle Mainnet (Chain ID: 5000)
+*   **Registry**: [Mantle Explorer](https://explorer.mantle.xyz/address/0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa)
+
+## 🏗️ System Architecture
+
+```mermaid
+graph TD
+    User((User)) -->|Deposit MNT| Vault[ObeliskVault Contract]
+    
+    subgraph "AI Agent Layer (LangGraph)"
+        Analyst[RWA Analyst] -->|Market Scan| Risk[Risk Manager]
+        Risk -->|Regime Inference| Tracker[Control Tracker]
+        Tracker -->|Action Payload| Executor[On-Chain Executor]
+    end
+    
+    Executor -->|setRegime| Vault
+    Executor -->|rebalance| Vault
+    
+    Vault -->|Swap| DEX[Merchant Moe DEX]
+    DEX -->|Yield Assets| YieldPools[mETH / USDY Pools]
+    
+    YieldPools -->|Real Yield| Vault
+```
 
 ### 1. The Autonomous Rebalancing Engine (Backend)
-The "brain" of the system, hosted on Azure and built using **LangGraph** and **Web3.py**. It operates on a multi-agent feedback loop:
-*   **Analyst Agent**: Scans liquidity markers and yield vectors (mETH, USDY) on Mantle.
-*   **Risk Manager Agent**: Executes a "Regime Audit." It calculates a real-time stability score based on market volatility.
-*   **Tracker Agent**: Determines the "Control Law." It maps market regimes to specific assets:
-    *   **Expansion** → Swap to **mETH** (Growth)
-    *   **Contraction** → Swap to **USDY** (Hedge/Yield)
-    *   **Consolidation/High Risk** → **HOLD** (MNT Cash)
-*   **Executor Agent**: The authorized on-chain actor. It signs and broadcasts transactions to the Mantle Mainnet whenever the Risk Manager's confidence exceeds the 60/100 threshold.
+The "brain" of the system operates on a multi-agent feedback loop:
+*   **RWA Analyst**: Scans liquidity markers and yield vectors (mETH, USDY) on Mantle.
+*   **Risk Manager**: Executes a "Regime Audit" (Expansion, Contraction, Consolidation).
+*   **Control Tracker**: Determines the optimal allocation payload.
+*   **Executor**: Authorized on-chain actor that signs and broadcasts transactions to the Mantle Mainnet.
 
 ### 2. The ObeliskVault (Smart Contracts)
-A custom Solidity vault (`0xfEDA...1389`) that acts as the custodial layer for user funds:
-*   **Native Integration**: Optimized for Mantle's native **MNT** token.
-*   **DEX Connectivity**: Directly integrated with **Merchant Moe** (Mantle's premier DEX) using optimized `swapExactNativeForTokens` paths.
-*   **Smart Transitions**: Automatically unwinds existing positions (e.g., selling mETH) before entering new ones (e.g., buying USDY) to ensure zero idle capital.
-*   **Liquidity Buffer**: Maintains a 0.01 MNT "gas buffer" to ensure the vault can always be rebalanced without requiring external MNT injections.
+A custom Solidity vault that acts as the custodial layer:
+*   **Native MNT Support**: Optimized for Mantle's native token.
+*   **DEX Integration**: Directly connected with **Merchant Moe** for deep liquidity.
+*   **Transparent Inference**: Market regimes are stored on-chain via the `setRegime` function.
 
-### 3. The "Liquid OS" Interface (Frontend)
-An institutional-grade dashboard designed with the **Apple Liquid OS** aesthetic:
-*   **Glassmorphic UI**: High-end transparency effects and pill-shaped components.
-*   **Real-time Decision Transparency**: Live "Agent Logs" that show the exact reasoning behind every rebalance.
-*   **Q-Score Visualization**: A dynamic performance and risk metric that gives users instant clarity on protocol health.
+## 🎯 Target Audience & RWA Pitch
+Obelisk Q is designed for users who seek **institutional-grade Real World Asset (RWA)** exposure without the complexity of manual DeFi management.
 
-## 🚀 Deployment Status
-*   **Network**: Mantle Mainnet (Chain ID 5000)
-*   **Vault Address: `0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa`
-*   **Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a` (Merchant Moe)
+| Archetype | Problem | Solution |
+| :--- | :--- | :--- |
+| **Passive Investor** | Idle capital on Mantle | Automated rebalancing into yield-bearing assets. |
+| **DeFi Participant** | Complex pool management | Confidence-scored allocation via AI. |
+| **Institutional** | Need for compliant RWA | Native exposure to USDY (US Treasuries). |
+
+### 💎 Why Obelisk Q?
+*   **Verified RWA Exposure**: Direct integration with USDY (Ondo Finance) for US Treasury-backed yield.
+*   **On-Chain Transparency**: AI market inferences are recorded on-chain for permanent auditability.
+*   **Liquid Staking**: Harnesses mETH (Mantle LSP) for high-availability ETH yield.
 
 ## 🛠️ Getting Started
 See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) for detailed setup and deployment instructions.
