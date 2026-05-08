@@ -8,11 +8,11 @@ interface IERC20 {
 }
 
 interface IRouter {
-    function swapExactETHForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactMNTForTokens(uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         payable
         returns (uint[] memory amounts);
-    function swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
+    function swapExactTokensForMNT(uint amountIn, uint amountOutMin, address[] calldata path, address to, uint deadline)
         external
         returns (uint[] memory amounts);
     function WETH() external pure returns (address);
@@ -108,7 +108,7 @@ contract ObeliskVault {
 
     // ── Agent Actions ─────────────────────────────────────────────────────
 
-    function rebalance(address targetToken) external onlyAgent {
+    function rebalance(address targetToken) external payable onlyAgent {
         require(targetToken == METH || targetToken == USDY || targetToken == address(0), "Invalid target");
         
         if (targetToken == address(0)) {
@@ -126,7 +126,7 @@ contract ObeliskVault {
             path[0] = WMNT;
             path[1] = targetToken;
             
-            uint[] memory amounts = ROUTER.swapExactETHForTokens{value: amountToSwap}(
+            uint[] memory amounts = ROUTER.swapExactMNTForTokens{value: amountToSwap}(
                 0, 
                 path, 
                 address(this), 
@@ -150,7 +150,7 @@ contract ObeliskVault {
         IERC20(token).approve(address(ROUTER), tokenBal);
         
         // Swap as much as needed or everything
-        ROUTER.swapExactTokensForETH(
+        ROUTER.swapExactTokensForMNT(
             tokenBal,
             0,
             path,
