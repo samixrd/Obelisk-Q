@@ -15,6 +15,18 @@ import "./LandingPage.css";
 
 import { FloatingSymbols } from "./FloatingSymbols";
 
+const Reveal = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => (
+  <motion.div
+    initial={{ clipPath: "inset(0 100% 0 0)" }}
+    whileInView={{ clipPath: "inset(0 0% 0 0)" }}
+    viewport={{ once: true, margin: "-100px" }}
+    transition={{ duration: 1.2, delay, ease: [0.22, 1, 0.36, 1] }}
+    style={{ position: 'relative' }}
+  >
+    {children}
+  </motion.div>
+);
+
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
 function NavBar({ onLaunch }: { onLaunch: () => void }) {
@@ -85,8 +97,12 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         className="landing-hero-content"
       >
         <div className="landing-hero-heading" style={{ fontWeight: 700 }}>
-          <MagneticText text="Autonomous Investment" />
-          <MagneticText text="Intelligence on Mantle." />
+          <Reveal>
+            <MagneticText text="Autonomous Investment" />
+          </Reveal>
+          <Reveal delay={0.2}>
+            <MagneticText text="Intelligence on Mantle." />
+          </Reveal>
         </div>
         <p className="landing-hero-sub">
           The first autonomous wealth navigator optimized for Mantle Mainnet.
@@ -116,10 +132,16 @@ function ProtocolSection() {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
-        <span className="landing-section-label">ANTIGRAVITY PROTOCOL</span>
+        <Reveal>
+          <span className="landing-section-label">ANTIGRAVITY PROTOCOL</span>
+        </Reveal>
         <div className="landing-section-heading" style={{ fontWeight: 700 }}>
-          <MagneticText text="High-availability" />
-          <MagneticText text="agent resilience" />
+          <Reveal delay={0.1}>
+            <MagneticText text="High-availability" />
+          </Reveal>
+          <Reveal delay={0.2}>
+            <MagneticText text="agent resilience" />
+          </Reveal>
         </div>
         <p className="landing-section-desc">
           Obelisk Q uses the Antigravity Protocol to ensure 100% uptime and deterministic rebalancing through verified cross-token unwind logic on Mantle Mainnet.
@@ -170,10 +192,16 @@ function FeaturesSection() {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
-        <span className="landing-section-label">PROTOCOL FEATURES</span>
+        <Reveal>
+          <span className="landing-section-label">PROTOCOL FEATURES</span>
+        </Reveal>
         <div className="landing-section-heading" style={{ fontWeight: 700 }}>
-          <MagneticText text="Intelligence meets" />
-          <MagneticText text="infrastructure" />
+          <Reveal delay={0.1}>
+            <MagneticText text="Intelligence meets" />
+          </Reveal>
+          <Reveal delay={0.2}>
+            <MagneticText text="infrastructure" />
+          </Reveal>
         </div>
       </motion.div>
 
@@ -237,9 +265,13 @@ function BuiltForSection() {
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       >
-        <span className="landing-section-label">ARCHETYPES</span>
+        <Reveal>
+          <span className="landing-section-label">ARCHETYPES</span>
+        </Reveal>
         <div className="landing-section-heading" style={{ fontWeight: 700 }}>
-          <MagneticText text="Built for" />
+          <Reveal delay={0.1}>
+            <MagneticText text="Built for" />
+          </Reveal>
         </div>
       </motion.div>
 
