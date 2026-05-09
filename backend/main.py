@@ -67,6 +67,7 @@ last_known_state = {
 }
 
 LAST_REBALANCE_TIME = 0
+COOLDOWN_SECONDS = 300  # Reduced to 300s for testing (was 86400)
 CURRENT_POSITION = "MNT"  # Global position state
 SCORE_HISTORY = []        # List of (timestamp, score)
 CIRCUIT_BREAKER_ACTIVE = False
@@ -295,9 +296,9 @@ async def supervisory_controller_node(state: AgentState):
 
     current_time = time.time()
     elapsed = current_time - LAST_REBALANCE_TIME
-    if elapsed < 86400:
-        logger.info(f"executor: cooldown active. {int(86400 - elapsed)}s remaining. skipping.")
-        return {"messages": [AIMessage(content="executor: rebalance cooldown active (86400s). skipping on-chain execution.")], "data": state["data"]}
+    if elapsed < COOLDOWN_SECONDS:
+        logger.info(f"executor: cooldown active. {int(COOLDOWN_SECONDS - elapsed)}s remaining. skipping.")
+        return {"messages": [AIMessage(content=f"executor: rebalance cooldown active ({COOLDOWN_SECONDS}s). skipping on-chain execution.")], "data": state["data"]}
     
     logger.info(f"executor: preparing transaction for action={action} on vault={vault_addr}")
 
