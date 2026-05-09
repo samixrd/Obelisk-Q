@@ -80,8 +80,7 @@ export function GuidedTour({ open, onClose }: Props) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          style={{ position: 'fixed', inset: 0 }}
+          className="fixed inset-0 z-[9999] overflow-y-auto bg-black/40 backdrop-blur-sm"
         >
           {/* Subtle radial accent */}
           <div className="absolute inset-0 pointer-events-none"
@@ -97,7 +96,8 @@ export function GuidedTour({ open, onClose }: Props) {
             <IconClose size={18} />
           </button>
 
-          <div className="relative w-[90%] max-w-[560px] mx-auto bg-background rounded-2xl p-8 md:p-12 shadow-2xl border border-border/50 z-[10001]">
+          <div className="min-h-full w-full flex items-center justify-center p-6">
+            <div className="relative w-full max-w-[540px] bg-background rounded-2xl p-8 md:p-12 shadow-2xl border border-border/50">
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}
@@ -173,6 +173,8 @@ export function GuidedTour({ open, onClose }: Props) {
               >
                 Skip the tour
               </button>
+            </div>
+          </div>
             </div>
           </div>
         </motion.div>

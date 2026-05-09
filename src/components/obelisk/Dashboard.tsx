@@ -49,21 +49,18 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   }
 
   const variants = {
-    enter: (dir: number) => ({
-      x: dir > 0 ? 24 : -24,
+    enter: {
       opacity: 0,
-      filter: "blur(4px)",
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-      filter: "blur(0px)",
+      y: 6,
     },
-    exit: (dir: number) => ({
-      x: dir > 0 ? -24 : 24,
+    center: {
+      opacity: 1,
+      y: 0,
+    },
+    exit: {
       opacity: 0,
-      filter: "blur(4px)",
-    }),
+      y: -6,
+    },
   };
 
   return (
@@ -94,7 +91,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             initial="enter"
             animate="center"
             exit="exit"
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           >
             {tab === "earn" && <EarnView onOpenInvest={() => setInvestOpen(true)} />}
             {tab === "safeguards" && <SafeguardsView />}
