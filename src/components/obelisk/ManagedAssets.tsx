@@ -24,28 +24,31 @@ export function ManagedAssets() {
   const { usdy, meth } = useYieldData();
   const logos = useTokenLogos();
   const { vaultStats } = useVault();
-  const { regime } = useAgentWebSocket();
+  const { currentPosition } = useAgentWebSocket();
 
   // 1. Calculate Real Totals from Vault Contract
   const totalMnt = parseFloat(vaultStats?.totalDeposited ?? "0");
-  const mntPrice = 1.0; // MNT is roughly $1.0, could fetch from API if needed
 
   // 2. Define Buffer (7.5% as per Safeguards protocol)
   const bufferRatio = 0.075;
   const totalBuffer = totalMnt * bufferRatio;
   const investable = totalMnt - totalBuffer;
 
-  // 3. Define Allocation Ratio based on Regime
-  // Expansion: 70% mETH / 30% USDY
-  // Contraction: 30% mETH / 70% USDY
-  // Consolidation/Stable: 50% / 50%
-  let methRatio = 0.5;
-  if (regime === "Expansion") methRatio = 0.7;
-  if (regime === "Contraction") methRatio = 0.3;
+  // 3. Define Allocation Ratio based on Real-Time Agent Position
+  let methRatio = 0;
+  let usdyRatio = 0;
 
-  const usdyAllocated = isNaN(investable) ? 0 : Math.max(0, investable * (1 - methRatio));
-  const methAllocated = isNaN(investable) ? 0 : Math.max(0, investable * methRatio);
-  const safeBuffer = isNaN(totalBuffer) ? 0 : Math.max(0, totalBuffer);
+  if (currentPosition === "mETH") {
+    methRatio = 1.0;
+    usdyRatio = 0;
+  } else if (currentPosition === "USDY") {
+    methRatio = 0;
+    usdyRatio = 1.0;
+  } else {
+    // Waiting to deploy or in MNT safety
+    methRatio = 0;
+    usdyRatio = 0;
+  }
 
   const assets: Asset[] = [
     {
@@ -54,9 +57,9 @@ export function ManagedAssets() {
       blurb: "Tokenized US treasuries. Conservative, dollar-denominated.",
       yield: `${usdy.apy.toFixed(2)}%`,
       yieldLabel: "Real-time APY",
-      buffer: `$${(totalBuffer * (1 - methRatio)).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
-      bufferPct: Math.round((1 - methRatio) * 100),
-      tvl: `$${(usdyAllocated).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      buffer: `$${(totalBuffer * (usdyRatio > 0 ? 1 : 0.5)).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      bufferPct: Math.round(usdyRatio * 100),
+      tvl: `$${(investable * usdyRatio).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       seed: 7,
       trend: usdy.trend7d?.toFixed(2),
     },
@@ -66,28 +69,28 @@ export function ManagedAssets() {
       blurb: "Liquid-staked ETH on Mantle. Balanced growth with hedged downside.",
       yield: `${meth.apy.toFixed(2)}%`,
       yieldLabel: "Staking yield",
-      buffer: `$${(totalBuffer * methRatio).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      buffer: `$${(totalBuffer * (methRatio > 0 ? 1 : 0.5)).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       bufferPct: Math.round(methRatio * 100),
-      tvl: `$${(methAllocated).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      tvl: `$${(investable * methRatio).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
       seed: 11,
       trend: meth.trend7d?.toFixed(2),
     },
   ];
 
   return (
-    <div className="col-span-12 glass-card rounded-3xl p-8 md:p-10">
+    <div className="col-span-12 glass-card rounded-3xl p-8 md:p-10 transition-all hover:bg-white/80 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
         <div>
-          <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>
+          <p className="text-[10px] uppercase text-muted-foreground mb-2 font-bold tracking-[0.24em]">
             Managed Assets
           </p>
-          <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
+          <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em] font-display">
             <MagneticText disabled text="Curated by the" />
-            <div style={{ fontWeight: 300 }}><MagneticText disabled text="Obelisk Q" /></div>
+            <div className="font-light"><MagneticText disabled text="Obelisk Q" /></div>
             <MagneticText disabled text="controller" />
           </div>
         </div>
-        <p className="hidden md:block text-[10px] uppercase text-muted-foreground" style={{ letterSpacing: "0.28em" }}>
+        <p className="hidden md:block text-[10px] uppercase text-muted-foreground font-bold tracking-[0.24em]">
           Safety Buffer · Active
         </p>
       </div>

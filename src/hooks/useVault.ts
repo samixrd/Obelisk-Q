@@ -138,6 +138,7 @@ export function useVault(): VaultState {
   const simBalanceRef = useRef<Record<string, number>>({});  // memory-only sim balance (0% disk)
 
   const CHAIN_ID = "5000";
+  const lastFetchRef = useRef<number>(0);
 
   const getExplorerUrl = useCallback((hash: string) => {
     return `${EXPLORER_URL}/tx/${hash}`;
@@ -242,8 +243,14 @@ export function useVault(): VaultState {
   }, [checkAndSwitchNetwork]);
 
   // ── Read vault stats ────────────────────────────────────────────────────
-  const refreshStats = useCallback(async () => {
+  const refreshStats = useCallback(async (force = false) => {
     if (!VAULT_ADDRESS) return;
+
+    // Cache: only fetch if > 30s since last successful fetch
+    const now = Date.now();
+    if (!force && now - lastFetchRef.current < 30000 && vaultStats) {
+      return;
+    }
 
     try {
       let walletBalance = "0.0000";
@@ -318,6 +325,8 @@ export function useVault(): VaultState {
         userBalance,
         walletBalance,
       });
+
+      lastFetchRef.current = Date.now();
 
     } catch (err) {
       console.error("Stats fetch failed:", err);

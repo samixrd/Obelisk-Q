@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense } from "react";
 import { StabilityGraph } from "./StabilityGraph";
 import { IconArrowUpRight, IconArrowDownRight } from "./LineIcons";
 import { useVault } from "@/hooks/useVault";
@@ -7,7 +7,16 @@ import { MagneticText } from "./MagneticText";
 import { useTokenLogos } from "@/hooks/useTokenLogos";
 import { useAuth } from "@/context/AuthContext";
 import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
-import { AgentTransactions } from "./AgentTransactions";
+
+// Lazy load heavy components
+const AgentTransactions = lazy(() => import("./AgentTransactions").then(m => ({ default: m.AgentTransactions })));
+const ManagedAssets = lazy(() => import("./ManagedAssets").then(m => ({ default: m.ManagedAssets })));
+
+const ComponentSkeleton = ({ height = 200 }: { height?: number }) => (
+  <div className="w-full bg-black/[0.02] animate-pulse rounded-[40px] flex items-center justify-center border border-black/[0.05]" style={{ height }}>
+    <span className="text-[10px] uppercase tracking-[0.2em] text-black/20 font-bold">Loading Component...</span>
+  </div>
+);
 
 const fadeUp = {
   initial: { opacity: 0, y: 14 },
@@ -17,78 +26,59 @@ const fadeUp = {
 
 export function PortfolioView() {
   const { sessionToken, logout } = useAuth();
-  const { txHistory, explorerUrl, vaultStats, withdraw, withdrawPartial, txState } = useVault();
-  const { regime, currentPosition } = useAgentWebSocket();
+  const { vaultStats, withdraw, withdrawPartial, txState } = useVault();
+  const { currentPosition } = useAgentWebSocket();
   const logos = useTokenLogos();
 
-  // 1. Allocation Logic based on Real On-Chain Position (Targeting 100% of current holding)
-  const POSITIONS = [];
-  const userBalanceValue = vaultStats?.userBalance ?? "0.0000";
-  const balance = parseFloat(userBalanceValue);
+  // 1. Memoize Allocation Logic
+  const POSITIONS = useMemo(() => {
+    const list = [];
+    const userBalanceValue = vaultStats?.userBalance ?? "0.0000";
 
-  if (currentPosition === "mETH") {
-    POSITIONS.push({ 
-      symbol: "mETH", 
-      name: "Mantle Staked Ether", 
-      strategy: "Balanced · Auto",      
-      balance: `${userBalanceValue} MNT`,  
-      change: "—", 
-      up: true,  
-      alloc: 100, 
-      id: "mETH" 
-    });
-  } else if (currentPosition === "USDY") {
-    POSITIONS.push({ 
-      symbol: "USDY", 
-      name: "Ondo US Dollar Yield", 
-      strategy: "Conservative · Auto",  
-      balance: `${userBalanceValue} MNT`, 
-      change: "—", 
-      up: true,  
-      alloc: 100, 
-      id: "USDY" 
-    });
-  } else {
-    POSITIONS.push({ 
-      symbol: "MNT", 
-      name: "Mantle Network Token", 
-      strategy: "Liquid · Buffer",  
-      balance: `${userBalanceValue} MNT`, 
-      change: "—", 
-      up: true,  
-      alloc: 100, 
-      id: "MNT" 
-    });
-  }
+    if (currentPosition === "mETH") {
+      list.push({ 
+        symbol: "mETH", name: "Mantle Staked Ether", strategy: "Balanced · Auto",      
+        balance: `${userBalanceValue} MNT`, change: "—", up: true, alloc: 100, id: "mETH" 
+      });
+    } else if (currentPosition === "USDY") {
+      list.push({ 
+        symbol: "USDY", name: "Ondo US Dollar Yield", strategy: "Conservative · Auto",  
+        balance: `${userBalanceValue} MNT`, change: "—", up: true, alloc: 100, id: "USDY" 
+      });
+    } else {
+      list.push({ 
+        symbol: "MNT", name: "Mantle Network Token", strategy: "Liquid · Buffer",  
+        balance: `${userBalanceValue} MNT`, change: "—", up: true, alloc: 100, id: "MNT" 
+      });
+    }
+    return list;
+  }, [currentPosition, vaultStats?.userBalance]);
 
   const [withdrawAmount, setWithdrawAmount] = useState("");
-  const [metrics, setMetrics] = useState({
-    ytd_return: "—",
-    sharpe_ratio: 2.41,
-  });
+  const [metrics, setMetrics] = useState({ ytd_return: "—", sharpe_ratio: 2.41 });
 
+  const balance = parseFloat(vaultStats?.userBalance ?? "0");
   const isPending = txState === "waiting" || txState === "pending";
   const inputAmount = parseFloat(withdrawAmount) || 0;
   const isInsufficient = inputAmount > balance;
   const isZeroBalance = balance <= 0;
 
+  // 2. Staggered API call
   useEffect(() => {
     const loadMetrics = async () => {
       if (!sessionToken) return;
+      // Stagger: wait 800ms before calling secondary API
+      await new Promise(r => setTimeout(r, 800));
       try {
         const res = await fetch("/api/performance", {
           headers: { 'X-Session-Token': sessionToken }
         });
-        if (res.status === 401) {
-          logout();
-          return;
-        }
+        if (res.status === 401) { logout(); return; }
         if (!res.ok) throw new Error("API error");
         const data = await res.json();
-        // Keep YTD Return as '—' as requested
         if (data) setMetrics({ ...data, ytd_return: "—" });
       } catch (err) {
-        console.warn("Performance API offline, using cache.");
+        console.warn("Performance API offline.");
       }
     };
     loadMetrics();
@@ -97,23 +87,23 @@ export function PortfolioView() {
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-24">
       
-      {/* ── Top Metrics Bar (Slim & Minimalist) ── */}
+      {/* ── Top Metrics Bar ── */}
       <div className="col-span-12 glass-card rounded-[32px] px-10 py-7 flex flex-wrap items-center justify-between shadow-[0_4px_24px_-10px_rgba(0,0,0,0.04)] mb-2">
         <div className="flex items-center gap-16">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-[#9CA3AF] font-semibold tracking-[0.15em] mb-2">Portfolio Balance</span>
+            <span className="text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em] mb-2">Portfolio Balance</span>
             <div className="flex items-baseline gap-2">
               <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums tracking-tight">
                 {vaultStats?.userBalance ?? "0.0000"}
               </span>
-              <span className="text-[12px] font-semibold text-[#9CA3AF] uppercase">MNT</span>
+              <span className="text-[12px] font-bold text-[#9CA3AF] uppercase">MNT</span>
             </div>
           </div>
           
           <div className="h-10 w-px bg-black/[0.06]" />
 
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-[#9CA3AF] font-semibold tracking-[0.15em] mb-2">YTD Return</span>
+            <span className="text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em] mb-2">YTD Return</span>
             <div className="flex items-baseline gap-1">
               <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums tracking-tight">
                 {metrics.ytd_return}
@@ -128,53 +118,35 @@ export function PortfolioView() {
         </div>
       </div>
 
-      {/* ── Withdrawal Card Interface (Mirroring VaultCard) ── */}
+      {/* ── Withdrawal Card Interface ── */}
       <div className="col-span-12 lg:col-span-6 glass-card rounded-[40px] overflow-hidden flex flex-col shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
         <div className="p-10 pb-0">
           <div className="flex items-center gap-4 mb-10">
             <div className="flex items-center -space-x-3">
               <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm flex items-center justify-center" style={{ zIndex: 2 }}>
-                {logos.mETH ? (
-                  <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-[10px] text-[#00D395] font-bold">M</span>
-                )}
+                {logos.mETH ? <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" /> : <span className="text-[10px] text-[#00D395] font-bold">M</span>}
               </div>
               <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-[#2775CA] shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
-                {logos.USDY ? (
-                  <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" />
-                ) : (
-                  <span className="text-[10px] text-white font-bold">U</span>
-                )}
+                {logos.USDY ? <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" /> : <span className="text-[10px] text-white font-bold">U</span>}
               </div>
             </div>
             <div>
-              <div className="text-[18px] font-bold text-[#0a0a0a] tracking-tight">
-                Portfolio Withdrawal
-              </div>
-              <p className="text-[12px] text-[#6B7280]">
-                Withdraw to Mantle Network
-              </p>
+              <div className="text-[18px] font-bold text-[#0a0a0a] tracking-tight">Portfolio Withdrawal</div>
+              <p className="text-[12px] text-[#6B7280]">Withdraw to Mantle Network</p>
             </div>
           </div>
 
           <div className="flex items-center justify-between px-7 py-6 bg-[#F9FAFB] rounded-[24px] border border-black/[0.04]">
             <input
-              type="number"
-              placeholder="0"
-              value={withdrawAmount}
+              type="number" placeholder="0" value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
               className="bg-transparent outline-none text-[34px] font-bold text-[#0a0a0a] w-full tabular-nums tracking-tight"
             />
             <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/[0.1] rounded-full shadow-sm">
-            <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center border border-black/5">
-              {logos.MNT ? (
-                <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" />
-              ) : (
-                <span className="text-[8px] text-black font-bold">M</span>
-              )}
-            </div>
-              <span className="text-[14px] font-semibold text-[#0a0a0a]">MNT</span>
+              <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center border border-black/5">
+                {logos.MNT ? <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" /> : <span className="text-[8px] text-black font-bold">M</span>}
+              </div>
+              <span className="text-[14px] font-bold text-[#0a0a0a]">MNT</span>
             </div>
           </div>
 
@@ -187,16 +159,12 @@ export function PortfolioView() {
                   else if (label === "50%") setWithdrawAmount((balance * 0.5).toFixed(4));
                   else if (label === "25%") setWithdrawAmount((balance * 0.25).toFixed(4));
                 }}
-                className="text-[12px] px-5 py-2.5 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] border border-black/[0.06] rounded-full transition-all font-medium"
+                className="text-[12px] px-5 py-2.5 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] border border-black/[0.06] rounded-full transition-all font-bold"
               >
                 {label}
               </button>
             ))}
-            {isInsufficient && (
-              <span className="text-[12px] text-red-500/70 ml-auto font-normal">
-                Insufficient balance
-              </span>
-            )}
+            {isInsufficient && <span className="text-[12px] text-red-500/70 ml-auto font-normal">Insufficient balance</span>}
           </div>
         </div>
 
@@ -204,55 +172,29 @@ export function PortfolioView() {
           <motion.button
             onClick={() => {
               if (withdrawAmount && !isInsufficient && parseFloat(withdrawAmount) > 0) {
-                // If it's a full withdrawal (or very close), use the no-args withdraw() for safety
-                if (parseFloat(withdrawAmount) >= balance) {
-                  withdraw();
-                } else {
-                  withdrawPartial(withdrawAmount);
-                }
+                if (parseFloat(withdrawAmount) >= balance) withdraw();
+                else withdrawPartial(withdrawAmount);
               }
             }}
             disabled={isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isPending || isZeroBalance}
             whileHover={!(isInsufficient || !withdrawAmount || isPending || isZeroBalance) ? { y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" } : {}}
             whileTap={!(isInsufficient || !withdrawAmount || isPending || isZeroBalance) ? { scale: 0.98 } : {}}
-            className={`w-full py-5 rounded-full text-[15px] font-semibold transition-all duration-300 ${isInsufficient || !withdrawAmount || isPending || isZeroBalance ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
+            className={`w-full py-5 rounded-full text-[15px] font-bold transition-all duration-300 ${isInsufficient || !withdrawAmount || isPending || isZeroBalance ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
           >
             {isPending ? "Processing..." : isZeroBalance ? "Insufficient Funds" : "Withdraw Funds"}
           </motion.button>
         </div>
       </div>
 
-      {/* ── Stats & Breakdown Grid ── */}
-      <div className="col-span-12 lg:col-span-6 grid grid-cols-1 gap-6">
-        <div className="glass-card rounded-[32px] p-8 flex flex-col justify-between transition-all hover:bg-white/80 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] h-full">
-          <p className="text-[10px] uppercase text-[#9CA3AF] mb-8 font-bold tracking-[0.2em]">
-            Allocation Breakdown
-          </p>
-          <div className="space-y-6 flex-1">
-            {POSITIONS.map((p) => (
-              <div key={p.name} className="group">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[14px] text-black font-semibold">{p.name}</span>
-                  <span className="text-[12px] text-[#9CA3AF] font-mono-num">{p.alloc}%</span>
-                </div>
-                <div className="h-1.5 bg-black/[0.03] rounded-full relative overflow-hidden">
-                  <motion.div
-                    className="absolute top-0 left-0 h-full bg-black/20 rounded-full"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${p.alloc}%` }}
-                    transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+      {/* ── Stats & Managed Assets Grid ── */}
+      <div className="col-span-12 lg:col-span-6 flex flex-col gap-6">
+        <Suspense fallback={<ComponentSkeleton height={400} />}>
+          <ManagedAssets />
+        </Suspense>
       </div>
 
       <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)]">
-        <p className="text-[11px] uppercase text-[#9CA3AF] mb-8 font-bold tracking-[0.24em]">
-          30-Day Performance History
-        </p>
+        <p className="text-[11px] uppercase text-[#9CA3AF] mb-8 font-bold tracking-[0.24em]">30-Day Performance History</p>
         <div className="h-[180px]">
           <StabilityGraph seed={7} height={180} />
         </div>
@@ -279,15 +221,11 @@ export function PortfolioView() {
               >
                 <div className="col-span-5 flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-white border border-black/[0.04] overflow-hidden flex items-center justify-center transition-all p-1.5">
-                    {logos[p.id as keyof typeof logos] ? (
-                      <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-contain" />
-                    ) : (
-                      <span className="text-[13px] font-mono-num">{p.symbol[0]}</span>
-                    )}
+                    {logos[p.id as keyof typeof logos] ? <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-contain" /> : <span className="text-[13px] font-mono-num">{p.symbol[0]}</span>}
                   </div>
                   <span className="text-[15px] text-black font-bold">{p.name}</span>
                 </div>
-                <div className="col-span-3 text-[13px] text-[#6B7280] font-medium">{p.strategy}</div>
+                <div className="col-span-3 text-[13px] text-[#6B7280] font-bold">{p.strategy}</div>
                 <div className="col-span-2 text-[15px] text-black text-right font-mono-num">{p.balance}</div>
                 <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-mono-num ${p.up ? "text-emerald-500" : "text-[#9CA3AF]"}`}>
                   {p.up ? <IconArrowUpRight size={14} /> : <IconArrowDownRight size={14} />}
@@ -298,7 +236,10 @@ export function PortfolioView() {
           </div>
         </div>
       </div>
-      <AgentTransactions />
+
+      <Suspense fallback={<ComponentSkeleton height={300} />}>
+        <AgentTransactions />
+      </Suspense>
 
     </motion.div>
   );
