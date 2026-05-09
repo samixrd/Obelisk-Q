@@ -12,6 +12,7 @@ type LogoMap = { [key: string]: string | null };
 export function useTokenLogos() {
   const [logos, setLogos] = useState<LogoMap>({
     MNT: MNT_OFFICIAL_LOGO,
+    WMNT: MNT_OFFICIAL_LOGO,
     USDY: USDY_OFFICIAL_LOGO,
     mETH: METH_OFFICIAL_LOGO
   });

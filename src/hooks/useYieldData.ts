@@ -10,7 +10,10 @@ export interface YieldInfo {
 export interface YieldData {
   usdy: YieldInfo;
   meth: YieldInfo;
+  wmnt: YieldInfo;
 }
+
+const FALLBACK_WMNT = 4.0;
 
 const FALLBACK_USDY = 5.0;
 const FALLBACK_METH = 3.5;
@@ -20,6 +23,7 @@ export function useYieldData(): YieldData {
   const [data, setData] = useState<YieldData>({
     usdy: { apy: FALLBACK_USDY, loading: true, lastUpdated: null },
     meth: { apy: FALLBACK_METH, loading: true, lastUpdated: null },
+    wmnt: { apy: FALLBACK_WMNT, loading: true, lastUpdated: null },
   });
 
   const fetchYields = async () => {
@@ -40,6 +44,12 @@ export function useYieldData(): YieldData {
             loading: false,
             lastUpdated: new Date(bData.timestamp),
             trend7d: bData.meth.change_24h
+          },
+          wmnt: {
+            apy: bData.wmnt?.apy ?? FALLBACK_WMNT,
+            loading: false,
+            lastUpdated: new Date(bData.timestamp),
+            trend7d: bData.wmnt?.change_24h ?? 0
           }
         });
         return;
@@ -66,6 +76,12 @@ export function useYieldData(): YieldData {
             loading: false,
             lastUpdated: new Date(),
             trend7d: methPool ? methPool.apyPct1D : null,
+          },
+          wmnt: {
+            apy: FALLBACK_WMNT,
+            loading: false,
+            lastUpdated: new Date(),
+            trend7d: null,
           }
         });
       }
@@ -74,6 +90,7 @@ export function useYieldData(): YieldData {
       setData(prev => ({
         usdy: { ...prev.usdy, loading: false },
         meth: { ...prev.meth, loading: false },
+        wmnt: { ...prev.wmnt, loading: false },
       }));
     }
   };

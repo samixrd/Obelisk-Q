@@ -5,21 +5,23 @@ import { MagneticText } from "./MagneticText";
 
 export function PortfolioAllocation() {
   const { score, adaptive } = useStability();
-  const { usdy, meth } = useYieldData();
+  const { usdy, meth, wmnt } = useYieldData();
 
   // Mock data as requested
   const current = {
-    usdy: { pct: 60, val: 257000 },
-    meth: { pct: 40, val: 171150 }
+    usdy: { pct: 45, val: 192600 },
+    meth: { pct: 35, val: 149800 },
+    wmnt: { pct: 20, val: 85600 }
   };
 
   const target = {
-    usdy: 45,
-    meth: 55
+    usdy: 40,
+    meth: 40,
+    wmnt: 20
   };
 
-  const totalVal = current.usdy.val + current.meth.val;
-  const blendedApy = (current.usdy.pct * usdy.apy + current.meth.pct * meth.apy) / 100;
+  const totalVal = current.usdy.val + current.meth.val + current.wmnt.val;
+  const blendedApy = (current.usdy.pct * usdy.apy + current.meth.pct * meth.apy + current.wmnt.pct * (wmnt?.apy || 4.0)) / 100;
 
   // Last 7 days USDY % (Mock)
   const history = [62, 65, 63, 60, 58, 60, 60]; 
@@ -73,6 +75,25 @@ export function PortfolioAllocation() {
                   />
                 </div>
               </div>
+
+              {/* WMNT Bar */}
+              <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                  <span className="text-[11px] text-black/40 font-bold uppercase tracking-widest" style={{ fontFamily: "'Inter', sans-serif" }}>WMNT</span>
+                  <div className="text-right">
+                    <span className="text-[14px] text-black tabular-nums mr-4" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{current.wmnt.pct}%</span>
+                    <span className="text-[12px] text-black/20 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>${current.wmnt.val.toLocaleString()}</span>
+                  </div>
+                </div>
+                <div className="h-2.5 bg-black/[0.03] rounded-full overflow-hidden">
+                  <motion.div 
+                    initial={{ width: 0 }}
+                    animate={{ width: `${current.wmnt.pct}%` }}
+                    transition={{ duration: 1.5, ease: [0.22, 1, 0.36, 1], delay: 0.4 }}
+                    className="h-full bg-black/40 rounded-full"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -113,7 +134,7 @@ export function PortfolioAllocation() {
             <div className="bg-black/[0.02] border border-black/[0.04] rounded-[32px] p-8 space-y-6">
               <div className="flex justify-between items-center">
                 <span className="text-[13px] text-black/40 font-semibold">Recommended Target</span>
-                <span className="text-[13px] text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{target.usdy}% USDY · {target.meth}% mETH</span>
+                <span className="text-[13px] text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{target.usdy}% USDY · {target.meth}% mETH · {target.wmnt}% WMNT</span>
               </div>
               <div className="flex items-center gap-4">
                 <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.5)] animate-pulse" />

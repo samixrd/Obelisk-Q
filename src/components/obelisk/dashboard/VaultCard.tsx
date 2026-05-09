@@ -11,7 +11,7 @@ interface VaultCardProps {
 
 export function VaultCard({ onOpenInvest }: VaultCardProps) {
   const { vaultStats, deposit, connect, isConnected, isWrongNetwork, txState } = useVault();
-  const { usdy, meth } = useYieldData();
+  const { usdy, meth, wmnt } = useYieldData();
   const logos = useTokenLogos();
   const [depositAmount, setDepositAmount] = useState("");
   const isPending = txState === "waiting" || txState === "pending";
@@ -60,7 +60,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                 </div>
               </div>
               <p className="text-[12px] text-[#6B7280]">
-                Institutional RWA · mETH + USDY
+                Institutional RWA · mETH + USDY + WMNT
               </p>
             </div>
           </div>
@@ -79,7 +79,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               </svg>
             </div>
             <p className="text-[36px] font-bold text-[#0a0a0a] tabular-nums tracking-tighter leading-none">
-              {usdy.loading ? "—" : `${((usdy.apy + meth.apy) / 2).toFixed(1)}%`}
+              {usdy.loading ? "—" : `${((usdy.apy + meth.apy + (wmnt?.apy || 0)) / 3).toFixed(1)}%`}
             </p>
           </div>
           <div className="flex-1">
@@ -170,7 +170,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
           <div className="flex items-center gap-2">
             <span className="text-[14px] font-semibold text-[#0a0a0a] tabular-nums">
               {depositAmount && parseFloat(depositAmount) > 0
-                ? `${(parseFloat(depositAmount) * ((usdy.apy + meth.apy) / 2) / 100).toFixed(4)} MNT`
+                ? `${(parseFloat(depositAmount) * ((usdy.apy + meth.apy + (wmnt?.apy || 0)) / 3) / 100).toFixed(4)} MNT`
                 : "—"
               }
             </span>

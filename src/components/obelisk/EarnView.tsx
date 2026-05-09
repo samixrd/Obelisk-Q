@@ -29,9 +29,9 @@ export function EarnView({ onOpenInvest }: EarnViewProps) {
         <div className="glass-card rounded-3xl p-8 transition-all hover:bg-white/80">
           <p className="text-[10px] uppercase text-muted-foreground mb-3 font-semibold tracking-[0.2em]" style={{ letterSpacing: "0.28em" }}>Yield Source</p>
           <div className="text-[17px] font-semibold text-[#0a0a0a]">
-            <MagneticText disabled text="USDY + mETH Blend" />
+            <MagneticText disabled text="USDY + mETH + WMNT" />
           </div>
-          <p className="text-[12px] text-muted-foreground mt-2">Diversified real-world assets and liquid staking tokens.</p>
+          <p className="text-[12px] text-muted-foreground mt-2">Diversified real-world assets, liquid staking, and stable native yields.</p>
         </div>
         
         <div className="glass-card rounded-3xl p-8 transition-all hover:bg-white/80">

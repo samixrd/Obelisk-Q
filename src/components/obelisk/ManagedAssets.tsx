@@ -21,7 +21,7 @@ interface Asset {
 }
 
 export function ManagedAssets() {
-  const { usdy, meth } = useYieldData();
+  const { usdy, meth, wmnt } = useYieldData();
   const logos = useTokenLogos();
   const { vaultStats } = useVault();
   const { currentPosition } = useAgentData();
@@ -37,17 +37,14 @@ export function ManagedAssets() {
   // 3. Define Allocation Ratio based on Real-Time Agent Position
   let methRatio = 0;
   let usdyRatio = 0;
+  let wmntRatio = 0;
 
   if (currentPosition === "mETH") {
     methRatio = 1.0;
-    usdyRatio = 0;
   } else if (currentPosition === "USDY") {
-    methRatio = 0;
     usdyRatio = 1.0;
-  } else {
-    // Waiting to deploy or in MNT safety
-    methRatio = 0;
-    usdyRatio = 0;
+  } else if (currentPosition === "WMNT") {
+    wmntRatio = 1.0;
   }
 
   const assets: Asset[] = [
@@ -75,6 +72,18 @@ export function ManagedAssets() {
       seed: 11,
       trend: meth.trend7d?.toFixed(2),
     },
+    {
+      symbol: "WMNT",
+      name: "Wrapped Mantle",
+      blurb: "Native Mantle token wrapped for stability. Low volatility, steady baseline yield.",
+      yield: `${wmnt.apy.toFixed(2)}%`,
+      yieldLabel: "Baseline yield",
+      buffer: `$${(totalBuffer * (wmntRatio > 0 ? 1 : 0.5)).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      bufferPct: Math.round(wmntRatio * 100),
+      tvl: `$${(investable * wmntRatio).toLocaleString(undefined, { maximumFractionDigits: 0 })}`,
+      seed: 9,
+      trend: wmnt.trend7d?.toFixed(2),
+    },
   ];
 
   return (
@@ -95,7 +104,7 @@ export function ManagedAssets() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {assets.map((a, i) => (
           <motion.div
             key={a.symbol}
