@@ -80,23 +80,24 @@ export function GuidedTour({ open, onClose }: Props) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-[55] flex items-center justify-center bg-background/80 backdrop-blur-xl"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm"
+          style={{ position: 'fixed', inset: 0 }}
         >
           {/* Subtle radial accent */}
           <div className="absolute inset-0 pointer-events-none"
-            style={{ background: "radial-gradient(ellipse at 50% 40%, hsl(104 100% 78% / 0.06), transparent 60%)" }}
+            style={{ background: "radial-gradient(ellipse at 50% 40%, hsl(104 100% 78% / 0.1), transparent 70%)" }}
           />
 
           {/* Close */}
           <button
             onClick={skip}
-            className="absolute top-8 right-8 text-muted-foreground hover:text-foreground transition-colors duration-500"
+            className="absolute top-8 right-8 text-white/60 hover:text-white transition-colors duration-500 z-[10000]"
             aria-label="Skip tour"
           >
             <IconClose size={18} />
           </button>
 
-          <div className="relative w-full max-w-xl px-8">
+          <div className="relative w-[90%] max-w-[560px] mx-auto bg-background rounded-2xl p-8 md:p-12 shadow-2xl border border-border/50 z-[10001]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}
