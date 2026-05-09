@@ -153,21 +153,21 @@ export function ManagedAssets() {
 
               <div className="hairline mb-6" />
 
-              <div className="flex flex-col gap-3">
-                <div className="flex justify-between items-center">
-                  <p className="text-[9px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em" }}>
+              <div className="flex flex-col gap-4">
+                <div>
+                  <p className="text-[9px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.1em" }}>
                     Allocated
                   </p>
                   <p className="text-sm text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.tvl}</p>
                 </div>
-                <div className="flex justify-between items-center">
-                  <p className="text-[9px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em" }}>
+                <div>
+                  <p className="text-[9px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.1em" }}>
                     Safety Buffer
                   </p>
                   <p className="text-sm text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.buffer}</p>
                 </div>
-                <div className="mt-2">
-                  <div className="flex justify-between items-center mb-2">
+                <div className="mt-1">
+                  <div className="flex justify-between items-center mb-1.5">
                     <p className="text-[9px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em" }}>
                       Coverage
                     </p>
