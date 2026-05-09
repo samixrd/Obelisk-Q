@@ -91,7 +91,7 @@ Obelisk Q proposes a new **AI × Web3 paradigm**: where the agent is not just a 
 ---
 
 ## 🛠️ Getting Started
-*   **Live Demo**: [obelisk-q.vercel.app](https://obelisk-q.vercel.app)
+*   **Official Website**: [www.obeliskq.app](https://www.obeliskq.app/)
 *   **Setup Instructions**: See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)
 *   **Architecture Deep Dive**: See [src/pages/Docs.tsx](./src/pages/Docs.tsx)
 
