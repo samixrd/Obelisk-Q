@@ -104,68 +104,64 @@ export function ManagedAssets() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="flex flex-col gap-4">
         {assets.map((a, i) => (
           <motion.div
             key={a.symbol}
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -12 }}
+            animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-            whileHover={{ y: -4 }}
-            className="relative group rounded-2xl p-6 md:p-8 bg-foreground/[0.01] border border-foreground/5 hover:border-foreground/15 transition-all duration-500"
+            className="group flex flex-col xl:flex-row xl:items-center gap-6 xl:gap-8 rounded-2xl p-6 md:p-8 bg-foreground/[0.01] border border-foreground/5 hover:border-foreground/15 transition-all duration-500"
           >
-            <div className="relative">
-              <div className="flex flex-col gap-5 mb-6">
-                <div className="flex items-center gap-4">
-                  <span className="inline-flex items-center justify-center h-11 w-11 rounded-full border border-foreground/10 overflow-hidden bg-white shrink-0">
-                    {logos[a.symbol] ? (
-                      <img src={logos[a.symbol]!} alt={a.symbol} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-sm text-foreground/90 font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol[0]}</span>
-                    )}
-                  </span>
-                  <div>
-                    <p className="text-xl text-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol}</p>
-                    <p className="text-[11px] text-muted-foreground line-clamp-1">{a.name}</p>
-                  </div>
-                </div>
-                <div className="text-left">
-                  <p className="text-[10px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.2em" }}>
-                    {a.yieldLabel}
+            {/* Identity */}
+            <div className="flex items-center gap-4 xl:w-[240px] shrink-0">
+              <span className="inline-flex items-center justify-center h-12 w-12 rounded-full border border-foreground/10 overflow-hidden bg-white shrink-0">
+                {logos[a.symbol] ? (
+                  <img src={logos[a.symbol]!} alt={a.symbol} className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-sm text-foreground/90 font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol[0]}</span>
+                )}
+              </span>
+              <div>
+                <p className="text-xl text-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol}</p>
+                <p className="text-[12px] text-muted-foreground line-clamp-1 mt-0.5">{a.name}</p>
+              </div>
+            </div>
+
+            {/* Yield */}
+            <div className="xl:w-[160px] shrink-0">
+              <p className="text-[10px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.15em" }}>
+                {a.yieldLabel}
+              </p>
+              <div className="flex items-center gap-3">
+                <p className="text-2xl text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.yield}</p>
+                {a.trend && (
+                  <p className="text-[10px] text-neon flex items-center gap-0.5 hidden xl:flex" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <IconArrowUpRight size={10} />
+                    {a.trend}%
                   </p>
-                  <div className="flex items-center gap-3">
-                    <p className="text-2xl text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.yield}</p>
-                    {a.trend && (
-                      <p className="text-[10px] text-neon flex items-center gap-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                        <IconArrowUpRight size={10} />
-                        {a.trend}% (7d)
-                      </p>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
+            </div>
 
-              <p className="text-sm text-muted-foreground leading-relaxed mb-8">{a.blurb}</p>
+            {/* Description */}
+            <div className="flex-1 min-w-0 hidden xl:block pr-8">
+              <p className="text-sm text-muted-foreground leading-relaxed">{a.blurb}</p>
+            </div>
 
-              <div className="-mx-2 mb-8">
-                <StabilityGraph seed={a.seed} height={70} />
+            {/* Stats */}
+            <div className="flex items-center justify-between xl:justify-end gap-6 xl:gap-12 xl:w-[380px] shrink-0">
+              <div className="text-left xl:text-right">
+                <p className="text-[10px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.1em" }}>Allocated</p>
+                <p className="text-[15px] text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.tvl}</p>
               </div>
-
-              <div className="hairline mb-6" />
-
-              <div className="flex justify-between items-end gap-2 mt-2">
-                <div className="flex-1 min-w-0">
-                  <p className="text-[8px] uppercase text-muted-foreground mb-1 truncate" style={{ letterSpacing: "0.05em" }}>Allocated</p>
-                  <p className="text-xs text-foreground font-medium truncate" style={{ fontFamily: "'JetBrains Mono', monospace" }} title={a.tvl}>{a.tvl}</p>
-                </div>
-                <div className="flex-1 min-w-0 text-center">
-                  <p className="text-[8px] uppercase text-muted-foreground mb-1 truncate" style={{ letterSpacing: "0.05em" }}>Reserve</p>
-                  <p className="text-xs text-foreground font-medium truncate" style={{ fontFamily: "'JetBrains Mono', monospace" }} title={a.buffer}>{a.buffer}</p>
-                </div>
-                <div className="flex-1 min-w-0 text-right">
-                  <p className="text-[8px] uppercase text-muted-foreground mb-1 truncate" style={{ letterSpacing: "0.05em" }}>Coverage</p>
-                  <p className="text-xs text-foreground font-medium truncate" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.bufferPct}%</p>
-                </div>
+              <div className="text-left xl:text-right">
+                <p className="text-[10px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.1em" }}>Reserve</p>
+                <p className="text-[15px] text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.buffer}</p>
+              </div>
+              <div className="text-left xl:text-right w-20">
+                <p className="text-[10px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.1em" }}>Coverage</p>
+                <p className="text-[15px] text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.bufferPct}%</p>
               </div>
             </div>
           </motion.div>
