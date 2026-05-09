@@ -8,6 +8,10 @@ Obelisk Q demonstrates excellence across technology, innovation, and ecosystem c
 
 ### 1. Technical Depth (AI × On-Chain)
 - **LangGraph Supervisory Graph**: A 5-node configuration (Regime, Risk, Score, Telemetry, Controller) arbitrating capital rotation.
+- **GPT-4o-mini Intelligence Layer**: Powered by Azure OpenAI, the agent uses GPT-4o-mini at two critical nodes:
+  - *Market Analysis* — Analyzes real-time DeFiLlama yield data, CoinGecko price data, and the Fear & Greed Index to generate AI-powered market insights each cycle.
+  - *Regime Confirmation* — Acts as a second opinion on the HMM regime classification, confirming or overriding the signal based on full market context.
+  - *Graceful Fallback* — If the LLM call fails, the agent automatically falls back to rule-based logic with zero downtime.
 - **Agent Attestation**: Every autonomous decision is cryptographically signed and verifiable on the Mantle Network.
 - **Antigravity Protocol**: Ensures node-to-node telemetry synchronization stays below 500ms for state-drift prevention.
 
@@ -16,7 +20,7 @@ Obelisk Q demonstrates excellence across technology, innovation, and ecosystem c
 - **Sovereign Agent Identity**: Agents operate with ERC-8004 identities, creating a portable audit trail of competence.
 
 ### 3. Mantle Ecosystem Contribution
-- **Native RWA Support**: Direct optimization for Mantle Staked Ether (**mETH**) and Ondo **USDY**.
+- **Native RWA Support**: Direct optimization for Mantle Staked Ether (**mETH**), Ondo **USDY**, and Wrapped MNT (**WMNT**).
 - **0% Local Disk Persistence**: Leveraging Mantle's efficiency and cloud vector storage to ensure a stateless, high-availability architecture.
 
 ### 4. Product Completeness

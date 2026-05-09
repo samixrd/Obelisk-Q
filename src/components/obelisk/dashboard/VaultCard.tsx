@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { useState } from "react";
 import { useVault } from "@/hooks/useVault";
 import { useYieldData } from "@/hooks/useYieldData";
@@ -14,7 +14,6 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
   const { usdy, meth } = useYieldData();
   const logos = useTokenLogos();
   const [depositAmount, setDepositAmount] = useState("");
-  const [learnMoreOpen, setLearnMoreOpen] = useState(false);
   const isPending = txState === "waiting" || txState === "pending";
 
   const handleDeposit = async () => {
@@ -65,12 +64,6 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               </p>
             </div>
           </div>
-          <button
-            onClick={() => setLearnMoreOpen(true)}
-            className="text-[13px] text-[#1976D2] hover:text-[#1565C0] transition-colors font-medium"
-          >
-            Learn more →
-          </button>
         </div>
 
         {/* Stats Row — APY + AUM */}
@@ -248,69 +241,6 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
           )}
         </motion.button>
       </div>
-
-      {/* Learn More Modal */}
-      <AnimatePresence>
-        {learnMoreOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setLearnMoreOpen(false)}
-              className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-md"
-            />
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className="fixed inset-0 z-[101] flex items-center justify-center pointer-events-none"
-            >
-              <div className="w-[400px] bg-white rounded-[32px] p-8 shadow-2xl pointer-events-auto border border-black/5">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-xl font-bold text-black">Vault Mechanics</h3>
-                  <button onClick={() => setLearnMoreOpen(false)} className="p-2 hover:bg-black/5 rounded-full">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-                  </button>
-                </div>
-                <div className="space-y-6">
-                  <div className="flex gap-4">
-                    <div className="h-8 w-8 rounded-full bg-black/5 flex items-center justify-center shrink-0">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v20M2 12h20" /></svg>
-                    </div>
-                    <div>
-                      <h4 className="text-[14px] font-bold text-black mb-1">AI Management</h4>
-                      <p className="text-[12px] text-[#6B7280] leading-relaxed">Dynamic balancing between Treasuries and Staking for optimal stability.</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="h-8 w-8 rounded-full bg-black/5 flex items-center justify-center shrink-0">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-                    </div>
-                    <div>
-                      <h4 className="text-[14px] font-bold text-black mb-1">Safety Buffer</h4>
-                      <p className="text-[12px] text-[#6B7280] leading-relaxed">Protocol reserves protect your principal against market drawdowns.</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="h-8 w-8 rounded-full bg-black/5 flex items-center justify-center shrink-0">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" /></svg>
-                    </div>
-                    <div>
-                      <h4 className="text-[14px] font-bold text-black mb-1">Instant Liquidity</h4>
-                      <p className="text-[12px] text-[#6B7280] leading-relaxed">No lockups. Withdraw your assets back to MNT instantly at any time.</p>
-                    </div>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setLearnMoreOpen(false)}
-                  className="w-full mt-8 py-4 bg-black text-white font-bold rounded-2xl hover:bg-black/90 transition-all"
-                >
-                  Got it
-                </button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

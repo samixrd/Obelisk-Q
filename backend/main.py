@@ -12,10 +12,73 @@ from pydantic import BaseModel
 
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
-from langchain_openai import ChatOpenAI, AzureChatOpenAI
+from openai import OpenAI
 import os
 import logging
 from dotenv import load_dotenv
+import sqlite3
+
+DB_PATH = "obelisk_memory.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS agent_memory (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            cycle INTEGER,
+            regime TEXT,
+            score INTEGER,
+            action TEXT,
+            position TEXT,
+            meth_apy REAL,
+            usdy_apy REAL,
+            tx_hash TEXT DEFAULT 'N/A',
+            analyst_insight TEXT DEFAULT ''
+        )
+    """)
+    try:
+        conn.execute("ALTER TABLE agent_memory ADD COLUMN analyst_insight TEXT DEFAULT ''")
+    except sqlite3.OperationalError:
+        pass
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS performance_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            action TEXT,
+            from_asset TEXT,
+            to_asset TEXT,
+            vault_value_before REAL,
+            vault_value_after REAL,
+            pnl REAL,
+            tx_hash TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+def save_cycle_memory(cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash="N/A", analyst_insight=""):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("""
+        INSERT INTO agent_memory 
+        (timestamp, cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash, analyst_insight)
+        VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash, analyst_insight))
+    conn.commit()
+    conn.close()
+
+def get_recent_memory(limit=5):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        rows = conn.execute("""
+            SELECT timestamp, cycle, regime, score, action, position, tx_hash
+            FROM agent_memory 
+            ORDER BY id DESC LIMIT ?
+        """, (limit,)).fetchall()
+        conn.close()
+        return rows
+    except:
+        return []
 
 try:
     from web3 import Web3
@@ -31,22 +94,17 @@ logging.basicConfig(level=logging.INFO)
 
 # ─── LLM Configuration ────────────────────────────────────────────────────────
 
-def get_llm():
-    if os.getenv("AZURE_OPENAI_API_KEY"):
-        return AzureChatOpenAI(
-            azure_deployment=os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT_NAME", "gpt-4o"),
-            api_version=os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-01"),
-            azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-            api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-            temperature=0
-        )
-    return ChatOpenAI(
-        base_url=os.getenv("LLM_API_BASE", "http://localhost:11434/v1"),
-        api_key="ollama",
-        model="qwen2.5:14b"
-    )
+llm_client = OpenAI(
+    base_url="https://obelisk.services.ai.azure.com/openai/v1",
+    api_key=os.getenv("AZURE_OPENAI_API_KEY")
+)
 
-llm = get_llm()
+def call_llm(messages: list) -> str:
+    completion = llm_client.chat.completions.create(
+        model="gpt-4o-mini",
+        messages=messages
+    )
+    return completion.choices[0].message.content
 
 # ─── Multi-Agent Graph State ──────────────────────────────────────────────────
 
@@ -67,17 +125,19 @@ last_known_state = {
 }
 
 LAST_REBALANCE_TIME = 0
-COOLDOWN_SECONDS = 300  # Reduced to 300s for testing (was 86400)
+COOLDOWN_SECONDS = 1800 
+CYCLE_INTERVAL = 600 
 CURRENT_POSITION = "MNT"  # Global position state
 SCORE_HISTORY = []        # List of (timestamp, score)
 CIRCUIT_BREAKER_ACTIVE = False
+CB_UNWIND_DONE = False
 EMA_SCORE = None
 ALPHA = 0.1
 MAX_DELTA = 5
 MAX_SCORE_CHANGE = 10 # This is used elsewhere, keeping it for now
 
 def update_circuit_breaker(current_score):
-    global SCORE_HISTORY, CIRCUIT_BREAKER_ACTIVE
+    global SCORE_HISTORY, CIRCUIT_BREAKER_ACTIVE, CB_UNWIND_DONE
     now = time.time()
     SCORE_HISTORY.append((now, current_score))
     
@@ -97,6 +157,9 @@ def update_circuit_breaker(current_score):
         CIRCUIT_BREAKER_ACTIVE = True
     else:
         CIRCUIT_BREAKER_ACTIVE = False
+        # Reset unwind flag when score recovers above 55
+        if current_score > 55:
+            CB_UNWIND_DONE = False
 
 ERC20_ABI = [
     {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
@@ -115,15 +178,47 @@ async def regime_detection_node(state: AgentState):
         vol_change = random.uniform(-0.4, 0.4)
         vol = max(0.5, min(3.5, prev_vol + vol_change))
         
-        yield_data = {"usdy": 5.1, "meth": 3.4}
+        usdy_apy = 5.1
+        meth_apy = 3.4
+        mnt_change = round(random.uniform(-2.0, 2.0), 2)
+        fear_greed = random.randint(30, 75)
+        
+        yield_data = {"usdy": usdy_apy, "meth": meth_apy}
         state["data"]["yields"] = yield_data
         state["data"]["vol"] = vol
+        state["data"]["mnt_change"] = mnt_change
+        state["data"]["fear_greed"] = fear_greed
         last_known_state["yields"] = yield_data
         last_known_state["risk"]["vol"] = vol
-        content = f"regime: liquidity markers scanned. usdy 5.1%. meth 3.4%. vol {vol:.2f}."
+        
+        # ── LLM Market Analysis (GPT-4o-mini) ──
+        try:
+            recent = get_recent_memory(5)
+            memory_context = "\n".join([
+                f"Cycle {r[1]}: {r[2]} regime, score={r[3]}, action={r[4]}, position={r[5]}"
+                for r in recent
+            ]) if recent else "No previous history."
+
+            analysis = call_llm([
+                {"role": "system", "content": f"""You are a DeFi market analyst for Obelisk Q on Mantle Network.
+You manage rebalancing between mETH (staking yield) and USDY (RWA yield).
+Recent agent history:
+{memory_context}
+Be concise. 1-2 sentences max."""},
+                {"role": "user", "content": f"Current data: mETH APY={meth_apy}%, USDY APY={usdy_apy}%, MNT 24h={mnt_change}%, ETH vol={vol:.2f}, Fear/Greed={fear_greed}. What is your market outlook?"}
+            ])
+            logger.info(f"analyst: {analysis}")
+            state["data"]["analyst_insight"] = analysis
+        except Exception as e:
+            logger.warning(f"LLM call failed: {e}. using rule-based fallback.")
+            analysis = f"Rule-based: vol={vol:.2f}, mETH={meth_apy}%, USDY={usdy_apy}%, MNT 24h={mnt_change}%"
+            state["data"]["analyst_insight"] = analysis
+        
+        content = f"regime: liquidity markers scanned. usdy {usdy_apy}%. meth {meth_apy}%. vol {vol:.2f}. LLM insight: {analysis[:80]}"
     except asyncio.TimeoutError:
         state["data"]["yields"] = last_known_state["yields"]
         state["data"]["vol"] = last_known_state["risk"]["vol"]
+        state["data"]["analyst_insight"] = "timeout — no LLM insight available"
         content = "regime: timeout. using last known yield vector."
     
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
@@ -133,6 +228,7 @@ async def risk_assessment_node(state: AgentState):
     try:
         await asyncio.sleep(0.1)
         vol = state["data"].get("vol", 1.5)
+        mnt_change = state["data"].get("mnt_change", 0.0)
         
         # Calculate dynamic risk score (inverse to volatility)
         risk_score = max(0, min(100, int(100 - (vol - 0.5) * 30)))
@@ -148,11 +244,35 @@ async def risk_assessment_node(state: AgentState):
             last_known_state["hysteresis"] = hysteresis - 1
         else:
             if vol < 1.2:
-                new_regime = "Expansion"
+                raw_regime = "Expansion"
             elif vol > 2.2:
-                new_regime = "Contraction"
+                raw_regime = "Contraction"
             else:
-                new_regime = "Consolidation"
+                raw_regime = "Consolidation"
+            
+            # ── LLM Regime Confirmation (GPT-4o-mini) ──
+            try:
+                recent = get_recent_memory(3)
+                last_regimes = [r[2] for r in recent] if recent else []
+                
+                regime_confirm = call_llm([
+                    {"role": "system", "content": f"""You are a DeFi risk manager. 
+Last 3 regimes: {last_regimes}
+Reply with ONLY one word: Expansion, Consolidation, or Contraction."""},
+                    {"role": "user", "content": f"Q-Score={risk_score}, ETH vol={vol:.2f}, MNT change={mnt_change}%, signal={raw_regime}. Confirm regime?"}
+                ])
+                regime_confirm = regime_confirm.strip()
+                logger.info(f"tracker LLM regime: {regime_confirm}")
+                
+                # Only accept valid LLM regime values
+                if regime_confirm in ("Expansion", "Consolidation", "Contraction"):
+                    new_regime = regime_confirm
+                else:
+                    logger.warning(f"LLM returned invalid regime '{regime_confirm}'. using rule-based: {raw_regime}")
+                    new_regime = raw_regime
+            except Exception as e:
+                logger.warning(f"LLM call failed: {e}. using rule-based fallback.")
+                new_regime = raw_regime
                 
             if new_regime != current_regime:
                 last_known_state["hysteresis"] = 3 # Lock state for 3 cycles to prevent chatter
@@ -188,27 +308,25 @@ async def q_score_engine_node(state: AgentState):
     state["data"]["risk"]["score"] = risk_score
     last_known_state["risk"]["score"] = risk_score
     
-    # ── HARD-LOCK: if confidence < 60, force HOLD regardless of regime ──
-    if risk_score < 60:
-        h_s = "H(s)_safety"
-        damping = "1.0 (Critically Damped)"
-        action = "HOLD"
-        content = f"scoring: HARD-LOCK engaged. score {risk_score} < 60 threshold. executor locked to HOLD."
-    elif regime == "Expansion":
+    if regime == "Expansion" and risk_score >= 65:
         h_s = "H(s)_growth"
         damping = "0.4 (Underdamped)"
         action = "mETH"
-    elif regime == "Contraction":
+    elif regime == "Contraction" and risk_score <= 45:
         h_s = "H(s)_hedge"
         damping = "1.0 (Critically Damped)"
         action = "USDY"
-    else:
+    elif regime == "Consolidation" and 50 <= risk_score <= 65:
         h_s = "H(s)_stability"
         damping = "0.707 (Optimal Damping)"
+        action = "WMNT"
+    else:
+        h_s = "H(s)_hold"
+        damping = "1.0 (Critically Damped)"
         action = "HOLD"
     
-    if risk_score < 60:
-        content = f"scoring: HARD-LOCK engaged. score {risk_score} < 60 threshold. executor locked to HOLD."
+    if action == "HOLD":
+        content = f"scoring: hold engaged. score {risk_score}. default to HOLD."
     else:
         content = f"scoring: {h_s} triggered. action: {action}. damping limits: {damping}."
         
@@ -225,16 +343,37 @@ async def telemetry_aggregator_node(state: AgentState):
     content = "telemetry: packet broadcast complete. cross-node consensus achieved in 12ms."
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
+def sync_current_position():
+    global CURRENT_POSITION
+    if not WEB3_AVAILABLE:
+        return
+    try:
+        rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
+        vault_addr = os.getenv("VAULT_ADDRESS", "0x1f15C9C4c80734400c8a8681CDa39E4288c6AC16")
+        w3 = Web3(Web3.HTTPProvider(rpc_url))
+        WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
+        wmnt_contract = w3.eth.contract(address=w3.to_checksum_address(WMNT_ADDRESS), abi=ERC20_ABI)
+        wmnt_balance = wmnt_contract.functions.balanceOf(w3.to_checksum_address(vault_addr)).call()
+        if wmnt_balance > 0:
+            CURRENT_POSITION = "WMNT"
+    except Exception:
+        pass
+
 async def supervisory_controller_node(state: AgentState):
     logger.info("node: supervisory_controller | validating q-score authority")
-    global LAST_REBALANCE_TIME, CURRENT_POSITION, CIRCUIT_BREAKER_ACTIVE
+    global LAST_REBALANCE_TIME, CURRENT_POSITION, CIRCUIT_BREAKER_ACTIVE, CB_UNWIND_DONE
     
+    risk_score = state["data"].get("risk", {}).get("score", 50)
     action = state["data"].get("action", "HOLD")
-    risk_score = state["data"].get("risk", {}).get("score", 90)
 
     # ── CIRCUIT BREAKER LOGIC ──
     update_circuit_breaker(risk_score)
     if CIRCUIT_BREAKER_ACTIVE:
+        # If we already attempted an unwind this CB episode, don't retry
+        if CB_UNWIND_DONE:
+            logger.info("executor: CIRCUIT BREAKER ACTIVE — unwind already attempted. waiting for score recovery above 55.")
+            return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE — unwind already attempted. awaiting score recovery.")], "data": state["data"]}
+        
         logger.warning(f"executor: CIRCUIT BREAKER ACTIVE — initiating EMERGENCY UNWIND. position={CURRENT_POSITION}")
         
         # If we are in a risky position (mETH or USDY), unwind to MNT
@@ -250,7 +389,9 @@ async def supervisory_controller_node(state: AgentState):
             # Override action to trigger unwind in the RPC executor below
             state["data"]["action"] = "UNWIND"
             action = "UNWIND"
+            CB_UNWIND_DONE = True
         else:
+            CB_UNWIND_DONE = True
             return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE — system already in safety (MNT).")], "data": state["data"]}
     
     # ── POSITION TRACKING: skip if already in target ──
@@ -260,6 +401,9 @@ async def supervisory_controller_node(state: AgentState):
     elif action == "USDY" and CURRENT_POSITION == "USDY":
         logger.info("executor: already in USDY position. skipping swap.")
         return {"messages": [AIMessage(content="executor: position already optimized (USDY). skipping transaction.")], "data": state["data"]}
+    elif action == "WMNT" and CURRENT_POSITION == "WMNT":
+        logger.info("executor: already in WMNT position. skipping swap.")
+        return {"messages": [AIMessage(content="executor: position already optimized (WMNT). skipping transaction.")], "data": state["data"]}
 
     # ── Q-SCORE FINAL AUTHORITY: executor cannot override the scoring engine ──
     if risk_score < 60 or action == "HOLD":
@@ -288,7 +432,7 @@ async def supervisory_controller_node(state: AgentState):
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
-    vault_addr = os.getenv("VAULT_ADDRESS", "0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa")
+    vault_addr = os.getenv("VAULT_ADDRESS", "0x1f15C9C4c80734400c8a8681CDa39E4288c6AC16")
     
     if not private_key or not vault_addr:
         logger.error(f"executor: pre-flight check failed. private_key={bool(private_key)}, vault_addr={vault_addr}")
@@ -325,6 +469,7 @@ async def supervisory_controller_node(state: AgentState):
 
     METH_ADDR = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0"
     USDY_ADDR = "0x5bE26527e817998A7206475496fDE1e68957c5A6"
+    WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
     ZERO_ADDR = "0x0000000000000000000000000000000000000000"
 
     target_token = ZERO_ADDR
@@ -332,6 +477,8 @@ async def supervisory_controller_node(state: AgentState):
         target_token = METH_ADDR
     elif action == "USDY":
         target_token = USDY_ADDR
+    elif action == "WMNT":
+        target_token = WMNT_ADDRESS
     elif action == "UNWIND":
         target_token = ZERO_ADDR
 
@@ -349,7 +496,8 @@ async def supervisory_controller_node(state: AgentState):
                     vault_address = w3.to_checksum_address(vault_addr)
                     # Check vault balance
                     balance = w3.eth.get_balance(vault_address)
-                    logger.info(f"executor: rpc check - vault balance = {w3.from_wei(balance, 'ether')} MNT")
+                    vault_balance_before = float(w3.from_wei(balance, 'ether'))
+                    logger.info(f"executor: rpc check - vault balance = {vault_balance_before} MNT")
                     
                     if balance == 0:
                         return "aborting|executor: vault balance is 0. aborting execution."
@@ -364,6 +512,9 @@ async def supervisory_controller_node(state: AgentState):
                         m_balance = m_contract.functions.balanceOf(vault_address).call()
                         if m_balance == 0:
                             return "aborting|executor: insufficient mETH for USDY swap. skipping."
+                            
+                    if action == "WMNT" and balance < w3.to_wei(0.01, 'ether'):
+                        return "aborting|executor: insufficient MNT for WMNT swap. skipping."
                         
                     if action == "UNWIND":
                         logger.info("executor: EMERGENCY UNWIND in progress...")
@@ -423,6 +574,21 @@ async def supervisory_controller_node(state: AgentState):
                     try:
                         receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
                         status = "success" if receipt.status == 1 else "failed"
+                        
+                        if status == "success":
+                            vault_balance_after = float(w3.from_wei(w3.eth.get_balance(vault_address), 'ether'))
+                            pnl = vault_balance_after - vault_balance_before
+                            target_asset = "MNT" if action == "UNWIND" else action
+                            
+                            conn = sqlite3.connect(DB_PATH)
+                            conn.execute("""
+                                INSERT INTO performance_log
+                                (timestamp, action, from_asset, to_asset, vault_value_before, vault_value_after, pnl, tx_hash)
+                                VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?)
+                            """, (action, CURRENT_POSITION, target_asset, vault_balance_before, vault_balance_after, pnl, tx_hash_hex))
+                            conn.commit()
+                            conn.close()
+                            
                         return f"{status}|{tx_hash_hex}|executor: signal synchronized. tx {'confirmed' if status == 'success' else 'reverted'} on mantle mainnet: {tx_hash_hex}"
                     except Exception as te:
                         logger.warning(f"executor: receipt timeout or error: {te}")
@@ -432,7 +598,7 @@ async def supervisory_controller_node(state: AgentState):
                 if "aborting" in res:
                     msg = res.split("|")[-1] if "|" in res else res
                     logger.info(msg)
-                    return {"messages": [AIMessage(content=msg)], "data": state["data"]}
+                    return msg
                 
                 # Extract status and hash from piped response
                 try:
@@ -669,16 +835,28 @@ app.add_middleware(
 # ─── REST Endpoints ───────────────────────────────────────────────────────────
 
 @app.get("/api/performance")
-async def get_performance(session: dict = Depends(verify_session)):
+async def get_performance():
+    conn = sqlite3.connect(DB_PATH)
+    rows = conn.execute("""
+        SELECT timestamp, action, from_asset, to_asset, 
+               vault_value_before, vault_value_after, pnl, tx_hash
+        FROM performance_log 
+        ORDER BY id DESC LIMIT 20
+    """).fetchall()
+    conn.close()
+    total_pnl = sum(r[6] for r in rows if r[6])
     return {
-        "ytd_return": 14.82,
-        "sharpe_ratio": 2.41,
-        "max_drawdown": -1.84,
-        "win_rate": 86
+        "trades": [{"timestamp": r[0], "action": r[1], "from": r[2], "to": r[3], "before": r[4], "after": r[5], "pnl": r[6], "tx_hash": r[7]} for r in rows],
+        "total_pnl": round(total_pnl, 6)
     }
 
+@app.get("/api/memory")
+async def get_memory():
+    rows = get_recent_memory(20)
+    return {"memory": [{"timestamp": r[0], "cycle": r[1], "regime": r[2], "score": r[3], "action": r[4], "position": r[5], "tx_hash": r[6]} for r in rows]}
+
 @app.get("/api/stats")
-async def get_stats(session: dict = Depends(verify_session)):
+async def get_stats():
     return {
         "total_aum": "1,240,500",
         "active_users": 142,
@@ -686,7 +864,8 @@ async def get_stats(session: dict = Depends(verify_session)):
         "score": last_known_state["risk"]["score"],
         "regime": last_known_state["regime"],
         "circuit_breaker_active": CIRCUIT_BREAKER_ACTIVE,
-        "current_position": CURRENT_POSITION
+        "current_position": CURRENT_POSITION,
+        "supported_assets": ["MNT", "mETH", "USDY", "WMNT"]
     }
 
 class AppState:
@@ -745,7 +924,7 @@ async def run_analysis_cycle():
     while True:
         logger.info(f"cycle {cycle_num + 1}: pre-flight countdown starting")
         try:
-            for i in range(10, 0, -1):
+            for i in range(CYCLE_INTERVAL, 0, -1):
                 await broadcast({"type": "countdown", "value": i})
                 await asyncio.sleep(1)
             
@@ -769,6 +948,10 @@ async def run_analysis_cycle():
                 await broadcast({"type": "update", "score": last_known_state["risk"]["score"], "regime": last_known_state["regime"], "logs": [], "yields": last_known_state["yields"]})
                 continue
             
+            score = final_state.get("data", {}).get("risk", {}).get("score", 92)
+            regime = final_state.get("data", {}).get("regime", "Consolidation")
+            action = final_state.get("data", {}).get("action", "SYNC")
+            
             logs = []
             node_map = {
                 0: "Regime Detection",
@@ -788,13 +971,11 @@ async def run_analysis_cycle():
                         "node": node_name
                     })
             
-            score = final_state.get("data", {}).get("risk", {}).get("score", 92)
-            regime = final_state.get("data", {}).get("regime", "Consolidation")
-            action = final_state.get("data", {}).get("action", "SYNC")
-            
             try:
-                messages = final_state.get("messages", [])
-                analyst_insight = messages[1].content if len(messages) > 1 else "no insight"
+                analyst_insight = final_state.get("data", {}).get("analyst_insight", None)
+                if not analyst_insight:
+                    messages = final_state.get("messages", [])
+                    analyst_insight = messages[1].content if len(messages) > 1 else "no insight"
                 agent_memory.store_cycle(
                     score=score,
                     regime=regime,
@@ -803,6 +984,23 @@ async def run_analysis_cycle():
                 )
             except Exception as e:
                 logger.warning(f"cycle {cycle_num}: memory store failed: {e}")
+            
+            yields = final_state.get("data", {}).get("yields", {"usdy": 5.0, "meth": 3.5})
+            tx_hash = "N/A"
+            if AGENT_TRANSACTIONS and AGENT_TRANSACTIONS[-1].get("cycle_number") == cycle_num:
+                tx_hash = AGENT_TRANSACTIONS[-1].get("tx_hash", "N/A")
+                
+            save_cycle_memory(
+                cycle=cycle_num,
+                regime=regime,
+                score=score,
+                action=action,
+                position=CURRENT_POSITION,
+                meth_apy=yields.get("meth", 0),
+                usdy_apy=yields.get("usdy", 0),
+                tx_hash=tx_hash,
+                analyst_insight=analyst_insight
+            )
             
             await broadcast({
                 "type": "update",
@@ -858,6 +1056,7 @@ async def sync_current_position():
 
 @app.on_event("startup")
 async def startup():
+    init_db()
     await sync_current_position() # Determine current position from blockchain
     asyncio.create_task(run_analysis_cycle())
     asyncio.create_task(session_reaper())

@@ -98,6 +98,13 @@ contract ObeliskVault {
             mntBalance = address(this).balance;
         }
 
+        // Still not enough? Unwind WMNT
+        if (mntBalance < amount) {
+            uint256 needed = amount - mntBalance;
+            _unwindToken(WMNT, needed);
+            mntBalance = address(this).balance;
+        }
+
         uint256 toPay = mntBalance < amount ? mntBalance : amount;
         balances[msg.sender] -= toPay;
         totalDeposited -= toPay;
@@ -111,18 +118,24 @@ contract ObeliskVault {
     // ── Agent Actions ─────────────────────────────────────────────────────
 
     function rebalance(address targetToken) external payable onlyAgent {
-        require(targetToken == METH || targetToken == USDY || targetToken == address(0), "Invalid target");
+        require(targetToken == METH || targetToken == USDY || targetToken == WMNT || targetToken == address(0), "Invalid target");
         
         if (targetToken == address(0)) {
             // Unwind everything to MNT
             _unwindToken(METH, type(uint256).max);
             _unwindToken(USDY, type(uint256).max);
+            _unwindToken(WMNT, type(uint256).max);
         } else {
             // 1. Unwind the OTHER token if we have any
             if (targetToken == METH) {
                 _unwindToken(USDY, type(uint256).max);
+                _unwindToken(WMNT, type(uint256).max);
             } else if (targetToken == USDY) {
                 _unwindToken(METH, type(uint256).max);
+                _unwindToken(WMNT, type(uint256).max);
+            } else if (targetToken == WMNT) {
+                _unwindToken(METH, type(uint256).max);
+                _unwindToken(USDY, type(uint256).max);
             }
 
             // 2. Swap MNT to target
@@ -131,18 +144,25 @@ contract ObeliskVault {
 
             uint256 amountToSwap = mntToSwap - 0.01 ether; // Keep 0.01 MNT buffer
             
-            address[] memory path = new address[](2);
-            path[0] = WMNT;
-            path[1] = targetToken;
-            
-            uint[] memory amounts = ROUTER.swapExactNativeForTokens{value: amountToSwap}(
-                0, 
-                path, 
-                address(this), 
-                block.timestamp + 600
-            );
+            if (targetToken == WMNT) {
+                // Wrap MNT to WMNT
+                (bool success, ) = WMNT.call{value: amountToSwap}(abi.encodeWithSignature("deposit()"));
+                require(success, "WMNT wrap failed");
+                emit Rebalanced(targetToken, amountToSwap, amountToSwap);
+            } else {
+                address[] memory path = new address[](2);
+                path[0] = WMNT;
+                path[1] = targetToken;
+                
+                uint[] memory amounts = ROUTER.swapExactNativeForTokens{value: amountToSwap}(
+                    0, 
+                    path, 
+                    address(this), 
+                    block.timestamp + 600
+                );
 
-            emit Rebalanced(targetToken, amountToSwap, amounts[1]);
+                emit Rebalanced(targetToken, amountToSwap, amounts[1]);
+            }
         }
     }
 
@@ -156,6 +176,12 @@ contract ObeliskVault {
     function _unwindToken(address token, uint256 /* amountMntNeeded */) internal {
         uint256 tokenBal = IERC20(token).balanceOf(address(this));
         if (tokenBal == 0) return;
+
+        if (token == WMNT) {
+            (bool success, ) = WMNT.call(abi.encodeWithSignature("withdraw(uint256)", tokenBal));
+            require(success, "WMNT unwrap failed");
+            return;
+        }
 
         address[] memory path = new address[](2);
         path[0] = token;
