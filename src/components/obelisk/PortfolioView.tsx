@@ -18,51 +18,50 @@ const fadeUp = {
 export function PortfolioView() {
   const { sessionToken, logout } = useAuth();
   const { txHistory, explorerUrl, vaultStats, withdraw, withdrawPartial, txState } = useVault();
-  const { regime } = useAgentWebSocket();
+  const { regime, currentPosition } = useAgentWebSocket();
   const logos = useTokenLogos();
 
-  // 1. Calculate Real Totals from Vault Contract
-  const totalMnt = parseFloat(vaultStats?.totalDeposited ?? "0");
-  const mntPrice = 1.0; 
-
-  // 2. Define Buffer (7.5% as per Safeguards protocol)
-  const bufferRatio = 0.075;
-  const totalBuffer = totalMnt * bufferRatio;
-  const investable = totalMnt - totalBuffer;
-
-  // 3. Define Allocation Ratio based on Regime
-  let methRatio = 0.5;
-  if (regime === "Expansion") methRatio = 0.7;
-  if (regime === "Contraction") methRatio = 0.3;
-
-  const usdyAllocated = isNaN(investable) ? 0 : Math.max(0, investable * (1 - methRatio));
-  const methAllocated = isNaN(investable) ? 0 : Math.max(0, investable * methRatio);
-
-  const POSITIONS = [
-    { 
+  // 1. Allocation Logic based on Real On-Chain Position
+  const POSITIONS = [];
+  
+  if (currentPosition === "mETH") {
+    POSITIONS.push({ 
       symbol: "mETH", 
       name: "Mantle Staked Ether", 
       strategy: "Balanced · Auto",      
-      balance: `$${methAllocated.toLocaleString(undefined, { maximumFractionDigits: 0 })}`,  
-      change: "+1.24%", 
+      balance: `${vaultStats?.userBalance ?? "0.00"} MNT`,  
+      change: "—", 
       up: true,  
-      alloc: Math.round(methRatio * 100), 
+      alloc: 100, 
       id: "mETH" 
-    },
-    { 
+    });
+  } else if (currentPosition === "USDY") {
+    POSITIONS.push({ 
       symbol: "USDY", 
       name: "Ondo US Dollar Yield", 
       strategy: "Conservative · Auto",  
-      balance: `$${usdyAllocated.toLocaleString(undefined, { maximumFractionDigits: 0 })}`, 
-      change: "+0.82%", 
+      balance: `${vaultStats?.userBalance ?? "0.00"} MNT`, 
+      change: "—", 
       up: true,  
-      alloc: Math.round((1 - methRatio) * 100), 
+      alloc: 100, 
       id: "USDY" 
-    },
-  ];
+    });
+  } else {
+    POSITIONS.push({ 
+      symbol: "MNT", 
+      name: "Mantle Network Token", 
+      strategy: "Liquid · Buffer",  
+      balance: `${vaultStats?.userBalance ?? "0.00"} MNT`, 
+      change: "—", 
+      up: true,  
+      alloc: 100, 
+      id: "MNT" 
+    });
+  }
+
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [metrics, setMetrics] = useState({
-    ytd_return: 14.82,
+    ytd_return: "—",
     sharpe_ratio: 2.41,
   });
 
@@ -84,7 +83,8 @@ export function PortfolioView() {
         }
         if (!res.ok) throw new Error("API error");
         const data = await res.json();
-        if (data) setMetrics(data);
+        // Keep YTD Return as '—' as requested
+        if (data) setMetrics({ ...data, ytd_return: "—" });
       } catch (err) {
         console.warn("Performance API offline, using cache.");
       }
@@ -114,7 +114,7 @@ export function PortfolioView() {
             <span className="text-[10px] uppercase text-[#9CA3AF] font-semibold tracking-[0.15em] mb-2">YTD Return</span>
             <div className="flex items-baseline gap-1">
               <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
-                +{metrics.ytd_return}%
+                {metrics.ytd_return}
               </span>
             </div>
           </div>

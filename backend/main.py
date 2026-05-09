@@ -671,7 +671,8 @@ async def get_stats(session: dict = Depends(verify_session)):
         "vault_health": "Optimal",
         "score": last_known_state["risk"]["score"],
         "regime": last_known_state["regime"],
-        "circuit_breaker_active": CIRCUIT_BREAKER_ACTIVE
+        "circuit_breaker_active": CIRCUIT_BREAKER_ACTIVE,
+        "current_position": CURRENT_POSITION
     }
 
 class AppState:

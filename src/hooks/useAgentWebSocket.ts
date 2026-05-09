@@ -103,6 +103,7 @@ export function useAgentWebSocket() {
   const [livePrices, setLivePrices] = useState({ usdy: 1.00, meth: 3450.20 });
   const [agentLogs, setAgentLogs] = useState<TelemetryLog[]>([]);
   const [circuitBreakerActive, setCircuitBreakerActive] = useState<boolean>(false);
+  const [currentPosition, setCurrentPosition] = useState<string>("MNT");
   const [nodes, setNodes] = useState<LangGraphNode[]>([
     { id: 'regime-detection',      label: 'Regime Detection',      status: 'active',      sub: 'Market State Analysis',    lastPulse: Date.now() },
     { id: 'risk-assessment',       label: 'Risk Assessment',       status: 'active',      sub: 'Exposure Calculation',     lastPulse: Date.now() },
@@ -234,6 +235,7 @@ export function useAgentWebSocket() {
               if (data.score) setScore(data.score);
               if (data.regime) setRegime(data.regime);
               if (data.circuit_breaker_active !== undefined) setCircuitBreakerActive(data.circuit_breaker_active);
+              if (data.current_position) setCurrentPosition(data.current_position);
               if (data.message) setLastMessage(data.message);
               if (data.yields) setLiveYields(data.yields);
               if (data.prices) setLivePrices(data.prices);
@@ -287,6 +289,7 @@ export function useAgentWebSocket() {
           if (typeof data.score === 'number') setScore(data.score);
           if (typeof data.regime === 'string') setRegime(data.regime);
           if (typeof data.circuit_breaker_active === 'boolean') setCircuitBreakerActive(data.circuit_breaker_active);
+          if (data.current_position) setCurrentPosition(data.current_position);
         }
       } catch (err) {
         console.warn("Polling /api/stats failed:", err);
@@ -302,5 +305,5 @@ export function useAgentWebSocket() {
     };
   }, [startTelemetryEngine, sessionToken, logout]);
 
-  return { score, regime, circuitBreakerActive, countdown, lastMessage, liveYields, livePrices, agentLogs, nodes };
+  return { score, regime, circuitBreakerActive, currentPosition, countdown, lastMessage, liveYields, livePrices, agentLogs, nodes };
 }
