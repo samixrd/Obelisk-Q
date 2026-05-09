@@ -27,8 +27,9 @@ interface UserProfileProps {
 
 export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
   const { walletAddress } = useAuth();
-  const { vaultStats, txHistory } = useVault();
+  const { vaultStats } = useVault();
   const [isOpen, setIsOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isWalletConnected = !!walletAddress;
@@ -44,30 +45,95 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Use real-time balance or fallback to 0
-  const balanceValue = vaultStats?.userBalance ?? "0.00";
-  const [whole, decimal] = balanceValue.split(".");
+  const handleCopy = () => {
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   return (
     <div className="relative" ref={menuRef}>
       {/* Navbar Pill Button */}
       <motion.button
         onClick={() => {
-          if (!isWalletConnected && onConnectWallet) onConnectWallet();
+          if (!isWalletConnected && onConnectWallet) {
+            onConnectWallet();
+          } else if (isWalletConnected) {
+            setIsOpen(!isOpen);
+          }
         }}
-        whileHover={!isWalletConnected ? { scale: 1.02 } : {}}
-        whileTap={!isWalletConnected ? { scale: 0.98 } : {}}
-        className={`h-10 pl-1.5 pr-4 rounded-full flex items-center gap-2.5 relative overflow-hidden group border border-black/5 shadow-sm transition-all ${!isWalletConnected ? 'hover:bg-white hover:border-black/10 cursor-pointer' : 'cursor-default'}`}
-        style={{ background: "rgba(255, 255, 255, 0.8)", backdropFilter: "blur(12px)" }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        className={`h-10 pl-1.5 pr-4 rounded-full flex items-center gap-2.5 relative overflow-hidden group border border-black/5 shadow-sm transition-all bg-white/80 backdrop-blur-xl cursor-pointer hover:border-black/10`}
       >
         <ProjectAvatar size={28} />
         <span
-          className="text-[14px] text-black/80 font-medium"
-          style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "0.01em" }}
+          className="text-[13px] text-black/80 font-bold font-display"
         >
           {displayAddress}
         </span>
       </motion.button>
+
+      {/* Dropdown Menu */}
+      <AnimatePresence>
+        {isOpen && isWalletConnected && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="absolute top-12 right-0 w-64 glass-card rounded-[24px] p-5 shadow-2xl z-50 border border-black/5 flex flex-col gap-5 overflow-hidden"
+            style={{ 
+              backgroundColor: "rgba(255, 255, 255, 0.85)", 
+              backdropFilter: "blur(25px) saturate(160%)" 
+            }}
+          >
+            <div className="flex flex-col gap-1">
+              <p className="text-[10px] uppercase tracking-[0.15em] text-black/40 font-bold">Wallet Address</p>
+              <div className="flex items-center justify-between">
+                <p className="text-[12px] font-mono-num text-black/80 truncate pr-2">{walletAddress}</p>
+                <button 
+                  onClick={handleCopy}
+                  className="p-1.5 hover:bg-black/5 rounded-lg transition-colors"
+                >
+                  {copied ? (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5"><path d="M20 6L9 17L4 12" /></svg>
+                  ) : (
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M8 4H6a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2v-2M16 4h2a2 2 0 012 2v4M16 4v4h4" /></svg>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            <div className="h-px bg-black/[0.04]" />
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-0.5">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-black/40 font-bold">MNT Balance</p>
+                <p className="text-[14px] font-mono-num font-bold text-black">{vaultStats?.walletBalance || "0.00"}</p>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <p className="text-[10px] uppercase tracking-[0.15em] text-black/40 font-bold">Vault Balance</p>
+                <p className="text-[14px] font-mono-num font-bold text-[#22c55e]">{vaultStats?.userBalance || "0.00"}</p>
+              </div>
+            </div>
+
+            <div className="h-px bg-black/[0.04]" />
+
+            <button
+              onClick={() => {
+                setIsOpen(false);
+                if (onSignOut) onSignOut();
+              }}
+              className="w-full py-3 bg-red-50 hover:bg-red-100/80 text-red-600 text-[11px] uppercase tracking-[0.15em] font-bold rounded-xl transition-all border border-red-200/30"
+            >
+              Sign Out
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
