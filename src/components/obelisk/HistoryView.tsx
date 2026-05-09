@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { useVault } from "@/hooks/useVault";
 
 const fadeUp = {
-  initial: { opacity: 0, y: 14 },
+  initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
+  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
 };
 
 export function HistoryView() {

@@ -134,7 +134,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 0 24px;
+  padding: 12vh 24px 0;
   text-align: center;
 }
 
@@ -144,13 +144,14 @@
 }
 
 .landing-hero-heading {
-  font-size: clamp(36px, 5vw, 72px);
+  font-size: clamp(28px, 3.8vw, 58px);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -0.03em;
   color: #0a0a0a;
   margin: 0 auto 28px;
   text-align: center;
+  white-space: nowrap;
 }
 
 .landing-hero-sub {

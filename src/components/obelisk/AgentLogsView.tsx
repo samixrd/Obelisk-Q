@@ -11,9 +11,9 @@ import { AgentAttestation } from "./AgentAttestation";
 // Redundant CSS constants removed, using Tailwind classes instead.
 
 const fadeUp = {
-  initial: { opacity: 0, y: 14 },
+  initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
+  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
 };
 
 // ── Node Status Palette (muted, glass-aligned) ─────────────────────────────
@@ -49,8 +49,8 @@ export function AgentLogsView() {
       <div className="col-span-12 grid grid-cols-2 md:grid-cols-5 gap-4">
         {nodes.map((node, i) => (
           <motion.div key={node.id}
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             className="glass-card rounded-[24px] px-5 py-4 transition-all border border-black/[0.04]"
           >
             <div className="flex items-center justify-between mb-2.5">
@@ -75,8 +75,8 @@ export function AgentLogsView() {
           { label: "State Latency", value: "< 500ms", sub: "Antigravity Protocol" },
         ].map((s, i) => (
           <motion.div key={s.label}
-            initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 + i * 0.1, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             whileHover={{ y: -4, backgroundColor: "rgba(255,255,255,0.95)" }}
             className="glass-card rounded-[32px] px-10 py-8 transition-all"
           >

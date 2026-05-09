@@ -67,7 +67,10 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   };
 
   return (
-    <main className="relative min-h-screen pb-20 landing-root">
+    <main 
+      className="relative min-h-screen pb-20 landing-root overflow-y-auto scroll-smooth" 
+      style={{ WebkitOverflowScrolling: "touch" }}
+    >
 
 
       {/* Blue viewport glow border */}

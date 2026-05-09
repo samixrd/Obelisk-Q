@@ -19,9 +19,9 @@ const ComponentSkeleton = ({ height = 200 }: { height?: number }) => (
 );
 
 const fadeUp = {
-  initial: { opacity: 0, y: 14 },
+  initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
+  transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
 };
 
 export function PortfolioView() {
@@ -215,8 +215,8 @@ export function PortfolioView() {
             </div>
             {POSITIONS.map((p, i) => (
               <motion.div key={p.name}
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05, duration: 0.8 }}
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04, duration: 0.3 }}
                 className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-2xl group lift-on-hover"
               >
                 <div className="col-span-5 flex items-center gap-4">
