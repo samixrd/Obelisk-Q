@@ -4,12 +4,25 @@ import { useMemo } from "react";
 interface Props {
   seed?: number;
   height?: number;
+  data?: number[];
 }
 
-export function StabilityGraph({ seed = 1, height = 120 }: Props) {
+export function StabilityGraph({ seed = 1, height = 120, data }: Props) {
   const { path, points } = useMemo(() => {
     const w = 800;
     const h = height;
+    
+    if (data && data.length > 0) {
+      const n = data.length;
+      const pts: [number, number][] = data.map((val, i) => {
+        // Normalize 0-100 to height (inverted for SVG coordinates)
+        const normalizedY = h - (val / 100) * h * 0.7 - h * 0.15;
+        return [(i / Math.max(1, n - 1)) * w, normalizedY];
+      });
+      const path = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p[0].toFixed(2)},${p[1].toFixed(2)}`).join(" ");
+      return { path, points: pts };
+    }
+
     const n = 60;
     const pts: [number, number][] = [];
     let y = h * 0.55;

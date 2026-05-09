@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
 import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { useState, useEffect } from "react";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -12,6 +13,18 @@ import { MagneticText } from "./MagneticText";
 
 export function SafeguardsView() {
   const { score, regime, circuitBreakerActive, lastMessage, agentLogs } = useAgentWebSocket();
+  const [scoreHistory, setScoreHistory] = useState<number[]>([]);
+
+  // Track score history (last 30 points)
+  useEffect(() => {
+    if (typeof score === 'number') {
+      setScoreHistory(prev => {
+        // Only append if it's a new unique point or the first point
+        const next = [...prev, score];
+        return next.slice(-30);
+      });
+    }
+  }, [score]);
   
   const isHighVol = regime === "Contraction";
   const circuitBreakerArmed = lastMessage.includes("CIRCUIT BREAKER");
@@ -182,7 +195,7 @@ export function SafeguardsView() {
             </p>
           </div>
         </div>
-        <StabilityGraph seed={17} height={160} />
+        <StabilityGraph data={scoreHistory} height={160} />
       </div>
 
       {/* Audit log */}
