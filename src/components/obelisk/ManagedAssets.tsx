@@ -153,20 +153,20 @@ export function ManagedAssets() {
 
               <div className="hairline mb-6" />
 
-              <div className="flex flex-col gap-4">
-                <div>
-                  <p className="text-[9px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.1em" }}>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-4">
+                <div className="min-w-0">
+                  <p className="text-[9px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.1em" }}>
                     Allocated
                   </p>
-                  <p className="text-sm text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.tvl}</p>
+                  <p className="text-sm text-foreground font-medium truncate pr-2" style={{ fontFamily: "'JetBrains Mono', monospace" }} title={a.tvl}>{a.tvl}</p>
                 </div>
-                <div>
-                  <p className="text-[9px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.1em" }}>
-                    Safety Buffer
+                <div className="min-w-0">
+                  <p className="text-[9px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.1em" }}>
+                    Reserve
                   </p>
-                  <p className="text-sm text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.buffer}</p>
+                  <p className="text-sm text-foreground font-medium truncate pr-2" style={{ fontFamily: "'JetBrains Mono', monospace" }} title={a.buffer}>{a.buffer}</p>
                 </div>
-                <div className="mt-1">
+                <div className="col-span-2 mt-1">
                   <div className="flex justify-between items-center mb-1.5">
                     <p className="text-[9px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em" }}>
                       Coverage
