@@ -233,16 +233,23 @@ async def supervisory_controller_node(state: AgentState):
     # ── CIRCUIT BREAKER LOGIC ──
     update_circuit_breaker(risk_score)
     if CIRCUIT_BREAKER_ACTIVE:
-        logger.info("executor: CIRCUIT BREAKER ACTIVE — halting all allocation")
-        record_transaction(
-            action="HOLD", 
-            score=risk_score, 
-            regime=state["data"].get("regime", "N/A"), 
-            cycle=state.get("cycle_count", 0),
-            status="circuit_breaker",
-            tx_hash="N/A"
-        )
-        return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE — halting all allocation")], "data": state["data"]}
+        logger.warning(f"executor: CIRCUIT BREAKER ACTIVE — initiating EMERGENCY UNWIND. position={CURRENT_POSITION}")
+        
+        # If we are in a risky position (mETH or USDY), unwind to MNT
+        if CURRENT_POSITION != "MNT":
+            record_transaction(
+                action="UNWIND", 
+                score=risk_score, 
+                regime=state["data"].get("regime", "N/A"), 
+                cycle=state.get("cycle_count", 0),
+                status="emergency_unwind",
+                tx_hash="N/A" # Will be updated if on-chain call succeeds
+            )
+            # Override action to trigger unwind in the RPC executor below
+            state["data"]["action"] = "UNWIND"
+            action = "UNWIND"
+        else:
+            return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE — system already in safety (MNT).")], "data": state["data"]}
     
     # ── POSITION TRACKING: skip if already in target ──
     if action == "mETH" and CURRENT_POSITION == "mETH":
@@ -323,6 +330,8 @@ async def supervisory_controller_node(state: AgentState):
         target_token = METH_ADDR
     elif action == "USDY":
         target_token = USDY_ADDR
+    elif action == "UNWIND":
+        target_token = ZERO_ADDR
 
     # ── 500ms ANTIGRAVITY SLA & EXPONENTIAL BACKOFF: 3 attempts ──
     async def _rpc_execute():
@@ -353,6 +362,9 @@ async def supervisory_controller_node(state: AgentState):
                         m_balance = m_contract.functions.balanceOf(vault_address).call()
                         if m_balance == 0:
                             return "aborting|executor: insufficient mETH for USDY swap. skipping."
+                        
+                    if action == "UNWIND":
+                        logger.info("executor: EMERGENCY UNWIND in progress...")
                         
                     account = w3.eth.account.from_key(private_key)
                     logger.info(f"executor: rpc check - account {account.address[:10]}... ready")
@@ -443,7 +455,7 @@ async def supervisory_controller_node(state: AgentState):
                 if status == "success":
                     old_pos = CURRENT_POSITION
                     LAST_REBALANCE_TIME = time.time()
-                    CURRENT_POSITION = action # Update current position state
+                    CURRENT_POSITION = "MNT" if action == "UNWIND" else action # Update current position state
                     logger.info(f"executor: position updated: {old_pos} → {CURRENT_POSITION}")
                 return msg
             except Exception as e:
@@ -756,13 +768,22 @@ async def run_analysis_cycle():
                 continue
             
             logs = []
-            for msg in final_state.get("messages", []):
+            node_map = {
+                0: "Regime Detection",
+                1: "Risk Assessment",
+                2: "Q-Score Engine",
+                3: "Telemetry Aggregator",
+                4: "Supervisory Controller"
+            }
+            for i, msg in enumerate(final_state.get("messages", [])):
                 if isinstance(msg, AIMessage):
+                    node_name = node_map.get(i-1, "System") if i > 0 else "System"
                     logs.append({
                         "timestamp": datetime.now().isoformat(),
                         "message": msg.content,
                         "action": "Agent Action",
-                        "score": random.randint(90, 99)
+                        "score": score,
+                        "node": node_name
                     })
             
             score = final_state.get("data", {}).get("risk", {}).get("score", 92)

@@ -34,20 +34,19 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
         
         {/* Identity & Wallet */}
         <div className="glass-card rounded-[40px] p-10 md:p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
-          <p className="text-[10px] uppercase text-black/20 mb-10 font-bold tracking-[0.28em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-[10px] uppercase text-black/20 mb-10 font-bold tracking-[0.28em]">
             <MagneticText disabled text="Identity & Infrastructure" />
           </p>
           
           <div className="space-y-12">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
               <div className="max-w-md">
-                <p className="text-xl text-black font-bold mb-2"
-                  style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>Connected wallet</p>
+                <p className="text-xl text-black font-bold mb-2 tracking-tight">Connected wallet</p>
                 <p className="text-[13px] text-black/40 font-medium leading-relaxed">The primary settlement address for your autonomous agent.</p>
               </div>
               {walletAddress ? (
                 <div className="px-6 py-3 bg-black/[0.03] border border-black/[0.04] rounded-2xl">
-                  <span className="text-[13px] tabular-nums text-black/60" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>{walletAddress}</span>
+                  <span className="text-[13px] font-mono-num text-black/60">{walletAddress}</span>
                 </div>
               ) : (
                 <motion.button 
@@ -65,13 +64,12 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
  
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
               <div>
-                <p className="text-xl text-black font-bold mb-2"
-                  style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>Network node</p>
+                <p className="text-xl text-black font-bold mb-2 tracking-tight">Network node</p>
                 <p className="text-[13px] text-black/40 font-medium leading-relaxed">Current gateway for on-chain execution and data retrieval.</p>
               </div>
               <div className="flex items-center gap-4 px-6 py-3 bg-black/[0.03] border border-black/[0.04] rounded-full">
                 <span className="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)] animate-pulse" />
-                <span className="text-[11px] font-bold text-black/40 uppercase tracking-widest" style={{ fontFamily: "'Inter', sans-serif" }}>Mantle RPC (Mainnet)</span>
+                <span className="text-[11px] font-bold text-black/40 uppercase tracking-widest">Mantle RPC (Mainnet)</span>
               </div>
             </div>
           </div>
@@ -79,7 +77,7 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
  
         {/* Agent Behaviors */}
         <div className="glass-card rounded-[40px] p-10 md:p-14 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
-          <p className="text-[10px] uppercase text-black/20 mb-10 font-bold tracking-[0.28em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-[10px] uppercase text-black/20 mb-10 font-bold tracking-[0.28em]">
             <MagneticText disabled text="Automation Logic" />
           </p>
           
@@ -103,7 +101,7 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
       {/* ── Sidebar Info ── */}
       <div className="col-span-12 lg:col-span-4 space-y-8">
         <div className="glass-card rounded-[40px] p-10 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
-          <p className="text-[10px] uppercase text-black/20 mb-8 font-bold tracking-[0.28em]" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-[10px] uppercase text-black/20 mb-8 font-bold tracking-[0.28em]">
             <MagneticText disabled text="Agent Profile" />
           </p>
           <div className="flex items-center gap-6 mb-10">
@@ -111,7 +109,7 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
               {initials}
             </div>
             <div>
-              <p className="text-xl text-black font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{displayName}</p>
+              <p className="text-xl text-black font-bold tracking-tight">{displayName}</p>
               <p className="text-[11px] text-black/30 font-bold uppercase tracking-widest mt-1">Standard Tier Agent</p>
             </div>
           </div>
@@ -128,8 +126,8 @@ export function PreferencesView({ walletAddress, onConnectWallet }: PreferencesV
         </div>
 
         <div className="p-10 bg-black/[0.02] border border-black/[0.04] rounded-[40px]">
-          <p className="text-[11px] text-black font-bold mb-4 uppercase tracking-[0.2em] opacity-30" style={{ fontFamily: "'Inter', sans-serif" }}>Security Note</p>
-          <p className="text-[13px] text-black/50 font-medium leading-relaxed" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <p className="text-[11px] text-black font-bold mb-4 uppercase tracking-[0.2em] opacity-30">Security Note</p>
+          <p className="text-[13px] text-black/50 font-medium leading-relaxed">
             All configuration changes are signed locally and broadcast via the ERC-8004 protocol. Obelisk Q never stores your private keys.
           </p>
         </div>
@@ -142,7 +140,7 @@ function Toggle({ label, desc, enabled, onToggle }: { label: string, desc: strin
   return (
     <div className="flex items-start justify-between gap-8 group">
       <div className="flex-1">
-        <p className="text-xl text-black font-bold mb-2 transition-colors group-hover:text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>{label}</p>
+        <p className="text-xl text-black font-bold mb-2 transition-colors group-hover:text-black tracking-tight">{label}</p>
         <p className="text-[13px] text-black/40 font-medium leading-relaxed">{desc}</p>
       </div>
       <button 

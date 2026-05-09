@@ -70,10 +70,10 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       <Logo size={22} className="text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-black tracking-tight" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <h3 className="text-xl font-bold text-black tracking-tight">
                         Add Capital
                       </h3>
-                      <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <p className="text-[11px] text-muted-foreground font-bold uppercase tracking-wider">
                         Obelisk Vault · Mantle
                       </p>
                     </div>
@@ -90,16 +90,16 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                 {/* Stats Row */}
                 <div className="grid grid-cols-2 gap-4 mb-8">
                   <div className="p-5 bg-black/[0.03] border border-black/[0.05] rounded-3xl">
-                    <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5" style={{ fontFamily: "'Inter', sans-serif" }}>Your Balance</p>
-                    <p className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>
+                    <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Your Balance</p>
+                    <p className="text-2xl font-bold text-black tabular-nums tracking-tight">
                       {vaultStats?.userBalance ?? "0.00"} <span className="text-xs font-medium text-muted-foreground ml-0.5">MNT</span>
                     </p>
                   </div>
                   <div className="p-5 bg-black/[0.03] border border-black/[0.05] rounded-3xl">
-                    <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5" style={{ fontFamily: "'Inter', sans-serif" }}>Confidence</p>
+                    <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Confidence</p>
                     <div className="flex items-center gap-2">
-                      <p className="text-2xl font-bold text-black" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em" }}>{score}</p>
-                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${canDeposit ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`} style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <p className="text-2xl font-bold text-black tabular-nums tracking-tight">{score}</p>
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${canDeposit ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}>
                         {canDeposit ? "SAFE" : "RISK"}
                       </span>
                     </div>
@@ -110,8 +110,8 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                 <div className="space-y-6">
                   <div>
                     <div className="flex items-center justify-between mb-3 px-1">
-                      <label className="text-[11px] font-bold text-black uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>Deposit Amount</label>
-                      <span className="text-[11px] text-muted-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+                      <label className="text-[11px] font-bold text-black uppercase tracking-wider">Deposit Amount</label>
+                      <span className="text-[11px] text-muted-foreground font-medium tabular-nums">
                         Max: {vaultStats?.walletBalance ?? "0"} MNT
                       </span>
                     </div>
@@ -120,8 +120,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                         type="number"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
-                        className="flex-1 bg-transparent text-2xl font-bold text-black outline-none"
-                        style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}
+                        className="flex-1 bg-transparent text-2xl font-bold text-black outline-none tabular-nums tracking-tight"
                         placeholder="0.00"
                       />
                       <div className="flex items-center gap-2 px-3 py-1.5 bg-black/5 rounded-xl">
@@ -132,7 +131,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                             <div className="h-full w-full bg-blue-500" />
                           )}
                         </div>
-                        <span className="text-xs font-bold text-black" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
+                        <span className="text-xs font-bold text-black">MNT</span>
                       </div>
                     </div>
                   </div>
@@ -143,7 +142,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                       <motion.div
                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                         className="p-4 bg-red-50 border border-red-100 rounded-2xl text-[12px] text-red-600 font-medium"
-                        style={{ fontFamily: "'Inter', sans-serif" }}
+                      >
                       >
                         <p className="flex items-center gap-2">
                           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm.5 12h-1v-1h1v1zm0-2h-1V4h1v6z"/></svg>
@@ -158,8 +157,8 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                         className="p-6 bg-black/[0.03] border border-black/[0.05] rounded-[24px]"
                       >
                         <div className="flex items-center justify-between mb-3">
-                          <p className="text-[11px] font-bold text-black uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>Confirmations</p>
-                          <span className="text-[14px] font-bold" style={{ fontFamily: "'Inter', sans-serif" }}>{confirmations}/3</span>
+                          <p className="text-[11px] font-bold text-black uppercase tracking-wider">Confirmations</p>
+                          <span className="text-[14px] font-bold tabular-nums">{confirmations}/3</span>
                         </div>
                         <div className="h-2 w-full bg-black/5 rounded-full overflow-hidden">
                           <motion.div 
@@ -169,8 +168,8 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                             transition={{ duration: 0.5 }}
                           />
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-4 font-medium text-center" style={{ fontFamily: "'Inter', sans-serif" }}>
-                          Processing on Mantle Testnet...
+                        <p className="text-[11px] text-muted-foreground mt-4 font-medium text-center">
+                          Processing on Mantle Network...
                         </p>
                       </motion.div>
                     )}
@@ -183,7 +182,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                     whileHover={isLoading ? {} : { scale: 1.005 }}
                     whileTap={isLoading ? {} : { scale: 0.995 }}
                     className={`w-full py-5 rounded-[100px] text-[15px] font-bold text-white transition-all shadow-lg ${isLoading ? "bg-[#222] cursor-not-allowed" : (tab === "deposit" && !canDeposit) ? "bg-orange-500/20 text-orange-600 cursor-not-allowed" : "bg-[#0a0a0a] hover:shadow-black/20"}`}
-                    style={{ fontFamily: "'Inter', sans-serif", border: "none" }}
+                    style={{ border: "none" }}
                   >
                     {isLoading ? (
                       <span className="flex items-center justify-center gap-3">
@@ -200,7 +199,7 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                     )}
                   </motion.button>
 
-                  <p className="text-[10px] text-muted-foreground/50 text-center font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+                  <p className="text-[10px] text-muted-foreground/50 text-center font-medium">
                     "Assets are allocated to mETH and USDY based on AI signals."
                   </p>
                 </div>

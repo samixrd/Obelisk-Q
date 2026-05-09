@@ -53,22 +53,21 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               </div>
             </div>
             <div>
-              <div className="text-[17px] font-bold text-[#0a0a0a] flex items-center gap-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>
+              <div className="text-[17px] font-bold text-[#0a0a0a] flex items-center gap-2 tracking-tight">
                 <MagneticText text="Obelisk Vault" />
                 <div className="px-2 py-0.5 bg-emerald-50 text-[9px] text-emerald-600 font-bold rounded-md border border-emerald-100 uppercase tracking-wider flex items-center gap-1.5">
                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                    Mantle Optimized
                 </div>
               </div>
-              <p className="text-[12px] text-[#6B7280]" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <p className="text-[12px] text-[#6B7280]">
                 Institutional RWA · mETH + USDY
               </p>
             </div>
           </div>
           <button
             onClick={() => setLearnMoreOpen(true)}
-            className="text-[13px] text-[#1976D2] hover:text-[#1565C0] transition-colors"
-            style={{ fontFamily: "'Inter', sans-serif", fontWeight: 500 }}
+            className="text-[13px] text-[#1976D2] hover:text-[#1565C0] transition-colors font-medium"
           >
             Learn more →
           </button>
@@ -78,7 +77,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         <div className="flex items-start gap-0 mb-10">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider">
                 APY
               </span>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#1976D2]">
@@ -86,13 +85,13 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                 <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
             </div>
-            <p className="text-[36px] font-bold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            <p className="text-[36px] font-bold text-[#0a0a0a] tabular-nums tracking-tighter leading-none">
               {usdy.loading ? "—" : `${((usdy.apy + meth.apy) / 2).toFixed(1)}%`}
             </p>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider" style={{ fontFamily: "'Inter', sans-serif" }}>
+              <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider">
                 AUM
               </span>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#1976D2]">
@@ -100,7 +99,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                 <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
             </div>
-            <p className="text-[36px] font-bold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.03em", lineHeight: 1 }}>
+            <p className="text-[36px] font-bold text-[#0a0a0a] tabular-nums tracking-tighter leading-none">
               {vaultStats?.totalDeposited ? `${parseFloat(vaultStats.totalDeposited).toFixed(2)}` : "0.00"}
               <span className="text-[16px] font-medium text-[#6B7280] ml-1.5">MNT</span>
             </p>
@@ -123,8 +122,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             placeholder="0"
             value={depositAmount}
             onChange={(e) => setDepositAmount(e.target.value)}
-            className="bg-transparent outline-none text-[32px] font-semibold text-[#0a0a0a] w-full"
-            style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", maxWidth: "65%" }}
+            className="bg-transparent outline-none text-[32px] font-bold text-[#0a0a0a] w-full tabular-nums tracking-tight max-w-[65%]"
           />
           <div
             className="flex items-center gap-2.5 px-4 py-2.5"
@@ -142,7 +140,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                 <span className="text-[8px] text-black font-bold">M</span>
               )}
             </div>
-            <span className="text-[14px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>MNT</span>
+            <span className="text-[14px] font-semibold text-[#0a0a0a]">MNT</span>
           </div>
         </div>
 
@@ -152,13 +150,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             <button
               key={v}
               onClick={() => setDepositAmount(v)}
-              className="text-[12px] px-4 py-2 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] transition-all"
-              style={{
-                border: "1px solid rgba(0,0,0,0.08)",
-                borderRadius: 100,
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 500,
-              }}
+              className="text-[12px] px-4 py-2 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] transition-all border border-black/[0.08] rounded-full font-medium"
             >
               {v} MNT
             </button>
@@ -166,13 +158,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
           {vaultStats?.walletBalance && (
             <button
               onClick={() => setDepositAmount(vaultStats.walletBalance)}
-              className="text-[12px] px-4 py-2 text-[#1976D2] hover:text-[#1565C0] hover:bg-blue-50 transition-all ml-auto"
-              style={{
-                border: "1px solid rgba(25,118,210,0.2)",
-                borderRadius: 100,
-                fontFamily: "'Inter', sans-serif",
-                fontWeight: 500,
-              }}
+              className="text-[12px] px-4 py-2 text-[#1976D2] hover:text-[#1565C0] hover:bg-blue-50 transition-all ml-auto border border-[#1976D2]/20 rounded-full font-medium"
             >
               Max
             </button>
@@ -181,11 +167,11 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
 
         {/* Est. Annual Yield */}
         <div className="flex items-center justify-between mt-6 px-1">
-          <span className="text-[13px] text-[#6B7280]" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <span className="text-[13px] text-[#6B7280]">
             Mantle Native Yield (Est. Annual)
           </span>
           <div className="flex items-center gap-2">
-            <span className="text-[14px] font-semibold text-[#0a0a0a]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <span className="text-[14px] font-semibold text-[#0a0a0a] tabular-nums">
               {depositAmount && parseFloat(depositAmount) > 0
                 ? `${(parseFloat(depositAmount) * ((usdy.apy + meth.apy) / 2) / 100).toFixed(4)} MNT`
                 : "—"
@@ -204,10 +190,10 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         {/* Wallet balance info */}
         {vaultStats && (
           <div className="flex items-center justify-between mt-3 px-1">
-            <span className="text-[12px] text-[#9CA3AF]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <span className="text-[12px] text-[#9CA3AF]">
               Wallet Balance
             </span>
-            <span className="text-[12px] text-[#6B7280] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <span className="text-[12px] text-[#6B7280] font-medium tabular-nums">
               {vaultStats.walletBalance} MNT
             </span>
           </div>
@@ -216,10 +202,10 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         {/* Vault balance info */}
         {vaultStats && (
           <div className="flex items-center justify-between mt-1.5 px-1">
-            <span className="text-[12px] text-[#9CA3AF]" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <span className="text-[12px] text-[#9CA3AF]">
               Your Vault Balance
             </span>
-            <span className="text-[12px] text-[#6B7280] font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <span className="text-[12px] text-[#6B7280] font-medium tabular-nums">
               {vaultStats.userBalance} MNT
             </span>
           </div>
@@ -236,15 +222,9 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             boxShadow: isPending ? "none" : "0 20px 40px rgba(0,0,0,0.2), 0 0 20px rgba(0,211,149,0.15)" 
           }}
           whileTap={{ scale: isPending ? 1 : 0.98 }}
-          className={`w-full py-5 text-[15px] font-semibold text-white transition-all duration-300 ${isPending ? 'opacity-50 cursor-not-allowed bg-[#222]' : 'bg-[#0a0a0a]'}`}
+          className={`w-full py-5 text-[15px] font-semibold text-white transition-all duration-300 rounded-full ${isPending ? 'opacity-50 cursor-not-allowed bg-[#222]' : 'bg-[#0a0a0a]'} relative z-50`}
           style={{
-            borderRadius: 100,
-            fontFamily: "'Inter', sans-serif",
-            letterSpacing: "-0.01em",
-            border: "none",
             cursor: isPending ? 'not-allowed' : 'pointer',
-            position: 'relative',
-            zIndex: 50
           }}
         >
           {isPending ? (

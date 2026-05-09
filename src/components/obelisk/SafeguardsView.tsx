@@ -104,8 +104,8 @@ export function SafeguardsView() {
               )}
             </div>
             <div>
-              <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1" style={{ letterSpacing: "0.2em" }}>Autonomous Protection</p>
-              <h3 className="text-xl font-bold text-foreground" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+              <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Autonomous Protection</p>
+              <h3 className="text-xl font-bold text-foreground tracking-tight">
                 {circuitBreakerActive ? "ACTIVE — All allocation halted" : "INACTIVE — All systems normal"}
               </h3>
               <p className="text-sm text-muted-foreground mt-1 font-medium">
@@ -119,7 +119,7 @@ export function SafeguardsView() {
           <div className="flex items-center gap-12 px-8 py-5 rounded-[24px] bg-black/[0.02] border border-black/5">
              <div className="text-center">
                 <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Current Q-Score</p>
-                <p className="text-2xl font-bold text-black">{score}</p>
+                <p className="text-2xl font-bold text-black tabular-nums">{score}</p>
              </div>
              <div className="h-10 w-px bg-black/10" />
              <div className="text-center">
@@ -132,7 +132,7 @@ export function SafeguardsView() {
         {/* Integrated Real-Time Graph */}
         <div className="mt-10 pt-10 border-t border-black/5">
           <div className="flex items-center justify-between mb-6">
-            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest" style={{ letterSpacing: "0.2em" }}>Stability Vector · Real-Time Telemetry</p>
+            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest">Stability Vector · Real-Time Telemetry</p>
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[9px] uppercase text-emerald-600 font-bold tracking-widest">Live Feed</span>
@@ -145,10 +145,10 @@ export function SafeguardsView() {
       {/* Protocol cards */}
       <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">
         <div className="mb-8">
-          <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Risk Protocols</p>
-          <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 600 }}>
+          <p className="text-[10px] uppercase text-muted-foreground mb-2 tracking-[0.2em]">Risk Protocols</p>
+          <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em] font-bold tracking-tight">
             <MagneticText disabled text="Automated" />
-            <div style={{ fontWeight: 300 }}><MagneticText disabled text="safeguard" /></div>
+            <div className="font-light"><MagneticText disabled text="safeguard" /></div>
             <MagneticText disabled text="layer" />
           </div>
         </div>
@@ -163,7 +163,7 @@ export function SafeguardsView() {
               className="group relative rounded-[24px] p-6 bg-black/[0.01] border border-black/5 hover:border-black/15 transition-colors duration-500"
             >
               <div className="flex items-start justify-between mb-3">
-                <p className="text-base text-black font-bold" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}>{p.name}</p>
+                <p className="text-base text-black font-bold tracking-tight">{p.name}</p>
                 <span className={`inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest ${p.statusOk ? "text-emerald-600" : "text-red-600"}`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${p.statusOk ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
                   {p.status}
@@ -173,11 +173,11 @@ export function SafeguardsView() {
               <div className="flex items-center justify-between mt-auto pt-4 border-t border-black/5">
                 <div>
                   <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Threshold</p>
-                  <p className="text-sm text-black font-bold">{p.threshold}</p>
+                  <p className="text-sm text-black font-bold tabular-nums">{p.threshold}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Last event</p>
-                  <p className="text-sm text-muted-foreground font-medium">{p.lastTrigger}</p>
+                  <p className="text-sm text-muted-foreground font-medium tabular-nums">{p.lastTrigger}</p>
                 </div>
               </div>
             </motion.div>

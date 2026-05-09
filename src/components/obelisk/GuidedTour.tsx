@@ -110,14 +110,12 @@ export function GuidedTour({ open, onClose }: Props) {
                   {s.eyebrow} · A guided tour
                 </p>
                 <h2 
-                  className="text-4xl md:text-5xl font-medium tracking-tight text-foreground leading-[1.1] text-balance"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
+                  className="text-4xl md:text-5xl font-bold tracking-tighter text-foreground leading-[1.1] text-balance"
                 >
                   {s.title}
                 </h2>
                 <p 
                   className="mt-8 text-base text-muted-foreground max-w-md mx-auto leading-relaxed text-balance"
-                  style={{ fontFamily: "'Inter', sans-serif" }}
                 >
                   {s.body}
                 </p>
@@ -133,33 +131,25 @@ export function GuidedTour({ open, onClose }: Props) {
                     }}
                   >
                     <p
-                      className="text-[9px] uppercase text-muted-foreground mb-2"
-                      style={{ letterSpacing: "0.28em", fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}
+                      className="text-[9px] uppercase text-muted-foreground mb-2 font-mono-num tracking-[0.28em] font-light"
                     >
                       Regime Detection
                     </p>
                     <p
-                      className="text-[11px] leading-relaxed"
-                      style={{
-                        fontFamily: "'JetBrains Mono', monospace",
-                        fontWeight: 300,
-                        color: "var(--muted-foreground)",
-                        letterSpacing: "0.01em",
-                      }}
+                      className="text-[11px] leading-relaxed font-mono-num font-light text-muted-foreground tracking-tight"
                     >
                       {s.note}
                     </p>
                   </motion.div>
                 )}
-                {s.accent && <p className="mt-6 italic text-sm text-primary" style={{ fontFamily: "'Inter', sans-serif" }}>{s.accent}</p>}
+                {s.accent && <p className="mt-6 italic text-sm text-primary font-medium tracking-tight">{s.accent}</p>}
               </motion.div>
             </AnimatePresence>
 
             <div className="mt-14 flex flex-col items-center gap-6">
               <button
                 onClick={next}
-                className="group inline-flex items-center gap-3 px-8 py-3 bg-black rounded-full text-[11px] uppercase tracking-luxe text-white hover:bg-black/90 transition-colors duration-300"
-                style={{ fontFamily: "'Inter', sans-serif" }}
+                className="group inline-flex items-center gap-3 px-8 py-3 bg-black rounded-full text-[11px] uppercase tracking-luxe text-white hover:bg-black/90 transition-colors duration-300 font-bold"
               >
                 {step === steps.length - 1 ? "Begin" : "Continue"}
                 <IconArrowRight size={12} />

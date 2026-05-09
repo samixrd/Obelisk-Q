@@ -96,13 +96,11 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
           className="pointer-events-none absolute inset-x-0 -bottom-8 flex items-end justify-center overflow-hidden select-none"
         >
           <span
+            className="font-display tracking-tighter text-foreground/5 opacity-50"
             style={{
-              fontFamily: "'Inter', sans-serif",
-              letterSpacing: "-0.04em",
               fontSize: "clamp(80px, 15vw, 180px)",
               fontWeight: 900,
               lineHeight: 1,
-              color: "rgba(0,0,0,0.03)",
             }}
           >
             Mantle
@@ -110,15 +108,14 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
         </div>
         <div className="hairline mb-8" />
         <div
-          className="relative flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0 text-[10px] uppercase text-muted-foreground/60 text-center md:text-left"
-          style={{ letterSpacing: "0.28em", fontWeight: 600 }}
+          className="relative flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0 text-[10px] uppercase text-muted-foreground/60 text-center md:text-left tracking-[0.28em] font-bold"
         >
           <div className="flex items-center gap-3">
             <Logo size={20} className="text-muted-foreground/40" />
             <span>Obelisk Q Navigator</span>
           </div>
           <span
-            style={{ fontSize: 15, color: "#bbb", letterSpacing: "normal", fontWeight: 400 }}
+            className="text-[15px] text-[#bbb] font-normal"
           >
             A quiet intelligence.
           </span>
