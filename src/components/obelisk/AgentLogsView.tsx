@@ -38,14 +38,12 @@ export function AgentLogsView() {
   const { agentLogs, score, countdown, nodes } = useAgentWebSocket();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [agentLogs]);
+  // Removed auto-scroll-to-top to prevent scroll jumps during polling.
+
 
   return (
-    <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 md:gap-8 pb-24">
+    <div className="grid grid-cols-12 gap-6 md:gap-8 pb-24">
+
       
       {/* ── Supervisory Node Status ────────────────────────────────────────── */}
       <div className="col-span-12 grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -106,7 +104,8 @@ export function AgentLogsView() {
             <div className="text-[#9CA3AF]"><MagneticText disabled text="Signals" /></div>
           </div>
         </div>
-        <div className="space-y-0">
+        <div className="h-[320px] overflow-y-auto pr-2 scrollbar-hidden">
+
           {logs.slice(0, 5).map((log, i) => (
             <div key={i} className="flex items-center gap-4 py-3.5 border-t border-black/[0.03]">
               <span className="text-[11px] text-black/50 w-20 tabular-nums font-mono">
@@ -132,7 +131,8 @@ export function AgentLogsView() {
       </div>
 
       {/* ── Log Stream ───────────────────────────────────────────────────── */}
-      <div className="col-span-12 glass-card rounded-[40px] p-8 md:p-10 flex flex-col min-h-[600px] max-h-[800px] transition-all">
+      <div className="col-span-12 glass-card rounded-[40px] p-8 md:p-10 flex flex-col h-[700px] transition-all">
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="space-y-1">
             <div className="text-[22px] text-[#0a0a0a] flex flex-wrap gap-x-[0.3em] font-bold tracking-tight">
@@ -165,7 +165,8 @@ export function AgentLogsView() {
           </AnimatePresence>
         </div>
       </div>
-    </motion.div>
+    </div>
+
   );
 }
 
@@ -181,10 +182,12 @@ function LogRow({ log }: { log: any }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -8 }}
-      animate={{ opacity: 1, x: 0 }}
+      layout
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       className="flex flex-col py-4 border-b border-black/[0.03] group hover:bg-black/[0.01] transition-colors -mx-3 px-3 rounded-xl"
     >
+
       <div className="flex items-center gap-4 md:gap-5">
         <span className="text-[11px] text-black/50 w-[72px] font-mono-num">
           {timeStr}
@@ -227,10 +230,11 @@ function LogRow({ log }: { log: any }) {
 
       {isAction && (
         <motion.div 
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           className="pl-[100px] mt-3"
         >
+
           <AgentAttestation signature={mockSig} hash={mockHash} />
         </motion.div>
       )}

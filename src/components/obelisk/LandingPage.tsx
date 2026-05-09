@@ -11,6 +11,7 @@
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Logo } from "./Logo";
+import { Link } from "react-router-dom";
 import "./LandingPage.css";
 
 import { FloatingSymbols } from "./FloatingSymbols";
@@ -96,7 +97,12 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         transition={{ duration: 1.0, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="landing-hero-content"
       >
-        <div className="landing-hero-heading" style={{ fontWeight: 700 }}>
+        <div className="landing-hero-heading" style={{ 
+          fontWeight: 700, 
+          fontSize: "clamp(40px, 6vw, 88px)", 
+          lineHeight: 1.05, 
+          textAlign: "center" 
+        }}>
           <Reveal>
             <MagneticText text="Autonomous Investment" />
           </Reveal>
@@ -109,14 +115,13 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
           <br />
           Experience automated yields from mETH and USDY through a verified 5-node LangGraph swarm with real-time protection.
         </p>
-        <div className="landing-hero-actions">
-          <button onClick={onLaunch} className="landing-hero-cta">
+        <div className="landing-hero-actions" style={{ display: "block", textAlign: "center" }}>
+          <button onClick={onLaunch} className="landing-hero-cta" style={{ margin: "0 auto" }}>
             Launch App
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 8 }}>
               <path d="M3 8h10M10 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </button>
-          <a href="#features" className="landing-hero-link">Engine logic</a>
         </div>
       </motion.div>
     </section>
@@ -344,15 +349,25 @@ function Footer() {
           {linkGroups.map((group, gi) => (
             <div key={gi} className="landing-footer-col">
               {group.links.map((link) => (
-                <a 
-                  key={link.name} 
-                  href={link.href} 
-                  className="landing-footer-link"
-                  target={link.external ? "_blank" : "_self"}
-                  rel={link.external ? "noopener noreferrer" : undefined}
-                >
-                  {link.name}
-                </a>
+                link.external ? (
+                  <a 
+                    key={link.name} 
+                    href={link.href} 
+                    className="landing-footer-link"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {link.name}
+                  </a>
+                ) : (
+                  <Link 
+                    key={link.name} 
+                    to={link.href} 
+                    className="landing-footer-link"
+                  >
+                    {link.name}
+                  </Link>
+                )
               ))}
             </div>
           ))}

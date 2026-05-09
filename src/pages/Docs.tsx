@@ -9,42 +9,37 @@ const Docs = () => {
     {
       id: "overview",
       title: "Overview",
-      content: "Obelisk Q is an institutional-grade wealth navigator optimized for Mantle Mainnet. It leverages a multi-agent LangGraph architecture to orchestrate capital across growth assets like mETH and yield-bearing RWAs like USDY with autonomous precision.",
+      content: "Obelisk Q is a sovereign wealth navigator designed for the Mantle ecosystem. It operates as a fully autonomous multi-agent system that optimizes capital allocation across institutional-grade liquid staked assets (mETH) and yield-bearing RWAs (USDY). By utilizing advanced market regime detection, it ensures capital is always positioned for the optimal risk-adjusted yield.",
     },
     {
       id: "protocol",
       title: "Antigravity Protocol",
-      content: "The Antigravity Protocol ensures 100% high-availability and deterministic execution. By implementing verified cross-token unwind logic and real-time telemetry polling (10s), the protocol guarantees that transitions between assets (e.g., mETH ↔ USDY) are executed with zero idle capital and total transparency.",
+      content: "The Antigravity Protocol is the high-availability backbone of Obelisk Q. It provides a deterministic execution environment with verified cross-token unwind logic. The protocol enforces strict telemetry synchronization (10s polling) to maintain a sub-500ms state latency between the agent node and the on-chain vault.",
     },
     {
       id: "architecture",
-      title: "5-Node Multi-Agent Swarm",
-      content: "The system utilizes a specialized LangGraph swarm—Regime Detection, Risk Assessment, Q-Score Engine, Telemetry Aggregator, and Supervisory Controller. This architecture allows for institutional-grade market inference and automated on-chain rebalancing whenever market confidence thresholds are met.",
+      title: "5-Node LangGraph Swarm",
+      content: "At its core, Obelisk Q utilizes a 5-node LangGraph orchestration: 1) Regime Detection (HMM-based market analysis), 2) Risk Assessment (volatility audit), 3) Q-Score Engine (confidence calculation), 4) Telemetry Aggregator (state broadcasting), and 5) Supervisory Controller (on-chain execution authority).",
     },
     {
       id: "circuit-breaker",
-      title: "Autonomous Circuit Breaker",
-      content: "A state-of-the-art safety mechanism that monitors Q-Score volatility in real-time. If the agent detects a drop of 5+ points within a 60-minute window, the Circuit Breaker activates, instantly halting all allocation and rebalancing to preserve capital during market stress.",
+      title: "Safety & Circuit Breaker",
+      content: "The system features an autonomous circuit breaker that continuously monitors the Q-Score (confidence index). If the agent detects a volatility spike causing a 10-point drop within a 60-minute window, the system triggers an emergency unwind to safety (MNT/Mantle native), protecting user capital from rapid regime shifts.",
     },
     {
       id: "mainnet",
-      title: "Mantle Mainnet Integration",
-      content: "Obelisk Q is fully operational on Mantle Mainnet. The protocol utilizes a custom ObeliskVault (0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa) integrated with Merchant Moe liquidity pools, maintaining a 0.01 MNT safety buffer for continuous, touchless rebalancing.",
+      title: "Mantle Mainnet Deployment",
+      content: "Obelisk Q is live on Mantle Mainnet (Chain ID: 5000). The primary entry point is the ObeliskVault contract (0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa). The vault is non-custodial, integrated with Merchant Moe liquidity, and maintains a strictly enforced 0.01 MNT gas buffer for autonomous operation.",
     },
     {
-      id: "rwa",
-      title: "RWA & Yield Framework",
-      content: "The protocol is purpose-built for compliant Real World Asset (RWA) exposure. By leveraging USDY (Ondo Finance), users gain native exposure to US Treasury yield. The AI engine dynamically pivots between USDY and mETH based on market volatility, ensuring your capital is always positioned in the most optimal yield environment.",
+      id: "yield",
+      title: "Yield & Asset Framework",
+      content: "The navigator focuses on two primary yield vectors: 1) mETH (Mantle LSP) for native staked ETH rewards, and 2) USDY (Ondo Finance) for institutional US Treasury exposure. The agent dynamically balances these positions to capture maximum yield during expansions while hedging into RWAs during market contractions.",
     },
     {
-      id: "target",
-      title: "Target User Archetypes",
-      content: "Obelisk Q serves three core segments: Passive Investors looking to automate idle capital, DeFi Participants seeking institutional-grade pool management, and Institutional Users requiring transparent, non-custodial RWA exposure on Mantle.",
-    },
-    {
-      id: "identity",
-      title: "Sovereign Agent Identity (ERC-8004)",
-      content: "The Obelisk Q agent is registered with a unique on-chain identity under the ERC-8004 standard (0x5698...7fce). This provides a decentralized trust layer and sovereign manifest that publicly defines the agent's capabilities, architecture, and rebalancing authority on Mantle Mainnet.",
+      id: "security",
+      title: "Sovereign Identity (ERC-8004)",
+      content: "To ensure institutional trust, the Obelisk Q agent maintains a sovereign on-chain identity under the ERC-8004 standard. This manifest defines the agent's rebalancing logic and capabilities, providing a verifiable audit trail for all autonomous transactions executed on the Mantle Network.",
     }
   ];
 

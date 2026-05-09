@@ -37,6 +37,35 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
   const [investOpen, setInvestOpen] = useState(false);
 
+  const TABS: DashboardTab[] = ["earn", "portfolio", "safeguards", "agent-logs", "preferences"];
+  const [prevTab, setPrevTab] = useState<DashboardTab>(tab);
+
+  const curIdx = TABS.indexOf(tab);
+  const prevIdx = TABS.indexOf(prevTab);
+  const direction = curIdx >= prevIdx ? 1 : -1;
+
+  if (tab !== prevTab) {
+    setPrevTab(tab);
+  }
+
+  const variants = {
+    enter: (dir: number) => ({
+      x: dir > 0 ? 24 : -24,
+      opacity: 0,
+      filter: "blur(4px)",
+    }),
+    center: {
+      x: 0,
+      opacity: 1,
+      filter: "blur(0px)",
+    },
+    exit: (dir: number) => ({
+      x: dir > 0 ? -24 : 24,
+      opacity: 0,
+      filter: "blur(4px)",
+    }),
+  };
+
   return (
     <main className="relative min-h-screen pb-20 landing-root">
 
@@ -54,13 +83,15 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
       {/* Tab Content Area */}
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-10 md:mt-14 relative z-10">
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={tab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeInOut" }}
+            custom={direction}
+            variants={variants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
           >
             {tab === "earn" && <EarnView onOpenInvest={() => setInvestOpen(true)} />}
             {tab === "safeguards" && <SafeguardsView />}
