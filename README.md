@@ -14,16 +14,20 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
 
 ### 🛠️ Technical Excellence & Deployment
-*   ✅ **Mantle Mainnet Deployment**: [0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa](https://explorer.mantle.xyz/address/0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa)
-*   ✅ **Verified Contract**: Verified on Mantle Explorer with deterministic rebalance logic.
-*   ✅ **On-Chain AI Execution**: The agent supervisor signs and broadcasts rebalance transactions directly to the vault based on its internal "Q-Score" inference.
-*   ✅ **Sovereign Identity**: Integrated with the **ERC-8004** standard for autonomous agent identity on-chain.
+*   ✅ **Mantle Mainnet Deployment**: [ObeliskVault (0x0f43...)](https://explorer.mantle.xyz/address/0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa)
+*   ✅ **Verified Contract**: Deployment confirmed on Mantle Explorer with deterministic rebalance logic.
+*   ✅ **On-Chain AI Execution**: The supervisor ([0x5698...](https://explorer.mantle.xyz/address/0x5698E89Ec2396e02679ddde33c2BA78de88F7fce)) triggers execution on Mantle.
+*   ✅ **Sovereign Identity**: Integrated with [ERC-8004](https://explorer.mantle.xyz/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) for autonomous agent identity.
 
 ---
 
-### 🏦 Core Protocol Details
-*   **Vault Address**: `0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa`
+### 🏦 Core Protocol Details (Mantle Mainnet)
+*   **ObeliskVault**: `0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa`
 *   **ERC-8004 Agent ID**: `0x5698E89Ec2396e02679ddde33c2BA78de88F7fce`
+*   **Identity Registry**: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`
+*   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`
+*   **USDY (Ondo RWA)**: `0x8D6857216076fb05316B3C068694086E6689799c`
+*   **mETH (Mantle LSP)**: `0xcDA86A272531e8640cD7F1a92c01839911B90bb0`
 *   **Network**: Mantle Mainnet (Chain ID: 5000)
 
 ---
