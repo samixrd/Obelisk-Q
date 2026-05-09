@@ -114,7 +114,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
       <motion.div
         initial={{ opacity: 0, y: 24, scale: 0.96 }}
         animate={{ opacity: 1, y: 0,  scale: 1 }}
-        transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.45, delay: 0, ease: [0.22, 1, 0.36, 1] }}
         className="relative w-full max-w-[440px] mx-6"
         style={{
           background: "#ffffff",
