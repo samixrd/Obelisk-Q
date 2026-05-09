@@ -129,40 +129,42 @@
 .landing-hero {
   position: relative;
   z-index: 1;
-  min-height: 80vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 220px 40px 100px;
-}
-
-.landing-hero-content {
-  max-width: 900px;
-  text-align: center;
-}
-
-.landing-hero-heading {
-  font-size: clamp(40px, 6vw, 88px);
-  font-weight: 700;
-  line-height: 1.05;
-  color: #0a0a0a;
-  margin-bottom: 28px;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  text-align: center;
+}
+
+.landing-hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.landing-hero-heading {
+  font-size: clamp(36px, 5vw, 72px);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #0a0a0a;
+  margin: 0 auto 28px;
   text-align: center;
 }
 
 .landing-hero-sub {
-  font-size: 17px;
-  line-height: 1.65;
-  color: #666;
-  max-width: 620px;
-  margin: 0 auto 40px;
+  font-size: 16px;
+  line-height: 1.6;
+  color: #888;
+  max-width: 520px;
+  margin: 16px auto 40px;
   letter-spacing: -0.01em;
 }
 
 .landing-hero-actions {
+  display: block;
+  margin: 0 auto;
   text-align: center;
 }
 

@@ -97,12 +97,7 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         transition={{ duration: 1.0, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="landing-hero-content"
       >
-        <div className="landing-hero-heading" style={{ 
-          fontWeight: 700, 
-          fontSize: "clamp(40px, 6vw, 88px)", 
-          lineHeight: 1.05, 
-          textAlign: "center" 
-        }}>
+        <div className="landing-hero-heading">
           <Reveal>
             <MagneticText text="Autonomous Investment" />
           </Reveal>
@@ -115,8 +110,8 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
           <br />
           Experience automated yields from mETH and USDY through a verified 5-node LangGraph swarm with real-time protection.
         </p>
-        <div className="landing-hero-actions" style={{ display: "block", textAlign: "center" }}>
-          <button onClick={onLaunch} className="landing-hero-cta" style={{ margin: "0 auto" }}>
+        <div className="landing-hero-actions">
+          <button onClick={onLaunch} className="landing-hero-cta">
             Launch App
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 8 }}>
               <path d="M3 8h10M10 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
