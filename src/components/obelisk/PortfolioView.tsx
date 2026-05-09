@@ -217,7 +217,7 @@ export function PortfolioView() {
               <motion.div key={p.name}
                 initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.05, duration: 0.8 }}
-                className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-2xl group"
+                className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-2xl group lift-on-hover"
               >
                 <div className="col-span-5 flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-white border border-black/[0.04] overflow-hidden flex items-center justify-center transition-all p-1.5">

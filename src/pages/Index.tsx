@@ -71,20 +71,34 @@ function AppInner() {
 
       <AnimatePresence mode="wait">
         {stage === "landing" && (
-          <LandingPage key="landing" onEnter={() => setStage("auth")} />
+          <motion.div
+            key="landing"
+            initial={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            <LandingPage onEnter={() => setStage("auth")} />
+          </motion.div>
         )}
+        
         {stage === "auth" && (
-          <AuthScreen key="auth" onAuthenticated={handleAuthenticated} />
+          <motion.div
+            key="auth"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
+          >
+            <AuthScreen onAuthenticated={handleAuthenticated} />
+          </motion.div>
         )}
-      </AnimatePresence>
 
-      <AnimatePresence>
         {stage === "dashboard" && (
           <motion.div
             key="dashboard"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
           >
             <div
               aria-hidden

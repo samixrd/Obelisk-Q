@@ -55,37 +55,21 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       {/* Tab Content Area */}
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-10 md:mt-14 relative z-10">
         <AnimatePresence mode="wait">
-          {tab === "earn" && (
-            <div key="earn">
-              <EarnView onOpenInvest={() => setInvestOpen(true)} />
-            </div>
-          )}
-
-          {tab === "safeguards" && (
-            <div key="safeguards">
-              <SafeguardsView />
-            </div>
-          )}
-
-
-
-          {tab === "portfolio" && (
-            <div key="portfolio">
-              <PortfolioView />
-            </div>
-          )}
-
-          {tab === "agent-logs" && (
-            <div key="agent-logs">
-              <AgentLogsView />
-            </div>
-          )}
-
-          {tab === "preferences" && (
-            <div key="preferences">
+          <motion.div
+            key={tab}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: "easeInOut" }}
+          >
+            {tab === "earn" && <EarnView onOpenInvest={() => setInvestOpen(true)} />}
+            {tab === "safeguards" && <SafeguardsView />}
+            {tab === "portfolio" && <PortfolioView />}
+            {tab === "agent-logs" && <AgentLogsView />}
+            {tab === "preferences" && (
               <PreferencesView walletAddress={walletAddress} onConnectWallet={onConnectWallet} />
-            </div>
-          )}
+            )}
+          </motion.div>
         </AnimatePresence>
       </div>
 
