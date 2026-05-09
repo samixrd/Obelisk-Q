@@ -99,7 +99,10 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
       >
         <div className="landing-hero-heading">
           <Reveal>
-            <MagneticText text="Autonomous Investment Intelligence on Mantle." />
+            <MagneticText text="Autonomous Investment" />
+          </Reveal>
+          <Reveal delay={0.1}>
+            <MagneticText text="Intelligence on Mantle." />
           </Reveal>
         </div>
         <p className="landing-hero-sub">
