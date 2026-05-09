@@ -139,8 +139,12 @@
 }
 
 .landing-hero-content {
-  max-width: 800px;
+  width: 100%;
   margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .landing-hero-heading {
@@ -152,6 +156,11 @@
   margin: 0 auto 28px;
   text-align: center;
   white-space: nowrap;
+  width: 100%;
+  max-width: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .landing-hero-sub {
