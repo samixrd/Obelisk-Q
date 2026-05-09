@@ -29,7 +29,7 @@ const Docs = () => {
     {
       id: "mainnet",
       title: "Mantle Mainnet Deployment",
-      content: "Obelisk Q is live on Mantle Mainnet (Chain ID: 5000). The primary entry point is the ObeliskVault contract (0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa). The vault is non-custodial, integrated with Merchant Moe liquidity, and maintains a strictly enforced 0.01 MNT gas buffer for autonomous operation.",
+      content: "Obelisk Q is live on Mantle Mainnet (Chain ID: 5000). The primary entry point is the ObeliskVault contract: 0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa. The vault is non-custodial, integrated with Merchant Moe liquidity, and maintains a strictly enforced 0.01 MNT gas buffer for autonomous operation.",
     },
     {
       id: "yield",
@@ -39,7 +39,7 @@ const Docs = () => {
     {
       id: "security",
       title: "Sovereign Identity (ERC-8004)",
-      content: "To ensure institutional trust, the Obelisk Q agent maintains a sovereign on-chain identity under the ERC-8004 standard. This manifest defines the agent's rebalancing logic and capabilities, providing a verifiable audit trail for all autonomous transactions executed on the Mantle Network.",
+      content: "To ensure institutional trust, the Obelisk Q agent maintains a sovereign on-chain identity (0x5698E89Ec2396e02679ddde33c2BA78de88F7fce) under the ERC-8004 standard. This manifest defines the agent's rebalancing logic and capabilities, providing a verifiable audit trail for all autonomous transactions executed on the Mantle Network.",
     }
   ];
 
