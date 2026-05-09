@@ -143,7 +143,6 @@ export function InvestModal({ open, onClose }: InvestModalProps) {
                         initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
                         className="p-4 bg-red-50 border border-red-100 rounded-2xl text-[12px] text-red-600 font-medium"
                       >
-                      >
                         <p className="flex items-center gap-2">
                           <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor"><path d="M8 0a8 8 0 100 16A8 8 0 008 0zm.5 12h-1v-1h1v1zm0-2h-1V4h1v6z"/></svg>
                           {txError.includes("user rejected") ? "Transaction cancelled in MetaMask." : txError}
