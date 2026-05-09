@@ -43,14 +43,6 @@ export function EarnView({ onOpenInvest }: EarnViewProps) {
           <p className="text-[12px] text-muted-foreground mt-2">Continuous rebalancing based on regime detection.</p>
         </div>
         
-        <div className="glass-card rounded-3xl p-8 transition-all hover:bg-white/80">
-          <p className="text-[10px] uppercase text-muted-foreground mb-3 font-semibold tracking-[0.2em]" style={{ letterSpacing: "0.28em" }}>Q-Score</p>
-          <div className="flex items-baseline gap-2">
-            <p className="text-[32px] font-bold text-[#0a0a0a]">{engineLoading ? "—" : score}</p>
-            <p className="text-[14px] text-muted-foreground">/ 100</p>
-          </div>
-          <p className="text-[12px] text-muted-foreground mt-1">Institutional stability rating.</p>
-        </div>
         
         <div className="glass-card rounded-3xl p-8 transition-all hover:bg-white/80">
           <p className="text-[10px] uppercase text-muted-foreground mb-3 font-semibold tracking-[0.2em]" style={{ letterSpacing: "0.28em" }}>Lock-up</p>
