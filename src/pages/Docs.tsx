@@ -9,7 +9,7 @@ const Docs = () => {
     {
       id: "overview",
       title: "Overview",
-      content: "Obelisk Q is a sovereign wealth navigator designed for the Mantle ecosystem. It operates as a fully autonomous multi-agent system that optimizes capital allocation across institutional-grade liquid staked assets (mETH) and yield-bearing RWAs (USDY). By utilizing advanced market regime detection, it ensures capital is always positioned for the optimal risk-adjusted yield.",
+      content: "Obelisk Q is a sovereign wealth navigator designed for the Mantle ecosystem. It operates as a fully autonomous multi-agent system that optimizes capital allocation across institutional-grade liquid staked assets (mETH), yield-bearing RWAs (USDY), and stable Mantle yield (WMNT). By utilizing advanced market regime detection, it ensures capital is always positioned for the optimal risk-adjusted yield.",
     },
     {
       id: "protocol",
@@ -29,12 +29,12 @@ const Docs = () => {
     {
       id: "mainnet",
       title: "Mantle Mainnet Deployment",
-      content: "Obelisk Q is live on Mantle Mainnet (Chain ID: 5000). The primary entry point is the ObeliskVault contract: 0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa. The vault is non-custodial, integrated with Merchant Moe liquidity, and maintains a strictly enforced 0.01 MNT gas buffer for autonomous operation.",
+      content: "Obelisk Q is live on Mantle Mainnet (Chain ID: 5000). The primary entry point is the ObeliskVault contract: 0x1f15C9C4c80734400c8a8681CDa39E4288c6AC16. The vault is non-custodial, integrated with Merchant Moe liquidity, and maintains a strictly enforced 0.01 MNT gas buffer for autonomous operation.",
     },
     {
       id: "yield",
       title: "Yield & Asset Framework",
-      content: "The navigator focuses on two primary yield vectors: 1) mETH (Mantle LSP) for native staked ETH rewards, and 2) USDY (Ondo Finance) for institutional US Treasury exposure. The agent dynamically balances these positions to capture maximum yield during expansions while hedging into RWAs during market contractions.",
+      content: "The navigator focuses on three primary yield vectors: 1) mETH (Mantle LSP) for native staked ETH rewards, 2) USDY (Ondo Finance) for institutional US Treasury exposure, and 3) WMNT (Wrapped MNT) for stable consolidation yield. The agent dynamically balances these positions to capture maximum yield during expansions, hedge into RWAs during market contractions, and stabilize in WMNT during consolidation periods.",
     },
     {
       id: "security",
