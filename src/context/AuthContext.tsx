@@ -31,24 +31,32 @@ interface AuthState {
 const Ctx = createContext<AuthState | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [authMethod,    setAuthMethod]    = useState<AuthMethod>(null);
-  const [walletAddress, setWalletAddress] = useState<string | null>(null);
+  const [authMethod,    setAuthMethod]    = useState<AuthMethod>(localStorage.getItem("obelisk_method") as AuthMethod);
+  const [walletAddress, setWalletAddress] = useState<string | null>(localStorage.getItem("obelisk_address"));
   const [sessionToken,  setSessionToken]  = useState<string | null>(localStorage.getItem("obelisk_session"));
-  const [loading,       setLoading]       = useState(false); // No longer loading firebase
+  const [loading,       setLoading]       = useState(false);
 
-  // Persist session token
+  // Persist session state
   useEffect(() => {
-    if (sessionToken) localStorage.setItem("obelisk_session", sessionToken);
-    else localStorage.removeItem("obelisk_session");
-  }, [sessionToken]);
-
-  // If we have a session token but no wallet address, we might need to re-fetch or clear
-  // For now, if session exists, we assume wallet was linked or is being tracked elsewhere
+    if (sessionToken) {
+      localStorage.setItem("obelisk_session", sessionToken);
+      if (walletAddress) localStorage.setItem("obelisk_address", walletAddress);
+      if (authMethod) localStorage.setItem("obelisk_method", authMethod);
+    } else {
+      localStorage.removeItem("obelisk_session");
+      localStorage.removeItem("obelisk_address");
+      localStorage.removeItem("obelisk_method");
+    }
+  }, [sessionToken, walletAddress, authMethod]);
 
   const logout = async () => {
     setAuthMethod(null);
     setWalletAddress(null);
     setSessionToken(null);
+    localStorage.removeItem("obelisk_session");
+    localStorage.removeItem("obelisk_address");
+    localStorage.removeItem("obelisk_method");
+    localStorage.removeItem("obelisk_tab");
   };
 
   const displayName = walletAddress

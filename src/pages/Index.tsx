@@ -17,19 +17,32 @@ type AppStage = "landing" | "auth" | "dashboard";
 function AppInner() {
   const { walletAddress, setWalletAddress, setAuthMethod, logout } = useAuth();
 
-  const [stage, setStage] = useState<AppStage>("landing");
+  const [stage, setStage] = useState<AppStage>(() => {
+    const savedToken = localStorage.getItem("obelisk_session");
+    const savedAddr = localStorage.getItem("obelisk_address");
+    return (savedToken && savedAddr) ? "dashboard" : "landing";
+  });
   
   const [walletModal,    setWalletModal]     = useState(false);
   const [sidebarOpen,    setSidebarOpen]     = useState(false);
   const [tourOpen,       setTourOpen]        = useState(false);
-  const [activeTab,      setActiveTab]       = useState<DashboardTab>("earn");
+  const [activeTab,      setActiveTab]       = useState<DashboardTab>(() => {
+    return (localStorage.getItem("obelisk_tab") as DashboardTab) || "earn";
+  });
   
-  // Auto-transition to dashboard if we have both wallet and session
+  // Persist active tab
+  useEffect(() => {
+    localStorage.setItem("obelisk_tab", activeTab);
+  }, [activeTab]);
+
+  // Handle stage transitions
   useEffect(() => {
     if (walletAddress && localStorage.getItem("obelisk_session")) {
       setStage("dashboard");
+    } else if (stage === "dashboard" && !walletAddress) {
+      setStage("landing");
     }
-  }, [walletAddress]);
+  }, [walletAddress, stage]);
 
   // Global scroll restoration: snap to top on tab or stage change
   useLayoutEffect(() => {

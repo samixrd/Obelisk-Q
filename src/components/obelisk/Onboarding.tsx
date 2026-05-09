@@ -37,7 +37,7 @@ export function Onboarding({ onComplete }: Props) {
               <p className="text-[10px] uppercase tracking-luxe text-muted-foreground mb-8">
                 A private invitation
               </p>
-              <h1 className="text-6xl md:text-7xl font-bold tracking-tighter text-foreground text-balance leading-[0.95]">
+              <h1 className="text-6xl md:text-7xl font-display tracking-tighter text-foreground text-balance leading-[0.95]">
                 Welcome to
                 <br />
                 <span className="font-light">Obelisk Q</span>
@@ -67,7 +67,7 @@ export function Onboarding({ onComplete }: Props) {
               <p className="text-[10px] uppercase tracking-luxe text-muted-foreground mb-6 text-center">
                 Step · 01
               </p>
-              <h2 className="text-4xl text-foreground text-center mb-2 tracking-tighter font-bold">
+              <h2 className="text-4xl text-foreground text-center mb-2 tracking-tighter font-display">
                 Your <span className="font-light">address</span>
               </h2>
               <p className="text-sm text-muted-foreground text-center mb-12">
@@ -108,7 +108,7 @@ export function Onboarding({ onComplete }: Props) {
               <div className="mx-auto mb-10 h-20 w-20 rounded-full bg-gradient-neon flex items-center justify-center animate-breathe">
                 <div className="h-2 w-2 rounded-full bg-neon shadow-neon" />
               </div>
-              <h2 className="text-5xl text-foreground tracking-tighter mb-4 font-bold">
+              <h2 className="text-5xl text-foreground tracking-tighter mb-4 font-display">
                 At your <span className="font-light">service</span>
               </h2>
               <p className="text-sm text-muted-foreground mb-12">

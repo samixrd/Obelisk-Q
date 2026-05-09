@@ -146,13 +146,17 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
 
         {/* Quick amount buttons */}
         <div className="flex gap-2.5 mt-4">
-          {["0.01", "0.05", "0.1", "0.5"].map((v) => (
+          {[
+            { label: "25%", value: (parseFloat(vaultStats?.walletBalance || "0") * 0.25).toFixed(4) },
+            { label: "50%", value: (parseFloat(vaultStats?.walletBalance || "0") * 0.50).toFixed(4) },
+            { label: "75%", value: (parseFloat(vaultStats?.walletBalance || "0") * 0.75).toFixed(4) },
+          ].map((item) => (
             <button
-              key={v}
-              onClick={() => setDepositAmount(v)}
+              key={item.label}
+              onClick={() => setDepositAmount(item.value)}
               className="text-[12px] px-4 py-2 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] transition-all border border-black/[0.08] rounded-full font-medium"
             >
-              {v} MNT
+              {item.label}
             </button>
           ))}
           {vaultStats?.walletBalance && (

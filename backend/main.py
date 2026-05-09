@@ -71,8 +71,9 @@ CURRENT_POSITION = "MNT"  # Global position state
 SCORE_HISTORY = []        # List of (timestamp, score)
 CIRCUIT_BREAKER_ACTIVE = False
 EMA_SCORE = None
-ALPHA = 0.15
-MAX_SCORE_CHANGE = 10
+ALPHA = 0.1
+MAX_DELTA = 5
+MAX_SCORE_CHANGE = 10 # This is used elsewhere, keeping it for now
 
 def update_circuit_breaker(current_score):
     global SCORE_HISTORY, CIRCUIT_BREAKER_ACTIVE
@@ -172,12 +173,12 @@ async def q_score_engine_node(state: AgentState):
     regime = state["data"].get("regime", "Consolidation")
     raw_score = state["data"].get("risk", {}).get("score", 90)
     
-    # ── EMA Smoothing with Clamping ──
+    # ── EMA Smoothing with Hard Clamp ──
     if EMA_SCORE is None:
         EMA_SCORE = float(raw_score)
     else:
-        # Clamp raw_score to prevent massive jumps before EMA
-        clamped_raw = max(EMA_SCORE - MAX_SCORE_CHANGE, min(EMA_SCORE + MAX_SCORE_CHANGE, float(raw_score)))
+        # Hard clamp — score CANNOT change more than 5 points per cycle
+        clamped_raw = max(EMA_SCORE - MAX_DELTA, min(EMA_SCORE + MAX_DELTA, float(raw_score)))
         EMA_SCORE = (ALPHA * clamped_raw) + ((1 - ALPHA) * EMA_SCORE)
     
     risk_score = int(EMA_SCORE)

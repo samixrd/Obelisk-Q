@@ -110,7 +110,7 @@ export function GuidedTour({ open, onClose }: Props) {
                   {s.eyebrow} · A guided tour
                 </p>
                 <h2 
-                  className="text-4xl md:text-5xl font-bold tracking-tighter text-foreground leading-[1.1] text-balance"
+                  className="text-4xl md:text-5xl font-display tracking-tighter text-foreground leading-[1.1] text-balance"
                 >
                   {s.title}
                 </h2>
@@ -149,7 +149,7 @@ export function GuidedTour({ open, onClose }: Props) {
             <div className="mt-14 flex flex-col items-center gap-6">
               <button
                 onClick={next}
-                className="group inline-flex items-center gap-3 px-8 py-3 bg-black rounded-full text-[11px] uppercase tracking-luxe text-white hover:bg-black/90 transition-colors duration-300 font-bold"
+                className="group inline-flex items-center gap-3 px-8 py-3 bg-black rounded-full text-[11px] uppercase tracking-luxe text-white hover:bg-black/90 transition-colors duration-300 font-display"
               >
                 {step === steps.length - 1 ? "Begin" : "Continue"}
                 <IconArrowRight size={12} />
