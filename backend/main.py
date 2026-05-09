@@ -70,6 +70,8 @@ LAST_REBALANCE_TIME = 0
 CURRENT_POSITION = "MNT"  # Global position state
 SCORE_HISTORY = []        # List of (timestamp, score)
 CIRCUIT_BREAKER_ACTIVE = False
+EMA_SCORE = None
+ALPHA = 0.3
 
 def update_circuit_breaker(current_score):
     global SCORE_HISTORY, CIRCUIT_BREAKER_ACTIVE
@@ -164,9 +166,22 @@ async def risk_assessment_node(state: AgentState):
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def q_score_engine_node(state: AgentState):
+    global EMA_SCORE
     logger.info("node: q_score_engine | calculating confidence")
     regime = state["data"].get("regime", "Consolidation")
-    risk_score = state["data"].get("risk", {}).get("score", 90)
+    raw_score = state["data"].get("risk", {}).get("score", 90)
+    
+    # ── EMA Smoothing ──
+    if EMA_SCORE is None:
+        EMA_SCORE = float(raw_score)
+    else:
+        EMA_SCORE = (ALPHA * raw_score) + ((1 - ALPHA) * EMA_SCORE)
+    
+    risk_score = int(EMA_SCORE)
+    # Ensure state and cache use the smoothed score
+    if "risk" not in state["data"]: state["data"]["risk"] = {}
+    state["data"]["risk"]["score"] = risk_score
+    last_known_state["risk"]["score"] = risk_score
     
     # ── HARD-LOCK: if confidence < 60, force HOLD regardless of regime ──
     if risk_score < 60:
