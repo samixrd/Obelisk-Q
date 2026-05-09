@@ -115,9 +115,9 @@ export function ManagedAssets() {
             className="relative group rounded-2xl p-6 md:p-8 bg-foreground/[0.01] border border-foreground/5 hover:border-foreground/15 transition-all duration-500"
           >
             <div className="relative">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-6 mb-6">
+              <div className="flex flex-col gap-5 mb-6">
                 <div className="flex items-center gap-4">
-                  <span className="inline-flex items-center justify-center h-11 w-11 rounded-full border border-foreground/10 overflow-hidden bg-white">
+                  <span className="inline-flex items-center justify-center h-11 w-11 rounded-full border border-foreground/10 overflow-hidden bg-white shrink-0">
                     {logos[a.symbol] ? (
                       <img src={logos[a.symbol]!} alt={a.symbol} className="w-full h-full object-cover" />
                     ) : (
@@ -126,18 +126,18 @@ export function ManagedAssets() {
                   </span>
                   <div>
                     <p className="text-xl text-foreground font-medium" style={{ fontFamily: "'Inter', sans-serif" }}>{a.symbol}</p>
-                    <p className="text-[11px] text-muted-foreground">{a.name}</p>
+                    <p className="text-[11px] text-muted-foreground line-clamp-1">{a.name}</p>
                   </div>
                 </div>
-                <div className="sm:text-right">
+                <div className="text-left">
                   <p className="text-[10px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.2em" }}>
                     {a.yieldLabel}
                   </p>
-                  <div className="flex flex-col sm:items-end">
+                  <div className="flex items-center gap-3">
                     <p className="text-2xl text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.yield}</p>
                     {a.trend && (
-                      <p className="text-[9px] text-neon flex items-center gap-0.5 mt-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                        <IconArrowUpRight size={8} />
+                      <p className="text-[10px] text-neon flex items-center gap-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                        <IconArrowUpRight size={10} />
                         {a.trend}% (7d)
                       </p>
                     )}
@@ -153,7 +153,7 @@ export function ManagedAssets() {
 
               <div className="hairline mb-6" />
 
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-[9px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.15em" }}>
                     Allocated
@@ -166,7 +166,7 @@ export function ManagedAssets() {
                   </p>
                   <p className="text-sm text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.buffer}</p>
                 </div>
-                <div className="col-span-2 lg:col-span-1">
+                <div className="col-span-2 mt-1">
                   <p className="text-[9px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.15em" }}>
                     Coverage
                   </p>
