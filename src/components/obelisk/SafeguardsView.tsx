@@ -128,6 +128,18 @@ export function SafeguardsView() {
              </div>
           </div>
         </div>
+
+        {/* Integrated Real-Time Graph */}
+        <div className="mt-10 pt-10 border-t border-black/5">
+          <div className="flex items-center justify-between mb-6">
+            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest" style={{ letterSpacing: "0.2em" }}>Stability Vector · Real-Time Telemetry</p>
+            <div className="flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[9px] uppercase text-emerald-600 font-bold tracking-widest">Live Feed</span>
+            </div>
+          </div>
+          <StabilityGraph data={scoreHistory} height={140} />
+        </div>
       </div>
 
       {/* Protocol cards */}
@@ -173,33 +185,8 @@ export function SafeguardsView() {
         </div>
       </div>
 
-      {/* Stability graph */}
-      <div className="col-span-12 lg:col-span-8 glass-card rounded-[32px] p-6 md:p-10">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <p className="text-[10px] uppercase text-muted-foreground mb-2" style={{ letterSpacing: "0.28em" }}>Risk Exposure · 30 days</p>
-            <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em]" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em", fontWeight: 700 }}>
-              <MagneticText disabled text="Consistently" />
-              <div style={{ fontWeight: 300 }}><MagneticText disabled text="within envelope" /></div>
-            </div>
-          </div>
-          
-          <div className="text-right">
-            <p className="text-[10px] uppercase text-muted-foreground mb-1 font-bold" style={{ letterSpacing: "0.2em" }}>Stability Score</p>
-            <div className="flex items-baseline justify-end gap-1">
-              <span className="text-3xl font-bold text-foreground">{score}</span>
-              <span className="text-[12px] text-muted-foreground font-medium">/ 100</span>
-            </div>
-            <p className={`text-[10px] uppercase font-bold mt-1 ${isHighVol ? "text-orange-600" : "text-emerald-600"}`} style={{ letterSpacing: "0.15em" }}>
-              Regime: {regime}
-            </p>
-          </div>
-        </div>
-        <StabilityGraph data={scoreHistory} height={160} />
-      </div>
-
       {/* Audit log */}
-      <div className="col-span-12 lg:col-span-4 glass-card rounded-[32px] p-6 md:p-10">
+      <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">
         <p className="text-[10px] uppercase text-muted-foreground mb-6 font-bold tracking-widest">Agent Audit Feed</p>
         <div className="space-y-0">
           {AUDIT_EVENTS.map((ev, i) => (
