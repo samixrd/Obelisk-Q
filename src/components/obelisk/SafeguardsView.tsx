@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
-import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { useAgentData } from "@/hooks/useAgentData";
 import { useState, useEffect } from "react";
 
 const fadeUp = {
@@ -12,7 +12,7 @@ const fadeUp = {
 import { MagneticText } from "./MagneticText";
 
 export function SafeguardsView() {
-  const { score, regime, circuitBreakerActive, lastMessage, agentLogs } = useAgentWebSocket();
+  const { score, regime, circuitBreakerActive, lastMessage, agentLogs } = useAgentData();
   const [scoreHistory, setScoreHistory] = useState<number[]>([]);
 
   // Track score history (last 30 points)

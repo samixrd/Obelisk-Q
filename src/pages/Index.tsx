@@ -10,6 +10,7 @@ import { WalletConnectModal } from "@/components/obelisk/WalletConnectModal";
 import { StatePlot } from "@/components/obelisk/StatePlot";
 import { StabilityProvider } from "@/components/obelisk/StabilityContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { AgentDataProvider } from "@/hooks/useAgentData";
 import type { DashboardTab } from "@/components/obelisk/Dashboard";
 
 type AppStage = "landing" | "auth" | "dashboard";
@@ -162,9 +163,11 @@ function AppInner() {
 
 const Index = () => (
   <AuthProvider>
-    <StabilityProvider>
-      <AppInner />
-    </StabilityProvider>
+    <AgentDataProvider>
+      <StabilityProvider>
+        <AppInner />
+      </StabilityProvider>
+    </AgentDataProvider>
   </AuthProvider>
 );
 

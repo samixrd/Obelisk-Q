@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { useAgentData } from "@/hooks/useAgentData";
 import { useVault } from "@/hooks/useVault";
 import { MagneticText } from "./MagneticText";
 
@@ -33,7 +33,7 @@ const ASSET_DETAILS = [
 ];
 
 export function AssetsView() {
-  const { livePrices, liveYields } = useAgentWebSocket();
+  const { livePrices, liveYields } = useAgentData();
   const { vaultStats } = useVault();
 
   return (

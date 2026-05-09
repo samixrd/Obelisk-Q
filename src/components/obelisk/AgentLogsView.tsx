@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { useAgentData } from "@/hooks/useAgentData";
 import { useVault } from "@/hooks/useVault";
 import { useEffect, useRef, useState } from "react";
 import { useAgentFeed } from "@/hooks/useAgentFeed";
@@ -35,7 +35,7 @@ const STATUS_LABELS: Record<string, string> = {
 
 export function AgentLogsView() {
   const { logs } = useAgentFeed();
-  const { agentLogs, score, countdown, nodes } = useAgentWebSocket();
+  const { agentLogs, score, countdown, nodes } = useAgentData();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Removed auto-scroll-to-top to prevent scroll jumps during polling.

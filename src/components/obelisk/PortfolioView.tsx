@@ -6,7 +6,7 @@ import { useVault } from "@/hooks/useVault";
 import { MagneticText } from "./MagneticText";
 import { useTokenLogos } from "@/hooks/useTokenLogos";
 import { useAuth } from "@/context/AuthContext";
-import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { useAgentData } from "@/hooks/useAgentData";
 
 // Lazy load heavy components
 const AgentTransactions = lazy(() => import("./AgentTransactions").then(m => ({ default: m.AgentTransactions })));
@@ -27,7 +27,7 @@ const fadeUp = {
 export function PortfolioView() {
   const { sessionToken, logout } = useAuth();
   const { vaultStats, withdraw, withdrawPartial, txState } = useVault();
-  const { currentPosition } = useAgentWebSocket();
+  const { currentPosition } = useAgentData();
   const logos = useTokenLogos();
 
   // 1. Memoize Allocation Logic

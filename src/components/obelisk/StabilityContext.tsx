@@ -12,7 +12,7 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { useAgentData } from "@/hooks/useAgentData";
 
 export type VolatilityRegime = "low" | "high";
 export type MarketRegime     = "Expansion" | "Consolidation" | "Contraction" | string;
@@ -57,8 +57,8 @@ export function StabilityProvider({ children }: { children: ReactNode }) {
   const [lastFetched,        setLastFetched]        = useState<number | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Listen to WebSocket instead of polling
-  const { score: wsScore, regime: wsRegime } = useAgentWebSocket();
+  // Read from the single shared agent data source
+  const { score: wsScore, regime: wsRegime } = useAgentData();
 
   useEffect(() => {
     setEngineScore(wsScore);

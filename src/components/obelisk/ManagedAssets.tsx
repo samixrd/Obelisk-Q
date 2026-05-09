@@ -5,7 +5,7 @@ import { useYieldData } from "@/hooks/useYieldData";
 import { MagneticText } from "./MagneticText";
 import { useTokenLogos } from "@/hooks/useTokenLogos";
 import { useVault } from "@/hooks/useVault";
-import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { useAgentData } from "@/hooks/useAgentData";
 
 interface Asset {
   symbol: string;
@@ -24,7 +24,7 @@ export function ManagedAssets() {
   const { usdy, meth } = useYieldData();
   const logos = useTokenLogos();
   const { vaultStats } = useVault();
-  const { currentPosition } = useAgentWebSocket();
+  const { currentPosition } = useAgentData();
 
   // 1. Calculate Real Totals from Vault Contract
   const totalMnt = parseFloat(vaultStats?.totalDeposited ?? "0");

@@ -1,10 +1,10 @@
 import { motion } from "framer-motion";
-import { useAgentWebSocket } from "@/hooks/useAgentWebSocket";
+import { useAgentData } from "@/hooks/useAgentData";
 import { Logo } from "../Logo";
 import { MagneticText } from "../MagneticText";
 
 export function QScoreBar() {
-  const { score, regime, countdown, liveYields } = useAgentWebSocket();
+  const { score, regime, countdown, liveYields } = useAgentData();
   const isHighVol = regime === "Contraction" || regime === "Volatile";
 
   const spread = Math.abs(liveYields.usdy - liveYields.meth).toFixed(1);
