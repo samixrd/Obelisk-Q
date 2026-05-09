@@ -1,6 +1,6 @@
 # Obelisk Q — Autonomous Wealth Intelligence on Mantle
 
-Obelisk Q is the first autonomous wealth navigator optimized for Mantle Mainnet. It leverages a multi-agent LangGraph architecture to provide institutional-grade yield optimization across mETH and USDY (RWA).
+Obelisk Q is the first autonomous wealth navigator optimized for Mantle Mainnet. It leverages a specialized 5-node LangGraph architecture to provide institutional-grade yield optimization across mETH and USDY (RWA), protected by a real-time autonomous circuit breaker.
 
 ### 🏦 On-Chain Identity
 *   **Vault Address**: `0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa`
@@ -14,14 +14,15 @@ Obelisk Q is the first autonomous wealth navigator optimized for Mantle Mainnet.
 graph TD
     User((User)) -->|Deposit MNT| Vault[ObeliskVault Contract]
     
-    subgraph "AI Agent Layer (LangGraph)"
-        Analyst[RWA Analyst] -->|Market Scan| Risk[Risk Manager]
-        Risk -->|Regime Inference| Tracker[Control Tracker]
-        Tracker -->|Action Payload| Executor[On-Chain Executor]
+    subgraph "AI Agent Layer (5-Node Swarm)"
+        Regime[Regime Detection] --> Risk[Risk Assessment]
+        Risk --> QScore[Q-Score Engine]
+        QScore --> Telemetry[Telemetry Aggregator]
+        Telemetry --> Supervisor[Supervisory Controller]
     end
     
-    Executor -->|setRegime| Vault
-    Executor -->|rebalance| Vault
+    Supervisor -->|setRegime| Vault
+    Supervisor -->|rebalance| Vault
     
     Vault -->|Swap| DEX[Merchant Moe DEX]
     DEX -->|Yield Assets| YieldPools[mETH / USDY Pools]
@@ -29,18 +30,18 @@ graph TD
     YieldPools -->|Real Yield| Vault
 ```
 
-### 1. The Autonomous Rebalancing Engine (Backend)
-The "brain" of the system operates on a multi-agent feedback loop:
-*   **RWA Analyst**: Scans liquidity markers and yield vectors (mETH, USDY) on Mantle.
-*   **Risk Manager**: Executes a "Regime Audit" (Expansion, Contraction, Consolidation).
-*   **Control Tracker**: Determines the optimal allocation payload.
-*   **Executor**: Authorized on-chain actor that signs and broadcasts transactions to the Mantle Mainnet.
+### 1. The Autonomous Swarm (Backend)
+The "brain" of the system operates on a specialized 5-node LangGraph feedback loop:
+*   **Regime Detection**: Scans liquidity markers and yield vectors (mETH, USDY) on Mantle.
+*   **Risk Assessment**: Executes a "Regime Audit" using Hidden Markov Models.
+*   **Q-Score Engine**: Calculates institutional-grade stability ratings (0-100).
+*   **Telemetry Aggregator**: Synchronizes state across edge nodes with <500ms latency.
+*   **Supervisory Controller**: Authorized on-chain actor that signs and broadcasts transactions to Mantle.
 
-### 2. The ObeliskVault (Smart Contracts)
-A custom Solidity vault that acts as the custodial layer:
-*   **Native MNT Support**: Optimized for Mantle's native token.
-*   **DEX Integration**: Directly connected with **Merchant Moe** for deep liquidity.
-*   **Transparent Inference**: Market regimes are stored on-chain via the `setRegime` function.
+### 2. Institutional Safeguards
+*   **Autonomous Circuit Breaker**: Real-time protection that halts allocation if the Q-Score drops 5+ points within a 60-minute window.
+*   **Real-Time Dashboards**: Frontend synchronization via 10s polling of the `/api/stats` endpoint, ensuring zero-latency visibility into agent decisions.
+*   **Verified Unwind Logic**: Deterministic cross-token swaps (mETH ↔ USDY) with a fixed 0.01 MNT safety buffer.
 
 ## 🎯 Target Audience & RWA Pitch
 Obelisk Q is designed for users who seek **institutional-grade Real World Asset (RWA)** exposure without the complexity of manual DeFi management.
@@ -54,7 +55,7 @@ Obelisk Q is designed for users who seek **institutional-grade Real World Asset 
 ### 💎 Why Obelisk Q?
 *   **Verified RWA Exposure**: Direct integration with USDY (Ondo Finance) for US Treasury-backed yield.
 *   **On-Chain Transparency**: AI market inferences are recorded on-chain for permanent auditability.
-*   **Liquid Staking**: Harnesses mETH (Mantle LSP) for high-availability ETH yield.
+*   **Circuit Breaker Protection**: State-of-the-art volatility dampening to preserve capital.
 
 ## 🛠️ Getting Started
 See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md) for detailed setup and deployment instructions.

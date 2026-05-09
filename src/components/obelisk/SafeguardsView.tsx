@@ -11,7 +11,7 @@ const fadeUp = {
 import { MagneticText } from "./MagneticText";
 
 export function SafeguardsView() {
-  const { score, regime, lastMessage, agentLogs } = useAgentWebSocket();
+  const { score, regime, circuitBreakerActive, lastMessage, agentLogs } = useAgentWebSocket();
   
   const isHighVol = regime === "Contraction";
   const circuitBreakerArmed = lastMessage.includes("CIRCUIT BREAKER");
@@ -19,8 +19,8 @@ export function SafeguardsView() {
   const PROTOCOLS = [
     {
       name: "Drawdown Circuit Breaker",
-      status: circuitBreakerArmed ? "TRIGGERED" : "Armed",
-      statusOk: !circuitBreakerArmed,
+      status: circuitBreakerArmed || circuitBreakerActive ? "TRIGGERED" : "Armed",
+      statusOk: !(circuitBreakerArmed || circuitBreakerActive),
       description: "Halts allocation if portfolio drops beyond threshold within any 24-hour window.",
       threshold: "–3.5% / 24h",
       lastTrigger: circuitBreakerArmed ? "Active now" : "Never triggered",
@@ -79,6 +79,43 @@ export function SafeguardsView() {
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-20">
 
+      {/* Global Circuit Breaker Status */}
+      <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10 border-l-4 transition-all duration-500" 
+           style={{ borderLeftColor: circuitBreakerActive ? "#ef4444" : "#10b981" }}>
+        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="flex items-center gap-6">
+            <div className={`relative flex items-center justify-center h-16 w-16 rounded-full ${circuitBreakerActive ? "bg-red-500/10" : "bg-emerald-500/10"}`}>
+              <div className={`h-4 w-4 rounded-full ${circuitBreakerActive ? "bg-red-500 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.8)]" : "bg-emerald-500"}`} />
+              {circuitBreakerActive && (
+                 <div className="absolute inset-0 rounded-full border-2 border-red-500/20 animate-ping" />
+              )}
+            </div>
+            <div>
+              <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1" style={{ letterSpacing: "0.2em" }}>Autonomous Protection</p>
+              <h3 className="text-xl font-bold text-foreground" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+                {circuitBreakerActive ? "ACTIVE — All allocation halted" : "INACTIVE — All systems normal"}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1 font-medium">
+                {circuitBreakerActive 
+                  ? "Automatic halt triggered due to rapid Q-Score degradation. No on-chain swaps permitted." 
+                  : "Q-Score volatility within nominal parameters. Real-time rebalancing is enabled."}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-12 px-8 py-5 rounded-[24px] bg-black/[0.02] border border-black/5">
+             <div className="text-center">
+                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Current Q-Score</p>
+                <p className="text-2xl font-bold text-black">{score}</p>
+             </div>
+             <div className="h-10 w-px bg-black/10" />
+             <div className="text-center">
+                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Market Regime</p>
+                <p className="text-2xl font-bold text-black">{regime}</p>
+             </div>
+          </div>
+        </div>
+      </div>
 
       {/* Protocol cards */}
       <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">

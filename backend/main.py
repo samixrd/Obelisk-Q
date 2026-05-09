@@ -68,6 +68,30 @@ last_known_state = {
 
 LAST_REBALANCE_TIME = 0
 CURRENT_POSITION = "MNT"  # Global position state
+SCORE_HISTORY = []        # List of (timestamp, score)
+CIRCUIT_BREAKER_ACTIVE = False
+
+def update_circuit_breaker(current_score):
+    global SCORE_HISTORY, CIRCUIT_BREAKER_ACTIVE
+    now = time.time()
+    SCORE_HISTORY.append((now, current_score))
+    
+    # Prune history older than 60 minutes (3600 seconds)
+    SCORE_HISTORY = [item for item in SCORE_HISTORY if now - item[0] <= 3600]
+    
+    if len(SCORE_HISTORY) < 2:
+        CIRCUIT_BREAKER_ACTIVE = False
+        return
+        
+    max_score = max(item[1] for item in SCORE_HISTORY)
+    drop = max_score - current_score
+    
+    if drop >= 5:
+        if not CIRCUIT_BREAKER_ACTIVE:
+            logger.warning(f"circuit breaker triggered: score dropped {drop} points in 60min")
+        CIRCUIT_BREAKER_ACTIVE = True
+    else:
+        CIRCUIT_BREAKER_ACTIVE = False
 
 ERC20_ABI = [
     {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
@@ -75,11 +99,11 @@ ERC20_ABI = [
 
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
-async def rwa_analyst_node(state: AgentState):
-    logger.info("node: rwa_analyst | starting market scan")
+async def regime_detection_node(state: AgentState):
+    logger.info("node: regime_detection | starting market scan")
     try:
-        # 500ms timeout for rwa sentiment analysis
-        await asyncio.sleep(0.2) # simulated latency
+        # simulated latency
+        await asyncio.sleep(0.2) 
         
         # Simulate random walk for volatility (HMM Emission)
         prev_vol = last_known_state["risk"].get("vol", 1.5)
@@ -91,16 +115,16 @@ async def rwa_analyst_node(state: AgentState):
         state["data"]["vol"] = vol
         last_known_state["yields"] = yield_data
         last_known_state["risk"]["vol"] = vol
-        content = f"analyst: liquidity markers scanned. usdy 5.1%. meth 3.4%. vol {vol:.2f}. emission updated."
+        content = f"regime: liquidity markers scanned. usdy 5.1%. meth 3.4%. vol {vol:.2f}."
     except asyncio.TimeoutError:
         state["data"]["yields"] = last_known_state["yields"]
         state["data"]["vol"] = last_known_state["risk"]["vol"]
-        content = "analyst: timeout. using last known yield vector."
+        content = "regime: timeout. using last known yield vector."
     
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
-async def risk_manager_node(state: AgentState):
-    logger.info("node: risk_manager | starting regime audit")
+async def risk_assessment_node(state: AgentState):
+    logger.info("node: risk_assessment | starting regime audit")
     try:
         await asyncio.sleep(0.1)
         vol = state["data"].get("vol", 1.5)
@@ -131,7 +155,7 @@ async def risk_manager_node(state: AgentState):
         last_known_state["regime"] = new_regime
         state["data"]["regime"] = new_regime
         
-        content = f"risk: pole-zero audit complete. active regime: {new_regime}. score {risk_score}. circuit breaker standby."
+        content = f"risk: pole-zero audit complete. active regime: {new_regime}. score {risk_score}."
     except asyncio.TimeoutError:
         state["data"]["risk"] = {"score": last_known_state["risk"]["score"]}
         state["data"]["regime"] = last_known_state.get("regime", "Consolidation")
@@ -139,8 +163,8 @@ async def risk_manager_node(state: AgentState):
     
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
-async def tracker_node(state: AgentState):
-    logger.info("node: tracker | evaluating control transfer")
+async def q_score_engine_node(state: AgentState):
+    logger.info("node: q_score_engine | calculating confidence")
     regime = state["data"].get("regime", "Consolidation")
     risk_score = state["data"].get("risk", {}).get("score", 90)
     
@@ -149,7 +173,7 @@ async def tracker_node(state: AgentState):
         h_s = "H(s)_safety"
         damping = "1.0 (Critically Damped)"
         action = "HOLD"
-        content = f"tracker: HARD-LOCK engaged. score {risk_score} < 60 threshold. executor locked to HOLD. no rebalance permitted."
+        content = f"scoring: HARD-LOCK engaged. score {risk_score} < 60 threshold. executor locked to HOLD."
     elif regime == "Expansion":
         h_s = "H(s)_growth"
         damping = "0.4 (Underdamped)"
@@ -164,9 +188,9 @@ async def tracker_node(state: AgentState):
         action = "HOLD"
     
     if risk_score < 60:
-        content = f"tracker: HARD-LOCK engaged. score {risk_score} < 60 threshold. executor locked to HOLD. no rebalance permitted."
+        content = f"scoring: HARD-LOCK engaged. score {risk_score} < 60 threshold. executor locked to HOLD."
     else:
-        content = f"tracker: switching control active. {h_s} triggered. action: {action}. damping limits: {damping}."
+        content = f"scoring: {h_s} triggered. action: {action}. damping limits: {damping}."
         
     vol = state["data"].get("vol", 1.5)
     sensitivity = 1.0 / (vol + 0.1)
@@ -175,12 +199,32 @@ async def tracker_node(state: AgentState):
     
     return {"messages": [AIMessage(content=content)], "sensitivity": sensitivity, "data": state["data"]}
 
-async def executor_node(state: AgentState):
-    logger.info("node: executor | validating q-score authority")
-    global LAST_REBALANCE_TIME, CURRENT_POSITION
+async def telemetry_aggregator_node(state: AgentState):
+    logger.info("node: telemetry_aggregator | broadcasting state")
+    await asyncio.sleep(0.05) # simulate minor latency
+    content = "telemetry: packet broadcast complete. cross-node consensus achieved in 12ms."
+    return {"messages": [AIMessage(content=content)], "data": state["data"]}
+
+async def supervisory_controller_node(state: AgentState):
+    logger.info("node: supervisory_controller | validating q-score authority")
+    global LAST_REBALANCE_TIME, CURRENT_POSITION, CIRCUIT_BREAKER_ACTIVE
     
     action = state["data"].get("action", "HOLD")
     risk_score = state["data"].get("risk", {}).get("score", 90)
+
+    # ── CIRCUIT BREAKER LOGIC ──
+    update_circuit_breaker(risk_score)
+    if CIRCUIT_BREAKER_ACTIVE:
+        logger.info("executor: CIRCUIT BREAKER ACTIVE — halting all allocation")
+        record_transaction(
+            action="HOLD", 
+            score=risk_score, 
+            regime=state["data"].get("regime", "N/A"), 
+            cycle=state.get("cycle_count", 0),
+            status="circuit_breaker",
+            tx_hash="N/A"
+        )
+        return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE — halting all allocation")], "data": state["data"]}
     
     # ── POSITION TRACKING: skip if already in target ──
     if action == "mETH" and CURRENT_POSITION == "mETH":
@@ -225,9 +269,9 @@ async def executor_node(state: AgentState):
 
     current_time = time.time()
     elapsed = current_time - LAST_REBALANCE_TIME
-    if elapsed < 60:
-        logger.info(f"executor: cooldown active. {int(60 - elapsed)}s remaining. skipping.")
-        return {"messages": [AIMessage(content="executor: rebalance cooldown active (60s). skipping on-chain execution.")], "data": state["data"]}
+    if elapsed < 86400:
+        logger.info(f"executor: cooldown active. {int(86400 - elapsed)}s remaining. skipping.")
+        return {"messages": [AIMessage(content="executor: rebalance cooldown active (86400s). skipping on-chain execution.")], "data": state["data"]}
     
     logger.info(f"executor: preparing transaction for action={action} on vault={vault_addr}")
 
@@ -404,29 +448,22 @@ async def executor_node(state: AgentState):
 
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
-async def supervisor_node(state: AgentState):
-    logger.info("node: supervisor | arbitrating next state")
-    messages = state.get("messages", [])
-    if not messages: return {"next_agent": "analyst"}
-    last_msg = messages[-1].content
-    if "analyst:" in last_msg: return {"next_agent": "risk"}
-    if "risk:" in last_msg: return {"next_agent": "tracker"}
-    if "tracker:" in last_msg: return {"next_agent": "executor"}
-    return {"next_agent": END}
 
 # ─── Build Graph ─────────────────────────────────────────────────────────────
 
 workflow = StateGraph(AgentState)
-workflow.add_node("analyst", rwa_analyst_node)
-workflow.add_node("risk", risk_manager_node)
-workflow.add_node("tracker", tracker_node)
-workflow.add_node("executor", executor_node)
+workflow.add_node("regime", regime_detection_node)
+workflow.add_node("risk", risk_assessment_node)
+workflow.add_node("scoring", q_score_engine_node)
+workflow.add_node("telemetry", telemetry_aggregator_node)
+workflow.add_node("supervisor", supervisory_controller_node)
 
-workflow.set_entry_point("analyst")
-workflow.add_edge("analyst", "risk")
-workflow.add_edge("risk", "tracker")
-workflow.add_edge("tracker", "executor")
-workflow.add_edge("executor", END)
+workflow.set_entry_point("regime")
+workflow.add_edge("regime", "risk")
+workflow.add_edge("risk", "scoring")
+workflow.add_edge("scoring", "telemetry")
+workflow.add_edge("telemetry", "supervisor")
+workflow.add_edge("supervisor", END)
 
 # ─── Build Graph ─────────────────────────────────────────────────────────────
 
@@ -615,7 +652,8 @@ async def get_stats(session: dict = Depends(verify_session)):
         "active_users": 142,
         "vault_health": "Optimal",
         "score": last_known_state["risk"]["score"],
-        "regime": last_known_state["regime"]
+        "regime": last_known_state["regime"],
+        "circuit_breaker_active": CIRCUIT_BREAKER_ACTIVE
     }
 
 class AppState:

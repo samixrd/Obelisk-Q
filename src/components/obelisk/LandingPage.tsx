@@ -107,7 +107,7 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         <p className="landing-hero-sub">
           The first autonomous wealth navigator optimized for Mantle Mainnet.
           <br />
-          Experience automated yields from mETH and USDY through a verified multi-agent LangGraph architecture.
+          Experience automated yields from mETH and USDY through a verified 5-node LangGraph swarm with real-time protection.
         </p>
         <div className="landing-hero-actions">
           <button onClick={onLaunch} className="landing-hero-cta">
@@ -147,9 +147,9 @@ function ProtocolSection() {
           Obelisk Q uses the Antigravity Protocol to ensure 100% uptime and deterministic rebalancing through verified cross-token unwind logic on Mantle Mainnet.
         </p>
         <ul className="landing-bullet-list">
-          <li><span className="landing-bullet" /> multi-agent supervisor (analyst, risk, tracker, executor)</li>
-          <li><span className="landing-bullet" /> verified swapExactNativeForTokens DEX integration</li>
-          <li><span className="landing-bullet" /> automatic cross-token switching (mETH ↔ USDY)</li>
+          <li><span className="landing-bullet" /> 5-node LangGraph swarm (regime, risk, score, telemetry, supervisor)</li>
+          <li><span className="landing-bullet" /> autonomous circuit breaker (halts allocation on volatility)</li>
+          <li><span className="landing-bullet" /> real-time telemetry synchronization (10s dashboard polling)</li>
         </ul>
       </motion.div>
     </section>
@@ -172,9 +172,9 @@ function FeaturesSection() {
     },
     {
       num: "03",
-      title: "Liquid Buffer",
-      desc: "Optimized gas management with a fixed 0.01 MNT buffer. The engine ensures the vault always remains liquid and ready for rebalancing without external intervention.",
-      tags: ["Gas Optimized", "Liquid", "Verified"],
+      title: "Circuit Breaker",
+      desc: "Instant safety halt if market confidence (Q-Score) drops 5+ points in 60 min. Protects capital during rapid regime shifts.",
+      tags: ["Safety", "Volatility", "Verified"],
     },
     {
       num: "04",

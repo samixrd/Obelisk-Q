@@ -14,12 +14,17 @@ const Docs = () => {
     {
       id: "protocol",
       title: "Antigravity Protocol",
-      content: "The Antigravity Protocol ensures 100% high-availability and deterministic execution. By implementing verified cross-token unwind logic, the protocol guarantees that transitions between assets (e.g., mETH ↔ USDY) are executed with zero idle capital and optimized gas efficiency.",
+      content: "The Antigravity Protocol ensures 100% high-availability and deterministic execution. By implementing verified cross-token unwind logic and real-time telemetry polling (10s), the protocol guarantees that transitions between assets (e.g., mETH ↔ USDY) are executed with zero idle capital and total transparency.",
     },
     {
       id: "architecture",
-      title: "Multi-Agent Architecture",
-      content: "The system utilizes a specialized swarm—Analyst, Risk, Tracker, and Executor—hosted on Azure. This architecture allows for real-time market regime detection (Expansion, Contraction, Consolidation) and automated on-chain rebalancing whenever market confidence thresholds are met.",
+      title: "5-Node Multi-Agent Swarm",
+      content: "The system utilizes a specialized LangGraph swarm—Regime Detection, Risk Assessment, Q-Score Engine, Telemetry Aggregator, and Supervisory Controller. This architecture allows for institutional-grade market inference and automated on-chain rebalancing whenever market confidence thresholds are met.",
+    },
+    {
+      id: "circuit-breaker",
+      title: "Autonomous Circuit Breaker",
+      content: "A state-of-the-art safety mechanism that monitors Q-Score volatility in real-time. If the agent detects a drop of 5+ points within a 60-minute window, the Circuit Breaker activates, instantly halting all allocation and rebalancing to preserve capital during market stress.",
     },
     {
       id: "mainnet",
