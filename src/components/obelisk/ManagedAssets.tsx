@@ -153,35 +153,35 @@ export function ManagedAssets() {
 
               <div className="hairline mb-6" />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[9px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.15em" }}>
+              <div className="flex flex-col gap-3">
+                <div className="flex justify-between items-center">
+                  <p className="text-[9px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em" }}>
                     Allocated
                   </p>
                   <p className="text-sm text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.tvl}</p>
                 </div>
-                <div>
-                  <p className="text-[9px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.15em" }}>
+                <div className="flex justify-between items-center">
+                  <p className="text-[9px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em" }}>
                     Safety Buffer
                   </p>
                   <p className="text-sm text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.buffer}</p>
                 </div>
-                <div className="col-span-2 mt-1">
-                  <p className="text-[9px] uppercase text-muted-foreground mb-1.5" style={{ letterSpacing: "0.15em" }}>
-                    Coverage
-                  </p>
-                  <div className="flex items-center gap-3 pt-1">
-                    <div className="relative h-1 flex-1 bg-foreground/5 rounded-full overflow-hidden">
-                      <motion.div
-                        initial={{ width: 0 }}
-                        animate={{ width: `${a.bufferPct}%` }}
-                        transition={{ delay: 0.4 + i * 0.1, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute inset-y-0 left-0 bg-foreground/30 rounded-full"
-                      />
-                    </div>
+                <div className="mt-2">
+                  <div className="flex justify-between items-center mb-2">
+                    <p className="text-[9px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em" }}>
+                      Coverage
+                    </p>
                     <span className="text-[11px] text-muted-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                       {a.bufferPct}%
                     </span>
+                  </div>
+                  <div className="relative h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${a.bufferPct}%` }}
+                      transition={{ delay: 0.4 + i * 0.1, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+                      className="absolute inset-y-0 left-0 bg-foreground/30 rounded-full"
+                    />
                   </div>
                 </div>
               </div>
