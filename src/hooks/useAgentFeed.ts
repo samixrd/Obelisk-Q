@@ -161,7 +161,8 @@ export function useAgentFeed() {
         startAutonomous();
       } else {
         // Even if backend works, keep polling
-        interval = setInterval(() => fetchFromBackend(), 10000);
+        // Even if backend works, keep polling every 10 minutes to match cycle
+        interval = setInterval(() => fetchFromBackend(), 600000);
       }
     });
 

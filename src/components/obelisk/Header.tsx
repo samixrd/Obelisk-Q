@@ -4,6 +4,7 @@ import { Logo } from "./Logo";
 import { UserProfile } from "./UserProfile";
 import { useVault } from "@/hooks/useVault";
 import { usePriceOracle } from "@/hooks/usePriceOracle";
+import { useAgentData } from "@/hooks/useAgentData";
 
 import { DashboardTab } from "./Dashboard";
 
@@ -30,6 +31,7 @@ export function Header({
 }: HeaderProps) {
   const { vaultStats } = useVault();
   const prices = usePriceOracle();
+  const { score, regime } = useAgentData();
 
   const formatPrice = (val: number) => 
     new Intl.NumberFormat('en-US', { 
@@ -128,6 +130,19 @@ export function Header({
               }} />
               Mantle Network
             </span>
+
+            <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.06)" }} className="hidden lg:block" />
+
+            <div className="hidden lg:flex items-center gap-6">
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] text-[#999] uppercase font-bold tracking-[0.15em] leading-none mb-1">Q-Score</span>
+                <span className="text-[14px] font-bold text-[#0a0a0a] leading-none tabular-nums">{score}</span>
+              </div>
+              <div className="flex flex-col items-end">
+                <span className="text-[9px] text-[#999] uppercase font-bold tracking-[0.15em] leading-none mb-1">Regime</span>
+                <span className="text-[14px] font-bold text-[#0a0a0a] leading-none">{regime}</span>
+              </div>
+            </div>
             <UserProfile onSignOut={onSignOut} onConnectWallet={onConnectWallet} />
           </div>
         </div>

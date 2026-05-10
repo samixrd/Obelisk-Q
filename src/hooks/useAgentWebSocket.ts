@@ -281,7 +281,8 @@ export function useAgentWebSocket() {
       if (!sessionToken) return;
       try {
         const res = await fetch('/api/stats', {
-          headers: { 'x-session-token': sessionToken }
+          headers: { 'x-session-token': sessionToken },
+          cache: 'no-store'
         });
         if (res.ok) {
           const data = await res.json();
@@ -294,7 +295,7 @@ export function useAgentWebSocket() {
       } catch (err) {
         console.warn("Polling /api/stats failed:", err);
       }
-    }, 10000);
+    }, 600000); // 10 minutes
 
     return () => {
       wsRef.current?.close();

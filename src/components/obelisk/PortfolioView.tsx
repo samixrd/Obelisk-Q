@@ -45,6 +45,11 @@ export function PortfolioView() {
         symbol: "USDY", name: "Ondo US Dollar Yield", strategy: "Conservative · Auto",  
         balance: `${userBalanceValue} MNT`, change: "—", up: true, alloc: 100, id: "USDY" 
       });
+    } else if (currentPosition === "WMNT") {
+      list.push({ 
+        symbol: "WMNT", name: "Wrapped Mantle", strategy: "Growth · Auto",  
+        balance: `${userBalanceValue} MNT`, change: "—", up: true, alloc: 100, id: "WMNT" 
+      });
     } else {
       list.push({ 
         symbol: "MNT", name: "Mantle Network Token", strategy: "Liquid · Buffer",  
