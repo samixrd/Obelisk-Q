@@ -210,11 +210,6 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
 
         {/* Strategy Insight */}
         <div className="mt-6 p-4 rounded-2xl bg-[#F0F7FF] border border-[#E0EFFF] relative overflow-hidden group">
-          <div className="absolute top-0 right-0 p-2 opacity-10">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-            </svg>
-          </div>
           <div className="flex gap-3 items-start">
             <div className="mt-0.5 p-1 rounded-md bg-blue-100 text-blue-600">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
