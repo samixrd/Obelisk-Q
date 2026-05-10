@@ -234,8 +234,8 @@ export function GuidedTour({ open, onClose }: Props) {
                 Skip the tour
               </button>
             </div>
+            </motion.div>
           </div>
-        </div>
         </motion.div>
       )}
     </AnimatePresence>
