@@ -2,14 +2,13 @@ import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
 import { useAgentData } from "@/hooks/useAgentData";
 import { useState, useEffect } from "react";
+import { MagneticText } from "./MagneticText";
 
 const fadeUp = {
   initial: { opacity: 0, y: 8 },
   animate: { opacity: 1, y: 0 },
   transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] },
 };
-
-import { MagneticText } from "./MagneticText";
 
 export function SafeguardsView() {
   const { score, regime, circuitBreakerActive, lastMessage, agentLogs } = useAgentData();
@@ -19,7 +18,6 @@ export function SafeguardsView() {
   useEffect(() => {
     if (typeof score === 'number') {
       setScoreHistory(prev => {
-        // Only append if it's a new unique point or the first point
         const next = [...prev, score];
         return next.slice(-30);
       });
@@ -79,7 +77,6 @@ export function SafeguardsView() {
     ok: !l.message.includes("FAIL") && !l.message.includes("ERROR"),
   }));
 
-  // If no logs yet, show a placeholder
   if (AUDIT_EVENTS.length === 0) {
     AUDIT_EVENTS.push({ 
       time: "Initializing", 
@@ -129,7 +126,6 @@ export function SafeguardsView() {
           </div>
         </div>
 
-        {/* Integrated Real-Time Graph */}
         <div className="mt-10 pt-10 border-t border-black/5">
           <div className="flex items-center justify-between mb-6">
             <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest">Stability Vector · Real-Time Telemetry</p>
@@ -210,9 +206,6 @@ export function SafeguardsView() {
           ))}
         </div>
       </div>
-
-
-
     </motion.div>
   );
 }

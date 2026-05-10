@@ -448,6 +448,10 @@ export function useVault(): VaultState {
               const currentSim = simBalanceRef.current[address || "null"] || 0;
               simBalanceRef.current[address || "null"] = currentSim + parseFloat(amountMnt);
               
+              // Update Cost Basis in localStorage for YTD calculation
+              const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
+              localStorage.setItem(`obelisk_cost_basis_${address}`, (currentCostBasis + parseFloat(amountMnt)).toString());
+
               await refreshStats();
               clearInterval(interval);
             }
@@ -578,6 +582,8 @@ export function useVault(): VaultState {
 
               // Clear simulated balance (memory-only)
               simBalanceRef.current[address || "null"] = 0;
+              // Clear Cost Basis
+              localStorage.removeItem(`obelisk_cost_basis_${address}`);
               await refreshStats();
               clearInterval(interval);
             }
@@ -711,6 +717,12 @@ export function useVault(): VaultState {
               const newSim = Math.max(0, currentSim - parseFloat(amountMnt));
               simBalanceRef.current[address || "null"] = newSim;
               
+              // Update Cost Basis proportionally
+              const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
+              const ratio = parseFloat(amountMnt) / parseFloat(vaultStats?.userBalance || "1");
+              const newCostBasis = Math.max(0, currentCostBasis * (1 - ratio));
+              localStorage.setItem(`obelisk_cost_basis_${address}`, newCostBasis.toString());
+
               await refreshStats();
               clearInterval(interval);
             }

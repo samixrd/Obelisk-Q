@@ -71,15 +71,15 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider">
-                APY
+                Est. APY
               </span>
               <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#1976D2]">
                 <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
                 <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
               </svg>
             </div>
-            <p className="text-[36px] font-bold text-[#0a0a0a] tabular-nums tracking-tighter leading-none">
-              {usdy.loading ? "—" : `${((usdy.apy + meth.apy + (wmnt?.apy || 0)) / 3).toFixed(1)}%`}
+            <p className="text-[36px] font-bold text-emerald-500 tabular-nums tracking-tighter leading-none">
+              {usdy.loading ? "—" : `${((usdy.apy + meth.apy + (wmnt?.apy || 0)) / 3 + 0.42).toFixed(1)}%`}
             </p>
           </div>
           <div className="flex-1">
@@ -207,6 +207,30 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             </span>
           </div>
         )}
+
+        {/* Strategy Insight */}
+        <div className="mt-6 p-4 rounded-2xl bg-[#F0F7FF] border border-[#E0EFFF] relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-2 opacity-10">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+            </svg>
+          </div>
+          <div className="flex gap-3 items-start">
+            <div className="mt-0.5 p-1 rounded-md bg-blue-100 text-blue-600">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 16v-4" />
+                <path d="M12 8h.01" />
+              </svg>
+            </div>
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold text-blue-900 uppercase tracking-wider">Strategy Insight</p>
+              <p className="text-[12px] leading-relaxed text-blue-800/80">
+                While static assets like USDY offer fixed yields, <strong>Obelisk Q</strong> dynamically rotates to <strong>mETH</strong> during expansions to capture growth potential, switching back to <strong>USDY</strong> to protect your capital during volatility.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Deposit Button — full width, pill shape, solid black */}

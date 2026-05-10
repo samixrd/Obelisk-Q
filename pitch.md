@@ -20,6 +20,7 @@ Obelisk Q demonstrates excellence across technology, innovation, and ecosystem c
 ### 2. Innovation (The New Paradigm)
 - **HMM Regime Switching**: Obelisk Q uses Hidden Markov Models to detect market regimes (Expansion, Consolidation, Contraction) and adjust risk parameters automatically.
 - **Sovereign Agent Identity**: Agents operate with ERC-8004 identities, creating a portable audit trail of competence.
+- **Dynamic Yield Optimization**: Unlike static yield products, Obelisk Q rotates capital to capture "Growth Alpha" (e.g., mETH appreciation) during expansions while retreating to stable RWA yield (USDY) during contractions.
 
 ### 3. Mantle Ecosystem Contribution
 - **Native RWA Support**: Direct optimization for Mantle Staked Ether (**mETH**), Ondo **USDY**, and Wrapped MNT (**WMNT**).

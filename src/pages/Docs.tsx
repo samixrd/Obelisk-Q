@@ -40,6 +40,11 @@ const Docs = () => {
       id: "security",
       title: "Sovereign Identity (ERC-8004)",
       content: "To ensure institutional trust, the Obelisk Q agent maintains a sovereign on-chain identity (0x5698E89Ec2396e02679ddde33c2BA78de88F7fce) under the ERC-8004 standard. This manifest defines the agent's rebalancing logic and capabilities, providing a verifiable audit trail for all autonomous transactions executed on the Mantle Network.",
+    },
+    {
+      id: "growth-alpha",
+      title: "Growth Alpha & Dynamic Rotation",
+      content: "Unlike static yield-bearing products that fix capital in a single asset, Obelisk Q prioritizes 'Growth Alpha'. By dynamically rotating capital into mETH during market expansions, the system captures price appreciation and higher staking incentives that exceed stable RWA yields. Conversely, it automatically retreats to USDY during market contractions to protect capital, ensuring that users benefit from the best of both worlds: high-growth upside and institutional-grade downside protection.",
     }
   ];
 
