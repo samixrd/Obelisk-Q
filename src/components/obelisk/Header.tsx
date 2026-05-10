@@ -10,6 +10,7 @@ import { DashboardTab } from "./Dashboard";
 
 interface HeaderProps {
   onMenuClick:     () => void;
+  onLogoClick?:    () => void;
   onTourClick?:    () => void;
   activeTab:       DashboardTab;
   onTabChange:     (tab: DashboardTab) => void;
@@ -59,12 +60,15 @@ export function Header({
             <IconMenu size={16} />
           </button>
           <div className="h-4 w-px bg-foreground/10" />
-          <div className="flex items-center gap-3">
-            <Logo size={24} className="text-foreground" />
-            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
+          <button 
+            onClick={onLogoClick}
+            className="flex items-center gap-3 group transition-transform active:scale-95 cursor-pointer"
+          >
+            <Logo size={24} className="text-foreground transition-transform group-hover:scale-110" />
+            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-foreground transition-opacity group-hover:opacity-80" style={{ fontFamily: "'Inter', sans-serif" }}>
               Obelisk <span className="font-normal text-muted-foreground/50">Q</span>
             </h1>
-          </div>
+          </button>
 
           <div className="hidden lg:block h-4 w-px bg-foreground/5 mx-2.5" />
 

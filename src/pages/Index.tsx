@@ -78,7 +78,15 @@ function AppInner() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
           >
-            <LandingPage onEnter={() => setStage("auth")} />
+            <LandingPage onEnter={() => {
+              const hasSession = !!localStorage.getItem("obelisk_session");
+              const hasWallet = !!walletAddress;
+              if (hasSession && hasWallet) {
+                setStage("dashboard");
+              } else {
+                setStage("auth");
+              }
+            }} />
           </motion.div>
         )}
         
@@ -114,6 +122,7 @@ function AppInner() {
 
             <Header
               onMenuClick={() => setSidebarOpen(true)}
+              onLogoClick={() => setStage("landing")}
               onTourClick={() => setTourOpen(true)}
               activeTab={activeTab}
               onTabChange={setActiveTab}
