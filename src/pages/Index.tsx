@@ -19,7 +19,7 @@ function AppInner() {
   const { walletAddress, setWalletAddress, setAuthMethod, logout } = useAuth();
 
   const [stage, setStage] = useState<AppStage>(() => {
-    const savedToken = localStorage.getItem("obelisk_session");
+    const savedToken = sessionStorage.getItem("obelisk_session");
     const savedAddr = localStorage.getItem("obelisk_address");
     return (savedToken && savedAddr) ? "dashboard" : "landing";
   });
@@ -38,7 +38,7 @@ function AppInner() {
 
   // Handle logout transition
   useEffect(() => {
-    const hasSession = !!localStorage.getItem("obelisk_session");
+    const hasSession = !!sessionStorage.getItem("obelisk_session");
     const hasWallet = !!walletAddress;
 
     if (!hasSession || !hasWallet) {
