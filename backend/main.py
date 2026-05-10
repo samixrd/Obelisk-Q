@@ -165,6 +165,10 @@ ERC20_ABI = [
     {"inputs":[{"internalType":"address","name":"account","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
 ]
 
+METH_ADDRESS = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0"
+USDY_ADDRESS = "0x5bE26527e817998A7206475496fDE1e68957c5A6"
+WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
+
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 async def regime_detection_node(state: AgentState):
@@ -343,22 +347,6 @@ async def telemetry_aggregator_node(state: AgentState):
     content = "telemetry: packet broadcast complete. cross-node consensus achieved in 12ms."
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
-def sync_current_position():
-    global CURRENT_POSITION
-    if not WEB3_AVAILABLE:
-        return
-    try:
-        rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
-        vault_addr = os.getenv("VAULT_ADDRESS", "0x1f15C9C4c80734400c8a8681CDa39E4288c6AC16")
-        w3 = Web3(Web3.HTTPProvider(rpc_url))
-        WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
-        wmnt_contract = w3.eth.contract(address=w3.to_checksum_address(WMNT_ADDRESS), abi=ERC20_ABI)
-        wmnt_balance = wmnt_contract.functions.balanceOf(w3.to_checksum_address(vault_addr)).call()
-        if wmnt_balance > 0:
-            CURRENT_POSITION = "WMNT"
-    except Exception:
-        pass
-
 async def supervisory_controller_node(state: AgentState):
     logger.info("node: supervisory_controller | validating q-score authority")
     global LAST_REBALANCE_TIME, CURRENT_POSITION, CIRCUIT_BREAKER_ACTIVE, CB_UNWIND_DONE
@@ -406,7 +394,8 @@ async def supervisory_controller_node(state: AgentState):
         return {"messages": [AIMessage(content="executor: position already optimized (WMNT). skipping transaction.")], "data": state["data"]}
 
     # ── Q-SCORE FINAL AUTHORITY: executor cannot override the scoring engine ──
-    if risk_score < 60 or action == "HOLD":
+    regime = state["data"].get("regime", "N/A")
+    if (regime == "Expansion" and risk_score < 60) or action == "HOLD":
         logger.info(f"executor: standby mode. score={risk_score}, action={action}. threshold=60. skipping.")
         record_transaction(
             action=action, 
@@ -467,16 +456,13 @@ async def supervisory_controller_node(state: AgentState):
         }
     ]
 
-    METH_ADDR = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0"
-    USDY_ADDR = "0x5bE26527e817998A7206475496fDE1e68957c5A6"
-    WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
     ZERO_ADDR = "0x0000000000000000000000000000000000000000"
 
     target_token = ZERO_ADDR
     if action == "mETH":
-        target_token = METH_ADDR
+        target_token = METH_ADDRESS
     elif action == "USDY":
-        target_token = USDY_ADDR
+        target_token = USDY_ADDRESS
     elif action == "WMNT":
         target_token = WMNT_ADDRESS
     elif action == "UNWIND":
@@ -508,7 +494,7 @@ async def supervisory_controller_node(state: AgentState):
                     
                     if action == "USDY":
                         # Check mETH balance before swapping to USDY
-                        m_contract = w3.eth.contract(address=w3.to_checksum_address(METH_ADDR), abi=ERC20_ABI)
+                        m_contract = w3.eth.contract(address=w3.to_checksum_address(METH_ADDRESS), abi=ERC20_ABI)
                         m_balance = m_contract.functions.balanceOf(vault_address).call()
                         if m_balance == 0:
                             return "aborting|executor: insufficient mETH for USDY swap. skipping."
@@ -792,6 +778,22 @@ async def get_agent_transactions():
     load_transactions() # Reload from disk to sync across PM2 workers
     return AGENT_TRANSACTIONS[::-1][:10]
 
+API_CACHE = {}
+
+@app.get("/api/yields")
+async def get_yields():
+    return {
+        "meth_apy": API_CACHE.get("meth_apy", 3.8),
+        "usdy_apy": API_CACHE.get("usdy_apy", 5.0),
+        "fear_greed": API_CACHE.get("fear_greed", 50),
+        "mnt_price": API_CACHE.get("mnt_price", 0.68)
+    }
+
+@app.get("/api/agent/logs")
+async def get_agent_logs():
+    rows = get_recent_memory(20)
+    return {"logs": [{"timestamp": r[0], "cycle": r[1], "regime": r[2], "score": r[3], "action": r[4], "position": r[5], "tx_hash": r[6]} for r in rows]}
+
 def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A"):
     global AGENT_TRANSACTIONS
     
@@ -1017,42 +1019,36 @@ async def run_analysis_cycle():
             await asyncio.sleep(5)  # back off before retrying
 
 async def sync_current_position():
-    """Reads vault state from blockchain on startup to set CURRENT_POSITION."""
     global CURRENT_POSITION
-    if not WEB3_AVAILABLE:
-        logger.warning("sync_current_position: web3 unavailable. starting in MNT.")
-        return
-
-    rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
-    vault_addr = os.getenv("VAULT_ADDRESS", "0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa")
-    METH_ADDR = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0"
-    USDY_ADDR = "0x5bE26527e817998A7206475496fDE1e68957c5A6"
-
     try:
-        loop = asyncio.get_event_loop()
-        def _check_balances():
-            w3 = Web3(Web3.HTTPProvider(rpc_url))
-            if not w3.is_connected(): return "MNT"
-            
-            abi = ERC20_ABI
-            v_sum = w3.to_checksum_address(vault_addr)
-            
-            meth = w3.eth.contract(address=w3.to_checksum_address(METH_ADDR), abi=abi)
-            usdy = w3.eth.contract(address=w3.to_checksum_address(USDY_ADDR), abi=abi)
-            
-            m_bal = meth.functions.balanceOf(v_sum).call()
-            u_bal = usdy.functions.balanceOf(v_sum).call()
-            
-            logger.info(f"sync_current_position: vault balances - mETH: {m_bal}, USDY: {u_bal}")
-            if m_bal > 10**14: return "mETH" # > 0.0001
-            if u_bal > 10**14: return "USDY"
-            return "MNT"
+        w3 = Web3(Web3.HTTPProvider(os.getenv("MANTLE_RPC_URL")))
+        vault_addr = os.getenv("VAULT_ADDRESS")
 
-        pos = await loop.run_in_executor(None, _check_balances)
-        CURRENT_POSITION = pos
-        logger.info(f"sync_current_position: synchronized. CURRENT_POSITION={CURRENT_POSITION}")
+        meth_contract = w3.eth.contract(address=w3.to_checksum_address(METH_ADDRESS), abi=ERC20_ABI)
+        meth_balance = meth_contract.functions.balanceOf(w3.to_checksum_address(vault_addr)).call()
+        if meth_balance > 0:
+            CURRENT_POSITION = "mETH"
+            logger.info(f"sync_current_position: CURRENT_POSITION=mETH")
+            return
+
+        usdy_contract = w3.eth.contract(address=w3.to_checksum_address(USDY_ADDRESS), abi=ERC20_ABI)
+        usdy_balance = usdy_contract.functions.balanceOf(w3.to_checksum_address(vault_addr)).call()
+        if usdy_balance > 0:
+            CURRENT_POSITION = "USDY"
+            logger.info(f"sync_current_position: CURRENT_POSITION=USDY")
+            return
+
+        wmnt_contract = w3.eth.contract(address=w3.to_checksum_address(WMNT_ADDRESS), abi=ERC20_ABI)
+        wmnt_balance = wmnt_contract.functions.balanceOf(w3.to_checksum_address(vault_addr)).call()
+        if wmnt_balance > 0:
+            CURRENT_POSITION = "WMNT"
+            logger.info(f"sync_current_position: CURRENT_POSITION=WMNT")
+            return
+
+        CURRENT_POSITION = "MNT"
+        logger.info(f"sync_current_position: CURRENT_POSITION=MNT")
     except Exception as e:
-        logger.error(f"sync_current_position: failed to sync: {e}")
+        logger.warning(f"sync_current_position failed: {e}")
 
 @app.on_event("startup")
 async def startup():
