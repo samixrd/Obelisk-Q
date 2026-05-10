@@ -77,6 +77,15 @@ export function GuidedTour({ open, onClose }: Props) {
     return () => window.removeEventListener('resize', updatePosition);
   }, [open, step]);
 
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
   const next = () => {
     if (step < steps.length - 1) setStep(step + 1);
     else {
@@ -100,7 +109,7 @@ export function GuidedTour({ open, onClose }: Props) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 overflow-hidden"
+          className="fixed top-0 left-0 w-screen h-screen z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 overflow-hidden"
         >
           {/* Subtle radial accent */}
           <div className="absolute inset-0 pointer-events-none"
