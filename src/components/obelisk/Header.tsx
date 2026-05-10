@@ -22,6 +22,7 @@ interface HeaderProps {
 
 export function Header({
   onMenuClick,
+  onLogoClick,
   onTourClick,
   activeTab,
   onTabChange,
