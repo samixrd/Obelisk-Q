@@ -170,20 +170,29 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                 <div style={{ height: 1, background: "rgba(0,0,0,0.06)", marginBottom: 24 }} />
 
                 {/* Compliance Section */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 32 }}>
+                <div style={{ display: "flex", flexDirection: "column", gap: 18, marginBottom: 32 }}>
                   {[
                     { id: "non-us", label: "I confirm I am not a US person or entity" },
                     { id: "regulated", label: "I understand USDY is a regulated financial instrument subject to transfer restrictions" },
                     { id: "terms", label: "I accept the Terms of Service and Risk Disclosure" },
                   ].map((item) => (
-                    <label key={item.id} style={{ display: "flex", alignItems: "start", gap: 12, cursor: "pointer" }}>
-                      <input
-                        type="checkbox"
-                        checked={compliance[item.id as keyof typeof compliance]}
-                        onChange={(e) => setCompliance(prev => ({ ...prev, [item.id]: e.target.checked }))}
-                        className="mt-1 h-4 w-4 rounded border-gray-300 text-black focus:ring-black transition-all"
-                      />
-                      <span style={{ fontSize: 13, color: "#666", fontFamily: "'Inter', sans-serif", lineHeight: 1.5 }}>
+                    <label key={item.id} style={{ display: "flex", alignItems: "flex-start", gap: 14, cursor: "pointer", userSelect: "none" }}>
+                      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 2 }}>
+                        <input
+                          type="checkbox"
+                          checked={compliance[item.id as keyof typeof compliance]}
+                          onChange={(e) => setCompliance(prev => ({ ...prev, [item.id]: e.target.checked }))}
+                          className="peer appearance-none h-5 w-5 rounded-md border border-black/10 bg-black/5 checked:bg-black checked:border-black transition-all duration-300 cursor-pointer"
+                          style={{ flexShrink: 0 }}
+                        />
+                        <svg 
+                          className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-300 pointer-events-none" 
+                          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <span style={{ fontSize: 13, color: "#666", fontFamily: "'Inter', sans-serif", lineHeight: 1.5, paddingTop: 1 }}>
                         {item.label}
                       </span>
                     </label>
