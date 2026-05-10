@@ -20,6 +20,7 @@ const steps = [
     body: "Obelisk Q continuously monitors your portfolio against thousands of market scenarios. If conditions drift, the agent rebalances on your behalf — quietly, automatically.",
     accent: "Stability before yield.",
     note: null,
+    target: "#tour-stability-score",
   },
   {
     eyebrow: "Step · 02 · How it thinks",
@@ -31,6 +32,7 @@ const steps = [
     body: "Your Stability Score is a composite of three weighted signals: 40% Yield Differential, 35% Volatility Penalty, and 25% Liquidity Depth. A 5% circuit breaker halts all allocation if the score drops 5 points within any 60-minute window. In Contraction regimes the confidence threshold rises to 75%; in Expansion or Consolidation markets it sits at 60-65%.",
     accent: null,
     note: "The engine identifies Market Regimes (Expansion/Consolidation/Contraction) through Hidden Markov Model analysis of volatility to dynamically assign Control Transfer Functions (H(s)).",
+    target: "#tour-stability-score",
   },
   {
     eyebrow: "Step · 03",
@@ -42,6 +44,7 @@ const steps = [
     body: "Press 'Invest' to put idle capital to work. Obelisk Q allocates across managed assets like USDY and mETH with a built-in Safety Buffer to absorb shocks.",
     accent: "Always reversible.",
     note: null,
+    target: "#tour-invest-button",
   },
 ];
 
@@ -52,10 +55,56 @@ interface Props {
 
 export function GuidedTour({ open, onClose }: Props) {
   const [step, setStep] = useState(0);
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!open) setStep(0);
-  }, [open]);
+    if (!open) {
+      setStep(0);
+      setCoords(null);
+      return;
+    }
+
+    const updatePosition = () => {
+      const targetSelector = steps[step].target;
+      const element = document.querySelector(targetSelector);
+      
+      if (element && tooltipRef.current) {
+        // Scroll target into view
+        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        // Wait a bit for scroll to settle before measuring
+        setTimeout(() => {
+          const rect = element.getBoundingClientRect();
+          const tooltipRect = tooltipRef.current!.getBoundingClientRect();
+          const viewportHeight = window.innerHeight;
+          const viewportWidth = window.innerWidth;
+
+          // Position tooltip below the element, but keep it within viewport
+          // If it doesn't fit below, we could put it above, but the user suggested Math.min(rect.bottom, ...)
+          let top = rect.bottom + 20;
+          let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+
+          // Bound checks
+          if (top + tooltipRect.height > viewportHeight - 20) {
+            top = rect.top - tooltipRect.height - 20;
+          }
+          
+          top = Math.max(20, Math.min(top, viewportHeight - tooltipRect.height - 20));
+          left = Math.max(20, Math.min(left, viewportWidth - tooltipRect.width - 20));
+
+          setCoords({ top, left });
+        }, 100);
+      } else {
+        // Fallback to center if no target found
+        setCoords(null);
+      }
+    };
+
+    updatePosition();
+    window.addEventListener('resize', updatePosition);
+    return () => window.removeEventListener('resize', updatePosition);
+  }, [open, step]);
 
   const next = () => {
     if (step < steps.length - 1) setStep(step + 1);
@@ -97,7 +146,18 @@ export function GuidedTour({ open, onClose }: Props) {
           </button>
 
           <div className="min-h-full w-full flex items-center justify-center p-6">
-            <div className="relative w-full max-w-[540px] bg-background rounded-2xl p-8 md:p-12 shadow-2xl border border-border/50">
+            <motion.div 
+              ref={tooltipRef}
+              layout
+              style={coords ? {
+                position: 'fixed',
+                top: coords.top,
+                left: coords.left,
+                margin: 0,
+                zIndex: 10001
+              } : {}}
+              className={`relative w-full max-w-[480px] bg-background rounded-2xl p-8 md:p-10 shadow-2xl border border-border/50 transition-all duration-500 ease-[0.22,1,0.36,1] ${!coords ? 'opacity-0' : 'opacity-100'}`}
+            >
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}

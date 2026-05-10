@@ -212,6 +212,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
       {/* Deposit Button — full width, pill shape, solid black */}
       <div className="px-8 pb-10">
         <motion.button
+          id="tour-invest-button"
           onClick={handleDeposit}
           disabled={isPending}
           whileHover={{ 
