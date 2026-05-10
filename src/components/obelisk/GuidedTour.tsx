@@ -2,7 +2,7 @@
 // language. Three short steps. Skippable. Stored in localStorage so it
 // only appears for first-time users.
 import { AnimatePresence, motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { IconArrowRight, IconClose } from "./LineIcons";
 
 const KEY = "obelisk_q_tour_seen";
