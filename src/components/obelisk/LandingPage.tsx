@@ -22,7 +22,7 @@ const Reveal = ({ children, delay = 0 }: { children: React.ReactNode, delay?: nu
     whileInView={{ clipPath: "inset(0 0% 0 0)" }}
     viewport={{ once: true, margin: "-100px" }}
     transition={{ duration: 1.2, delay, ease: [0.22, 1, 0.36, 1] }}
-    style={{ position: 'relative' }}
+    style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
   >
     {children}
   </motion.div>
