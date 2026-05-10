@@ -20,70 +20,6 @@ interface TelemetryLog {
   cycle: number;
 }
 
-// ── Regime Detection Telemetry Templates ────────────────────────────────────
-const REGIME_MESSAGES = [
-  "Regime verified — volatility σ below threshold",
-  "Market microstructure scan complete — no anomalies detected",
-  "Cross-asset correlation matrix refreshed",
-  "Mantle on-chain volume delta analysis complete",
-  "MNT/USDT order book depth analysis — spread nominal",
-  "24h rolling volatility index within safe band",
-  "Regime classification confirmed via HMM model",
-  "Intraday momentum signal: neutral — no regime shift detected",
-];
-
-const RISK_MESSAGES = [
-  "Portfolio VaR (95%): 2.1% — within acceptable bounds",
-  "Max drawdown exposure: 1.8% — safeguards nominal",
-  "Counterparty risk scan: 0 flagged positions across 2 assets",
-  "Liquidity depth check: mETH $42M, USDY $89M — sufficient",
-  "Concentration risk: mETH 60%, USDY 40% — within policy limits",
-  "Stress test: -15% shock scenario — portfolio survives with 97.2% capital",
-  "Slippage estimator: <0.02% for current position sizes",
-  "Correlation breakdown test passed — diversification intact",
-];
-
-const QSCORE_MESSAGES = [
-  "Q-Score recalculated based on multi-factor analysis",
-  "Yield differential: mETH 3.6% vs USDY 5.1% — optimal split maintained",
-  "Score weighted by regime stability factor: 1.04x multiplier applied",
-  "Historical backtest alignment: current score within top 8th percentile",
-  "Confidence interval: [91, 97] — high conviction hold signal",
-  "Yield curve analysis: USDY term premium = 1.2% — favorable",
-  "Score delta from last cycle: +0.3 — trending positive",
-  "Multi-factor scoring complete — all 7 pillars above threshold",
-];
-
-const TELEMETRY_MESSAGES = [
-  "Telemetry packet broadcast — 5 nodes reporting nominal",
-  "Heartbeat latency: 12ms avg across all active nodes",
-  "Data pipeline throughput: 847 events/sec — capacity at 23%",
-  "State snapshot serialized — hash: 0x7f3a...e2d1",
-  "Cross-node consensus achieved in 340ms — below 500ms SLA",
-  "Telemetry aggregation cycle complete — 0 dropped packets",
-  "Memory footprint: 14.2MB — within allocation budget",
-  "Stream buffer: 0 pending, 0 dropped — clean pipeline",
-];
-
-const SUPERVISOR_MESSAGES = [
-  "Supervisory arbitration complete — no conflicting signals",
-  "All 5 nodes passed health check — system GREEN",
-  "Decision gate: HOLD — confidence threshold met, no rebalance needed",
-  "Antigravity Protocol heartbeat confirmed — connection stable",
-  "Node orchestration: 0 timeouts, 0 retries this cycle",
-  "Arbitration: regime + risk consensus aligned — proceeding with current allocation",
-  "Controller epoch advanced — cycle metrics logged",
-  "Supervisory override check: none required — autonomous mode active",
-];
-
-const NODE_POOL: Record<string, string[]> = {
-  'regime-detection': REGIME_MESSAGES,
-  'risk-assessment': RISK_MESSAGES,
-  'q-score-engine': QSCORE_MESSAGES,
-  'telemetry-aggregator': TELEMETRY_MESSAGES,
-  'supervisory-controller': SUPERVISOR_MESSAGES,
-};
-
 const NODE_LABELS: Record<string, string> = {
   'regime-detection': 'Regime Detection',
   'risk-assessment': 'Risk Assessment',
@@ -115,87 +51,9 @@ export function useAgentWebSocket() {
   const cycleRef = useRef(1);
   const wsRef = useRef<WebSocket | null>(null);
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const telemetryRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const connectedRef = useRef(false);
 
-  // Generate a telemetry log entry for a given node
-  const generateLog = useCallback((nodeId: string, cycle: number): TelemetryLog => {
-    const pool = NODE_POOL[nodeId] || SUPERVISOR_MESSAGES;
-    const msg = pool[Math.floor(Math.random() * pool.length)];
-    return {
-      timestamp: new Date().toISOString(),
-      node: NODE_LABELS[nodeId] || nodeId,
-      message: msg,
-      score: 88 + Math.floor(Math.random() * 10),
-      cycle,
-    };
-  }, []);
-
-  // Run a full telemetry cycle across all 5 nodes
-  const runCycle = useCallback(() => {
-    const cycle = cycleRef.current++;
-    const nodeIds = Object.keys(NODE_POOL);
-    const nodeId = nodeIds[cycle % nodeIds.length];
-
-    const log = generateLog(nodeId, cycle);
-
-    setAgentLogs(prev => [log, ...prev].slice(0, 50));
-    setLastMessage(log.message);
-
-    // Drift the score slightly each cycle
-    setScore(prev => {
-      const drift = (Math.random() - 0.48) * 2;
-      return Math.max(85, Math.min(99, Math.round(prev + drift)));
-    });
-
-    // Drift yields
-    setLiveYields(prev => ({
-      usdy: +(prev.usdy + (Math.random() - 0.5) * 0.05).toFixed(2),
-      meth: +(prev.meth + (Math.random() - 0.5) * 0.04).toFixed(2),
-    }));
-
-    // Update node pulse timestamps
-    setNodes(prev => prev.map(n =>
-      n.id === nodeId ? { ...n, lastPulse: Date.now() } : n
-    ));
-  }, [generateLog]);
-
-  // Start autonomous telemetry engine
-  const startTelemetryEngine = useCallback(() => {
-    // Purge any legacy 3-node session data
-    try {
-      sessionStorage.removeItem('analyst_cache');
-      sessionStorage.removeItem('risk_tracker');
-      sessionStorage.removeItem('legacy_nodes');
-    } catch { /* noop */ }
-
-    // Seed initial logs for cycle_001 through cycle_005
-    const seedLogs: TelemetryLog[] = [];
-    const nodeIds = Object.keys(NODE_POOL);
-    for (let i = 0; i < 5; i++) {
-      cycleRef.current = i + 1;
-      seedLogs.push(generateLog(nodeIds[i], i + 1));
-    }
-    cycleRef.current = 6;
-    setAgentLogs(seedLogs);
-
-    // Telemetry stream: emit a new log every 3–5 seconds
-    telemetryRef.current = setInterval(() => {
-      runCycle();
-    }, 3000 + Math.random() * 2000);
-
-    // Countdown timer: ticks every second
-    countdownRef.current = setInterval(() => {
-      setCountdown(prev => (prev <= 1 ? 10 : prev - 1));
-    }, 1000);
-
-    // Antigravity Protocol heartbeat: 1000ms
-    heartbeatRef.current = setInterval(() => {
-      setNodes(prev => prev.map(n => ({ ...n, lastPulse: Date.now() })));
-    }, 1000);
-
-  }, [generateLog, runCycle]);
+  // Remove autonomous telemetry engine functions to ensure only real data is used
 
   useEffect(() => {
     // Attempt real WebSocket connection first
@@ -208,10 +66,10 @@ export function useAgentWebSocket() {
         wsRef.current = new WebSocket(urlWithToken);
 
         const timeout = setTimeout(() => {
-          // If WS hasn't opened within 2s, fall back to autonomous mode
+          // If WS hasn't opened within 2s, log it
           if (!connectedRef.current) {
             wsRef.current?.close();
-            startTelemetryEngine();
+            console.warn("WebSocket connection timed out — waiting for polling fallback");
           }
         }, 2000);
 
@@ -258,10 +116,8 @@ export function useAgentWebSocket() {
             logout();
             return;
           }
-          // Fall back to autonomous telemetry on disconnect
-          if (!telemetryRef.current) {
-            startTelemetryEngine();
-          }
+          // Handle reconnect logic if needed, but no mock fallback
+          setLastMessage("Disconnected from Obelisk Q backend — attempting reconnect...");
         };
 
         wsRef.current.onerror = () => {
@@ -269,8 +125,8 @@ export function useAgentWebSocket() {
         };
 
       } catch {
-        // WebSocket constructor failed, go autonomous
-        startTelemetryEngine();
+        // WebSocket constructor failed
+        console.error("WebSocket initialization failed");
       }
     };
 
@@ -281,7 +137,11 @@ export function useAgentWebSocket() {
       if (!sessionToken) return;
       try {
         const res = await fetch('/api/stats', {
-          headers: { 'x-session-token': sessionToken },
+          headers: { 
+            'x-session-token': sessionToken,
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          },
           cache: 'no-store'
         });
         if (res.ok) {
@@ -301,10 +161,8 @@ export function useAgentWebSocket() {
       wsRef.current?.close();
       clearInterval(statsInterval);
       if (heartbeatRef.current) clearInterval(heartbeatRef.current);
-      if (telemetryRef.current) clearInterval(telemetryRef.current);
-      if (countdownRef.current) clearInterval(countdownRef.current);
     };
-  }, [startTelemetryEngine, sessionToken, logout]);
+  }, [sessionToken, logout]);
 
   return { score, regime, circuitBreakerActive, currentPosition, countdown, lastMessage, liveYields, livePrices, agentLogs, nodes };
 }

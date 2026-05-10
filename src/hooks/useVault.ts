@@ -265,9 +265,9 @@ export function useVault(): VaultState {
 
       let total = 0n;
       let count = 0;
-      let score = 85;
+      let score = 0;
       let paused = false;
-      let currentRegime = "Expansion";
+      let currentRegime = "Loading...";
 
       try {
         const statsRaw = await rpcCall("eth_call", [
