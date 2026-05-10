@@ -45,13 +45,7 @@ export function Header({
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed top-0 left-0 right-0 z-40"
-      style={{
-        background: "rgba(240, 242, 245, 0.85)",
-        backdropFilter: "blur(20px) saturate(160%)",
-        WebkitBackdropFilter: "blur(20px) saturate(160%)",
-        borderBottom: "1px solid rgba(50, 50, 93, 0.1)",
-      }}
+      className="fixed top-0 left-0 right-0 z-40 bg-background/85 backdrop-blur-[20px] saturate-[160%] border-b border-foreground/10"
     >
       <div className="mx-auto max-w-[1680px] px-8 md:px-14 py-5 flex items-center justify-between">
 
@@ -60,25 +54,19 @@ export function Header({
           <button
             onClick={onMenuClick}
             aria-label="Open navigation"
-            className="h-9 w-9 flex items-center justify-center transition-colors duration-500"
-            style={{ color: "#999" }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#333"; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#999"; }}
+            className="h-9 w-9 flex items-center justify-center text-muted-foreground/60 hover:text-foreground transition-colors duration-500"
           >
             <IconMenu size={16} />
           </button>
-          <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.10)" }} />
+          <div className="h-4 w-px bg-foreground/10" />
           <div className="flex items-center gap-3">
             <Logo size={24} className="text-foreground" />
-            <h1 className="hidden sm:block" style={{
-              fontSize: 20, lineHeight: 1, letterSpacing: "-0.03em",
-              color: "#0a0a0a", fontWeight: 600, fontFamily: "'Inter', sans-serif",
-            }}>
-              Obelisk <span style={{ fontWeight: 400, color: "#888" }}>Q</span>
+            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
+              Obelisk <span className="font-normal text-muted-foreground/50">Q</span>
             </h1>
           </div>
 
-          <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.06)", margin: "0 10px" }} className="hidden lg:block" />
+          <div className="hidden lg:block h-4 w-px bg-foreground/5 mx-2.5" />
 
           <nav className="hidden lg:flex items-center gap-8">
             {(["earn", "portfolio", "safeguards", "agent-logs"] as DashboardTab[]).map((t) => (
@@ -102,27 +90,17 @@ export function Header({
           {onTourClick && (
             <button
               onClick={onTourClick}
-              style={{
-                fontSize: 11, fontWeight: 500, letterSpacing: "0.1em",
-                color: "#999", textTransform: "uppercase" as const,
-                background: "none", border: "none", cursor: "pointer",
-                transition: "color 0.3s ease",
-              }}
-              className="hidden md:inline-block"
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = "#333"; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.color = "#999"; }}
+              className="hidden md:inline-block text-[11px] font-medium tracking-widest uppercase text-muted-foreground/60 hover:text-foreground transition-colors duration-300"
+              style={{ background: "none", border: "none", cursor: "pointer" }}
             >
               Guided tour
             </button>
           )}
 
-          <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.06)" }} className="hidden md:block" />
+          <div className="hidden md:block h-4 w-px bg-foreground/5" />
 
           <div className="flex items-center gap-5">
-            <span className="hidden md:inline-flex items-center gap-2" style={{
-              fontSize: 11, fontWeight: 500, letterSpacing: "0.1em",
-              color: "#999", textTransform: "uppercase" as const,
-            }}>
+            <span className="hidden md:inline-flex items-center gap-2 text-[11px] font-medium tracking-widest uppercase text-muted-foreground/60">
               <span style={{
                 height: 6, width: 6, borderRadius: "50%",
                 background: "#22c55e", boxShadow: "0 0 6px rgba(34,197,94,0.5)",
@@ -131,26 +109,23 @@ export function Header({
               Mantle Network
             </span>
 
-            <div style={{ height: 16, width: 1, background: "rgba(0,0,0,0.06)" }} className="hidden lg:block" />
+            <div className="hidden lg:block h-4 w-px bg-foreground/5" />
 
             <div className="hidden lg:flex items-center gap-6">
               <div className="flex flex-col items-end">
-                <span className="text-[9px] text-[#999] uppercase font-bold tracking-[0.15em] leading-none mb-1">Q-Score</span>
-                <span className="text-[14px] font-bold text-[#0a0a0a] leading-none tabular-nums">{score}</span>
+                <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-[0.15em] leading-none mb-1">Q-Score</span>
+                <span className="text-[14px] font-bold text-foreground leading-none tabular-nums">{score}</span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[9px] text-[#999] uppercase font-bold tracking-[0.15em] leading-none mb-1">Regime</span>
-                <span className="text-[14px] font-bold text-[#0a0a0a] leading-none">{regime}</span>
+                <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-[0.15em] leading-none mb-1">Regime</span>
+                <span className="text-[14px] font-bold text-foreground leading-none">{regime}</span>
               </div>
             </div>
             <UserProfile onSignOut={onSignOut} onConnectWallet={onConnectWallet} />
           </div>
         </div>
       </div>
-      <div style={{
-        height: 1,
-        background: "linear-gradient(90deg, transparent 0%, rgba(50, 50, 93, 0.1) 50%, transparent 100%)",
-      }} />
+      <div className="hairline opacity-30" />
     </motion.header>
   );
 }
