@@ -151,40 +151,6 @@ export function ManagedAssets() {
                 <StabilityGraph seed={a.seed} height={70} />
               </div>
 
-              <div className="hairline mb-6" />
-
-              <div className="grid grid-cols-2 gap-x-2 gap-y-4">
-                <div className="min-w-0">
-                  <p className="text-[8px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.1em" }}>
-                    Allocated
-                  </p>
-                  <p className="text-xs text-foreground font-medium truncate pr-2" style={{ fontFamily: "'JetBrains Mono', monospace" }} title={a.tvl}>{a.tvl}</p>
-                </div>
-                <div className="min-w-0">
-                  <p className="text-[8px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.1em" }}>
-                    Reserve
-                  </p>
-                  <p className="text-xs text-foreground font-medium truncate pr-2" style={{ fontFamily: "'JetBrains Mono', monospace" }} title={a.buffer}>{a.buffer}</p>
-                </div>
-                <div className="col-span-2 mt-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <p className="text-[8px] uppercase text-muted-foreground" style={{ letterSpacing: "0.1em" }}>
-                      Coverage
-                    </p>
-                    <span className="text-[10px] text-muted-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                      {a.bufferPct}%
-                    </span>
-                  </div>
-                  <div className="relative h-1 w-full bg-foreground/5 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${a.bufferPct}%` }}
-                      transition={{ delay: 0.4 + i * 0.1, duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                      className="absolute inset-y-0 left-0 bg-foreground/30 rounded-full"
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
           </motion.div>
         ))}
