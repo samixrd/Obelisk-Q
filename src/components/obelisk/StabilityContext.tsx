@@ -48,10 +48,10 @@ const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "";
 export function StabilityProvider({ children }: { children: ReactNode }) {
   const [scoreOverride,      setScoreOverride]      = useState<number | null>(null);
   const [volatilityOverride, setVolatilityOverride] = useState<VolatilityRegime | null>(null);
-  const [engineScore,        setEngineScore]        = useState<number>(98);
+  const [engineScore,        setEngineScore]        = useState<number>(0);
   const [engineThreshold,    setEngineThreshold]    = useState<number>(65);
   const [engineRegime,       setEngineRegime]       = useState<"stable"|"high_volatility">("stable");
-  const [components,         setComponents]         = useState({ yield_score: 56, volatility_score: 86, liquidity_score: 84 });
+  const [components,         setComponents]         = useState({ yield_score: 0, volatility_score: 0, liquidity_score: 0 });
   const [engineLoading,      setEngineLoading]      = useState(false);
   const [engineError,        setEngineError]        = useState<string | null>(null);
   const [lastFetched,        setLastFetched]        = useState<number | null>(null);

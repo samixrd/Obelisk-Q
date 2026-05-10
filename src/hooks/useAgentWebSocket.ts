@@ -22,13 +22,13 @@ interface TelemetryLog {
 
 // ── Regime Detection Telemetry Templates ────────────────────────────────────
 const REGIME_MESSAGES = [
-  "Regime stable — volatility σ = 0.012, below threshold 0.045",
+  "Regime verified — volatility σ below threshold",
   "Market microstructure scan complete — no anomalies detected",
-  "Cross-asset correlation matrix refreshed — R² = 0.89",
-  "Mantle on-chain volume delta: +3.2% — regime remains stable",
-  "MNT/USDT order book depth analysis — bid-ask spread: 0.04%",
-  "24h rolling volatility index: 11.4 — within safe band",
-  "Regime classification: LOW_VOL confirmed with 94% confidence",
+  "Cross-asset correlation matrix refreshed",
+  "Mantle on-chain volume delta analysis complete",
+  "MNT/USDT order book depth analysis — spread nominal",
+  "24h rolling volatility index within safe band",
+  "Regime classification confirmed via HMM model",
   "Intraday momentum signal: neutral — no regime shift detected",
 ];
 
@@ -44,7 +44,7 @@ const RISK_MESSAGES = [
 ];
 
 const QSCORE_MESSAGES = [
-  "Q-Score recalculated: composite = 94 (regime: 98, risk: 91, yield: 93)",
+  "Q-Score recalculated based on multi-factor analysis",
   "Yield differential: mETH 3.6% vs USDY 5.1% — optimal split maintained",
   "Score weighted by regime stability factor: 1.04x multiplier applied",
   "Historical backtest alignment: current score within top 8th percentile",
@@ -95,8 +95,8 @@ const NODE_LABELS: Record<string, string> = {
 // ── Hook ────────────────────────────────────────────────────────────────────
 export function useAgentWebSocket() {
   const { sessionToken, logout } = useAuth();
-  const [score, setScore] = useState<number>(94);
-  const [regime, setRegime] = useState<string>("Stable");
+  const [score, setScore] = useState<number>(0);
+  const [regime, setRegime] = useState<string>("Loading...");
   const [countdown, setCountdown] = useState<number>(10);
   const [lastMessage, setLastMessage] = useState<string>("Antigravity Protocol online — 5-node LangGraph active");
   const [liveYields, setLiveYields] = useState({ usdy: 5.1, meth: 3.6 });
@@ -295,7 +295,7 @@ export function useAgentWebSocket() {
       } catch (err) {
         console.warn("Polling /api/stats failed:", err);
       }
-    }, 600000); // 10 minutes
+    }, 30000); // 30 seconds
 
     return () => {
       wsRef.current?.close();

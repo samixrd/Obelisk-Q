@@ -34,7 +34,7 @@ const SIGNAL_POOL: { action: AgentAction; messages: string[] }[] = [
   {
     action: "hold",
     messages: [
-      "Position maintained — Q-Score 94 above rebalance threshold 75",
+      "Position maintained — Q-Score above rebalance threshold",
       "Allocation optimal — holding 60/40 mETH/USDY split",
       "No rebalance signal — yield differential within 1.5% tolerance",
       "Strategy confirmed: passive yield accumulation in current regime",
