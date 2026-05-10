@@ -100,7 +100,7 @@ export function GuidedTour({ open, onClose }: Props) {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
-          className="fixed inset-0 z-[9999] overflow-hidden bg-black/40 backdrop-blur-sm"
+          className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-6 overflow-hidden"
         >
           {/* Subtle radial accent */}
           <div className="absolute inset-0 pointer-events-none"
@@ -116,22 +116,17 @@ export function GuidedTour({ open, onClose }: Props) {
             <IconClose size={18} />
           </button>
 
-          <div className="min-h-full w-full flex items-center justify-center p-6">
-            <motion.div 
-              ref={tooltipRef}
-              layout
-              style={{
-                position: 'fixed',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                zIndex: 10001,
-                maxWidth: '480px',
-                width: '90%',
-                margin: 0,
-              }}
-              className={`relative bg-background rounded-2xl p-8 md:p-10 shadow-2xl border border-border/50 transition-all duration-500 ease-[0.22,1,0.36,1] ${!coords ? 'opacity-0' : 'opacity-100'}`}
-            >
+          <motion.div 
+            ref={tooltipRef}
+            layout
+            style={{
+              maxWidth: '480px',
+              width: '100%',
+              zIndex: 10001,
+              margin: 0,
+            }}
+            className={`relative bg-background rounded-2xl p-8 md:p-10 shadow-2xl border border-border/50 transition-all duration-500 ease-[0.22,1,0.36,1] ${!coords ? 'opacity-0' : 'opacity-100'}`}
+          >
             <AnimatePresence mode="wait">
               <motion.div
                 key={step}
@@ -208,8 +203,7 @@ export function GuidedTour({ open, onClose }: Props) {
                 Skip the tour
               </button>
             </div>
-            </motion.div>
-          </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
