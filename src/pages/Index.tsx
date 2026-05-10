@@ -36,15 +36,13 @@ function AppInner() {
     localStorage.setItem("obelisk_tab", activeTab);
   }, [activeTab]);
 
-  // Handle stage transitions
+  // Handle logout transition
   useEffect(() => {
     const hasSession = !!localStorage.getItem("obelisk_session");
     const hasWallet = !!walletAddress;
 
-    if (hasSession && hasWallet) {
-      if (stage !== "dashboard") setStage("dashboard");
-    } else if (stage === "dashboard") {
-      setStage("landing");
+    if (!hasSession || !hasWallet) {
+      if (stage === "dashboard") setStage("landing");
     }
   }, [walletAddress, stage]);
 
