@@ -213,9 +213,9 @@ export function PortfolioView() {
               }
             }}
             disabled={isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isPending || isZeroBalance}
-            whileHover={!(isInsufficient || !withdrawAmount || isPending || isZeroBalance) ? { y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.2)" } : {}}
+            whileHover={!(isInsufficient || !withdrawAmount || isPending || isZeroBalance) ? { y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" } : {}}
             whileTap={!(isInsufficient || !withdrawAmount || isPending || isZeroBalance) ? { scale: 0.98 } : {}}
-            className={`w-full py-5 rounded-full text-[15px] font-bold transition-all duration-300 ${isInsufficient || !withdrawAmount || isPending || isZeroBalance ? 'bg-primary/10 text-primary/30 cursor-not-allowed' : 'bg-primary text-background shadow-xl shadow-black/20'}`}
+            className={`w-full py-5 rounded-full text-[15px] font-bold transition-all duration-300 ${isInsufficient || !withdrawAmount || isPending || isZeroBalance ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
           >
             {isPending ? "Processing..." : isZeroBalance ? "Insufficient Funds" : "Withdraw Funds"}
           </motion.button>
@@ -253,11 +253,11 @@ export function PortfolioView() {
               <motion.div key={p.name}
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04, duration: 0.3 }}
-                className="grid grid-cols-12 items-center py-5 px-4 border-t border-primary/10 hover:bg-primary/5 transition-all rounded-2xl group lift-on-hover"
+                className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-2xl group lift-on-hover"
               >
                 <div className="col-span-5 flex items-center gap-4">
-                  <div className="h-10 w-10 rounded-full bg-background border border-primary/10 overflow-hidden flex items-center justify-center transition-all p-1.5">
-                    {logos[p.id as keyof typeof logos] ? <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-contain" /> : <span className="text-[13px] font-mono-num text-primary">{p.symbol[0]}</span>}
+                  <div className="h-10 w-10 rounded-full bg-white border border-black/[0.04] overflow-hidden flex items-center justify-center transition-all p-1.5">
+                    {logos[p.id as keyof typeof logos] ? <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-contain" /> : <span className="text-[13px] font-mono-num">{p.symbol[0]}</span>}
                   </div>
                   <span className="text-[15px] text-primary font-bold">{p.name}</span>
                 </div>
