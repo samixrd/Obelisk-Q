@@ -230,7 +230,7 @@ export function PortfolioView() {
       </div>
 
       <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-primary/5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)]">
-        <p className="text-[11px] uppercase text-[#9CA3AF] mb-8 font-bold tracking-[0.24em]">30-Day Performance History</p>
+        <p className="text-[11px] uppercase text-primary/60 mb-8 font-bold tracking-[0.24em]">30-Day Performance History</p>
         <div className="h-[180px]">
           <StabilityGraph seed={7} height={180} />
         </div>
@@ -243,6 +243,7 @@ export function PortfolioView() {
         </div>
         <div className="overflow-x-auto scrollbar-hidden">
           <div className="min-w-[800px]">
+            <div className="grid grid-cols-12 mb-6 px-4 text-[10px] uppercase text-primary/60 font-bold tracking-[0.2em]">
               <div className="col-span-5">Asset</div>
               <div className="col-span-3">Strategy</div>
               <div className="col-span-2 text-right">Balance</div>
@@ -262,7 +263,7 @@ export function PortfolioView() {
                 </div>
                 <div className="col-span-3 text-[13px] text-primary/60 font-bold">{p.strategy}</div>
                 <div className="col-span-2 text-[15px] text-primary text-right font-mono-num">{p.balance}</div>
-                <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-mono-num ${p.up ? "text-emerald-500" : "text-[#9CA3AF]"}`}>
+                <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-mono-num ${p.up ? "text-emerald-500" : "text-primary/40"}`}>
                   {p.up ? <IconArrowUpRight size={14} /> : <IconArrowDownRight size={14} />}
                   {p.change}
                 </div>
