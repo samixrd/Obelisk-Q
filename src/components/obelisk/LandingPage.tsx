@@ -1,32 +1,39 @@
 /**
- * LandingPage — Agent Layer-inspired clean minimal design
- * Features:
- *  - Light/white background with blue viewport edge glow
- *  - Massive bold typography
- *  - Clean navigation bar
- *  - Sectioned content layout
- *  - Floating math symbols background
+ * LandingPage — Neon Green / Dark Navy Cyber Aesthetic
  */
 
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Logo } from "./Logo";
 import { Link } from "react-router-dom";
 import "./LandingPage.css";
 
-import { FloatingSymbols } from "./FloatingSymbols";
+// ─── Components ───────────────────────────────────────────────────────────────
 
-const Reveal = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => (
-  <motion.div
-    initial={{ clipPath: "inset(0 100% 0 0)" }}
-    whileInView={{ clipPath: "inset(0 0% 0 0)" }}
-    viewport={{ once: true, margin: "-100px" }}
-    transition={{ duration: 1.2, delay, ease: [0.22, 1, 0.36, 1] }}
-    style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
-  >
-    {children}
-  </motion.div>
-);
+function RevealWrapper({ children, className = "" }: { children: React.ReactNode, className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={ref} className={`${className} reveal ${isVisible ? "active" : ""}`}>
+      {children}
+    </div>
+  );
+}
 
 // ─── Navigation ───────────────────────────────────────────────────────────────
 
@@ -42,347 +49,242 @@ function NavBar({ onLaunch }: { onLaunch: () => void }) {
   const navItems = ["Dashboard", "Protocol", "Features", "Archetypes"];
 
   return (
-    <motion.nav
-      initial={{ opacity: 0, y: -20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-      className="landing-nav"
-      style={{
-        backdropFilter: scrolled ? "blur(20px) saturate(180%)" : "none",
-        background: scrolled ? "rgba(245,245,248,0.85)" : "transparent",
-        borderBottom: scrolled ? "1px solid rgba(0,0,0,0.06)" : "1px solid transparent",
-      }}
-    >
-      <div className="landing-nav-inner">
-        <div className="landing-nav-left">
-          <span className="landing-logo">
-            <Logo size={32} />
-          </span>
-          <span className="landing-brand">
-            Obelisk Q
-          </span>
-        </div>
-
-        <div className="landing-nav-links">
-          {navItems.map((item) => (
-            <a key={item} href={`#${item.toLowerCase()}`} className="landing-nav-link">
-              {item}
-            </a>
-          ))}
-        </div>
-
-        <button onClick={onLaunch} className="landing-launch-btn">
-          Launch App
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginLeft: 6 }}>
-            <path d="M3 7h8M8 4l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </button>
+    <header className={`landing-nav animate-nav ${scrolled ? "scrolled" : ""}`}>
+      <div className="flex items-center gap-2 font-bold text-primary">
+        Obelisk Q
       </div>
-    </motion.nav>
+      
+      <nav className="hidden md:flex items-center gap-8">
+        {navItems.map((item) => (
+          <a key={item} href={`#${item.toLowerCase()}`} className="text-[12px] font-medium text-primary/70 hover:text-primary transition-colors uppercase tracking-wider">
+            {item}
+          </a>
+        ))}
+      </nav>
+
+      <button onClick={onLaunch} className="bg-primary text-background px-6 py-2 rounded-full text-[12px] font-bold active:scale-95 transition-transform hover:shadow-lg">
+        Launch App
+      </button>
+    </header>
   );
 }
 
-import { MagneticText } from "./MagneticText";
-
-// ─── Section Components ───────────────────────────────────────────────────────
-
-// ─── Section Components ───────────────────────────────────────────────────────
+// ─── Hero Section ─────────────────────────────────────────────────────────────
 
 function HeroSection({ onLaunch }: { onLaunch: () => void }) {
   return (
     <section className="landing-hero" id="dashboard">
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.0, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="landing-hero-content"
-      >
-        <div className="landing-hero-heading">
-          <Reveal>
-            <MagneticText text="Autonomous Investment" />
-          </Reveal>
-          <Reveal delay={0.1}>
-            <MagneticText text="Intelligence on Mantle." />
-          </Reveal>
-        </div>
+      <div className="animate-fade-up">
+        <h1 className="landing-hero-heading animate-wipe">
+          Autonomous Investment <br/>
+          <span className="opacity-60">Intelligence on Mantle.</span>
+        </h1>
         <p className="landing-hero-sub">
-          The first autonomous wealth navigator optimized for Mantle Mainnet.
-          <br />
+          The first autonomous wealth navigator optimized for Mantle Mainnet. 
           Experience automated yields from mETH and USDY through a verified 5-node LangGraph swarm with real-time protection.
         </p>
-        <div className="landing-hero-actions">
-          <button onClick={onLaunch} className="landing-hero-cta">
+        <div className="flex justify-center">
+          <button onClick={onLaunch} className="bg-primary text-background px-8 py-4 rounded-full text-[13px] font-bold hover:scale-[1.05] active:scale-95 transition-all shadow-xl">
             Launch App
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: 8 }}>
-              <path d="M3 8h10M10 5l3 3-3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
           </button>
         </div>
-      </motion.div>
-    </section>
-  );
-}
-
-function ProtocolSection() {
-  return (
-    <section className="landing-section" id="protocol">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <Reveal>
-          <span className="landing-section-label">ANTIGRAVITY PROTOCOL</span>
-        </Reveal>
-        <div className="landing-section-heading" style={{ fontWeight: 700 }}>
-          <Reveal delay={0.1}>
-            <MagneticText text="High-availability" />
-          </Reveal>
-          <Reveal delay={0.2}>
-            <MagneticText text="agent resilience" />
-          </Reveal>
-        </div>
-        <p className="landing-section-desc">
-          Obelisk Q uses the Antigravity Protocol to ensure 100% uptime and deterministic rebalancing through verified cross-token unwind logic on Mantle Mainnet.
-        </p>
-        <ul className="landing-bullet-list">
-          <li><span className="landing-bullet" /> 5-node LangGraph swarm (regime, risk, score, telemetry, supervisor)</li>
-          <li><span className="landing-bullet" /> autonomous circuit breaker (halts allocation on volatility)</li>
-          <li><span className="landing-bullet" /> real-time telemetry synchronization (10s dashboard polling)</li>
-        </ul>
-      </motion.div>
-    </section>
-  );
-}
-
-function FeaturesSection() {
-  const features = [
-    {
-      num: "01",
-      title: "AI-Managed",
-      desc: "Dynamic market adaptation using Hidden Markov Models. The engine classifies regimes—Expansion, Consolidation, or Contraction—and adjusts allocations automatically.",
-      tags: ["HMM", "Regime Detection", "Autonomous"],
-    },
-    {
-      num: "02",
-      title: "Real Yield",
-      desc: "Access institutional-grade yields from tokenized US Treasuries (USDY) and liquid-staked ETH (mETH) on Mantle Network.",
-      tags: ["USDY", "mETH", "Mantle"],
-    },
-    {
-      num: "03",
-      title: "Circuit Breaker",
-      desc: "Instant safety halt if market confidence (Q-Score) drops 5+ points in 60 min. Protects capital during rapid regime shifts.",
-      tags: ["Safety", "Volatility", "Verified"],
-    },
-    {
-      num: "04",
-      title: "Mantle Mainnet",
-      desc: "Fully operational at 0x0f43...eaFa. Orchestrated rebalancing with Merchant Moe to capture deep liquidity and institutional RWA spreads.",
-      tags: ["Mainnet", "Verified", "Merchant Moe"],
-    },
-  ];
-
-  return (
-    <section className="landing-section" id="features">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <Reveal>
-          <span className="landing-section-label">PROTOCOL FEATURES</span>
-        </Reveal>
-        <div className="landing-section-heading" style={{ fontWeight: 700 }}>
-          <Reveal delay={0.1}>
-            <MagneticText text="Intelligence meets" />
-          </Reveal>
-          <Reveal delay={0.2}>
-            <MagneticText text="infrastructure" />
-          </Reveal>
-        </div>
-      </motion.div>
-
-      <div className="landing-features-grid">
-        {features.map((f, i) => (
-          <motion.div
-            key={f.num}
-            className="landing-feature-card"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="landing-feature-num">{f.num}</span>
-            <div className="landing-feature-title" style={{ fontWeight: 600 }}>
-              <MagneticText text={f.title} />
-            </div>
-            <p className="landing-feature-desc">{f.desc}</p>
-            <div className="landing-tags">
-              {f.tags.map((tag) => (
-                <span key={tag} className="landing-tag">{tag}</span>
-              ))}
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function BuiltForSection() {
-  const profiles = [
-    {
-      id: "idle",
-      num: "01",
-      headline: "You have capital sitting idle",
-      body: "Maximize your Mantle assets. The AI agent automatically rebalances your MNT into USDY and mETH to capture real yield from US Treasuries and staked ETH.",
-      tag: "Passive investor",
-    },
-    {
-      id: "defi",
-      num: "02",
-      headline: "You want yield without the complexity",
-      body: "No need to monitor pools, manage positions, or time the market. Obelisk Q's confidence scoring engine handles allocation decisions based on real-time on-chain signals.",
-      tag: "DeFi participant",
-    },
-    {
-      id: "inst",
-      num: "03",
-      headline: "You need compliant RWA exposure",
-      body: "USDY is a regulated instrument backed by short-term US Treasuries. Full on-chain transparency, automated risk management, and non-custodial architecture.",
-      tag: "Institutional",
-    },
-  ];
-
-  return (
-    <section className="landing-section" id="archetypes">
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, margin: "-100px" }}
-        transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      >
-        <Reveal>
-          <span className="landing-section-label">ARCHETYPES</span>
-        </Reveal>
-        <div className="landing-section-heading" style={{ fontWeight: 700 }}>
-          <Reveal delay={0.1}>
-            <MagneticText text="Built for" />
-          </Reveal>
-        </div>
-      </motion.div>
-
-      <div className="landing-features-grid">
-        {profiles.map((p, i) => (
-          <motion.div
-            key={p.id}
-            className="landing-feature-card"
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.7, delay: i * 0.12, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="landing-feature-num">{p.num}</span>
-            <div className="landing-feature-title" style={{ fontWeight: 600 }}>
-              <MagneticText text={p.headline} />
-            </div>
-            <p className="landing-feature-desc">{p.body}</p>
-            <div className="landing-tags">
-              <span className="landing-tag">{p.tag}</span>
-            </div>
-          </motion.div>
-        ))}
       </div>
 
-      <motion.div
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1, delay: 0.5 }}
-        className="landing-built-bottom"
-      >
-        "Non-custodial · No minimum deposit · Withdraw anytime · Built on Mantle Network"
-      </motion.div>
-    </section>
-  );
-}
-
-
-
-function Footer() {
-  const linkGroups = [
-    { title: "", links: [
-      { name: "Dashboard", href: "#dashboard" },
-      { name: "Protocol", href: "#protocol" },
-      { name: "Features", href: "#features" }
-    ]},
-    { title: "", links: [
-      { name: "Docs", href: "/docs", external: false },
-      { name: "GitHub", href: "https://github.com/samixrd/Obelisk-Q", external: true },
-      { name: "X", href: "https://x.com/ObeliskQAi", external: true }
-    ]},
-  ];
-
-  return (
-    <footer className="landing-footer">
-      <div className="landing-footer-big-text" aria-hidden>
-        <span>autonomous</span>
-        <span>wealth intelligence</span>
-      </div>
-
-      <div className="landing-footer-inner">
-        <div className="landing-footer-left">
-          <div className="flex items-center gap-3">
-            <Logo size={24} className="text-foreground" />
-            <span className="landing-footer-brand">Obelisk Q</span>
-          </div>
-        </div>
-        <div className="landing-footer-links">
-          {linkGroups.map((group, gi) => (
-            <div key={gi} className="landing-footer-col">
-              {group.links.map((link) => (
-                link.external ? (
-                  <a 
-                    key={link.name} 
-                    href={link.href} 
-                    className="landing-footer-link"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {link.name}
-                  </a>
-                ) : (
-                  <Link 
-                    key={link.name} 
-                    to={link.href} 
-                    className="landing-footer-link"
-                  >
-                    {link.name}
-                  </Link>
-                )
-              ))}
+      <div className="mt-20 w-full max-w-5xl animate-fade-up" style={{ animationDelay: '0.2s' }}>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            { label: "5-Node", sub: "LangGraph Swarm" },
+            { label: "100%", sub: "Uptime Goal" },
+            { label: "Real-time", sub: "Telemetry" },
+          ].map((stat, i) => (
+            <div key={i} className="bg-primary/5 backdrop-blur-md p-6 rounded-2xl border border-primary/10 flex flex-col items-center hover:bg-primary/10 transition-colors group">
+              <span className="text-primary text-[32px] font-bold mb-2 transition-transform group-hover:scale-110">{stat.label}</span>
+              <span className="text-[11px] font-bold text-primary/70 uppercase tracking-widest">{stat.sub}</span>
             </div>
           ))}
         </div>
-        <div className="landing-footer-right">
-          <span className="landing-footer-legal">About Obelisk Q</span>
-          <span className="landing-footer-legal">Terms</span>
+      </div>
+    </section>
+  );
+}
+
+// ─── Resilience Section ───────────────────────────────────────────────────────
+
+function ResilienceSection() {
+  return (
+    <RevealWrapper className="landing-section bg-primary/5 backdrop-blur-sm border-y border-primary/10">
+      <div className="flex flex-col md:flex-row items-center gap-16">
+        <div className="flex-1 text-left">
+          <div className="text-[11px] font-bold text-primary uppercase tracking-widest mb-4">Antigravity Protocol</div>
+          <h2 className="text-[36px] md:text-[48px] font-bold text-primary leading-tight mb-6">High-availability agent resilience</h2>
+          <p className="text-[16px] text-primary/70 mb-8">Obelisk Q uses the Antigravity Protocol to ensure 100% uptime and deterministic rebalancing through verified cross-token unwind logic on Mantle Mainnet.</p>
+          <ul className="space-y-4">
+            {[
+              "5-node LangGraph swarm (regime, risk, score, telemetry, supervisor)",
+              "autonomous circuit breaker (halts allocation on volatility)",
+              "real-time telemetry synchronization (10s dashboard polling)"
+            ].map((text, i) => (
+              <li key={i} className="flex items-center gap-3 text-[14px] font-medium text-primary">
+                <span className="w-2 h-2 rounded-full bg-primary"></span>
+                {text}
+              </li>
+            ))}
+          </ul>
+        </div>
+        
+        <div className="flex-1 w-full bg-primary rounded-[2.5rem] p-10 border-2 border-primary shadow-2xl">
+          <div className="space-y-8">
+            <div className="flex justify-between items-center text-background font-bold text-[14px]">
+              <span>Agent Network Health</span>
+              <span className="text-[10px] uppercase bg-background text-primary px-3 py-1 rounded-full">Stable</span>
+            </div>
+            <div className="grid grid-cols-5 gap-3 h-32">
+              {[0.1, 0.4, 0.2, 0.5, 0.3].map((delay, i) => (
+                <div key={i} className="h-full w-full bg-background/10 rounded-xl flex items-end overflow-hidden p-1">
+                  <div className="telemetry-bar-inner" style={{ animationDelay: `${delay}s`, animationDuration: `${1.5 + Math.random()}s` }}></div>
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-between items-center border-t border-background/10 pt-4">
+              <div className="text-[11px] text-background/60 uppercase font-bold tracking-wider">Swarm Latency: 142ms</div>
+              <div className="text-[11px] text-background/60 uppercase font-bold tracking-wider">Nodes Active: 5/5</div>
+            </div>
+          </div>
         </div>
       </div>
+    </RevealWrapper>
+  );
+}
 
-      <div className="landing-footer-bottom">
-        <span className="landing-footer-ca">
-          Mantle Mainnet · ERC-8004 Sovereign Identity · Antigravity Protocol
-        </span>
+// ─── Features Section ─────────────────────────────────────────────────────────
+
+function FeaturesSection() {
+  const features = [
+    { num: "01", title: "AI-Managed", desc: "Dynamic market adaptation using Hidden Markov Models. The engine classifies regimes and adjusts allocations automatically.", tags: ["HMM", "Autonomous"] },
+    { num: "02", title: "Real Yield", desc: "Access institutional-grade yields from tokenized US Treasuries (USDY) and liquid-staked ETH (mETH) on Mantle Network.", tags: ["USDY", "mETH"] },
+    { num: "03", title: "Circuit Breaker", desc: "Instant safety halt if market confidence (Q-Score) drops 5+ points in 60 min. Protects capital during rapid regime shifts.", tags: ["Safety", "Verified"] }
+  ];
+
+  return (
+    <RevealWrapper className="landing-section">
+      <div className="text-center mb-16">
+        <div className="text-[11px] font-bold text-primary uppercase tracking-widest mb-4">Protocol Features</div>
+        <h2 className="text-[36px] md:text-[48px] font-bold text-primary">Intelligence meets <span className="opacity-40">infrastructure</span></h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {features.map((f, i) => (
+          <div key={i} className="group bg-primary/5 backdrop-blur-sm border border-primary/10 p-10 rounded-3xl flex flex-col hover:bg-primary/10 transition-all hover:border-primary hover:-translate-y-2 text-left">
+            <div className="text-[12px] text-primary/40 font-mono mb-4">{f.num}</div>
+            <h3 className="text-[20px] font-bold mb-4 text-primary">{f.title}</h3>
+            <p className="text-[14px] text-primary/70 mb-8">{f.desc}</p>
+            <div className="mt-auto flex flex-wrap gap-2">
+              {f.tags.map(tag => (
+                <span key={tag} className="px-3 py-1 bg-primary/5 border border-primary/10 rounded-full text-[10px] font-bold text-primary uppercase tracking-wider">{tag}</span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </RevealWrapper>
+  );
+}
+
+// ─── Archetypes Section ───────────────────────────────────────────────────────
+
+function ArchetypesSection() {
+  const archetypes = [
+    { num: "01", title: "You have capital sitting idle", desc: "Maximize your Mantle assets. The AI agent automatically rebalances your MNT into USDY and mETH.", tag: "Passive investor" },
+    { num: "02", title: "You want yield without complexity", desc: "No need to monitor pools or manage positions. Obelisk Q handles allocation decisions autonomously.", tag: "DeFi participant" },
+    { num: "03", title: "You need compliant RWA exposure", desc: "USDY is a regulated instrument backed by short-term US Treasuries. Full transparency and non-custodial.", tag: "Institutional" }
+  ];
+
+  return (
+    <RevealWrapper className="landing-section bg-primary/5">
+      <div className="text-center mb-16">
+        <div className="text-[11px] font-bold text-primary uppercase tracking-widest mb-4">Archetypes</div>
+        <h2 className="text-[36px] md:text-[48px] font-bold text-primary">Built for</h2>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {archetypes.map((a, i) => (
+          <div key={i} className="p-10 rounded-3xl border border-primary/10 bg-background/50 backdrop-blur-sm hover:bg-background transition-all hover:shadow-xl group text-left">
+            <div className="text-[12px] text-primary/40 font-mono mb-4">{a.num}</div>
+            <h3 className="text-[20px] font-bold mb-4 text-primary">{a.title}</h3>
+            <p className="text-[14px] text-primary/70 mb-8">{a.desc}</p>
+            <span className="px-4 py-1.5 bg-primary text-background rounded-full text-[10px] font-bold group-hover:scale-105 transition-transform inline-block uppercase tracking-wider">{a.tag}</span>
+          </div>
+        ))}
+      </div>
+    </RevealWrapper>
+  );
+}
+
+// ─── CTA Section ─────────────────────────────────────────────────────────────
+
+function CTASection({ onLaunch }: { onLaunch: () => void }) {
+  return (
+    <RevealWrapper className="landing-section">
+      <div className="bg-primary rounded-[3rem] p-12 md:p-24 flex flex-col md:flex-row items-center gap-16 overflow-hidden relative shadow-2xl text-left">
+        <div className="absolute inset-0 bg-gradient-to-tr from-background/10 to-transparent pointer-events-none"></div>
+        <div className="flex-1 z-10">
+          <h2 className="text-[48px] md:text-[64px] font-bold text-background mb-6 leading-tight">Autonomous wealth intelligence.</h2>
+          <p className="text-[18px] text-background/80 mb-10 max-w-lg">
+            Join the first autonomous investment swarm on Mantle. Secure, verified, and high-performance.
+          </p>
+          <button onClick={onLaunch} className="bg-background text-primary px-10 py-5 rounded-full text-[14px] font-bold hover:scale-105 active:scale-95 transition-all shadow-xl">
+            Launch App
+          </button>
+        </div>
+        <div className="flex-1 hidden md:flex justify-center z-10">
+          {/* Decorative element removed */}
+        </div>
+      </div>
+    </RevealWrapper>
+  );
+}
+
+// ─── Footer ─────────────────────────────────────────────────────────────────
+
+function Footer() {
+  return (
+    <footer className="w-full py-16 px-12 bg-primary/5 backdrop-blur-md border-t border-primary/10">
+      <div className="max-w-[1440px] mx-auto">
+        <div className="flex flex-col md:flex-row justify-between items-start gap-12 mb-16">
+          <div className="flex flex-col gap-4 text-left">
+            <div className="text-[20px] font-bold text-primary flex items-center gap-2">
+              Obelisk Q
+            </div>
+            <p className="text-[11px] font-bold text-primary/60 max-w-xs uppercase tracking-widest">
+              Autonomous investment intelligence optimized for Mantle Mainnet. Built on the Antigravity Protocol.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-12 text-left">
+            <div className="flex flex-col gap-4">
+              <span className="text-[12px] font-bold text-primary uppercase">Platform</span>
+              <a className="text-[11px] text-primary/60 hover:text-primary transition-colors font-bold uppercase" href="#">Dashboard</a>
+              <a className="text-[11px] text-primary/60 hover:text-primary transition-colors font-bold uppercase" href="#">Protocol</a>
+            </div>
+            <div className="flex flex-col gap-4">
+              <span className="text-[12px] font-bold text-primary uppercase">Resources</span>
+              <a className="text-[11px] text-primary/60 hover:text-primary transition-colors font-bold uppercase" href="#">Docs</a>
+              <a className="text-[11px] text-primary/60 hover:text-primary transition-colors font-bold uppercase" href="#">GitHub</a>
+            </div>
+            <div className="flex flex-col gap-4">
+              <span className="text-[12px] font-bold text-primary uppercase">Legal</span>
+              <a className="text-[11px] text-primary/60 hover:text-primary transition-colors font-bold uppercase" href="#">Terms</a>
+              <a className="text-[11px] text-primary/60 hover:text-primary transition-colors font-bold uppercase" href="#">Privacy</a>
+            </div>
+          </div>
+        </div>
+        <div className="pt-8 border-t border-primary/10 flex flex-col md:flex-row justify-between items-center gap-4 text-[11px] font-bold text-primary/40 uppercase tracking-widest">
+          <p>© 2026 Obelisk Q. Mantle Mainnet - ERC-8004 Sovereign Identity.</p>
+          <p>Antigravity Protocol Verified</p>
+        </div>
       </div>
     </footer>
   );
 }
 
-// ─── Landing Page ─────────────────────────────────────────────────────────────
+// ─── Landing Page Root ────────────────────────────────────────────────────────
 
 interface LandingPageProps {
   onEnter: () => void;
@@ -390,25 +292,32 @@ interface LandingPageProps {
 
 export function LandingPage({ onEnter }: LandingPageProps) {
   return (
-    <motion.div
-      className="landing-root"
-      exit={{ opacity: 0, scale: 1.02, transition: { duration: 0.5, ease: [0.4, 0, 1, 1] } }}
-    >
-      {/* Blue viewport glow border */}
-      <div className="landing-glow-border" aria-hidden />
+    <div className="landing-root">
+      {/* Ambient Background Layer */}
+      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
+        <div className="glass-blob w-[600px] h-[600px] -top-40 -left-40 bg-primary" style={{ animationDuration: '25s', animationDelay: '-2s' }}></div>
+        <div className="glass-blob w-[500px] h-[500px] top-1/2 -right-20 bg-primary" style={{ animationDuration: '30s', animationDelay: '-5s' }}></div>
+        <div className="glass-blob w-[400px] h-[400px] bottom-0 left-1/4 bg-primary" style={{ animationDuration: '22s', animationDelay: '-10s' }}></div>
+        
+        {/* Floating Math Symbols */}
+        <span className="floating-symbol text-6xl top-[10%] left-[5%]">Σ</span>
+        <span className="floating-symbol text-4xl top-[20%] right-[10%]" style={{ animationDelay: '-2s' }}>λ</span>
+        <span className="floating-symbol text-5xl bottom-[15%] left-[15%]" style={{ animationDelay: '-5s' }}>Δ</span>
+        <span className="floating-symbol text-3xl bottom-[25%] right-[20%]" style={{ animationDelay: '-7s' }}>π</span>
+        <span className="floating-symbol text-7xl top-1/2 left-1/2" style={{ animationDelay: '-3s' }}>∞</span>
+      </div>
 
-      {/* Floating math symbols */}
-      <FloatingSymbols />
-
-      {/* Navigation */}
       <NavBar onLaunch={onEnter} />
 
-      {/* Content */}
-      <HeroSection onLaunch={onEnter} />
-      <ProtocolSection />
-      <FeaturesSection />
-      <BuiltForSection />
+      <main>
+        <HeroSection onLaunch={onEnter} />
+        <ResilienceSection />
+        <FeaturesSection />
+        <ArchetypesSection />
+        <CTASection onLaunch={onEnter} />
+      </main>
+
       <Footer />
-    </motion.div>
+    </div>
   );
 }

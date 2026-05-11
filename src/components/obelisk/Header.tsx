@@ -47,7 +47,7 @@ export function Header({
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed top-0 left-0 right-0 z-40 bg-background/85 backdrop-blur-[20px] saturate-[160%] border-b border-foreground/10"
+      className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-[24px] saturate-[180%] border-b border-primary/10"
     >
       <div className="mx-auto max-w-[1680px] px-8 md:px-14 py-5 flex items-center justify-between">
 

@@ -66,7 +66,7 @@ function AppInner() {
   const needsWallet = !walletAddress;
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden" style={{ background: "#f5f5f8" }}>
+    <div className="relative min-h-screen overflow-x-hidden" style={{ background: "var(--background)" }}>
 
       <AnimatePresence mode="wait">
         {stage === "landing" && (

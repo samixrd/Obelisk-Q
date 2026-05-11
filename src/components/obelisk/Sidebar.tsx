@@ -36,7 +36,7 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-background/40 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-primary/20 backdrop-blur-sm"
           />
 
           {/* Drawer */}
@@ -45,7 +45,7 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed top-0 left-0 bottom-0 z-50 w-full max-w-[320px] flex flex-col bg-card border-r border-foreground/5 p-6 md:p-10 shadow-2xl"
+            className="fixed top-0 left-0 bottom-0 z-50 w-full max-w-[320px] flex flex-col bg-background border-r border-primary/10 p-6 md:p-10 shadow-2xl"
           >
             {/* Close button */}
             <button
