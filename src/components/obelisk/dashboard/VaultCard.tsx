@@ -29,37 +29,37 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
   };
 
   return (
-    <div className="col-span-12 lg:col-span-6 glass-card rounded-3xl overflow-hidden">
+    <div id="tour-stability-score" className="col-span-12 lg:col-span-6 glass-card rounded-3xl overflow-hidden">
       {/* Card Header — Token icons + vault name */}
       <div className="p-8 pb-0">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             {/* Overlapping token icons */}
             <div className="flex items-center -space-x-3">
-              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm flex items-center justify-center p-1.5" style={{ zIndex: 2 }}>
+              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-background shadow-sm flex items-center justify-center p-1.5" style={{ zIndex: 2 }}>
                 {logos.mETH ? (
                   <img src={logos.mETH} alt="mETH" className="w-full h-full object-contain" />
                 ) : (
-                  <span className="text-[10px] text-[#00D395] font-bold">M</span>
+                  <span className="text-[10px] text-primary/60 font-bold">M</span>
                 )}
               </div>
-              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-[#2775CA] shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
+              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-primary/20 shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
                 {logos.USDY ? (
                   <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-[10px] text-white font-bold">U</span>
+                  <span className="text-[10px] text-primary font-bold">U</span>
                 )}
               </div>
             </div>
             <div>
-              <div className="text-[17px] font-bold text-[#0a0a0a] flex items-center gap-2 tracking-tight">
+              <div className="text-[17px] font-bold text-primary flex items-center gap-2 tracking-tight">
                 <MagneticText text="Obelisk Vault" />
-                <div className="px-2 py-0.5 bg-emerald-50 text-[9px] text-emerald-600 font-bold rounded-md border border-emerald-100 uppercase tracking-wider flex items-center gap-1.5">
+                <div className="px-2 py-0.5 bg-primary/5 text-[9px] text-emerald-600 font-bold rounded-md border border-primary/10 uppercase tracking-wider flex items-center gap-1.5">
                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
                    Mantle Optimized
                 </div>
               </div>
-              <p className="text-[12px] text-[#6B7280]">
+              <p className="text-[12px] text-primary/60">
                 Institutional RWA · mETH + USDY + WMNT
               </p>
             </div>
@@ -105,9 +105,9 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         <div
           className="flex items-center justify-between px-6 py-5"
           style={{
-            background: "#F9FAFB",
+            background: "hsla(var(--primary) / 0.05)",
             borderRadius: 18,
-            border: "1px solid rgba(0,0,0,0.06)",
+            border: "1px solid hsla(var(--primary) / 0.1)",
           }}
         >
           <input
@@ -115,25 +115,24 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             placeholder="0"
             value={depositAmount}
             onChange={(e) => setDepositAmount(e.target.value)}
-            className="bg-transparent outline-none text-[32px] font-bold text-[#0a0a0a] w-full tabular-nums tracking-tight max-w-[65%]"
+            className="bg-transparent outline-none text-[32px] font-bold text-primary w-full tabular-nums tracking-tight max-w-[65%]"
           />
           <div
             className="flex items-center gap-2.5 px-4 py-2.5"
             style={{
-              background: "#ffffff",
-              border: "1px solid rgba(0,0,0,0.10)",
+              background: "var(--background)",
+              border: "1px solid hsla(var(--primary) / 0.1)",
               borderRadius: 100,
-              boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
             }}
           >
-            <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center border border-black/5">
+            <div className="h-6 w-6 rounded-full overflow-hidden bg-background flex items-center justify-center border border-primary/10">
               {logos.MNT ? (
                 <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" />
               ) : (
-                <span className="text-[8px] text-black font-bold">M</span>
+                <span className="text-[8px] text-primary font-bold">M</span>
               )}
             </div>
-            <span className="text-[14px] font-semibold text-[#0a0a0a]">MNT</span>
+            <span className="text-[14px] font-semibold text-primary">MNT</span>
           </div>
         </div>
 
@@ -147,7 +146,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             <button
               key={item.label}
               onClick={() => setDepositAmount(item.value)}
-              className="text-[12px] px-4 py-2 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] transition-all border border-black/[0.08] rounded-full font-medium"
+              className="text-[12px] px-4 py-2 text-primary/60 hover:text-primary hover:bg-primary/10 transition-all border border-primary/10 rounded-full font-bold"
             >
               {item.label}
             </button>

@@ -33,10 +33,10 @@ export function QScoreBar() {
       transition={{ duration: 1.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
       className="rounded-[24px] px-8 md:px-14 py-6 flex flex-col lg:flex-row items-center justify-between gap-10 lg:gap-4 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.08)] relative z-20"
       style={{
-        background: "rgba(255, 255, 255, 0.72)",
+        background: "hsla(var(--primary) / 0.05)",
         backdropFilter: "blur(40px) saturate(190%)",
         WebkitBackdropFilter: "blur(40px) saturate(190%)",
-        border: "1px solid rgba(255, 255, 255, 0.8)",
+        border: "1px solid hsla(var(--primary) / 0.1)",
       }}
     >
       {/* ── Left: Identity ────────────────────────────────────────────────── */}

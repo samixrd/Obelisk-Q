@@ -78,8 +78,8 @@ export function Header({
               <button
                 key={t}
                 onClick={() => onTabChange(t)}
-                className={`text-[13px] capitalize transition-colors duration-300 outline-none ${
-                  activeTab === t ? "text-primary font-bold" : "text-primary/60 hover:text-primary font-medium"
+                className={`text-[13px] capitalize transition-all duration-300 outline-none px-4 py-1.5 rounded-full ${
+                  activeTab === t ? "text-primary font-bold bg-primary/5 shadow-sm" : "text-primary/60 hover:text-primary font-medium hover:bg-primary/5"
                 }`}
                 style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}
               >

@@ -16,12 +16,12 @@ export function RegimeMatrix() {
             return (
               <div 
                 key={`${i}-${j}`}
-                className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all ${isDiagonal ? "bg-[#1a1a1a] text-white/90 border-[#1a1a1a]" : "bg-black/[0.02] border-black/[0.05]"}`}
+                className={`p-4 rounded-2xl border flex flex-col items-center justify-center gap-1 transition-all ${isDiagonal ? "bg-primary text-background border-primary" : "bg-primary/5 border-primary/10"}`}
               >
-                <span className="text-[8px] uppercase font-bold tracking-tighter opacity-40">
+                <span className="text-[8px] uppercase font-bold tracking-tighter opacity-40 text-primary">
                   {row.slice(0, 3)} → {col.slice(0, 3)}
                 </span>
-                <span className="text-sm font-mono font-bold">
+                <span className="text-sm font-mono font-bold text-primary">
                   {(probability * 100).toFixed(0)}%
                 </span>
               </div>
