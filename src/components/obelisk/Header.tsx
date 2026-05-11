@@ -56,18 +56,18 @@ export function Header({
           <button
             onClick={onMenuClick}
             aria-label="Open navigation"
-            className="h-9 w-9 flex items-center justify-center text-muted-foreground/60 hover:text-foreground transition-colors duration-500"
+            className="h-9 w-9 flex items-center justify-center text-primary/60 hover:text-primary transition-colors duration-500 outline-none"
           >
             <IconMenu size={16} />
           </button>
           <div className="h-4 w-px bg-foreground/10" />
           <button 
             onClick={onLogoClick}
-            className="flex items-center gap-3 group transition-transform active:scale-95 cursor-pointer"
+            className="flex items-center gap-3 group transition-transform active:scale-95 cursor-pointer outline-none"
           >
-            <Logo size={24} className="text-foreground transition-transform group-hover:scale-110" />
-            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-foreground transition-opacity group-hover:opacity-80" style={{ fontFamily: "'Inter', sans-serif" }}>
-              Obelisk <span className="font-normal text-muted-foreground/50">Q</span>
+            <Logo size={24} className="text-primary transition-transform group-hover:scale-110" />
+            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-primary transition-opacity group-hover:opacity-80" style={{ fontFamily: "'Inter', sans-serif" }}>
+              Obelisk <span className="font-normal text-primary/40">Q</span>
             </h1>
           </button>
 
@@ -78,8 +78,8 @@ export function Header({
               <button
                 key={t}
                 onClick={() => onTabChange(t)}
-                className={`text-[13px] capitalize transition-colors duration-300 ${
-                  activeTab === t ? "text-foreground font-semibold" : "text-muted-foreground/60 hover:text-foreground/80 font-normal"
+                className={`text-[13px] capitalize transition-colors duration-300 outline-none ${
+                  activeTab === t ? "text-primary font-bold" : "text-primary/60 hover:text-primary font-medium"
                 }`}
                 style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}
               >
@@ -95,7 +95,7 @@ export function Header({
           {onTourClick && (
             <button
               onClick={onTourClick}
-              className="hidden md:inline-block text-[11px] font-medium tracking-widest uppercase text-muted-foreground/60 hover:text-foreground transition-colors duration-300"
+              className="hidden md:inline-block text-[11px] font-bold tracking-widest uppercase text-primary/60 hover:text-primary transition-colors duration-300 outline-none"
               style={{ background: "none", border: "none", cursor: "pointer" }}
             >
               Guided tour
@@ -105,7 +105,7 @@ export function Header({
           <div className="hidden md:block h-4 w-px bg-foreground/5" />
 
           <div className="flex items-center gap-5">
-            <span className="hidden md:inline-flex items-center gap-2 text-[11px] font-medium tracking-widest uppercase text-muted-foreground/60">
+            <span className="hidden md:inline-flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase text-primary/60">
               <span style={{
                 height: 6, width: 6, borderRadius: "50%",
                 background: "#22c55e", boxShadow: "0 0 6px rgba(34,197,94,0.5)",
@@ -118,12 +118,12 @@ export function Header({
 
             <div className="hidden lg:flex items-center gap-6">
               <div className="flex flex-col items-end">
-                <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-[0.15em] leading-none mb-1">Q-Score</span>
-                <span className="text-[14px] font-bold text-foreground leading-none tabular-nums">{score}</span>
+                <span className="text-[9px] text-primary/40 uppercase font-bold tracking-[0.15em] leading-none mb-1">Q-Score</span>
+                <span className="text-[14px] font-bold text-primary leading-none tabular-nums">{score}</span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-[0.15em] leading-none mb-1">Regime</span>
-                <span className="text-[14px] font-bold text-foreground leading-none">{regime}</span>
+                <span className="text-[9px] text-primary/40 uppercase font-bold tracking-[0.15em] leading-none mb-1">Regime</span>
+                <span className="text-[14px] font-bold text-primary leading-none">{regime}</span>
               </div>
             </div>
 

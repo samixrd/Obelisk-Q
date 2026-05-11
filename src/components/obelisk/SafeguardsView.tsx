@@ -101,11 +101,11 @@ export function SafeguardsView() {
               )}
             </div>
             <div>
-              <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Autonomous Protection</p>
-              <h3 className="text-xl font-bold text-foreground tracking-tight">
+              <p className="text-[10px] uppercase text-primary/60 font-bold tracking-widest mb-1">Autonomous Protection</p>
+              <h3 className="text-xl font-bold text-primary tracking-tight">
                 {circuitBreakerActive ? "ACTIVE — All allocation halted" : "INACTIVE — All systems normal"}
               </h3>
-              <p className="text-sm text-muted-foreground mt-1 font-medium">
+              <p className="text-sm text-primary/70 mt-1 font-medium">
                 {circuitBreakerActive 
                   ? "Automatic halt triggered due to rapid Q-Score degradation. No on-chain swaps permitted." 
                   : "Q-Score volatility within nominal parameters. Real-time rebalancing is enabled."}
@@ -113,22 +113,22 @@ export function SafeguardsView() {
             </div>
           </div>
 
-          <div className="flex items-center gap-12 px-8 py-5 rounded-[24px] bg-black/[0.02] border border-black/5">
+          <div className="flex items-center gap-12 px-8 py-5 rounded-[24px] bg-primary/5 border border-primary/10">
              <div className="text-center">
-                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Current Q-Score</p>
-                <p className="text-2xl font-bold text-black tabular-nums">{score}</p>
+                <p className="text-[9px] uppercase text-primary/60 font-bold tracking-widest mb-1">Current Q-Score</p>
+                <p className="text-2xl font-bold text-primary tabular-nums">{score}</p>
              </div>
-             <div className="h-10 w-px bg-black/10" />
+             <div className="h-10 w-px bg-primary/10" />
              <div className="text-center">
-                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Market Regime</p>
-                <p className="text-2xl font-bold text-black">{regime}</p>
+                <p className="text-[9px] uppercase text-primary/60 font-bold tracking-widest mb-1">Market Regime</p>
+                <p className="text-2xl font-bold text-primary">{regime}</p>
              </div>
           </div>
         </div>
 
-        <div className="mt-10 pt-10 border-t border-black/5">
+        <div className="mt-10 pt-10 border-t border-primary/10">
           <div className="flex items-center justify-between mb-6">
-            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest">Stability Vector · Real-Time Telemetry</p>
+            <p className="text-[10px] uppercase text-primary/60 font-bold tracking-widest">Stability Vector · Real-Time Telemetry</p>
             <div className="flex items-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[9px] uppercase text-emerald-600 font-bold tracking-widest">Live Feed</span>
@@ -141,8 +141,8 @@ export function SafeguardsView() {
       {/* Protocol cards */}
       <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">
         <div className="mb-8">
-          <p className="text-[10px] uppercase text-muted-foreground mb-2 tracking-[0.2em]">Risk Protocols</p>
-          <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em] font-bold tracking-tight">
+          <p className="text-[10px] uppercase text-primary/60 mb-2 tracking-[0.2em]">Risk Protocols</p>
+          <div className="text-2xl text-primary flex flex-wrap gap-x-[0.25em] font-bold tracking-tight">
             <MagneticText disabled text="Automated" />
             <div className="font-light"><MagneticText disabled text="safeguard" /></div>
             <MagneticText disabled text="layer" />
@@ -159,21 +159,21 @@ export function SafeguardsView() {
               className="group relative rounded-[24px] p-6 bg-black/[0.01] border border-black/5 hover:border-black/15 transition-colors duration-500"
             >
               <div className="flex items-start justify-between mb-3">
-                <p className="text-base text-black font-bold tracking-tight">{p.name}</p>
+                <p className="text-base text-primary font-bold tracking-tight">{p.name}</p>
                 <span className={`inline-flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest ${p.statusOk ? "text-emerald-600" : "text-red-600"}`}>
                   <span className={`h-1.5 w-1.5 rounded-full ${p.statusOk ? "bg-emerald-500" : "bg-red-500 animate-pulse"}`} />
                   {p.status}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed mb-6 font-medium">{p.description}</p>
-              <div className="flex items-center justify-between mt-auto pt-4 border-t border-black/5">
+              <p className="text-sm text-primary/70 leading-relaxed mb-6 font-medium">{p.description}</p>
+              <div className="flex items-center justify-between mt-auto pt-4 border-t border-primary/10">
                 <div>
-                  <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Threshold</p>
-                  <p className="text-sm text-black font-bold tabular-nums">{p.threshold}</p>
+                  <p className="text-[9px] uppercase text-primary/60 font-bold tracking-widest mb-1">Threshold</p>
+                  <p className="text-sm text-primary font-bold tabular-nums">{p.threshold}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Last event</p>
-                  <p className="text-sm text-muted-foreground font-medium tabular-nums">{p.lastTrigger}</p>
+                  <p className="text-[9px] uppercase text-primary/60 font-bold tracking-widest mb-1">Last event</p>
+                  <p className="text-sm text-primary/70 font-medium tabular-nums">{p.lastTrigger}</p>
                 </div>
               </div>
             </motion.div>
@@ -183,7 +183,7 @@ export function SafeguardsView() {
 
       {/* Audit log */}
       <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">
-        <p className="text-[10px] uppercase text-muted-foreground mb-6 font-bold tracking-widest">Agent Audit Feed</p>
+        <p className="text-[10px] uppercase text-primary/60 mb-6 font-bold tracking-widest">Agent Audit Feed</p>
         <div className="space-y-0">
           {AUDIT_EVENTS.map((ev, i) => (
             <motion.div
@@ -191,15 +191,15 @@ export function SafeguardsView() {
               initial={{ opacity: 0, x: -6 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="flex items-start gap-4 py-4 border-b border-black/5"
+              className="flex items-start gap-4 py-4 border-b border-primary/10"
             >
               <span className={`mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0 ${ev.ok ? "bg-emerald-500" : "bg-red-500"}`} />
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] text-black font-medium leading-snug">{ev.event}</p>
+                <p className="text-[13px] text-primary font-medium leading-snug">{ev.event}</p>
                 <div className="flex items-center gap-2 mt-2">
-                  <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{ev.time}</span>
-                  <span className="text-[9px] text-muted-foreground/30">·</span>
-                  <span className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-widest">{ev.category}</span>
+                  <span className="text-[9px] text-primary/60 font-bold uppercase tracking-widest">{ev.time}</span>
+                  <span className="text-[9px] text-primary/20">·</span>
+                  <span className="text-[9px] text-primary/60 font-bold uppercase tracking-widest">{ev.category}</span>
                 </div>
               </div>
             </motion.div>

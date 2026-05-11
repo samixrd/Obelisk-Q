@@ -127,19 +127,19 @@ export function PortfolioView() {
       <div className="col-span-12 glass-card rounded-[32px] px-10 py-7 flex flex-wrap items-center justify-between shadow-[0_4px_24px_-10px_rgba(0,0,0,0.04)] mb-2">
         <div className="flex items-center gap-16">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em] mb-2">Portfolio Balance</span>
+            <span className="text-[10px] uppercase text-primary/60 font-bold tracking-[0.2em] mb-2">Portfolio Balance</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums tracking-tight">
+              <span className="text-[26px] font-bold text-primary tabular-nums tracking-tight">
                 {vaultStats?.userBalance ?? "0.0000"}
               </span>
-              <span className="text-[12px] font-bold text-[#9CA3AF] uppercase">MNT</span>
+              <span className="text-[12px] font-bold text-primary/40 uppercase">MNT</span>
             </div>
           </div>
           
           <div className="h-10 w-px bg-black/[0.06]" />
 
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em] mb-2">Est. YTD Return</span>
+            <span className="text-[10px] uppercase text-primary/60 font-bold tracking-[0.2em] mb-2">Est. YTD Return</span>
             <div className="flex items-baseline gap-1">
               <span className="text-[26px] font-bold text-emerald-500 tabular-nums tracking-tight">
                 +{est_ytd}%
@@ -148,7 +148,7 @@ export function PortfolioView() {
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
+        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-full border border-primary/10">
            <div className="h-2 w-2 rounded-full bg-emerald-400" />
            <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Vault Optimized</span>
         </div>
@@ -159,30 +159,30 @@ export function PortfolioView() {
         <div className="p-10 pb-0">
           <div className="flex items-center gap-4 mb-10">
             <div className="flex items-center -space-x-3">
-              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm flex items-center justify-center" style={{ zIndex: 2 }}>
-                {logos.mETH ? <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" /> : <span className="text-[10px] text-[#00D395] font-bold">M</span>}
+              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-background shadow-sm flex items-center justify-center" style={{ zIndex: 2 }}>
+                {logos.mETH ? <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" /> : <span className="text-[10px] text-primary/60 font-bold">M</span>}
               </div>
-              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-[#2775CA] shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
-                {logos.USDY ? <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" /> : <span className="text-[10px] text-white font-bold">U</span>}
+              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-primary/20 shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
+                {logos.USDY ? <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" /> : <span className="text-[10px] text-primary font-bold">U</span>}
               </div>
             </div>
             <div>
-              <div className="text-[18px] font-bold text-[#0a0a0a] tracking-tight">Portfolio Withdrawal</div>
-              <p className="text-[12px] text-[#6B7280]">Withdraw to Mantle Network</p>
+              <div className="text-[18px] font-bold text-primary tracking-tight">Portfolio Withdrawal</div>
+              <p className="text-[12px] text-primary/60">Withdraw to Mantle Network</p>
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-7 py-6 bg-[#F9FAFB] rounded-[24px] border border-black/[0.04]">
+          <div className="flex items-center justify-between px-7 py-6 bg-primary/5 rounded-[24px] border border-primary/10">
             <input
               type="number" placeholder="0" value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
-              className="bg-transparent outline-none text-[34px] font-bold text-[#0a0a0a] w-full tabular-nums tracking-tight"
+              className="bg-transparent outline-none text-[34px] font-bold text-primary w-full tabular-nums tracking-tight"
             />
-            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/[0.1] rounded-full shadow-sm">
-              <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center border border-black/5">
-                {logos.MNT ? <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" /> : <span className="text-[8px] text-black font-bold">M</span>}
+            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-background border border-primary/10 rounded-full shadow-sm">
+              <div className="h-6 w-6 rounded-full overflow-hidden bg-background flex items-center justify-center border border-primary/5">
+                {logos.MNT ? <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" /> : <span className="text-[8px] text-primary font-bold">M</span>}
               </div>
-              <span className="text-[14px] font-bold text-[#0a0a0a]">MNT</span>
+              <span className="text-[14px] font-bold text-primary">MNT</span>
             </div>
           </div>
 
@@ -195,7 +195,7 @@ export function PortfolioView() {
                   else if (label === "50%") setWithdrawAmount((balance * 0.5).toFixed(4));
                   else if (label === "25%") setWithdrawAmount((balance * 0.25).toFixed(4));
                 }}
-                className="text-[12px] px-5 py-2.5 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] border border-black/[0.06] rounded-full transition-all font-bold"
+                className="text-[12px] px-5 py-2.5 text-primary/60 hover:text-primary hover:bg-primary/10 border border-primary/10 rounded-full transition-all font-bold"
               >
                 {label}
               </button>
@@ -229,7 +229,7 @@ export function PortfolioView() {
         </Suspense>
       </div>
 
-      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)]">
+      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-primary/5 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)]">
         <p className="text-[11px] uppercase text-[#9CA3AF] mb-8 font-bold tracking-[0.24em]">30-Day Performance History</p>
         <div className="h-[180px]">
           <StabilityGraph seed={7} height={180} />
@@ -237,13 +237,12 @@ export function PortfolioView() {
       </div>
 
       {/* ── Position Table ── */}
-      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
-        <div className="text-[24px] text-black font-bold mb-10 flex items-baseline gap-2 tracking-tight">
-          Active <span className="font-light text-[#9CA3AF]">Positions</span>
+      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-primary/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
+        <div className="text-[24px] text-primary font-bold mb-10 flex items-baseline gap-2 tracking-tight">
+          Active <span className="font-light text-primary/40">Positions</span>
         </div>
         <div className="overflow-x-auto scrollbar-hidden">
           <div className="min-w-[800px]">
-            <div className="grid grid-cols-12 mb-6 px-4 text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em]">
               <div className="col-span-5">Asset</div>
               <div className="col-span-3">Strategy</div>
               <div className="col-span-2 text-right">Balance</div>
@@ -259,10 +258,10 @@ export function PortfolioView() {
                   <div className="h-10 w-10 rounded-full bg-white border border-black/[0.04] overflow-hidden flex items-center justify-center transition-all p-1.5">
                     {logos[p.id as keyof typeof logos] ? <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-contain" /> : <span className="text-[13px] font-mono-num">{p.symbol[0]}</span>}
                   </div>
-                  <span className="text-[15px] text-black font-bold">{p.name}</span>
+                  <span className="text-[15px] text-primary font-bold">{p.name}</span>
                 </div>
-                <div className="col-span-3 text-[13px] text-[#6B7280] font-bold">{p.strategy}</div>
-                <div className="col-span-2 text-[15px] text-black text-right font-mono-num">{p.balance}</div>
+                <div className="col-span-3 text-[13px] text-primary/60 font-bold">{p.strategy}</div>
+                <div className="col-span-2 text-[15px] text-primary text-right font-mono-num">{p.balance}</div>
                 <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-mono-num ${p.up ? "text-emerald-500" : "text-[#9CA3AF]"}`}>
                   {p.up ? <IconArrowUpRight size={14} /> : <IconArrowDownRight size={14} />}
                   {p.change}
