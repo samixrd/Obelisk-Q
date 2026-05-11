@@ -156,7 +156,7 @@ export function SafeguardsView() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="group relative rounded-[24px] p-6 bg-black/[0.01] border border-black/5 hover:border-black/15 transition-colors duration-500"
+              className="group relative rounded-[24px] p-6 bg-primary/5 border border-primary/10 hover:bg-primary/10 transition-colors duration-500"
             >
               <div className="flex items-start justify-between mb-3">
                 <p className="text-base text-primary font-bold tracking-tight">{p.name}</p>

@@ -62,7 +62,7 @@ export function AgentTransactions() {
       case "simulation":
         return "bg-slate-400/10 text-slate-500 border-slate-500/20";
       default:
-        return "bg-black/5 text-black/40 border-black/10";
+        return "bg-primary/5 text-primary/40 border-primary/10";
     }
   };
 
@@ -75,20 +75,20 @@ export function AgentTransactions() {
   const formatAddress = (addr: string) => `${addr.slice(0, 6)}...${addr.slice(-4)}`;
 
   return (
-    <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] mt-8">
+    <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-primary/5 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] mt-8">
       <div className="flex items-center justify-between mb-10">
-        <div className="text-[24px] text-black font-bold flex items-baseline gap-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
-          Agent <span className="font-light text-[#9CA3AF]">Transactions</span>
+        <div className="text-[24px] text-primary font-bold flex items-baseline gap-2" style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.02em" }}>
+          Agent <span className="font-light text-primary/40">Transactions</span>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 bg-black/5 rounded-full">
+        <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 rounded-full">
            <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-           <span className="text-[10px] font-bold text-black/40 uppercase tracking-widest">Live Updates</span>
+           <span className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Live Updates</span>
         </div>
       </div>
 
       <div className="overflow-x-auto scrollbar-hidden">
         <div className="min-w-[1000px]">
-          <div className="grid grid-cols-12 mb-6 px-4 text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em]">
+          <div className="grid grid-cols-12 mb-6 px-4 text-[10px] uppercase text-primary/40 font-bold tracking-[0.2em]">
             <div className="col-span-1">Cycle</div>
             <div className="col-span-2">Time</div>
             <div className="col-span-1">Action</div>
@@ -103,9 +103,9 @@ export function AgentTransactions() {
             {errorMsg ? (
               <div className="py-20 text-center text-[12px] uppercase text-rose-500 font-bold tracking-widest">{errorMsg}</div>
             ) : loading && transactions.length === 0 ? (
-              <div className="py-20 text-center text-[12px] uppercase text-black/20 tracking-widest">Initializing Feed...</div>
+              <div className="py-20 text-center text-[12px] uppercase text-primary/20 tracking-widest">Initializing Feed...</div>
             ) : transactions.length === 0 ? (
-              <div className="py-20 text-center text-[12px] uppercase text-black/20 tracking-widest text-center">No transactions yet</div>
+              <div className="py-20 text-center text-[12px] uppercase text-primary/20 tracking-widest text-center">No transactions yet</div>
             ) : (
               transactions.map((tx, i) => (
                 <motion.div
@@ -113,33 +113,33 @@ export function AgentTransactions() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05, duration: 0.8 }}
-                  className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-2xl group lift-on-hover"
+                  className="grid grid-cols-12 items-center py-5 px-4 border-t border-primary/10 hover:bg-primary/5 transition-all rounded-2xl group lift-on-hover"
                 >
                   <div className="col-span-1">
-                    <span className="text-[13px] font-medium text-black/40 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                    <span className="text-[13px] font-bold text-primary/40 tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                       #{tx.cycle_number}
                     </span>
                   </div>
-                  <div className="col-span-2 text-[13px] text-black/60 font-medium">
+                  <div className="col-span-2 text-[13px] text-primary/60 font-bold">
                     {new Date(tx.timestamp).toLocaleTimeString("en-GB", { hour12: false })}
                   </div>
                   <div className="col-span-1">
-                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md ${tx.action === 'HOLD' ? 'bg-black/5 text-black/40' : 'bg-black/10 text-black'}`}>
+                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md ${tx.action === 'HOLD' ? 'bg-primary/5 text-primary/40' : 'bg-primary/10 text-primary'}`}>
                       {tx.action}
                     </span>
                   </div>
-                  <div className="col-span-1 text-center text-[14px] font-bold text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  <div className="col-span-1 text-center text-[14px] font-bold text-primary tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                     {tx.score}
                   </div>
                   <div className="col-span-2">
-                    <span className="text-[13px] text-black/60 font-medium">{tx.regime}</span>
+                    <span className="text-[13px] text-primary/60 font-bold">{tx.regime}</span>
                   </div>
                   <div className="col-span-1 flex justify-center">
                     <span className={`text-[9px] uppercase tracking-wider font-bold px-3 py-1 rounded-full border ${getStatusStyle(tx.status)}`}>
                       {tx.status}
                     </span>
                   </div>
-                  <div className="col-span-2 text-[12px] text-black/40 font-medium tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                  <div className="col-span-2 text-[12px] text-primary/40 font-bold tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
                     {formatAddress(tx.vault_address)}
                   </div>
                   <div className="col-span-2 text-right">
@@ -154,7 +154,7 @@ export function AgentTransactions() {
                         <IconArrowUpRight size={12} />
                       </a>
                     ) : (
-                      <span className="text-[12px] text-black/20 font-bold tracking-widest uppercase">
+                      <span className="text-[12px] text-primary/20 font-bold tracking-widest uppercase">
                         {formatHash(tx.tx_hash)}
                       </span>
                     )}
