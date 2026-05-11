@@ -195,7 +195,7 @@ export function PortfolioView() {
                   else if (label === "50%") setWithdrawAmount((balance * 0.5).toFixed(4));
                   else if (label === "25%") setWithdrawAmount((balance * 0.25).toFixed(4));
                 }}
-                className="text-[12px] px-5 py-2.5 text-primary/60 hover:text-primary hover:bg-primary/10 border border-primary/10 rounded-full transition-all font-bold"
+                className="text-[12px] px-5 py-2.5 text-primary font-bold bg-primary/5 hover:bg-primary/10 border border-primary/10 rounded-full transition-all"
               >
                 {label}
               </button>

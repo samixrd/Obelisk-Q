@@ -102,17 +102,20 @@
 
 @layer components {
   .glass-card {
-    background: hsla(var(--primary) / 0.05);
-    backdrop-filter: blur(12px);
+    background: hsla(var(--background) / 0.6);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
     border: 1px solid hsla(var(--primary) / 0.1);
-    box-shadow: 0 4px 12px rgba(11, 20, 33, 0.05);
+    box-shadow: 
+      0 4px 12px rgba(0, 0, 0, 0.03),
+      0 20px 40px -12px rgba(11, 20, 33, 0.08);
     border-radius: 24px;
     transition: transform 0.3s var(--ease-luxe), box-shadow 0.3s var(--ease-luxe), background 0.3s var(--ease-luxe);
   }
   .glass-card:hover {
     transform: translateY(-4px);
-    background: hsla(var(--primary) / 0.08);
-    box-shadow: 0 20px 40px rgba(11, 20, 33, 0.1);
+    background: hsla(var(--background) / 0.8);
+    box-shadow: 0 32px 64px -16px rgba(11, 20, 33, 0.12);
   }
 
   .glass-card-premium {
