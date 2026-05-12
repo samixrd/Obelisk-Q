@@ -73,10 +73,6 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider">
                 Est. APY
               </span>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#1976D2]">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
-                <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
             </div>
             <p className="text-[36px] font-bold text-emerald-500 tabular-nums tracking-tighter leading-none">
               {usdy.loading ? "—" : `${((usdy.apy + meth.apy + (wmnt?.apy || 0)) / 3 + 0.42).toFixed(1)}%`}
@@ -87,10 +83,6 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider">
                 AUM
               </span>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#1976D2]">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
-                <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
             </div>
             <p className="text-[36px] font-bold text-[#0a0a0a] tabular-nums tracking-tighter leading-none">
               {vaultStats?.totalDeposited ? `${parseFloat(vaultStats.totalDeposited).toFixed(2)}` : "0.00"}
