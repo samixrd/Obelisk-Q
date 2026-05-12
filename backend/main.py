@@ -54,8 +54,41 @@ def init_db():
             tx_hash TEXT
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS heartbeats (
+            node_id TEXT PRIMARY KEY,
+            last_pulse TEXT,
+            role TEXT
+        )
+    """)
     conn.commit()
     conn.close()
+
+def update_heartbeat(node_id, role):
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute("""
+        INSERT OR REPLACE INTO heartbeats (node_id, last_pulse, role)
+        VALUES (?, datetime('now'), ?)
+    """, (node_id, role))
+    conn.commit()
+    conn.close()
+
+def get_primary_health():
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        row = conn.execute("""
+            SELECT last_pulse FROM heartbeats 
+            WHERE role = 'primary' 
+            ORDER BY last_pulse DESC LIMIT 1
+        """).fetchone()
+        conn.close()
+        if row:
+            last_pulse = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
+            diff = (datetime.utcnow() - last_pulse).total_seconds()
+            return diff < 60 # Healthy if pulsed in last 60s
+        return False
+    except:
+        return False
 
 def save_cycle_memory(cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash="N/A", analyst_insight=""):
     conn = sqlite3.connect(DB_PATH)
@@ -672,7 +705,7 @@ load_transactions()
 # ─── Session Management (Antigravity Protocol) ────────────────────────────────
 
 SESSIONS = {}
-SESSION_TIMEOUT = 300 # 5 minutes inactivity window
+SESSION_TIMEOUT = 1800 # 30 minutes inactivity window
 
 async def session_reaper():
     """Periodic reaper to evict expired sessions and prevent unbounded memory growth."""
@@ -922,8 +955,24 @@ async def websocket_endpoint(websocket: WebSocket):
 async def run_analysis_cycle():
     from memory import agent_memory
     cycle_num = 0
-    logger.info("run_analysis_cycle: initialization successful. entering main loop.")
+    NODE_ID = os.getenv("NODE_ID", f"node_{secrets.token_hex(4)}")
+    NODE_ROLE = os.getenv("NODE_ROLE", "primary") # primary or shadow
+    
+    logger.info(f"run_analysis_cycle: initialization successful. node={NODE_ID} role={NODE_ROLE}")
+    
     while True:
+        # Update our own heartbeat
+        update_heartbeat(NODE_ID, NODE_ROLE)
+        
+        if NODE_ROLE == "shadow":
+            is_primary_healthy = get_primary_health()
+            if is_primary_healthy:
+                logger.info("shadow_node: primary is healthy. standby mode.")
+                await asyncio.sleep(30)
+                continue
+            else:
+                logger.warning("shadow_node: PRIMARY FAILURE DETECTED. taking over execution.")
+
         logger.info(f"cycle {cycle_num + 1}: pre-flight countdown starting")
         try:
             for i in range(CYCLE_INTERVAL, 0, -1):

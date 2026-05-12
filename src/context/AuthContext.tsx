@@ -36,7 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [sessionToken,  setSessionToken]  = useState<string | null>(sessionStorage.getItem("obelisk_session"));
   const [loading,       setLoading]       = useState(false);
 
-  const TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+  const TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
   // Persist session state
   useEffect(() => {
