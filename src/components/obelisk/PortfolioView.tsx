@@ -229,12 +229,6 @@ export function PortfolioView() {
         </Suspense>
       </div>
 
-      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)]">
-        <p className="text-[11px] uppercase text-[#9CA3AF] mb-8 font-bold tracking-[0.24em]">30-Day Performance History</p>
-        <div className="h-[180px]">
-          <StabilityGraph seed={7} height={180} />
-        </div>
-      </div>
 
       {/* ── Position Table ── */}
       <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
