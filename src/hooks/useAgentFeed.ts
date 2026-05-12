@@ -156,8 +156,9 @@ export function useAgentFeed() {
     fetchFromBackend().then(success => {
       if (!success) {
         startAutonomous();
-        // Even if backend works, keep polling every 30 seconds
-        interval = setInterval(() => fetchFromBackend(), 30000);
+      }
+      // Even if backend works, keep polling every 30 seconds
+      interval = setInterval(() => fetchFromBackend(), 30000);
     });
 
     return () => {
