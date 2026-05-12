@@ -42,7 +42,7 @@ export function DecisionTransparency() {
         <p
           className="text-[10px] uppercase text-muted-foreground/40 mb-3 font-bold tracking-[0.28em]"
         >
-          <MagneticText disabled text="AI Decision Transparency (Simulated)" />
+          <MagneticText disabled text="AI Decision Transparency" />
         </p>
         <h2
           className="text-3xl font-bold text-foreground"

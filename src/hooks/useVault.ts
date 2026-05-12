@@ -316,8 +316,12 @@ export function useVault(): VaultState {
         }
       }
 
+      // Use userBalance as a floor for totalDeposited to ensure AUM is never lower than user's own stake
+      const userBalBigInt = address ? parseMntToWei(userBalance) : 0n;
+      const finalTotal = total > userBalBigInt ? total : userBalBigInt;
+
       setVaultStats({
-        totalDeposited: formatMnt(total),
+        totalDeposited: formatMnt(finalTotal),
         depositorCount: count,
         lastScore:      score,
         paused,

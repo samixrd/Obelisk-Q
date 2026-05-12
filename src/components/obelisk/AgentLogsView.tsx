@@ -178,7 +178,8 @@ function LogRow({ log }: { log: any }) {
   const isAction = message.includes("Execution") || message.includes("Complete") || message.includes("rebalanced");
 
   const mockSig = "0x" + Math.random().toString(16).slice(2, 18) + "..." + Math.random().toString(16).slice(2, 6);
-  const mockHash = "0x" + Math.random().toString(16).slice(2, 42);
+  const realHash = log.tx_hash && log.tx_hash !== "N/A" ? log.tx_hash : null;
+  const displayHash = realHash || ("0x" + Math.random().toString(16).slice(2, 42));
 
   return (
     <motion.div
@@ -235,7 +236,7 @@ function LogRow({ log }: { log: any }) {
           className="pl-[100px] mt-3"
         >
 
-          <AgentAttestation signature={mockSig} hash={mockHash} />
+          <AgentAttestation signature={mockSig} hash={displayHash} />
         </motion.div>
       )}
     </motion.div>

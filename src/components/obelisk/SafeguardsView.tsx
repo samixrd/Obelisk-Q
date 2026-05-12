@@ -3,6 +3,7 @@ import { StabilityGraph } from "./StabilityGraph";
 import { useAgentData } from "@/hooks/useAgentData";
 import { useState, useEffect } from "react";
 import { MagneticText } from "./MagneticText";
+import { useAuth } from "@/context/AuthContext";
 
 const fadeUp = {
   initial: { opacity: 0, y: 8 },
@@ -12,7 +13,9 @@ const fadeUp = {
 
 export function SafeguardsView() {
   const { score, regime, circuitBreakerActive, lastMessage, agentLogs } = useAgentData();
+  const { sessionToken } = useAuth();
   const [scoreHistory, setScoreHistory] = useState<number[]>([]);
+  const [auditLogs, setAuditLogs] = useState<any[]>([]);
 
   // Track score history (last 30 points)
   useEffect(() => {
@@ -23,9 +26,51 @@ export function SafeguardsView() {
       });
     }
   }, [score]);
+
+  // Fetch audit logs directly from backend
+  useEffect(() => {
+    if (!sessionToken) return;
+    const fetchAuditLogs = async () => {
+      try {
+        const res = await fetch('/api/agent/logs', {
+          headers: { 'x-session-token': sessionToken }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const logsData = data.logs || data;
+          if (Array.isArray(logsData) && logsData.length > 0) {
+            setAuditLogs(logsData);
+          }
+        }
+      } catch (err) {
+        console.warn("Audit feed fetch failed:", err);
+      }
+    };
+    fetchAuditLogs();
+    const interval = setInterval(fetchAuditLogs, 15000);
+    return () => clearInterval(interval);
+  }, [sessionToken]);
   
   const isHighVol = regime === "Contraction";
   const circuitBreakerArmed = lastMessage.includes("CIRCUIT BREAKER");
+
+  // Use fetched audit logs, fall back to agentLogs from WebSocket, then show loading
+  const logsSource = auditLogs.length > 0 ? auditLogs : agentLogs;
+  const AUDIT_EVENTS = logsSource.slice(0, 8).map((l: any, i: number) => ({
+    time: new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    event: l.message || `Cycle ${l.cycle}: ${l.regime || 'Consolidation'} regime — Score ${l.score} — ${l.action || 'HOLD'}`,
+    category: l.node || l.regime || "System",
+    ok: !(l.action === "CIRCUIT_BREAKER" || (l.message && l.message.includes("ERROR"))),
+  }));
+
+  if (AUDIT_EVENTS.length === 0) {
+    AUDIT_EVENTS.push({ 
+      time: "Initializing", 
+      event: "Establishing Antigravity Protocol connection...", 
+      category: "Network", 
+      ok: true 
+    });
+  }
 
   const PROTOCOLS = [
     {
@@ -69,22 +114,6 @@ export function SafeguardsView() {
       lastTrigger: "Active",
     },
   ];
-
-  const AUDIT_EVENTS = agentLogs.slice(0, 5).map((l, i) => ({
-    time: i === 0 ? "Just now" : new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    event: l.message,
-    category: l.node || "System",
-    ok: !l.message.includes("FAIL") && !l.message.includes("ERROR"),
-  }));
-
-  if (AUDIT_EVENTS.length === 0) {
-    AUDIT_EVENTS.push({ 
-      time: "Initializing", 
-      event: "Establishing Antigravity Protocol connection...", 
-      category: "Network", 
-      ok: true 
-    });
-  }
 
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-20">

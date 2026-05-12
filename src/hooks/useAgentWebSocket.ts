@@ -84,10 +84,12 @@ export function useAgentWebSocket() {
         if (Array.isArray(logsData) && logsData.length > 0) {
           const mapped = logsData.map((l: any) => ({
             timestamp: l.timestamp,
-            node: l.node || 'Supervisory Controller',
-            message: l.message || `Cycle ${l.cycle}: ${l.regime} regime confirmed.`,
+            node: l.node || (l.action === 'rebalance' ? 'Executor Node' : 'Supervisory Controller'),
+            message: l.analyst_insight || l.message || `Cycle ${l.cycle}: ${l.regime} regime — ${l.action || 'HOLD'} confirmed.`,
             score: l.score,
-            cycle: l.cycle
+            cycle: l.cycle,
+            action: l.action,
+            tx_hash: l.tx_hash
           }));
           setAgentLogs(mapped);
         }
