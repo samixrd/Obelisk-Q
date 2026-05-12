@@ -47,7 +47,7 @@ export function Header({
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed top-0 left-0 right-0 z-40 bg-background/70 backdrop-blur-[24px] border-b border-white/5"
+      className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-[24px] border-b border-primary/5"
     >
       <div className="mx-auto max-w-[1680px] px-6 md:px-10 py-2.5 flex items-center justify-between">
 
@@ -56,7 +56,7 @@ export function Header({
           <button
             onClick={onMenuClick}
             aria-label="Open navigation"
-            className="h-8 w-8 flex items-center justify-center text-white/40 hover:text-white transition-colors duration-500 outline-none"
+            className="h-8 w-8 flex items-center justify-center text-primary/40 hover:text-primary transition-colors duration-500 outline-none"
           >
             <IconMenu size={14} />
           </button>
@@ -68,8 +68,8 @@ export function Header({
             <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center text-background">
               <span className="material-symbols-outlined text-[13px] font-bold">api</span>
             </div>
-            <h1 className="text-[14px] font-black tracking-tighter text-white transition-opacity group-hover:opacity-80 whitespace-nowrap">
-              OBELISK <span className="text-primary">Q</span>
+            <h1 className="text-[14px] font-black tracking-tighter text-primary transition-opacity group-hover:opacity-80 whitespace-nowrap">
+              OBELISK <span className="text-primary/40">Q</span>
             </h1>
           </button>
 
@@ -82,8 +82,8 @@ export function Header({
                 onClick={() => onTabChange(t)}
                 className={`text-[10px] uppercase tracking-widest transition-all duration-300 outline-none px-4 py-1.5 rounded-full font-black ${
                   activeTab === t 
-                    ? "text-primary bg-primary/10 border border-primary/20" 
-                    : "text-white/40 hover:text-white hover:bg-white/5"
+                    ? "text-background bg-primary" 
+                    : "text-primary/40 hover:text-primary hover:bg-primary/5"
                 }`}
               >
                 {t.replace('-', ' ')}
@@ -98,34 +98,34 @@ export function Header({
           {onTourClick && (
             <button
               onClick={onTourClick}
-              className="hidden md:inline-block text-[9px] font-black tracking-widest uppercase text-white/30 hover:text-white transition-colors duration-300 outline-none"
+              className="hidden md:inline-block text-[9px] font-black tracking-widest uppercase text-primary/40 hover:text-primary transition-colors duration-300 outline-none"
             >
               Tour
             </button>
           )}
 
-          <div className="hidden md:block h-3 w-px bg-white/5" />
+          <div className="hidden md:block h-3 w-px bg-primary/10" />
 
           <div className="flex items-center gap-4">
-            <span className="hidden lg:inline-flex items-center gap-2 text-[9px] font-black tracking-[0.2em] uppercase text-white/40">
+            <span className="hidden lg:inline-flex items-center gap-2 text-[9px] font-black tracking-[0.2em] uppercase text-primary/60">
               <span style={{
                 height: 5, width: 5, borderRadius: "50%",
-                background: "hsl(var(--primary))", boxShadow: "0 0 10px hsla(var(--primary) / 0.5)",
+                background: "hsl(var(--primary))", 
                 display: "inline-block",
               }} />
               Mantle
             </span>
 
-            <div className="hidden xl:block h-3 w-px bg-white/5" />
+            <div className="hidden xl:block h-3 w-px bg-primary/10" />
 
             <div className="hidden xl:flex items-center gap-4">
               <div className="flex flex-col items-end">
-                <span className="text-[8px] text-white/20 uppercase font-black tracking-[0.15em] leading-none mb-1">Score</span>
-                <span className="text-[12px] font-black text-white leading-none tabular-nums">{score}</span>
+                <span className="text-[8px] text-primary/30 uppercase font-black tracking-[0.15em] leading-none mb-1">Score</span>
+                <span className="text-[12px] font-black text-primary leading-none tabular-nums">{score}</span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[8px] text-white/20 uppercase font-black tracking-[0.15em] leading-none mb-1">Regime</span>
-                <span className="text-[12px] font-black text-white leading-none uppercase">{regime}</span>
+                <span className="text-[8px] text-primary/30 uppercase font-black tracking-[0.15em] leading-none mb-1">Regime</span>
+                <span className="text-[12px] font-black text-primary leading-none uppercase">{regime}</span>
               </div>
             </div>
 

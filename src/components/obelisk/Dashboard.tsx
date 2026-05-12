@@ -70,9 +70,9 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
     >
       {/* Ambient Background Layer — same as landing */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="glass-blob w-[600px] h-[600px] -top-40 -left-40 bg-primary" style={{ animationDuration: '25s', animationDelay: '-2s', opacity: 0.08 }}></div>
-        <div className="glass-blob w-[500px] h-[500px] top-1/2 -right-20 bg-primary" style={{ animationDuration: '30s', animationDelay: '-5s', opacity: 0.05 }}></div>
-        <div className="glass-blob w-[400px] h-[400px] bottom-0 left-1/4 bg-primary" style={{ animationDuration: '22s', animationDelay: '-10s', opacity: 0.08 }}></div>
+        <div className="glass-blob w-[600px] h-[600px] -top-40 -left-40 bg-primary" style={{ animationDuration: '25s', animationDelay: '-2s', opacity: 0.04 }}></div>
+        <div className="glass-blob w-[500px] h-[500px] top-1/2 -right-20 bg-primary" style={{ animationDuration: '30s', animationDelay: '-5s', opacity: 0.02 }}></div>
+        <div className="glass-blob w-[400px] h-[400px] bottom-0 left-1/4 bg-primary" style={{ animationDuration: '22s', animationDelay: '-10s', opacity: 0.04 }}></div>
       </div>
 
       {/* Floating math symbols */}
@@ -113,7 +113,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
           className="pointer-events-none absolute inset-x-0 -bottom-8 flex items-end justify-center overflow-hidden select-none"
         >
           <span
-            className="font-display tracking-tighter text-foreground/5 opacity-50"
+            className="font-display tracking-tighter text-primary/5"
             style={{
               fontSize: "clamp(80px, 15vw, 180px)",
               fontWeight: 900,
@@ -123,21 +123,21 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             Mantle
           </span>
         </div>
-        <div className="hairline mb-8" />
+        <div className="hairline mb-8 opacity-10" />
         <div
-          className="relative flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0 text-[10px] uppercase text-muted-foreground/60 text-center md:text-left tracking-[0.28em] font-bold"
+          className="relative flex flex-col md:flex-row items-center justify-between gap-8 md:gap-0 text-[10px] uppercase text-primary/40 text-center md:text-left tracking-[0.28em] font-black"
         >
           <div className="flex items-center gap-3">
-            <Logo size={20} className="text-muted-foreground/40" />
+            <Logo size={20} className="text-primary/20" />
             <span>Obelisk Q Navigator</span>
           </div>
           <span
-            className="text-[15px] text-[#bbb] font-normal"
+            className="text-[15px] text-primary/30 font-medium"
           >
             A quiet intelligence.
           </span>
           <span className="inline-flex items-center gap-2">
-            <span className="h-1 w-1 rounded-full bg-foreground/10" />
+            <span className="h-1 w-1 rounded-full bg-primary/10" />
             ERC-8004 Protocol · v 1.0
           </span>
         </div>

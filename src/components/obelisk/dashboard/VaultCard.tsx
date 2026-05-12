@@ -29,21 +29,21 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
   };
 
   return (
-    <div id="tour-stability-score" className="col-span-12 lg:col-span-6 glass-card rounded-3xl overflow-hidden">
+    <div id="tour-stability-score" className="col-span-12 lg:col-span-6 glass-card bg-white rounded-3xl overflow-hidden border border-black/5">
       {/* Card Header — Token icons + vault name */}
       <div className="p-8 pb-0">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             {/* Overlapping token icons */}
             <div className="flex items-center -space-x-3">
-              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-background flex items-center justify-center p-1.5" style={{ zIndex: 2 }}>
+              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-white flex items-center justify-center p-1.5" style={{ zIndex: 2 }}>
                 {logos.mETH ? (
                   <img src={logos.mETH} alt="mETH" className="w-full h-full object-contain" />
                 ) : (
-                  <span className="text-[10px] text-white/40 font-black">M</span>
+                  <span className="text-[10px] text-primary/40 font-black">M</span>
                 )}
               </div>
-              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-primary/20 flex items-center justify-center" style={{ zIndex: 1 }}>
+              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-primary/10 flex items-center justify-center" style={{ zIndex: 1 }}>
                 {logos.USDY ? (
                   <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" />
                 ) : (
@@ -52,14 +52,14 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
               </div>
             </div>
             <div>
-              <div className="text-xl font-black text-white flex items-center gap-2 tracking-tightest">
+              <div className="text-xl font-black text-primary flex items-center gap-2 tracking-tightest uppercase">
                 OBELISK VAULT
                 <div className="px-2 py-0.5 bg-primary/10 text-[9px] text-primary font-black rounded-md border border-primary/20 uppercase tracking-widest flex items-center gap-1.5">
                    <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-                   OPTIMIZED
+                   LIVE
                 </div>
               </div>
-              <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">
+              <p className="text-[10px] font-black text-primary/30 uppercase tracking-widest">
                 Institutional RWA · mETH + USDY + WMNT
               </p>
             </div>
@@ -70,7 +70,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         <div className="flex items-start gap-0 mb-10">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">
+              <span className="text-[10px] text-primary/30 font-black uppercase tracking-widest">
                 Est. APY
               </span>
             </div>
@@ -80,13 +80,13 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">
+              <span className="text-[10px] text-primary/30 font-black uppercase tracking-widest">
                 AUM
               </span>
             </div>
-            <p className="text-[42px] font-black text-white tabular-nums tracking-tightest leading-none">
+            <p className="text-[42px] font-black text-primary tabular-nums tracking-tightest leading-none uppercase">
               {vaultStats?.totalDeposited ? `${parseFloat(vaultStats.totalDeposited).toFixed(2)}` : "0.00"}
-              <span className="text-sm font-black text-white/30 ml-2">MNT</span>
+              <span className="text-sm font-black text-primary/30 ml-2">MNT</span>
             </p>
           </div>
         </div>
@@ -95,26 +95,26 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
       {/* Deposit Input Area */}
       <div className="px-8 pb-6">
         <div
-          className="flex items-center justify-between px-6 py-5 bg-white/[0.03] rounded-[18px] border border-white/5"
+          className="flex items-center justify-between px-6 py-5 bg-black/5 rounded-[18px] border border-black/5"
         >
           <input
             type="number"
             placeholder="0"
             value={depositAmount}
             onChange={(e) => setDepositAmount(e.target.value)}
-            className="bg-transparent outline-none text-[32px] font-black text-white w-full tabular-nums tracking-tightest max-w-[65%]"
+            className="bg-transparent outline-none text-[32px] font-black text-primary w-full tabular-nums tracking-tightest max-w-[65%]"
           />
           <div
-            className="flex items-center gap-2.5 px-4 py-2.5 bg-background border border-white/10 rounded-full"
+            className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/10 rounded-full shadow-sm"
           >
-            <div className="h-6 w-6 rounded-full overflow-hidden bg-background flex items-center justify-center border border-white/10">
+            <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center border border-black/5">
               {logos.MNT ? (
                 <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" />
               ) : (
                 <span className="text-[8px] text-primary font-black">M</span>
               )}
             </div>
-            <span className="text-[12px] font-black text-white uppercase tracking-widest">MNT</span>
+            <span className="text-[12px] font-black text-primary uppercase tracking-widest">MNT</span>
           </div>
         </div>
 
@@ -129,7 +129,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                 else if (label === "50%") setDepositAmount((bal * 0.5).toFixed(4));
                 else if (label === "25%") setDepositAmount((bal * 0.25).toFixed(4));
               }}
-              className="text-[10px] px-5 py-2.5 text-white/60 font-black uppercase tracking-widest bg-white/5 hover:bg-white/10 border border-white/5 rounded-full transition-all"
+              className="text-[10px] px-5 py-2.5 text-primary/60 font-black uppercase tracking-widest bg-black/5 hover:bg-black/10 border border-black/5 rounded-full transition-all"
             >
               {label}
             </button>
@@ -183,15 +183,15 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         )}
 
         {/* Strategy Insight */}
-        <div className="mt-8 p-6 rounded-3xl bg-primary/5 border border-primary/10 relative overflow-hidden group">
+        <div className="mt-8 p-6 rounded-3xl bg-black/[0.02] border border-black/5 relative overflow-hidden group">
           <div className="flex gap-4 items-start">
             <div className="mt-1 p-1.5 rounded-lg bg-primary/10 text-primary">
               <span className="material-symbols-outlined text-[18px]">info</span>
             </div>
             <div className="space-y-1.5">
               <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Strategy Insight</p>
-              <p className="text-[12px] leading-relaxed text-white/60">
-                While static assets like USDY offer fixed yields, <strong>Obelisk Q</strong> dynamically rotates to <strong>mETH</strong> during expansions to capture growth potential, switching back to <strong>USDY</strong> to protect your capital during volatility.
+              <p className="text-[12px] leading-relaxed text-primary/60 font-medium">
+                While static assets like USDY offer fixed yields, <strong>Obelisk Q</strong> dynamically rotates to <strong>mETH</strong> during expansions.
               </p>
             </div>
           </div>

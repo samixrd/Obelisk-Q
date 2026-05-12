@@ -61,7 +61,7 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
                 <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-background">
                   <span className="material-symbols-outlined font-bold">api</span>
                 </div>
-                <span className="text-xl font-black tracking-tighter text-white">OBELISK Q</span>
+                <span className="text-xl font-black tracking-tighter text-primary">OBELISK <span className="text-primary/40">Q</span></span>
               </div>
             </div>
 
@@ -74,45 +74,32 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
                     onTabChange(item.tab as DashboardTab);
                     onClose();
                   }}
-                  className="group relative w-full flex items-center gap-4 px-3 py-3 rounded-xl transition-all duration-300"
+                  className="group relative w-full flex items-center gap-4 px-3 py-4 rounded-2xl transition-all duration-300"
                 >
                   {/* Active background indicator */}
                   {activeTab === item.tab && (
                     <motion.div
                       layoutId="active-bg"
-                      className="absolute inset-0 bg-foreground/[0.03] border border-foreground/[0.05] rounded-xl"
+                      className="absolute inset-0 bg-primary rounded-2xl"
                       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
                     />
                   )}
 
                   {/* Icon */}
                   <div className={`relative z-10 transition-colors duration-300 ${
-                    activeTab === item.tab ? "text-foreground" : "text-muted-foreground/40 group-hover:text-foreground/60"
+                    activeTab === item.tab ? "text-background" : "text-primary/40 group-hover:text-primary/60"
                   }`}>
                     <item.icon size={18} />
                   </div>
 
                   {/* Label */}
                   <span
-                    className={`relative z-10 text-sm capitalize transition-colors duration-300 ${
-                      activeTab === item.tab ? "text-foreground font-semibold" : "text-muted-foreground group-hover:text-foreground/70"
+                    className={`relative z-10 text-sm font-black uppercase tracking-widest transition-colors duration-300 ${
+                      activeTab === item.tab ? "text-background" : "text-primary/60 group-hover:text-primary"
                     }`}
-                    style={{
-                      fontFamily: "'Inter', sans-serif",
-                      letterSpacing: "-0.01em",
-                    }}
                   >
                     {item.label}
                   </span>
-
-                  {/* Dot indicator */}
-                  {activeTab === item.tab && (
-                    <motion.div
-                      layoutId="active-dot"
-                      className="relative z-10 ml-auto h-1 w-1 rounded-full bg-foreground"
-                      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                    />
-                  )}
                 </button>
               ))}
             </nav>
