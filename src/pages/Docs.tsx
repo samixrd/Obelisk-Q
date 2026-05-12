@@ -29,7 +29,7 @@ const Docs = () => {
     {
       id: "mainnet",
       title: "Mantle Mainnet Deployment",
-      content: "Obelisk Q is live on Mantle Mainnet (Chain ID: 5000). The primary entry point is the ObeliskVault contract: 0x1f15C9C4c80734400c8a8681CDa39E4288c6AC16. The vault is non-custodial, integrated with Merchant Moe liquidity, and maintains a strictly enforced 0.01 MNT gas buffer for autonomous operation.",
+      content: "Obelisk Q is live on Mantle Mainnet (Chain ID: 5000). The primary entry point is the ObeliskVault contract: 0x1cA9813c83e6d012798acD19Af1CF87a91F119DD. The vault is non-custodial, integrated with Merchant Moe liquidity, and maintains a strictly enforced 0.01 MNT gas buffer for autonomous operation.",
     },
     {
       id: "yield",
