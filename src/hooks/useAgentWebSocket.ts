@@ -132,30 +132,43 @@ export function useAgentWebSocket() {
 
     connectWs();
     
-    // ── Polling Fallback: Fetch real stats from /api/stats every 10s ──
+    // ── Polling Fallback: Fetch real stats and logs every 15s ──
     const statsInterval = setInterval(async () => {
       if (!sessionToken) return;
       try {
-        const res = await fetch('/api/stats', {
-          headers: { 
-            'x-session-token': sessionToken,
-            'Cache-Control': 'no-cache',
-            'Pragma': 'no-cache'
-          },
-          cache: 'no-store'
+        // 1. Fetch Stats
+        const statsRes = await fetch(`${url.replace('ws://', 'http://').replace('/ws', '')}/api/stats`, {
+          headers: { 'x-session-token': sessionToken }
         });
-        if (res.ok) {
-          const data = await res.json();
-          // Prioritize backend data over autonomous drift
+        if (statsRes.ok) {
+          const data = await statsRes.json();
           if (typeof data.score === 'number') setScore(data.score);
           if (typeof data.regime === 'string') setRegime(data.regime);
           if (typeof data.circuit_breaker_active === 'boolean') setCircuitBreakerActive(data.circuit_breaker_active);
           if (data.current_position) setCurrentPosition(data.current_position);
         }
+
+        // 2. Fetch Logs
+        const logsRes = await fetch(`${url.replace('ws://', 'http://').replace('/ws', '')}/api/agent/logs`, {
+          headers: { 'x-session-token': sessionToken }
+        });
+        if (logsRes.ok) {
+          const data = await logsRes.json();
+          if (data.logs) {
+            const mapped = data.logs.map((l: any) => ({
+              timestamp: l.timestamp,
+              node: l.node || 'Supervisory Controller',
+              message: l.message || `Cycle ${l.cycle} scan: ${l.regime} regime confirmed.`,
+              score: l.score,
+              cycle: l.cycle
+            }));
+            setAgentLogs(mapped);
+          }
+        }
       } catch (err) {
-        console.warn("Polling /api/stats failed:", err);
+        console.warn("Polling fallback failed:", err);
       }
-    }, 30000); // 30 seconds
+    }, 15000); // 15 seconds
 
     return () => {
       wsRef.current?.close();

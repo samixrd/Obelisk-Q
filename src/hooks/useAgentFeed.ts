@@ -93,9 +93,10 @@ export function useAgentFeed() {
     const fetchFromBackend = async () => {
       if (!sessionToken) return false;
       try {
-        const res = await fetch(`${API_BASE}/api/agent/logs`, {
+        const url = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:8000";
+        const res = await fetch(`${url}/api/agent/logs`, {
           headers: {
-            'X-Session-Token': sessionToken
+            'x-session-token': sessionToken
           }
         });
         if (res.status === 401) {
@@ -104,28 +105,24 @@ export function useAgentFeed() {
         }
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data) && data.length > 0) {
-            const mappedLogs: FeedEntry[] = data.map((l: any) => ({
+          const logsData = data.logs || data;
+          if (Array.isArray(logsData) && logsData.length > 0) {
+            const mappedLogs: FeedEntry[] = logsData.map((l: any) => ({
               timestamp: new Date(l.timestamp),
-              action: l.action,
+              action: (l.action && l.action !== "HOLD") ? "rebalance" : "hold",
               score: l.score,
-              regime: "stable",
+              regime: l.regime === "Expansion" ? "stable" : "high_volatility",
               threshold: 75,
-              message: l.message,
-              txHash: null,
+              message: l.message || `${l.node || 'Agent'}: ${l.regime} detected with score ${l.score}`,
+              txHash: l.tx_hash !== "N/A" ? l.tx_hash : null,
             }));
             setLogs(mappedLogs);
-            const actions = mappedLogs.filter(l => l.action === "rebalance" || l.action === "circuit_breaker");
-            setStats({
-              totalScans: mappedLogs.length + 130,
-              actionsTaken: actions.length,
-              lastActionAt: actions.length > 0 ? actions[0].timestamp : null,
-            });
             return true;
           }
         }
         return false;
-      } catch {
+      } catch (err) {
+        console.warn("Feed fetch failed:", err);
         return false;
       }
     };
@@ -159,11 +156,8 @@ export function useAgentFeed() {
     fetchFromBackend().then(success => {
       if (!success) {
         startAutonomous();
-      } else {
-        // Even if backend works, keep polling
-        // Even if backend works, keep polling every 10 minutes to match cycle
-        interval = setInterval(() => fetchFromBackend(), 600000);
-      }
+        // Even if backend works, keep polling every 30 seconds
+        interval = setInterval(() => fetchFromBackend(), 30000);
     });
 
     return () => {
