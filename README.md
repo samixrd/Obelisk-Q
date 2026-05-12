@@ -14,7 +14,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
 
 ### 🛠️ Technical Excellence & Deployment
-*   ✅ **Mantle Mainnet Deployment**: [ObeliskVault (0x1f15...)](https://explorer.mantle.xyz/address/0x1f15C9C4c80734400c8a8681CDa39E4288c6AC16)
+*   ✅ **Mantle Mainnet Deployment**: [ObeliskVault (0x1cA9...)](https://explorer.mantle.xyz/address/0x1cA9813c83e6d012798acD19Af1CF87a91F119DD)
 *   ✅ **Verified Contract**: Deployment confirmed on Mantle Explorer with deterministic rebalance logic.
 *   ✅ **On-Chain AI Execution**: The supervisor ([0x5698...](https://explorer.mantle.xyz/address/0x5698E89Ec2396e02679ddde33c2BA78de88F7fce)) triggers execution on Mantle.
 *   ✅ **Sovereign Identity**: Integrated with [ERC-8004](https://explorer.mantle.xyz/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) for autonomous agent identity.
@@ -22,7 +22,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 ---
 
 ### 🏦 Core Protocol Details (Mantle Mainnet)
-*   **ObeliskVault**: `0x1f15C9C4c80734400c8a8681CDa39E4288c6AC16`
+*   **ObeliskVault**: `0x1cA9813c83e6d012798acD19Af1CF87a91F119DD`
 *   **ERC-8004 Agent ID**: `0x5698E89Ec2396e02679ddde33c2BA78de88F7fce`
 *   **Identity Registry**: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`
 *   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`
@@ -65,6 +65,7 @@ The "brain" of the system operates on a specialized 5-node LangGraph feedback lo
 *   **Q-Score Engine**: Calculates institutional-grade stability ratings (0-100) based on volatility and depth.
 *   **Telemetry Aggregator**: Synchronizes state across agent nodes using the Antigravity Protocol (<500ms latency).
 *   **Supervisory Controller**: The authorized on-chain actor that signs and triggers execution on Mantle.
+*   **HA Shadow Nodes**: Implements a "Hot Standby" architecture where secondary nodes monitor primary health and take over execution in case of failure.
 
 ### 3. GPT-4o-mini Intelligence Layer (Azure OpenAI)
 The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real-time AI reasoning at two critical decision points:
@@ -74,6 +75,8 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 
 ### 4. Institutional Safeguards
 *   **Autonomous Circuit Breaker**: Halts all capital allocation if the Q-Score drops 10 points within a 60-minute window.
+*   **Yield-Inclusive Withdrawals**: Users earn yield on their entire proportional share of the vault, with an automated 0.01 MNT gas buffer for agent operations.
+*   **Institutional Session Smoothing**: 30-minute inactivity window for professional stability.
 *   **Real-Time Dashboards**: Premium UX with 10s telemetry polling, providing transparent visibility into the agent's logic.
 *   **Verified Unwind Logic**: Deterministic cross-token swaps (mETH ↔ USDY) with a fixed safety buffer.
 

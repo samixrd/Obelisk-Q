@@ -28,6 +28,8 @@ const VAULT_ABI = [
   "function deposit() payable",
   "function withdraw()",
   "function getBalance(address user) view returns (uint256)",
+  "function getWithdrawableBalance(address user) view returns (uint256)",
+  "function getTotalVaultValue() view returns (uint256)",
   "function getVaultStats() view returns (uint256, uint256, uint256, bool, string)",
   "function vaultPaused() view returns (bool)",
 ];
@@ -82,6 +84,13 @@ function formatMnt(wei: bigint): string {
 function encodeGetBalance(address: string): string {
   // keccak256("getBalance(address)") = 0xf8b2cb4f, then pad address
   const sig = "f8b2cb4f";
+  const padded = address.replace("0x", "").toLowerCase().padStart(64, "0");
+  return "0x" + sig + padded;
+}
+
+function encodeGetWithdrawableBalance(address: string): string {
+  // keccak256("getWithdrawableBalance(address)") first 4 bytes = 0x843592d3
+  const sig = "843592d3";
   const padded = address.replace("0x", "").toLowerCase().padStart(64, "0");
   return "0x" + sig + padded;
 }
@@ -304,15 +313,27 @@ export function useVault(): VaultState {
       let userBalance = "0.0000";
       if (address) {
         try {
+          // Use getWithdrawableBalance — yield-inclusive, agent buffer already subtracted
           const balRaw = await rpcCall("eth_call", [
-            { to: VAULT_ADDRESS, data: encodeGetBalance(address) },
+            { to: VAULT_ADDRESS, data: encodeGetWithdrawableBalance(address) },
             "latest",
           ]);
           if (balRaw && balRaw !== "0x") {
             userBalance = formatMnt(BigInt(balRaw));
           }
         } catch (e) {
-          console.warn("Vault user balance call failed", e);
+          // Fallback to legacy getBalance if new function not available
+          try {
+            const balRaw = await rpcCall("eth_call", [
+              { to: VAULT_ADDRESS, data: encodeGetBalance(address) },
+              "latest",
+            ]);
+            if (balRaw && balRaw !== "0x") {
+              userBalance = formatMnt(BigInt(balRaw));
+            }
+          } catch (e2) {
+            console.warn("Vault user balance call failed", e2);
+          }
         }
       }
 

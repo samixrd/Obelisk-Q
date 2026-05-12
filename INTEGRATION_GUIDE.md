@@ -15,6 +15,9 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 python main.py
+
+# To start a High Availability Shadow Node:
+# NODE_ROLE=shadow NODE_ID=shadow-1 python main.py
 ```
 *Ensure `.env` in `backend/` contains your `AGENT_PRIVATE_KEY` and `VAULT_ADDRESS`.*
 
@@ -30,7 +33,7 @@ npm run dev
 ## 3. Deployment Configuration (Mantle Mainnet)
 The project is optimized for Mantle Mainnet (Chain ID: 5000).
 
-*   **Current Vault**: `0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa`
+*   **Current Vault**: `0x1cA9813c83e6d012798acD19Af1CF87a91F119DD`
 *   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`
 *   **Buffer**: 0.01 MNT (Hardcoded for safety)
 

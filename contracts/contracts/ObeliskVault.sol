@@ -41,6 +41,9 @@ contract ObeliskVault {
     bool    public vaultPaused;
     string  public currentRegime = "Expansion"; // Default
 
+    // Agent keeps this buffer for swap gas — never shown to users
+    uint256 public constant AGENT_BUFFER = 0.01 ether;
+
     // Tokens & Router (Mantle Mainnet)
     IRouter public constant ROUTER = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a);
     address public constant WMNT   = 0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8;
@@ -80,34 +83,34 @@ contract ObeliskVault {
     }
 
     function withdraw() external {
-        uint256 amount = balances[msg.sender];
-        require(amount > 0, "No balance");
+        uint256 depositAmount = balances[msg.sender];
+        require(depositAmount > 0, "No balance");
 
-        // If not enough MNT, unwind mETH first
-        uint256 mntBalance = address(this).balance;
-        if (mntBalance < amount) {
-            uint256 needed = amount - mntBalance;
-            _unwindToken(METH, needed);
-            mntBalance = address(this).balance;
-        }
-        
-        // Still not enough? Unwind USDY
-        if (mntBalance < amount) {
-            uint256 needed = amount - mntBalance;
-            _unwindToken(USDY, needed);
-            mntBalance = address(this).balance;
+        // Unwind ALL tokens back to MNT first
+        _unwindToken(METH, type(uint256).max);
+        _unwindToken(USDY, type(uint256).max);
+        _unwindToken(WMNT, type(uint256).max);
+
+        // Calculate user's proportional share of total vault MNT
+        uint256 totalMnt = address(this).balance;
+        uint256 toPay;
+
+        if (totalDeposited <= depositAmount) {
+            // Last depositor — gets everything minus buffer
+            toPay = totalMnt > AGENT_BUFFER ? totalMnt - AGENT_BUFFER : 0;
+        } else {
+            // Proportional share minus per-user buffer fraction
+            toPay = (totalMnt * depositAmount) / totalDeposited;
+            if (toPay > AGENT_BUFFER) {
+                toPay -= AGENT_BUFFER;
+            } else {
+                toPay = 0;
+            }
         }
 
-        // Still not enough? Unwind WMNT
-        if (mntBalance < amount) {
-            uint256 needed = amount - mntBalance;
-            _unwindToken(WMNT, needed);
-            mntBalance = address(this).balance;
-        }
-
-        uint256 toPay = mntBalance < amount ? mntBalance : amount;
-        balances[msg.sender] -= toPay;
-        totalDeposited -= toPay;
+        // Clear user state
+        totalDeposited -= depositAmount;
+        balances[msg.sender] = 0;
 
         (bool ok, ) = payable(msg.sender).call{value: toPay}("");
         require(ok, "Transfer failed");
@@ -218,8 +221,30 @@ contract ObeliskVault {
 
     // ── View ──────────────────────────────────────────────────────────────
 
+    /// @notice Returns the raw deposit amount (legacy)
     function getBalance(address user) external view returns (uint256) {
         return balances[user];
+    }
+
+    /// @notice Returns the total value of all assets held by the vault
+    function getTotalVaultValue() public view returns (uint256) {
+        return address(this).balance
+            + IERC20(METH).balanceOf(address(this))
+            + IERC20(USDY).balanceOf(address(this))
+            + IERC20(WMNT).balanceOf(address(this));
+    }
+
+    /// @notice Returns the user's yield-inclusive withdrawable balance,
+    ///         with the 0.01 MNT agent buffer already subtracted.
+    function getWithdrawableBalance(address user) external view returns (uint256) {
+        if (totalDeposited == 0 || balances[user] == 0) return 0;
+        uint256 totalValue = getTotalVaultValue();
+        uint256 userShare = (totalValue * balances[user]) / totalDeposited;
+        // Subtract agent buffer so UI only shows what's truly withdrawable
+        if (userShare > AGENT_BUFFER) {
+            return userShare - AGENT_BUFFER;
+        }
+        return 0;
     }
 
     function getVaultStats() external view returns (
