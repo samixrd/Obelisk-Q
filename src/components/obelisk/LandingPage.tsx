@@ -95,13 +95,13 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         </Reveal>
 
         <Reveal delay={0.4}>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <button onClick={onLaunch} className="btn-primary">
-              Launch App
-              <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+          <div className="flex flex-col sm:flex-row justify-center gap-5">
+            <button onClick={onLaunch} className="btn-primary group">
+              Launch Dashboard
+              <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
             </button>
-            <button className="bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold px-8 py-4 rounded-full text-[13px] transition-all">
-              View Protocol
+            <button className="bg-white/5 hover:bg-white/10 border border-white/5 text-white/80 font-black px-10 py-5 rounded-full text-[11px] uppercase tracking-widest transition-all">
+              Read Docs
             </button>
           </div>
         </Reveal>
@@ -228,20 +228,20 @@ function FeaturesSection() {
         </div>
       </Reveal>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {features.map((f, i) => (
           <Reveal key={i} delay={i * 0.1}>
-            <div className="glass-card p-12 rounded-[2.5rem] h-full flex flex-col group">
-              <div className="w-14 h-14 bg-white/5 rounded-2xl flex items-center justify-center mb-8 border border-white/5 group-hover:border-primary/20 transition-all">
-                <span className="material-symbols-outlined text-primary/60 group-hover:text-primary transition-colors">
+            <div className="glass-card p-10 rounded-[2.5rem] h-full flex flex-col group hover:bg-white/[0.04] transition-all duration-500">
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-8 border border-white/5 group-hover:border-primary/20 transition-all">
+                <span className="material-symbols-outlined text-primary/40 group-hover:text-primary transition-colors text-xl">
                   {f.icon}
                 </span>
               </div>
-              <h3 className="text-2xl font-bold mb-4 text-white">{f.title}</h3>
-              <p className="text-white/50 text-sm leading-relaxed mb-8 flex-grow">{f.desc}</p>
+              <h3 className="text-xl font-black mb-4 text-white uppercase tracking-tightest">{f.title}</h3>
+              <p className="text-white/40 text-[13px] leading-relaxed mb-8 flex-grow font-bold uppercase tracking-wide">{f.desc}</p>
               <div className="flex flex-wrap gap-2">
                 {f.tags.map(tag => (
-                  <span key={tag} className="px-3 py-1 bg-white/5 border border-white/5 rounded-full text-[9px] font-black text-white/40 uppercase tracking-widest group-hover:border-primary/10 transition-all">
+                  <span key={tag} className="px-3 py-1 bg-white/5 border border-white/5 rounded-full text-[9px] font-black text-white/30 uppercase tracking-widest group-hover:border-primary/20 transition-all">
                     {tag}
                   </span>
                 ))}
@@ -249,6 +249,29 @@ function FeaturesSection() {
             </div>
           </Reveal>
         ))}
+        
+        {/* Mantle Specific Card */}
+        <Reveal delay={0.4}>
+          <div className="glass-card p-10 rounded-[2.5rem] h-full flex flex-col group border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all duration-500">
+            <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center mb-8 border border-primary/20">
+              <span className="material-symbols-outlined text-primary text-xl">
+                account_tree
+              </span>
+            </div>
+            <h3 className="text-xl font-black mb-4 text-white uppercase tracking-tightest">Mantle Mainnet</h3>
+            <p className="text-white/40 text-[13px] leading-relaxed mb-8 flex-grow font-bold uppercase tracking-wide">
+              Fully operational at <span className="text-primary/60">0x0f43...eaFa</span>. Orchestrated rebalancing with <span className="text-white/80">Merchant Moe</span> to capture deep liquidity.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              <span className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-[9px] font-black text-primary uppercase tracking-widest">
+                Mainnet
+              </span>
+              <span className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-full text-[9px] font-black text-primary uppercase tracking-widest">
+                Verified
+              </span>
+            </div>
+          </div>
+        </Reveal>
       </div>
     </section>
   );

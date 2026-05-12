@@ -49,38 +49,38 @@ export function Header({
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       className="fixed top-0 left-0 right-0 z-40 bg-background/70 backdrop-blur-[24px] border-b border-white/5"
     >
-      <div className="mx-auto max-w-[1680px] px-8 md:px-14 py-4 flex items-center justify-between">
+      <div className="mx-auto max-w-[1680px] px-6 md:px-10 py-2.5 flex items-center justify-between">
 
         {/* Left: menu + wordmark */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           <button
             onClick={onMenuClick}
             aria-label="Open navigation"
-            className="h-9 w-9 flex items-center justify-center text-primary/60 hover:text-primary transition-colors duration-500 outline-none"
+            className="h-8 w-8 flex items-center justify-center text-white/40 hover:text-white transition-colors duration-500 outline-none"
           >
-            <IconMenu size={16} />
+            <IconMenu size={14} />
           </button>
           <div className="h-4 w-px bg-foreground/10" />
           <button 
             onClick={onLogoClick}
-            className="flex items-center gap-3 group transition-transform active:scale-95 cursor-pointer outline-none"
+            className="flex items-center gap-2.5 group transition-transform active:scale-95 cursor-pointer outline-none"
           >
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-background">
-              <span className="material-symbols-outlined text-sm font-bold">api</span>
+            <div className="w-7 h-7 bg-primary rounded-lg flex items-center justify-center text-background">
+              <span className="material-symbols-outlined text-[13px] font-bold">api</span>
             </div>
-            <h1 className="hidden sm:block text-lg font-black tracking-tighter text-white transition-opacity group-hover:opacity-80">
+            <h1 className="text-[14px] font-black tracking-tighter text-white transition-opacity group-hover:opacity-80 whitespace-nowrap">
               OBELISK <span className="text-primary">Q</span>
             </h1>
           </button>
 
           <div className="hidden lg:block h-4 w-px bg-foreground/5 mx-2.5" />
 
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden xl:flex items-center gap-4">
             {(["earn", "portfolio", "safeguards", "agent-logs"] as DashboardTab[]).map((t) => (
               <button
                 key={t}
                 onClick={() => onTabChange(t)}
-                className={`text-[11px] uppercase tracking-widest transition-all duration-300 outline-none px-5 py-2 rounded-full font-black ${
+                className={`text-[10px] uppercase tracking-widest transition-all duration-300 outline-none px-4 py-1.5 rounded-full font-black ${
                   activeTab === t 
                     ? "text-primary bg-primary/10 border border-primary/20" 
                     : "text-white/40 hover:text-white hover:bg-white/5"
@@ -94,39 +94,38 @@ export function Header({
 
 
         {/* Right: network + wallet status + tour + avatar */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-4">
           {onTourClick && (
             <button
               onClick={onTourClick}
-              className="hidden md:inline-block text-[11px] font-bold tracking-widest uppercase text-primary/60 hover:text-primary transition-colors duration-300 outline-none"
-              style={{ background: "none", border: "none", cursor: "pointer" }}
+              className="hidden md:inline-block text-[9px] font-black tracking-widest uppercase text-white/30 hover:text-white transition-colors duration-300 outline-none"
             >
-              Guided tour
+              Tour
             </button>
           )}
 
-          <div className="hidden md:block h-4 w-px bg-foreground/5" />
+          <div className="hidden md:block h-3 w-px bg-white/5" />
 
-          <div className="flex items-center gap-5">
-            <span className="hidden md:inline-flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase text-white/40">
+          <div className="flex items-center gap-4">
+            <span className="hidden lg:inline-flex items-center gap-2 text-[9px] font-black tracking-[0.2em] uppercase text-white/40">
               <span style={{
-                height: 6, width: 6, borderRadius: "50%",
+                height: 5, width: 5, borderRadius: "50%",
                 background: "hsl(var(--primary))", boxShadow: "0 0 10px hsla(var(--primary) / 0.5)",
                 display: "inline-block",
               }} />
-              Mantle Mainnet
+              Mantle
             </span>
 
-            <div className="hidden lg:block h-4 w-px bg-foreground/5" />
+            <div className="hidden xl:block h-3 w-px bg-white/5" />
 
-            <div className="hidden lg:flex items-center gap-6">
+            <div className="hidden xl:flex items-center gap-4">
               <div className="flex flex-col items-end">
-                <span className="text-[9px] text-primary/40 uppercase font-bold tracking-[0.15em] leading-none mb-1">Q-Score</span>
-                <span className="text-[14px] font-bold text-primary leading-none tabular-nums">{score}</span>
+                <span className="text-[8px] text-white/20 uppercase font-black tracking-[0.15em] leading-none mb-1">Score</span>
+                <span className="text-[12px] font-black text-white leading-none tabular-nums">{score}</span>
               </div>
               <div className="flex flex-col items-end">
-                <span className="text-[9px] text-primary/40 uppercase font-bold tracking-[0.15em] leading-none mb-1">Regime</span>
-                <span className="text-[14px] font-bold text-primary leading-none">{regime}</span>
+                <span className="text-[8px] text-white/20 uppercase font-black tracking-[0.15em] leading-none mb-1">Regime</span>
+                <span className="text-[12px] font-black text-white leading-none uppercase">{regime}</span>
               </div>
             </div>
 

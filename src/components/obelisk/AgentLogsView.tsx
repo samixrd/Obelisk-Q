@@ -129,26 +129,25 @@ export function AgentLogsView() {
       </div>
 
       {/* ── Log Stream ───────────────────────────────────────────────────── */}
-      <div className="col-span-12 glass-card rounded-[40px] p-8 md:p-10 flex flex-col h-[700px] transition-all">
+      <div className="col-span-12 glass-card rounded-[48px] p-10 md:p-14 flex flex-col h-[800px] transition-all border border-white/5 hover:border-primary/5">
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div className="space-y-1">
-            <div className="text-[22px] text-primary flex flex-wrap gap-x-[0.3em] font-bold tracking-tight">
-              <MagneticText disabled text="Multi-Agent" />
-              <span className="text-primary/40"><MagneticText disabled text="Supervisory Feed" /></span>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
+          <div className="space-y-2">
+            <div className="text-[28px] text-white flex flex-wrap gap-x-[0.3em] font-black tracking-tightest uppercase">
+              Multi-Agent <span className="text-white/20">Supervisory Feed</span>
             </div>
-            <p className="text-[11px] text-primary/40 font-medium">Real-time LangGraph audit stream. Persistence enabled via Antigravity Cloud.</p>
+            <p className="text-[12px] text-white/30 font-bold uppercase tracking-widest">Real-time LangGraph audit stream · Antigravity Protocol Verified</p>
           </div>
           
           <motion.div 
-            whileHover={{ scale: 1.03 }}
-            className="flex items-center gap-3 px-5 py-2 bg-primary text-background rounded-full text-[10px] uppercase tracking-[0.15em] w-fit font-bold"
+            whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-3 px-6 py-2.5 bg-primary text-background rounded-full text-[10px] uppercase tracking-[0.2em] w-fit font-black"
           >
              <div className="relative flex items-center justify-center">
-                <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-20" />
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80 relative z-10" />
+                <span className="absolute inset-0 rounded-full bg-background animate-ping opacity-30" />
+                <span className="h-2 w-2 rounded-full bg-background relative z-10" />
              </div>
-             <MagneticText disabled text="Live Stream" />
+             Live Audit Stream
           </motion.div>
         </div>
 
@@ -198,16 +197,17 @@ function LogRow({ log }: { log: any }) {
         )}
 
         <div
-          className="px-2.5 py-0.5 rounded-full text-[9px] w-16 text-center tracking-wider font-bold"
+          className="px-3 py-1 rounded-full text-[9px] w-20 text-center tracking-widest font-black"
           style={{
-            background: isAction ? 'rgba(52,211,153,0.06)' : 'hsla(var(--primary) / 0.05)',
-            color: isAction ? 'rgba(5,150,105,0.7)' : 'hsla(var(--primary) / 0.4)',
+            background: isAction ? 'rgba(var(--primary-rgb), 0.1)' : 'rgba(255,255,255,0.03)',
+            color: isAction ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.3)',
+            border: isAction ? '1px solid hsla(var(--primary)/0.2)' : '1px solid rgba(255,255,255,0.05)',
           }}
         >
-          {isAction ? "ACTION" : log.cycle ? `C${String(log.cycle).padStart(3, '0')}` : "LOG"}
+          {isAction ? "ACTION" : log.cycle ? `C-${String(log.cycle).padStart(3, '0')}` : "TRACE"}
         </div>
 
-        <span className="flex-1 text-[13px] text-primary/80 group-hover:text-primary transition-colors leading-relaxed truncate font-medium">
+        <span className="flex-1 text-[13px] text-white/70 group-hover:text-white transition-colors leading-relaxed truncate font-bold uppercase tracking-wide">
           {message}
         </span>
 
