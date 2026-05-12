@@ -37,6 +37,7 @@ interface AgentData {
     volatility_score: number;
     liquidity_score: number;
   };
+  scoreHistory: number[];
 }
 
 const AgentDataContext = createContext<AgentData | null>(null);

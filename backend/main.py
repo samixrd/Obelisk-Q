@@ -155,7 +155,8 @@ last_known_state = {
     "sensitivity": 0.5,
     "regime": "Consolidation",
     "hysteresis": 0,
-    "components": {"yield_score": 75, "volatility_score": 70, "liquidity_score": 85}
+    "components": {"yield_score": 75, "volatility_score": 70, "liquidity_score": 85},
+    "score_history": [90, 89, 91, 90, 92, 90, 88, 87, 89, 90, 91, 90, 89, 90, 92, 91, 90, 89, 88, 90]
 }
 
 LAST_REBALANCE_TIME = 0
@@ -917,6 +918,7 @@ async def get_stats():
         "score": last_known_state["risk"]["score"],
         "regime": last_known_state["regime"],
         "components": last_known_state["components"],
+        "score_history": last_known_state["score_history"],
         "circuit_breaker_active": CIRCUIT_BREAKER_ACTIVE,
         "current_position": CURRENT_POSITION,
         "supported_assets": ["MNT", "mETH", "USDY", "WMNT"]
@@ -1078,8 +1080,14 @@ async def run_analysis_cycle():
                 "regime": regime,
                 "logs": logs,
                 "components": final_state.get("data", {}).get("components", last_known_state["components"]),
+                "score_history": last_known_state["score_history"],
                 "yields": final_state.get("data", {}).get("yields", {"usdy": 5.0, "meth": 3.5})
             })
+            
+            # Update rolling history (8 hours = 48 points)
+            last_known_state["score_history"].append(score)
+            if len(last_known_state["score_history"]) > 48:
+                last_known_state["score_history"].pop(0)
             
             logger.info(f"cycle {cycle_num} complete. score={score} regime={regime} action={action}")
             

@@ -40,7 +40,18 @@ export function StabilityGraph({ seed = 1, height = 120, data }: Props) {
 
   return (
     <div className="relative w-full" style={{ height }}>
-      <svg viewBox={`0 0 800 ${height}`} preserveAspectRatio="none" className="absolute inset-0 w-full h-full">
+      {/* Y-Axis Labels */}
+      <div className="absolute left-0 inset-y-0 flex flex-col justify-between py-1 pointer-events-none z-10">
+        <span className="text-[9px] font-bold text-black/20">100</span>
+        <span className="text-[9px] font-bold text-black/20">50</span>
+        <span className="text-[9px] font-bold text-black/20">0</span>
+      </div>
+
+      <div className="absolute right-0 top-0 pointer-events-none">
+        <span className="text-[9px] font-bold text-black/20 uppercase tracking-widest">8h History</span>
+      </div>
+
+      <svg viewBox={`0 0 800 ${height}`} preserveAspectRatio="none" className="absolute inset-0 w-full h-full pl-6">
         <defs>
           <linearGradient id={`line-${seed}`} x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stopColor="hsl(0 0% 80%)" />
@@ -50,7 +61,7 @@ export function StabilityGraph({ seed = 1, height = 120, data }: Props) {
         </defs>
 
         {/* Horizontal guide lines */}
-        {[0.25, 0.5, 0.75].map((p) => (
+        {[0, 0.5, 1].map((p) => (
           <line
             key={p}
             x1="0"
@@ -65,7 +76,7 @@ export function StabilityGraph({ seed = 1, height = 120, data }: Props) {
           d={path}
           fill="none"
           stroke={`url(#line-${seed})`}
-          strokeWidth="1"
+          strokeWidth="1.5"
           strokeLinecap="round"
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
@@ -77,9 +88,9 @@ export function StabilityGraph({ seed = 1, height = 120, data }: Props) {
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 1.8, duration: 0.6 }}
-        className="absolute h-2 w-2 rounded-full bg-neon shadow-neon"
+        className="absolute h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]"
         style={{
-          left: `calc(${(last[0] / 800) * 100}% - 4px)`,
+          left: `calc(${((last[0] / 800) * 100) * 0.95 + 4}% - 4px)`,
           top: `calc(${(last[1] / height) * 100}% - 4px)`,
         }}
       />

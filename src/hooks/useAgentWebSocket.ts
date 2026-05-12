@@ -41,6 +41,7 @@ export function useAgentWebSocket() {
   const [circuitBreakerActive, setCircuitBreakerActive] = useState<boolean>(false);
   const [currentPosition, setCurrentPosition] = useState<string>("MNT");
   const [components, setComponents] = useState({ yield_score: 75, volatility_score: 70, liquidity_score: 85 });
+  const [scoreHistory, setScoreHistory] = useState<number[]>([90, 89, 91, 90, 92, 90, 88, 87, 89, 90, 91, 90, 89, 90, 92, 91, 90, 89, 88, 90]);
   const [nodes, setNodes] = useState<LangGraphNode[]>([
     { id: 'regime-detection',      label: 'Regime Detection',      status: 'active',      sub: 'Market State Analysis',    lastPulse: Date.now() },
     { id: 'risk-assessment',       label: 'Risk Assessment',       status: 'active',      sub: 'Exposure Calculation',     lastPulse: Date.now() },
@@ -69,6 +70,7 @@ export function useAgentWebSocket() {
         if (typeof data.circuit_breaker_active === 'boolean') setCircuitBreakerActive(data.circuit_breaker_active);
         if (data.current_position) setCurrentPosition(data.current_position);
         if (data.components) setComponents(data.components);
+        if (data.score_history) setScoreHistory(data.score_history);
       }
     } catch (err) {
       console.warn("Polling /api/stats failed:", err);
@@ -148,6 +150,7 @@ export function useAgentWebSocket() {
               if (data.yields) setLiveYields(data.yields);
               if (data.prices) setLivePrices(data.prices);
               if (data.components) setComponents(data.components);
+              if (data.score_history) setScoreHistory(data.score_history);
               if (data.logs) {
                 const mapped = data.logs.map((l: any) => ({
                   ...l,
@@ -193,5 +196,5 @@ export function useAgentWebSocket() {
     };
   }, [sessionToken, logout]);
 
-  return { score, regime, circuitBreakerActive, currentPosition, countdown, lastMessage, liveYields, livePrices, agentLogs, nodes, components };
+  return { score, regime, circuitBreakerActive, currentPosition, countdown, lastMessage, liveYields, livePrices, agentLogs, nodes, components, scoreHistory };
 }

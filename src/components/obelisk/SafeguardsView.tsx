@@ -12,20 +12,9 @@ const fadeUp = {
 };
 
 export function SafeguardsView() {
-  const { score, regime, circuitBreakerActive, lastMessage, agentLogs } = useAgentData();
+  const { score, regime, circuitBreakerActive, lastMessage, agentLogs, scoreHistory } = useAgentData();
   const { sessionToken } = useAuth();
-  const [scoreHistory, setScoreHistory] = useState<number[]>([]);
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
-
-  // Track score history (last 30 points)
-  useEffect(() => {
-    if (typeof score === 'number') {
-      setScoreHistory(prev => {
-        const next = [...prev, score];
-        return next.slice(-30);
-      });
-    }
-  }, [score]);
 
   // Fetch audit logs directly from backend
   useEffect(() => {
