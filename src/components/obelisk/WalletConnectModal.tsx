@@ -15,43 +15,16 @@ const WALLETS = [
     id: "metamask",
     name: "MetaMask",
     desc: "Browser extension · EVM compatible",
-    icon: (
-      <svg viewBox="0 0 32 32" width="24" height="24">
-        <path fill="#e2761b" d="M28.7 5l-12.8 7.8 6.1-1.3zM3.3 5l12.8 7.8-6.1-1.3z" />
-        <path fill="#e4761b" d="M25.8 24.3l-9.1 2.1 2.1-7.3zM6.2 24.3l9.1 2.1-2.1-7.3z" />
-        <path fill="#d7c1b3" d="M25.4 11.3l-5.1 1.9.5-3.2zM6.6 11.3l5.1 1.9-.5-3.2z" />
-        <path fill="#233447" d="M16 18.6l-3.3-2.3.2-.3zM16 18.6l3.3-2.3-.2-.3z" />
-        <path fill="#cd7d32" d="M16 16.3L13.8 20h4.4z" />
-        <path fill="#e4761b" d="M25.8 24.3l-5.1-7.5-2.5 8 7.6-.5zM6.2 24.3l7.6.5-2.5-8-5.1 7.5z" />
-        <path fill="#f6851b" d="M11.1 17.1l-2.1 3.1 7-.4-.3-8zM20.9 17.1l-4.7-4.4-.3 8.1 7-.4-2.1-3.2z" />
-        <path fill="#f6851b" d="M11.4 29.5l4-1.9-3.4-2.6zM20.6 29.5l-.6-4.5-3.4 2.6z" />
-        <path fill="#e2761b" d="M11.1 17.1l4.6-4.4.3 7.9-4.9 1.5zM20.9 17.1l-1.9 6.1-4.9-1.5.3-7.9 4.7 4.4z" />
-        <path fill="#d7c1b3" d="M11.4 29.5l.5-4.5h8.2l.5 4.5-4.6-2.2z" />
-      </svg>
-    ),
   },
   {
     id: "coinbase",
     name: "Coinbase Wallet",
     desc: "Self-custody · Mantle supported",
-    icon: (
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
-        <path d="M24 12c0 6.627-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0s12 5.373 12 12z" fill="#0052FF"/>
-        <path d="M12 18.5a6.5 6.5 0 100-13 6.5 6.5 0 000 13z" fill="white"/>
-        <rect x="9.5" y="9.5" width="5" height="5" rx="1" fill="#0052FF"/>
-      </svg>
-    ),
   },
   {
     id: "trust",
     name: "Trust Wallet",
     desc: "Mobile app · Binance ecosystem",
-    icon: (
-      <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
-        <path d="M12 0L3 3.6v7.2C3 16.5 6.8 21.8 12 24c5.2-2.2 9-7.5 9-13.2V3.6L12 0z" fill="#3375BB"/>
-        <path d="M12 2.4l7.2 2.9v6.5c0 4.6-3 8.8-7.2 10.6-4.2-1.8-7.2-6-7.2-10.6V5.3l7.2-2.9z" fill="white" fillOpacity="0.2"/>
-      </svg>
-    ),
   },
 ];
 
@@ -192,10 +165,7 @@ export function WalletConnectModal({ open, onClose, onConnected }: WalletConnect
                         (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
                       }}
                     >
-                      <div className="flex-shrink-0 p-1 bg-white rounded-xl shadow-sm border border-black/5 group-hover:scale-110 transition-transform">
-                        {w.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
+                      <div className="flex-1 min-w-0 px-2">
                         <p className="text-[14px] font-semibold text-[#0a0a0a]">
                           {w.name}
                         </p>
