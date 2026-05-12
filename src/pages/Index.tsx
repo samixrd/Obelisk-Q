@@ -70,7 +70,7 @@ function AppInner() {
   return (
     <div className="relative min-h-screen overflow-x-hidden" style={{ background: "#f5f5f8" }}>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {stage === "landing" && (
           <motion.div
             key="landing"
@@ -105,10 +105,10 @@ function AppInner() {
         {stage === "dashboard" && (
           <motion.div
             key="dashboard"
-            initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0,  filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -8, filter: "blur(4px)" }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            initial={{ opacity: 0, scale: 0.98, y: 8 }}
+            animate={{ opacity: 1, scale: 1,    y: 0 }}
+            exit={{ opacity: 0, scale: 1.02, y: -8 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
           >
             <div
               aria-hidden
