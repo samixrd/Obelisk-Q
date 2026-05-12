@@ -26,6 +26,8 @@ export function EarnView({ onOpenInvest }: EarnViewProps) {
 
       {/* Strategy & Metadata Grid */}
       <div className="col-span-12 lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 content-start">
+        <StabilityScoreCard />
+
         <div className="glass-card rounded-3xl p-8 transition-all hover:bg-white/80">
           <p className="text-[10px] uppercase text-muted-foreground mb-3 font-semibold tracking-[0.2em]" style={{ letterSpacing: "0.28em" }}>Yield Source</p>
           <div className="text-[17px] font-semibold text-[#0a0a0a]">
@@ -42,7 +44,6 @@ export function EarnView({ onOpenInvest }: EarnViewProps) {
           <p className="text-[12px] text-muted-foreground mt-2">Continuous rebalancing based on regime detection.</p>
         </div>
         
-        
         <div className="glass-card rounded-3xl p-8 transition-all hover:bg-white/80">
           <p className="text-[10px] uppercase text-muted-foreground mb-3 font-semibold tracking-[0.2em]" style={{ letterSpacing: "0.28em" }}>Lock-up</p>
           <div className="text-[17px] font-semibold text-[#0a0a0a]">
@@ -50,11 +51,6 @@ export function EarnView({ onOpenInvest }: EarnViewProps) {
           </div>
           <p className="text-[12px] text-muted-foreground mt-2">No minimum terms. Withdraw your capital anytime.</p>
         </div>
-      </div>
-
-      {/* Supporting Cards */}
-      <div className="col-span-12 grid grid-cols-1 gap-6 md:gap-8 mt-4">
-        <StabilityScoreCard />
       </div>
     </motion.div>
   );

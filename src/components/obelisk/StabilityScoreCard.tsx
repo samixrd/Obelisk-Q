@@ -108,7 +108,7 @@ export function StabilityScoreCard() {
   const [engineOpen, setEngineOpen] = useState(false);
 
   return (
-    <div id="tour-stability-score" className="col-span-12 glass-card rounded-3xl p-8 md:p-10 min-h-[320px] flex flex-col justify-between transition-all hover:bg-white/80">
+    <div id="tour-stability-score" className="glass-card rounded-3xl p-8 flex flex-col justify-between transition-all hover:bg-white/80">
       <div>
         <div className="flex items-center justify-between mb-6">
           <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-[0.28em]">Stability Score</p>
