@@ -10,7 +10,7 @@ const fadeUp = {
   transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as [number,number,number,number] },
 };
 
-const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "http://localhost:8000";
+const API_BASE = "";
 
 export function PerformanceView() {
   const [metrics, setMetrics] = useState({

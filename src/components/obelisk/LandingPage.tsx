@@ -270,7 +270,7 @@ function BuiltForSection() {
         </Reveal>
         <div className="landing-section-heading" style={{ fontWeight: 700 }}>
           <Reveal delay={0.1}>
-            <MagneticText text="Built for" />
+            <MagneticText text="Designed for" />
           </Reveal>
         </div>
       </motion.div>

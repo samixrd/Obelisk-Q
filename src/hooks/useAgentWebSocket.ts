@@ -55,30 +55,76 @@ export function useAgentWebSocket() {
 
   // Remove autonomous telemetry engine functions to ensure only real data is used
 
+  // ── Immediate data fetch on mount ──
+  const fetchStats = async (token: string) => {
+    try {
+      const statsRes = await fetch('/api/stats', {
+        headers: { 'x-session-token': token }
+      });
+      if (statsRes.ok) {
+        const data = await statsRes.json();
+        if (typeof data.score === 'number') setScore(data.score);
+        if (typeof data.regime === 'string') setRegime(data.regime);
+        if (typeof data.circuit_breaker_active === 'boolean') setCircuitBreakerActive(data.circuit_breaker_active);
+        if (data.current_position) setCurrentPosition(data.current_position);
+      }
+    } catch (err) {
+      console.warn("Polling /api/stats failed:", err);
+    }
+  };
+
+  const fetchLogs = async (token: string) => {
+    try {
+      const logsRes = await fetch('/api/agent/logs', {
+        headers: { 'x-session-token': token }
+      });
+      if (logsRes.ok) {
+        const data = await logsRes.json();
+        const logsData = data.logs || data;
+        if (Array.isArray(logsData) && logsData.length > 0) {
+          const mapped = logsData.map((l: any) => ({
+            timestamp: l.timestamp,
+            node: l.node || 'Supervisory Controller',
+            message: l.message || `Cycle ${l.cycle}: ${l.regime} regime confirmed.`,
+            score: l.score,
+            cycle: l.cycle
+          }));
+          setAgentLogs(mapped);
+        }
+      }
+    } catch (err) {
+      console.warn("Polling /api/agent/logs failed:", err);
+    }
+  };
+
   useEffect(() => {
-    // Attempt real WebSocket connection first
-    const url = (import.meta as any).env?.VITE_WS_URL || "ws://20.2.233.34:8000/ws";
+    if (!sessionToken) return;
+
+    // ── Fetch data IMMEDIATELY on mount ──
+    fetchStats(sessionToken);
+    fetchLogs(sessionToken);
+
+    // ── WebSocket: derive URL from page origin ──
+    const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const wsUrl = (import.meta as any).env?.VITE_WS_URL || `${wsProto}//${window.location.host}/ws`;
 
     const connectWs = () => {
-      if (!sessionToken) return;
       try {
-        const urlWithToken = `${url}${url.includes('?') ? '&' : '?'}token=${sessionToken}`;
+        const urlWithToken = `${wsUrl}${wsUrl.includes('?') ? '&' : '?'}token=${sessionToken}`;
         wsRef.current = new WebSocket(urlWithToken);
 
         const timeout = setTimeout(() => {
-          // If WS hasn't opened within 2s, log it
           if (!connectedRef.current) {
             wsRef.current?.close();
-            console.warn("WebSocket connection timed out — waiting for polling fallback");
+            console.warn("WebSocket connection timed out — polling fallback active");
           }
-        }, 2000);
+        }, 3000);
 
         wsRef.current.onopen = () => {
           connectedRef.current = true;
           clearTimeout(timeout);
           setLastMessage("Connected to Obelisk Q backend — live telemetry active");
 
-          // Still run heartbeat for protocol compliance
           heartbeatRef.current = setInterval(() => {
             setNodes(prev => prev.map(n => ({ ...n, lastPulse: Date.now() })));
           }, 1000);
@@ -111,64 +157,29 @@ export function useAgentWebSocket() {
 
         wsRef.current.onclose = (event) => {
           connectedRef.current = false;
-          // Handle 401 / Session Expired
           if (event.code === 4001) {
             logout();
             return;
           }
-          // Handle reconnect logic if needed, but no mock fallback
-          setLastMessage("Disconnected from Obelisk Q backend — attempting reconnect...");
         };
 
         wsRef.current.onerror = () => {
-          // Silently fall back
+          // Silently fall back to polling
         };
 
       } catch {
-        // WebSocket constructor failed
         console.error("WebSocket initialization failed");
       }
     };
 
     connectWs();
-    
-    // ── Polling Fallback: Fetch real stats and logs every 15s ──
-    const statsInterval = setInterval(async () => {
-      if (!sessionToken) return;
-      try {
-        // 1. Fetch Stats
-        const statsRes = await fetch(`${url.replace('ws://', 'http://').replace('/ws', '')}/api/stats`, {
-          headers: { 'x-session-token': sessionToken }
-        });
-        if (statsRes.ok) {
-          const data = await statsRes.json();
-          if (typeof data.score === 'number') setScore(data.score);
-          if (typeof data.regime === 'string') setRegime(data.regime);
-          if (typeof data.circuit_breaker_active === 'boolean') setCircuitBreakerActive(data.circuit_breaker_active);
-          if (data.current_position) setCurrentPosition(data.current_position);
-        }
 
-        // 2. Fetch Logs
-        const logsRes = await fetch(`${url.replace('ws://', 'http://').replace('/ws', '')}/api/agent/logs`, {
-          headers: { 'x-session-token': sessionToken }
-        });
-        if (logsRes.ok) {
-          const data = await logsRes.json();
-          if (data.logs) {
-            const mapped = data.logs.map((l: any) => ({
-              timestamp: l.timestamp,
-              node: l.node || 'Supervisory Controller',
-              message: l.message || `Cycle ${l.cycle} scan: ${l.regime} regime confirmed.`,
-              score: l.score,
-              cycle: l.cycle
-            }));
-            setAgentLogs(mapped);
-          }
-        }
-      } catch (err) {
-        console.warn("Polling fallback failed:", err);
-      }
-    }, 15000); // 15 seconds
+    // ── Polling: fetch stats + logs every 10s via relative URLs (Vercel proxy) ──
+    const statsInterval = setInterval(() => {
+      if (!sessionToken) return;
+      fetchStats(sessionToken);
+      fetchLogs(sessionToken);
+    }, 10000);
 
     return () => {
       wsRef.current?.close();

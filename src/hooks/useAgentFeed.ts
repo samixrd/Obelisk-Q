@@ -84,8 +84,6 @@ export function useAgentFeed() {
     lastActionAt: null,
   });
 
-  const API_BASE = (import.meta as any).env?.VITE_SCORING_API_URL ?? "";
-
   useEffect(() => {
     let useAutonomous = false;
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -93,8 +91,7 @@ export function useAgentFeed() {
     const fetchFromBackend = async () => {
       if (!sessionToken) return false;
       try {
-        const url = (import.meta as any).env?.VITE_API_URL || "http://20.2.233.34:8000";
-        const res = await fetch(`${url}/api/agent/logs`, {
+        const res = await fetch('/api/agent/logs', {
           headers: {
             'x-session-token': sessionToken
           }
