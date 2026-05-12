@@ -26,29 +26,29 @@ export function EarnView({ onOpenInvest }: EarnViewProps) {
 
       {/* Strategy & Metadata Grid */}
       <div className="col-span-12 lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 content-start">
-        <div className="glass-card rounded-[32px] p-8 border border-black/5 bg-white">
-          <p className="text-[10px] uppercase text-primary/30 mb-3 font-black tracking-[0.25em]">Yield Source</p>
-          <div className="text-[17px] font-black text-primary uppercase tracking-tightest">
+        <div className="glass-card rounded-3xl p-8 transition-all hover:bg-white/80">
+          <p className="text-[10px] uppercase text-muted-foreground mb-3 font-semibold tracking-[0.2em]" style={{ letterSpacing: "0.28em" }}>Yield Source</p>
+          <div className="text-[17px] font-semibold text-[#0a0a0a]">
             <MagneticText disabled text="USDY + mETH + WMNT" />
           </div>
-          <p className="text-[12px] text-primary/50 mt-2 font-bold uppercase tracking-wide">Real-world assets, liquid staking, and native yields.</p>
+          <p className="text-[12px] text-muted-foreground mt-2">Diversified real-world assets, liquid staking, and stable native yields.</p>
         </div>
         
-        <div className="glass-card rounded-[32px] p-8 border border-black/5 bg-white">
-          <p className="text-[10px] uppercase text-primary/30 mb-3 font-black tracking-[0.25em]">Strategy</p>
-          <div className="text-[17px] font-black text-primary uppercase tracking-tightest">
+        <div className="glass-card rounded-3xl p-8 transition-all hover:bg-white/80">
+          <p className="text-[10px] uppercase text-muted-foreground mb-3 font-semibold tracking-[0.2em]" style={{ letterSpacing: "0.28em" }}>Strategy</p>
+          <div className="text-[17px] font-semibold text-[#0a0a0a]">
             <MagneticText disabled text="AI-Managed · Auto" />
           </div>
-          <p className="text-[12px] text-primary/50 mt-2 font-bold uppercase tracking-wide">Continuous rebalancing based on regime detection.</p>
+          <p className="text-[12px] text-muted-foreground mt-2">Continuous rebalancing based on regime detection.</p>
         </div>
         
         
-        <div className="glass-card rounded-[32px] p-8 border border-black/5 bg-white">
-          <p className="text-[10px] uppercase text-primary/30 mb-3 font-black tracking-[0.25em]">Lock-up</p>
-          <div className="text-[17px] font-black text-primary uppercase tracking-tightest">
+        <div className="glass-card rounded-3xl p-8 transition-all hover:bg-white/80">
+          <p className="text-[10px] uppercase text-muted-foreground mb-3 font-semibold tracking-[0.2em]" style={{ letterSpacing: "0.28em" }}>Lock-up</p>
+          <div className="text-[17px] font-semibold text-[#0a0a0a]">
             <MagneticText disabled text="Zero · Instant" />
           </div>
-          <p className="text-[12px] text-primary/50 mt-2 font-bold uppercase tracking-wide">No minimum terms. Withdraw your capital anytime.</p>
+          <p className="text-[12px] text-muted-foreground mt-2">No minimum terms. Withdraw your capital anytime.</p>
         </div>
       </div>
 

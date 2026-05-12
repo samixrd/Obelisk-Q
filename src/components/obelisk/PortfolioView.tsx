@@ -14,8 +14,8 @@ const AgentTransactions = lazy(() => import("./AgentTransactions").then(m => ({ 
 const ManagedAssets = lazy(() => import("./ManagedAssets").then(m => ({ default: m.ManagedAssets })));
 
 const ComponentSkeleton = ({ height = 200 }: { height?: number }) => (
-  <div className="w-full bg-black/5 animate-pulse rounded-[40px] flex items-center justify-center border border-black/5" style={{ height }}>
-    <span className="text-[10px] uppercase tracking-[0.2em] text-primary/20 font-black">Loading Component...</span>
+  <div className="w-full bg-black/[0.02] animate-pulse rounded-[40px] flex items-center justify-center border border-black/[0.05]" style={{ height }}>
+    <span className="text-[10px] uppercase tracking-[0.2em] text-black/20 font-bold">Loading Component...</span>
   </div>
 );
 
@@ -124,69 +124,69 @@ export function PortfolioView() {
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-24">
       
       {/* ── Top Metrics Bar ── */}
-      <div className="col-span-12 glass-card bg-white rounded-[32px] px-10 py-7 flex flex-wrap items-center justify-between mb-2 border border-black/5">
+      <div className="col-span-12 glass-card rounded-[32px] px-10 py-7 flex flex-wrap items-center justify-between shadow-[0_4px_24px_-10px_rgba(0,0,0,0.04)] mb-2">
         <div className="flex items-center gap-16">
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-primary/40 font-black tracking-[0.2em] mb-2">Portfolio Balance</span>
+            <span className="text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em] mb-2">Portfolio Balance</span>
             <div className="flex items-baseline gap-2">
-              <span className="text-[32px] font-black text-primary tabular-nums tracking-tightest">
+              <span className="text-[26px] font-bold text-[#0a0a0a] tabular-nums tracking-tight">
                 {vaultStats?.userBalance ?? "0.0000"}
               </span>
-              <span className="text-[12px] font-black text-primary/40 uppercase">MNT</span>
+              <span className="text-[12px] font-bold text-[#9CA3AF] uppercase">MNT</span>
             </div>
           </div>
           
-          <div className="h-12 w-px bg-black/5" />
+          <div className="h-10 w-px bg-black/[0.06]" />
 
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase text-primary/40 font-black tracking-[0.2em] mb-2">Est. YTD Return</span>
+            <span className="text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em] mb-2">Est. YTD Return</span>
             <div className="flex items-baseline gap-1">
-              <span className="text-[32px] font-black text-primary tabular-nums tracking-tightest">
+              <span className="text-[26px] font-bold text-emerald-500 tabular-nums tracking-tight">
                 +{est_ytd}%
               </span>
             </div>
           </div>
         </div>
 
-        <div className="hidden md:flex items-center gap-2 px-5 py-2 bg-primary/10 rounded-full border border-primary/20">
-           <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-           <span className="text-[10px] font-black text-primary uppercase tracking-widest">Vault Optimized</span>
+        <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-full border border-emerald-100">
+           <div className="h-2 w-2 rounded-full bg-emerald-400" />
+           <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest">Vault Optimized</span>
         </div>
       </div>
 
       {/* ── Withdrawal Card Interface ── */}
-      <div className="col-span-12 lg:col-span-6 glass-card bg-white rounded-[40px] overflow-hidden flex flex-col border border-black/5">
+      <div className="col-span-12 lg:col-span-6 glass-card rounded-[40px] overflow-hidden flex flex-col shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
         <div className="p-10 pb-0">
           <div className="flex items-center gap-4 mb-10">
             <div className="flex items-center -space-x-3">
-              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-white flex items-center justify-center" style={{ zIndex: 2 }}>
-                {logos.mETH ? <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" /> : <span className="text-[10px] text-primary/40 font-black">M</span>}
+              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm flex items-center justify-center" style={{ zIndex: 2 }}>
+                {logos.mETH ? <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" /> : <span className="text-[10px] text-[#00D395] font-bold">M</span>}
               </div>
-              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-primary/10 flex items-center justify-center" style={{ zIndex: 1 }}>
-                {logos.USDY ? <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" /> : <span className="text-[10px] text-primary font-black">U</span>}
+              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-[#2775CA] shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
+                {logos.USDY ? <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" /> : <span className="text-[10px] text-white font-bold">U</span>}
               </div>
             </div>
             <div>
-              <div className="text-xl font-black text-primary tracking-tightest uppercase">Withdrawal</div>
-              <p className="text-[12px] font-black text-primary/30 uppercase tracking-widest">to Mantle Mainnet</p>
+              <div className="text-[18px] font-bold text-[#0a0a0a] tracking-tight">Portfolio Withdrawal</div>
+              <p className="text-[12px] text-[#6B7280]">Withdraw to Mantle Network</p>
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-7 py-6 bg-black/[0.03] rounded-[24px] border border-black/5">
+          <div className="flex items-center justify-between px-7 py-6 bg-[#F9FAFB] rounded-[24px] border border-black/[0.04]">
             <input
               type="number" placeholder="0" value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
-              className="bg-transparent outline-none text-[34px] font-black text-primary w-full tabular-nums tracking-tightest"
+              className="bg-transparent outline-none text-[34px] font-bold text-[#0a0a0a] w-full tabular-nums tracking-tight"
             />
-            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/10 rounded-full shadow-sm">
+            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/[0.1] rounded-full shadow-sm">
               <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center border border-black/5">
-                {logos.MNT ? <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" /> : <span className="text-[8px] text-primary font-black">M</span>}
+                {logos.MNT ? <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" /> : <span className="text-[8px] text-black font-bold">M</span>}
               </div>
-              <span className="text-[12px] font-black text-primary uppercase tracking-widest">MNT</span>
+              <span className="text-[14px] font-bold text-[#0a0a0a]">MNT</span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 mt-6">
+          <div className="flex items-center gap-3 mt-5">
             {["25%", "50%", "Max"].map((label) => (
               <button
                 key={label}
@@ -195,24 +195,12 @@ export function PortfolioView() {
                   else if (label === "50%") setWithdrawAmount((balance * 0.5).toFixed(4));
                   else if (label === "25%") setWithdrawAmount((balance * 0.25).toFixed(4));
                 }}
-                className="text-[10px] px-5 py-2.5 text-primary/60 font-black uppercase tracking-widest bg-black/5 hover:bg-black/10 border border-black/5 rounded-full transition-all"
+                className="text-[12px] px-5 py-2.5 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] border border-black/[0.06] rounded-full transition-all font-bold"
               >
                 {label}
               </button>
             ))}
-            {isInsufficient && <span className="text-[11px] text-red-500/70 ml-auto font-black uppercase tracking-widest">Insufficient balance</span>}
-          </div>
-
-          <div className="p-6 rounded-3xl bg-black/[0.02] border border-black/5 mt-8">
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-white rounded-xl border border-black/5 shadow-sm">
-                <span className="material-symbols-outlined text-[18px] text-primary">verified_user</span>
-              </div>
-              <div>
-                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-1">Instant Exit</p>
-                <p className="text-[11px] text-primary/50 font-medium leading-relaxed">Liquidations are processed within 1 block duration on the Mantle Network.</p>
-              </div>
-            </div>
+            {isInsufficient && <span className="text-[12px] text-red-500/70 ml-auto font-normal">Insufficient balance</span>}
           </div>
         </div>
 
@@ -225,7 +213,9 @@ export function PortfolioView() {
               }
             }}
             disabled={isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isPending || isZeroBalance}
-            className={`w-full py-5 rounded-full text-[13px] font-black uppercase tracking-[0.2em] transition-all duration-300 ${isInsufficient || !withdrawAmount || isPending || isZeroBalance ? 'bg-black/5 text-primary/20 cursor-not-allowed' : 'btn-premium'}`}
+            whileHover={!(isInsufficient || !withdrawAmount || isPending || isZeroBalance) ? { y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" } : {}}
+            whileTap={!(isInsufficient || !withdrawAmount || isPending || isZeroBalance) ? { scale: 0.98 } : {}}
+            className={`w-full py-5 rounded-full text-[15px] font-bold transition-all duration-300 ${isInsufficient || !withdrawAmount || isPending || isZeroBalance ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
           >
             {isPending ? "Processing..." : isZeroBalance ? "Insufficient Funds" : "Withdraw Funds"}
           </motion.button>
@@ -237,22 +227,23 @@ export function PortfolioView() {
         <Suspense fallback={<ComponentSkeleton height={400} />}>
           <ManagedAssets />
         </Suspense>
-        <div className="glass-card bg-white rounded-[40px] p-10 border border-black/5">
-          <p className="text-[10px] uppercase text-primary/30 mb-8 font-black tracking-[0.3em]">30-Day Performance History</p>
-          <div className="h-[180px]">
-            <StabilityGraph seed={7} height={180} />
-          </div>
+      </div>
+
+      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_20px_40px_-12px_rgba(0,0,0,0.05)]">
+        <p className="text-[11px] uppercase text-[#9CA3AF] mb-8 font-bold tracking-[0.24em]">30-Day Performance History</p>
+        <div className="h-[180px]">
+          <StabilityGraph seed={7} height={180} />
         </div>
       </div>
 
       {/* ── Position Table ── */}
-      <div className="col-span-12 glass-card bg-white rounded-[40px] p-10 border border-black/5">
-        <div className="text-[28px] text-primary font-black mb-10 flex items-baseline gap-3 tracking-tightest uppercase">
-          Active <span className="text-primary/20">Positions</span>
+      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
+        <div className="text-[24px] text-black font-bold mb-10 flex items-baseline gap-2 tracking-tight">
+          Active <span className="font-light text-[#9CA3AF]">Positions</span>
         </div>
         <div className="overflow-x-auto scrollbar-hidden">
           <div className="min-w-[800px]">
-            <div className="grid grid-cols-12 mb-6 px-4 text-[10px] uppercase text-primary/30 font-black tracking-[0.25em]">
+            <div className="grid grid-cols-12 mb-6 px-4 text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em]">
               <div className="col-span-5">Asset</div>
               <div className="col-span-3">Strategy</div>
               <div className="col-span-2 text-right">Balance</div>
@@ -262,17 +253,17 @@ export function PortfolioView() {
               <motion.div key={p.name}
                 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.04, duration: 0.3 }}
-                className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.05] hover:bg-black/[0.02] transition-all rounded-2xl group lift-on-hover"
+                className="grid grid-cols-12 items-center py-5 px-4 border-t border-black/[0.03] hover:bg-black/[0.01] transition-all rounded-2xl group lift-on-hover"
               >
                 <div className="col-span-5 flex items-center gap-4">
                   <div className="h-10 w-10 rounded-full bg-white border border-black/[0.04] overflow-hidden flex items-center justify-center transition-all p-1.5">
                     {logos[p.id as keyof typeof logos] ? <img src={logos[p.id as keyof typeof logos]} alt={p.name} className="w-full h-full object-contain" /> : <span className="text-[13px] font-mono-num">{p.symbol[0]}</span>}
                   </div>
-                  <span className="text-[15px] text-primary font-bold">{p.name}</span>
+                  <span className="text-[15px] text-black font-bold">{p.name}</span>
                 </div>
-                <div className="col-span-3 text-[13px] text-primary/60 font-bold">{p.strategy}</div>
-                <div className="col-span-2 text-[15px] text-primary text-right font-mono-num">{p.balance}</div>
-                <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-mono-num ${p.up ? "text-emerald-500" : "text-primary/40"}`}>
+                <div className="col-span-3 text-[13px] text-[#6B7280] font-bold">{p.strategy}</div>
+                <div className="col-span-2 text-[15px] text-black text-right font-mono-num">{p.balance}</div>
+                <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-mono-num ${p.up ? "text-emerald-500" : "text-[#9CA3AF]"}`}>
                   {p.up ? <IconArrowUpRight size={14} /> : <IconArrowDownRight size={14} />}
                   {p.change}
                 </div>

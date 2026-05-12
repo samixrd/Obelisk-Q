@@ -18,11 +18,11 @@ const fadeUp = {
 
 // ── Node Status Palette (muted, glass-aligned) ─────────────────────────────
 const STATUS_DOT: Record<string, string> = {
-  active:      'bg-primary shadow-[0_0_8px_hsla(var(--primary)/0.4)]',
-  calculating: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.4)]',
-  streaming:   'bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.4)]',
-  arbitrating: 'bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.4)]',
-  idle:        'bg-white/10',
+  active:      'bg-emerald-400/60',
+  calculating: 'bg-amber-400/60',
+  streaming:   'bg-sky-400/60',
+  arbitrating: 'bg-violet-400/60',
+  idle:        'bg-black/10',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -45,24 +45,24 @@ export function AgentLogsView() {
     <div className="grid grid-cols-12 gap-6 md:gap-8 pb-24">
 
       
-      {/* ── Node Status Grid ────────────────────────────────────────────── */}
+      {/* ── Supervisory Node Status ────────────────────────────────────────── */}
       <div className="col-span-12 grid grid-cols-2 md:grid-cols-5 gap-4">
         {nodes.map((node, i) => (
           <motion.div key={node.id}
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-card rounded-[24px] px-5 py-4 border border-black/5 bg-white hover:bg-gray-50/50 transition-colors"
+            className="glass-card rounded-[24px] px-5 py-4 transition-all border border-black/[0.04]"
           >
             <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[9px] uppercase text-primary/30 tracking-[0.15em] font-black">
+              <p className="text-[9px] uppercase text-black/40 tracking-[0.15em] font-light">
                 {node.label}
               </p>
-              <div className={`h-1.5 w-1.5 rounded-full ${node.status === 'active' ? 'bg-primary' : 'bg-primary/20'}`} />
+              <div className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[node.status] || STATUS_DOT.idle}`} />
             </div>
-            <div className="text-[13px] text-primary mb-0.5 font-black uppercase tracking-tight">
+            <div className="text-[13px] text-[#0a0a0a] mb-0.5 font-light">
               {STATUS_LABELS[node.status] || node.status}
             </div>
-            <p className="text-[9px] text-primary/30 font-black uppercase tracking-widest">{node.sub}</p>
+            <p className="text-[9px] text-black/30 font-light">{node.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -77,15 +77,16 @@ export function AgentLogsView() {
           <motion.div key={s.label}
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-card rounded-[32px] px-10 py-8 border border-black/5 bg-white"
+            whileHover={{ y: -4, backgroundColor: "rgba(255,255,255,0.95)" }}
+            className="glass-card rounded-[32px] px-10 py-8 transition-all"
           >
-            <p className="text-[10px] uppercase text-primary/30 mb-4 font-black tracking-[0.25em]">
-              {s.label}
+            <p className="text-[10px] uppercase text-black/40 mb-4 tracking-[0.24em] font-light">
+              <MagneticText disabled text={s.label} />
             </p>
-            <div className="text-[32px] text-primary mb-2 tabular-nums font-black tracking-tightest">
-              {s.value}
+            <div className="text-[28px] text-[#0a0a0a] mb-2 tabular-nums font-light tracking-tighter">
+              <MagneticText disabled text={s.value} />
             </div>
-            <p className="text-[10px] text-primary/20 uppercase tracking-widest font-black">{s.sub}</p>
+            <p className="text-[10px] text-black/30 uppercase tracking-wider font-light">{s.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -96,26 +97,27 @@ export function AgentLogsView() {
       </div>
       
       {/* ── Agent Signals ────────────────────────────────────────────────── */}
-      <div className="col-span-12 glass-card rounded-[32px] p-8 md:p-10 border border-black/5 bg-white">
+      <div className="col-span-12 glass-card rounded-[32px] p-8 md:p-10">
         <div className="flex items-center justify-between mb-6">
-          <div className="text-[22px] text-primary flex flex-wrap gap-x-[0.25em] font-black tracking-tightest uppercase">
-            Agent <span className="text-primary/30">Signals</span>
+          <div className="text-[22px] text-[#0a0a0a] flex flex-wrap gap-x-[0.25em] font-bold tracking-tight">
+            <MagneticText disabled text="Agent" />
+            <div className="text-[#9CA3AF]"><MagneticText disabled text="Signals" /></div>
           </div>
         </div>
         <div className="h-[320px] overflow-y-auto pr-2 scrollbar-hidden">
 
           {logs.slice(0, 5).map((log, i) => (
-            <div key={i} className="flex items-center gap-4 py-4 border-t border-black/5">
-              <span className="text-[11px] text-primary/30 w-20 tabular-nums font-mono-num font-black">
+            <div key={i} className="flex items-center gap-4 py-3.5 border-t border-black/[0.03]">
+              <span className="text-[11px] text-black/50 w-20 tabular-nums font-mono">
                 {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
               </span>
-              <div className={`px-3 py-1 rounded-full text-[9px] w-20 text-center tracking-widest font-black uppercase ${log.action === 'rebalance' ? 'bg-primary/10 text-primary' : 'bg-black/5 text-primary/30'}`}>
-                {log.action}
+              <div className={`px-3 py-1 rounded-full text-[9px] w-16 text-center tracking-wider font-light ${log.action === 'rebalance' ? 'bg-emerald-400/10 text-emerald-700' : 'bg-black/5 text-black/50'}`}>
+                {log.action.toUpperCase()}
               </div>
-              <span className="flex-1 text-[13px] text-primary/70 truncate font-black uppercase tracking-tight">
+              <span className="flex-1 text-[13px] text-[#0a0a0a]/80 truncate font-light">
                 {log.message}
               </span>
-              <span className="text-[11px] text-primary w-8 text-right font-black">
+              <span className="text-[11px] text-[#0a0a0a]/60 w-8 text-right font-mono-num">
                 {log.score}
               </span>
             </div>
@@ -129,25 +131,26 @@ export function AgentLogsView() {
       </div>
 
       {/* ── Log Stream ───────────────────────────────────────────────────── */}
-      <div className="col-span-12 glass-card rounded-[48px] p-10 md:p-14 flex flex-col h-[800px] border border-black/5 bg-white hover:border-primary/20">
+      <div className="col-span-12 glass-card rounded-[40px] p-8 md:p-10 flex flex-col h-[700px] transition-all">
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12">
-          <div className="space-y-2">
-            <div className="text-[28px] text-primary flex flex-wrap gap-x-[0.3em] font-black tracking-tightest uppercase">
-              Multi-Agent <span className="text-primary/20">Supervisory Feed</span>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div className="space-y-1">
+            <div className="text-[22px] text-[#0a0a0a] flex flex-wrap gap-x-[0.3em] font-bold tracking-tight">
+              <MagneticText disabled text="Multi-Agent" />
+              <span className="text-black/40"><MagneticText disabled text="Supervisory Feed" /></span>
             </div>
-            <p className="text-[12px] text-primary/30 font-black uppercase tracking-widest">Real-time LangGraph audit stream · Antigravity Protocol Verified</p>
+            <p className="text-[11px] text-black/40 font-light">Real-time LangGraph audit stream. Persistence enabled via Antigravity Cloud.</p>
           </div>
           
           <motion.div 
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-3 px-6 py-2.5 bg-primary text-white rounded-full text-[10px] uppercase tracking-[0.2em] w-fit font-black"
+            whileHover={{ scale: 1.03 }}
+            className="flex items-center gap-3 px-5 py-2 bg-[#1a1a1a] text-white/80 rounded-full text-[10px] uppercase tracking-[0.15em] w-fit font-light"
           >
              <div className="relative flex items-center justify-center">
-                <span className="absolute inset-0 rounded-full bg-white animate-ping opacity-30" />
-                <span className="h-2 w-2 rounded-full bg-white relative z-10" />
+                <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-20" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400/80 relative z-10" />
              </div>
-             Live Audit Stream
+             <MagneticText disabled text="Live Stream" />
           </motion.div>
         </div>
 
@@ -182,45 +185,44 @@ function LogRow({ log }: { log: any }) {
       layout
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="flex flex-col py-4 border-b border-primary/10 group hover:bg-primary/5 transition-colors -mx-3 px-3 rounded-xl"
+      className="flex flex-col py-4 border-b border-black/[0.03] group hover:bg-black/[0.01] transition-colors -mx-3 px-3 rounded-xl"
     >
 
       <div className="flex items-center gap-4 md:gap-5">
-        <span className="text-[11px] text-primary/50 w-[72px] font-mono-num">
+        <span className="text-[11px] text-black/50 w-[72px] font-mono-num">
           {timeStr}
         </span>
 
         {log.node && (
-          <span className="text-[9px] text-primary/40 uppercase tracking-[0.08em] w-28 truncate hidden md:inline font-bold">
+          <span className="text-[9px] text-[#0a0a0a]/40 uppercase tracking-[0.08em] w-28 truncate hidden md:inline font-light">
             {log.node}
           </span>
         )}
 
         <div
-          className="px-3 py-1 rounded-full text-[9px] w-20 text-center tracking-widest font-black"
+          className="px-2.5 py-0.5 rounded-full text-[9px] w-16 text-center tracking-wider font-light"
           style={{
-            background: isAction ? 'rgba(var(--foreground-rgb), 0.1)' : 'rgba(0,0,0,0.03)',
-            color: 'hsl(var(--primary))',
-            border: isAction ? '1px solid hsla(var(--primary)/0.2)' : '1px solid rgba(0,0,0,0.05)',
+            background: isAction ? 'rgba(52,211,153,0.06)' : 'rgba(0,0,0,0.025)',
+            color: isAction ? 'rgba(5,150,105,0.7)' : 'rgba(0,0,0,0.25)',
           }}
         >
-          {isAction ? "ACTION" : log.cycle ? `C-${String(log.cycle).padStart(3, '0')}` : "TRACE"}
+          {isAction ? "ACTION" : log.cycle ? `C${String(log.cycle).padStart(3, '0')}` : "LOG"}
         </div>
 
-        <span className="flex-1 text-[13px] text-primary/70 group-hover:text-primary transition-colors leading-relaxed truncate font-black uppercase tracking-wide">
+        <span className="flex-1 text-[13px] text-[#0a0a0a]/80 group-hover:text-[#0a0a0a] transition-colors leading-relaxed truncate font-light">
           {message}
         </span>
 
         <div className="flex items-center gap-3">
-          <div className="h-[3px] w-12 bg-primary/5 rounded-full overflow-hidden">
+          <div className="h-[3px] w-12 bg-black/[0.03] rounded-full overflow-hidden">
             <motion.div 
               initial={{ width: 0 }}
               animate={{ width: `${log.score}%` }}
               transition={{ duration: 1, delay: 0.2 }}
-              className="h-full bg-primary/20 rounded-full" 
+              className="h-full bg-black/10 rounded-full" 
             />
           </div>
-          <span className="text-[11px] text-primary/60 w-7 text-right font-mono-num font-bold">
+          <span className="text-[11px] text-[#0a0a0a]/60 w-7 text-right font-mono-num">
             {log.score}
           </span>
         </div>

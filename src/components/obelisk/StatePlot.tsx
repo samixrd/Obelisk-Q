@@ -59,14 +59,14 @@ export function StatePlot({ className }: Props) {
         <defs>
           {/* Radial fade so curves dissolve at the edges */}
           <radialGradient id="state-fade" cx="50%" cy="50%" r="55%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.4" />
-            <stop offset="60%" stopColor="hsl(var(--primary))" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+            <stop offset="0%" stopColor="hsl(0 0% 100%)" stopOpacity="0.55" />
+            <stop offset="60%" stopColor="hsl(0 0% 100%)" stopOpacity="0.18" />
+            <stop offset="100%" stopColor="hsl(0 0% 100%)" stopOpacity="0" />
           </radialGradient>
           <radialGradient id="state-fade-faint" cx="50%" cy="50%" r="55%">
-            <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.15" />
-            <stop offset="70%" stopColor="hsl(var(--primary))" stopOpacity="0.04" />
-            <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
+            <stop offset="0%" stopColor="hsl(0 0% 100%)" stopOpacity="0.22" />
+            <stop offset="70%" stopColor="hsl(0 0% 100%)" stopOpacity="0.06" />
+            <stop offset="100%" stopColor="hsl(0 0% 100%)" stopOpacity="0" />
           </radialGradient>
           <mask id="state-mask">
             <rect width={W} height={H} fill="url(#state-fade)" />
@@ -144,8 +144,14 @@ export function StatePlot({ className }: Props) {
         </g>
 
         {/* Origin point — the agent's centroid */}
-        {/* Origin point — the agent's centroid */}
-        <circle cx={CX} cy={CY} r="3" fill="hsl(var(--primary))" opacity="0.8" className="animate-pulse" />
+        <circle cx={CX} cy={CY} r="2" fill="hsl(104 100% 78%)" opacity="0.7">
+          <animate
+            attributeName="opacity"
+            values="0.4;0.9;0.4"
+            dur="3.6s"
+            repeatCount="indefinite"
+          />
+        </circle>
       </svg>
     </div>
   );

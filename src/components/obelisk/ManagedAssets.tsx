@@ -87,10 +87,10 @@ export function ManagedAssets() {
   ];
 
   return (
-    <div className="col-span-12 glass-card rounded-3xl p-8 md:p-10 transition-all hover:bg-primary/5 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
+    <div className="col-span-12 glass-card rounded-3xl p-8 md:p-10 transition-all hover:bg-white/80 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
         <div>
-          <p className="text-[10px] uppercase text-primary/60 mb-2 font-bold tracking-[0.24em]">
+          <p className="text-[10px] uppercase text-muted-foreground mb-2 font-bold tracking-[0.24em]">
             Managed Assets
           </p>
           <div className="text-2xl text-foreground flex flex-wrap gap-x-[0.25em] font-display">

@@ -44,7 +44,7 @@ function AdaptiveThresholdIndicator() {
     : "linear-gradient(90deg, hsl(104 100% 35% / 0.2), hsl(104 100% 35%))";
 
   return (
-    <motion.div layout className="mt-5 pt-5 border-t border-primary/10">
+    <motion.div layout className="mt-5 pt-5 border-t border-foreground/5">
       <div className="flex items-center justify-between mb-4">
         <span className="text-[9px] uppercase text-muted-foreground font-bold tracking-[0.28em]">
           Threshold
@@ -82,7 +82,7 @@ function EngineLogicPanel() {
   return (
     <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}
       transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }} style={{ overflow: "hidden" }}>
-      <div className="mt-5 pt-5 space-y-4 border-t border-primary/10">
+      <div className="mt-5 pt-5 space-y-4 border-t border-foreground/5">
         <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-[0.32em]">
           Composition
         </p>
@@ -92,7 +92,7 @@ function EngineLogicPanel() {
               <span className="text-[11px] text-foreground/70 font-semibold">{w.label}</span>
               <span className="text-[10px] text-muted-foreground font-bold tabular-nums">{w.pct}%</span>
             </div>
-            <div className="relative h-0.5 w-full bg-primary/5 mb-2">
+            <div className="relative h-0.5 w-full bg-foreground/5 mb-2">
               <motion.div className="absolute top-0 left-0 h-full bg-foreground/20" initial={{ width: 0 }} animate={{ width: `${w.pct}%` }} transition={{ delay: 0.15 + i * 0.07, duration: 0.9 }} />
             </div>
             <p className="text-[10px] leading-relaxed text-muted-foreground/60 font-medium">{w.description}</p>
@@ -108,7 +108,7 @@ export function StabilityScoreCard() {
   const [engineOpen, setEngineOpen] = useState(false);
 
   return (
-    <div id="tour-stability-score" className="col-span-12 glass-card rounded-3xl p-8 md:p-10 min-h-[320px] flex flex-col justify-between transition-all hover:bg-primary/5">
+    <div id="tour-stability-score" className="col-span-12 glass-card rounded-3xl p-8 md:p-10 min-h-[320px] flex flex-col justify-between transition-all hover:bg-white/80">
       <div>
         <div className="flex items-center justify-between mb-6">
           <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-[0.28em]">Stability Score</p>
@@ -129,7 +129,7 @@ export function StabilityScoreCard() {
       <div className="flex items-center gap-1.5 md:gap-2 mt-8 md:mt-6 overflow-hidden">
         {Array.from({ length: 20 }).map((_, i) => (
           <motion.div key={i} className="h-6 w-px md:w-[2px] rounded-full"
-            animate={{ backgroundColor: i < Math.round(score / 5) ? "hsla(var(--primary) / 0.6)" : "hsla(var(--primary) / 0.06)" }}
+            animate={{ backgroundColor: i < Math.round(score / 5) ? "rgba(0,0,0,0.6)" : "rgba(0,0,0,0.06)" }}
             transition={{ duration: 0.5, delay: i * 0.02 }} />
         ))}
       </div>

@@ -97,17 +97,18 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   return (
     <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: "var(--background)" }}
+      style={{ background: "#f5f5f8" }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
-      {/* Ambient Blobs — same as landing */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="glass-blob w-[400px] h-[400px] -top-20 -left-20 bg-primary opacity-10"></div>
-        <div className="glass-blob w-[300px] h-[300px] bottom-0 right-0 bg-primary opacity-10"></div>
-      </div>
+      {/* Blue glow border — same as landing */}
+      <div aria-hidden style={{
+        position: "fixed", inset: 0, zIndex: 100, pointerEvents: "none",
+        boxShadow: "inset 0 0 80px 20px rgba(100,160,255,0.12), inset 0 0 200px 40px rgba(80,140,255,0.06)",
+        border: "1px solid rgba(100,160,255,0.08)",
+      }} />
 
       {/* Card */}
       <motion.div
@@ -116,11 +117,10 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
         transition={{ duration: 0.45, delay: 0, ease: [0.22, 1, 0.36, 1] }}
         className="relative w-full max-w-[440px] mx-6"
         style={{
-          background: "rgba(11, 20, 33, 0.05)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(11, 20, 33, 0.1)",
-          boxShadow: "0 25px 60px -15px rgba(0,0,0,0.05)",
-          borderRadius: "32px",
+          background: "#ffffff",
+          border: "1px solid rgba(0,0,0,0.08)",
+          boxShadow: "0 25px 60px -15px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.05)",
+          borderRadius: "16px",
           minHeight: "520px",
           display: "flex",
           flexDirection: "column"
@@ -134,8 +134,8 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.35 }}>
             <span style={{
-              fontSize: "10px", fontWeight: 700, letterSpacing: "0.2em",
-              color: "rgba(11, 20, 33, 0.5)", fontFamily: "'Inter', sans-serif", textTransform: "uppercase",
+              fontSize: "10px", fontWeight: 600, letterSpacing: "0.15em",
+              color: "#999", fontFamily: "'Inter', sans-serif", textTransform: "uppercase",
             }}>Step {step} of 2</span>
           </motion.div>
 
@@ -153,14 +153,14 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                 <div className="mb-8">
                   <h2 style={{
                     fontSize: 32, lineHeight: 1.1, letterSpacing: "-0.03em",
-                    color: "#0b1421", fontWeight: 700, fontFamily: "'Inter', sans-serif",
+                    color: "#0a0a0a", fontWeight: 700, fontFamily: "'Inter', sans-serif",
                   }}>
                     Compliance
                     <br />
-                    <span style={{ fontWeight: 400, color: "rgba(11, 20, 33, 0.5)" }}>Verification.</span>
+                    <span style={{ fontWeight: 400, color: "#888" }}>Verification.</span>
                   </h2>
                   <p style={{
-                    marginTop: 12, fontSize: 13, color: "rgba(11, 20, 33, 0.7)",
+                    marginTop: 12, fontSize: 13, color: "#888",
                     fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em", lineHeight: 1.6,
                   }}>
                     To proceed, please confirm you meet the institutional eligibility requirements.
@@ -182,7 +182,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                           type="checkbox"
                           checked={compliance[item.id as keyof typeof compliance]}
                           onChange={(e) => setCompliance(prev => ({ ...prev, [item.id]: e.target.checked }))}
-                          className="peer appearance-none h-5 w-5 rounded-md border border-primary/20 bg-primary/5 checked:bg-primary checked:border-primary transition-all duration-300 cursor-pointer"
+                          className="peer appearance-none h-5 w-5 rounded-md border border-black/10 bg-black/5 checked:bg-black checked:border-black transition-all duration-300 cursor-pointer"
                           style={{ flexShrink: 0 }}
                         />
                         <svg 
@@ -204,7 +204,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                   whileTap={allChecked ? { scale: 0.99 } : {}}
                   onClick={() => setStep(2)}
                   disabled={!allChecked}
-                  className={`mt-auto w-full py-4 rounded-xl text-[14px] font-bold transition-all duration-300 ${allChecked ? 'bg-primary text-background shadow-xl shadow-primary/10' : 'bg-primary/5 text-primary/20 cursor-not-allowed'}`}
+                  className={`mt-auto w-full py-4 rounded-xl text-[14px] font-bold transition-all duration-300 ${allChecked ? 'bg-black text-white shadow-xl shadow-black/10' : 'bg-black/5 text-black/20 cursor-not-allowed'}`}
                   style={{ fontFamily: "'Inter', sans-serif" }}
                 >
                   Continue to Access
@@ -223,14 +223,14 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                 <div className="mb-8">
                   <h2 style={{
                     fontSize: 32, lineHeight: 1.1, letterSpacing: "-0.03em",
-                    color: "#0b1421", fontWeight: 700, fontFamily: "'Inter', sans-serif",
+                    color: "#0a0a0a", fontWeight: 700, fontFamily: "'Inter', sans-serif",
                   }}>
                     Identity
                     <br />
-                    <span style={{ fontWeight: 400, color: "rgba(11, 20, 33, 0.5)" }}>Selection.</span>
+                    <span style={{ fontWeight: 400, color: "#888" }}>Selection.</span>
                   </h2>
                   <p style={{
-                    marginTop: 12, fontSize: 13, color: "rgba(11, 20, 33, 0.7)",
+                    marginTop: 12, fontSize: 13, color: "#888",
                     fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em", lineHeight: 1.6,
                   }}>
                     Choose your preferred authentication method to enter the Obelisk network.
@@ -271,7 +271,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
                   <button 
                     onClick={() => setStep(1)}
-                    className="mt-4 text-[11px] text-primary/40 hover:text-primary transition-colors uppercase tracking-widest font-bold"
+                    className="mt-4 text-[11px] text-muted-foreground hover:text-black transition-colors uppercase tracking-widest font-bold"
                     style={{ fontFamily: "'Inter', sans-serif" }}
                   >
                     ← Back to Terms
@@ -284,7 +284,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           {/* Footer */}
           <motion.div style={{
             marginTop: "auto", paddingTop: 20, display: "flex", alignItems: "center", justifyContent: "space-between",
-            borderTop: "1px solid rgba(11,20,33,0.06)",
+            borderTop: "1px solid rgba(0,0,0,0.06)",
           }}
             initial={{ opacity: 0 }} animate={{ opacity: 1 }}
             transition={{ duration: 0.8, delay: 0.8 }}>
