@@ -454,7 +454,7 @@ async def supervisory_controller_node(state: AgentState):
     
     rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
-    vault_addr = os.getenv("VAULT_ADDRESS", "0x1f15C9C4c80734400c8a8681CDa39E4288c6AC16")
+    vault_addr = os.getenv("VAULT_ADDRESS", "0x1cA9813c83e6d012798acD19Af1CF87a91F119DD")
     
     if not private_key or not vault_addr:
         logger.error(f"executor: pre-flight check failed. private_key={bool(private_key)}, vault_addr={vault_addr}")
