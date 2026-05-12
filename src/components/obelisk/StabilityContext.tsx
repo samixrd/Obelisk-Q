@@ -58,7 +58,7 @@ export function StabilityProvider({ children }: { children: ReactNode }) {
   const abortRef = useRef<AbortController | null>(null);
 
   // Read from the single shared agent data source
-  const { score: wsScore, regime: wsRegime } = useAgentData();
+  const { score: wsScore, regime: wsRegime, components: wsComponents } = useAgentData();
 
   useEffect(() => {
     setEngineScore(wsScore);
@@ -78,7 +78,8 @@ export function StabilityProvider({ children }: { children: ReactNode }) {
     setEngineLoading(false);
     setEngineError(null);
     setLastFetched(Date.now());
-  }, [wsScore, wsRegime]);
+    if (wsComponents) setComponents(wsComponents);
+  }, [wsScore, wsRegime, wsComponents]);
 
   const score = scoreOverride ?? engineScore;
   const volatility: VolatilityRegime =

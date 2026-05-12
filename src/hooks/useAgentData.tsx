@@ -32,6 +32,11 @@ interface AgentData {
     sub: string;
     lastPulse: number;
   }>;
+  components: {
+    yield_score: number;
+    volatility_score: number;
+    liquidity_score: number;
+  };
 }
 
 const AgentDataContext = createContext<AgentData | null>(null);

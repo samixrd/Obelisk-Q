@@ -117,7 +117,7 @@ export function DecisionTransparency() {
               <div className="flex justify-between items-center pt-8 border-t border-black/[0.04]">
                 <span className="text-sm font-bold text-black/40 uppercase tracking-widest">Total:</span>
                 <div className="text-2xl font-bold text-black flex items-baseline gap-2">
-                   <MagneticText disabled text="73.5" />
+                   <MagneticText disabled text={String(score)} />
                    <span className="text-sm text-black/20">/ 100</span>
                 </div>
               </div>

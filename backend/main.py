@@ -154,7 +154,8 @@ last_known_state = {
     "risk": {"vol": 1.5, "score": 90},
     "sensitivity": 0.5,
     "regime": "Consolidation",
-    "hysteresis": 0
+    "hysteresis": 0,
+    "components": {"yield_score": 75, "volatility_score": 70, "liquidity_score": 85}
 }
 
 LAST_REBALANCE_TIME = 0
@@ -367,11 +368,28 @@ async def q_score_engine_node(state: AgentState):
     else:
         content = f"scoring: {h_s} triggered. action: {action}. damping limits: {damping}."
         
-    vol = state["data"].get("vol", 1.5)
-    sensitivity = 1.0 / (vol + 0.1)
-    state["sensitivity"] = sensitivity
-    state["data"]["action"] = action
+    # Calculate component scores for transparency breakdown
+    usdy_apy = state["data"].get("yields", {}).get("usdy", 5.0)
+    meth_apy = state["data"].get("yields", {}).get("meth", 3.5)
+    spread = usdy_apy - meth_apy
     
+    # Yield Score: Higher spread is better for USDY (the stable target)
+    yield_score = max(0, min(100, int(spread * 15 + 55)))
+    
+    # Volatility Score: Inverse to market volatility
+    vol_score = max(0, min(100, int(100 - (vol - 0.5) * 28)))
+    
+    # Liquidity Score: Stable depth simulation
+    liq_score = 82 + random.randint(-2, 2)
+    
+    comp_data = {
+        "yield_score": yield_score,
+        "volatility_score": vol_score,
+        "liquidity_score": liq_score
+    }
+    state["data"]["components"] = comp_data
+    last_known_state["components"] = comp_data
+
     return {"messages": [AIMessage(content=content)], "sensitivity": sensitivity, "data": state["data"]}
 
 async def telemetry_aggregator_node(state: AgentState):
@@ -898,6 +916,7 @@ async def get_stats():
         "vault_health": "Optimal",
         "score": last_known_state["risk"]["score"],
         "regime": last_known_state["regime"],
+        "components": last_known_state["components"],
         "circuit_breaker_active": CIRCUIT_BREAKER_ACTIVE,
         "current_position": CURRENT_POSITION,
         "supported_assets": ["MNT", "mETH", "USDY", "WMNT"]
@@ -1058,6 +1077,7 @@ async def run_analysis_cycle():
                 "score": score,
                 "regime": regime,
                 "logs": logs,
+                "components": final_state.get("data", {}).get("components", last_known_state["components"]),
                 "yields": final_state.get("data", {}).get("yields", {"usdy": 5.0, "meth": 3.5})
             })
             
