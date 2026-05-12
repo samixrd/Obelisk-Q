@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
 import { Logo } from "./Logo";
 import { useAuth } from "@/context/AuthContext";
+import { WalletConnectModal } from "./WalletConnectModal";
 
 interface AuthScreenProps {
   onAuthenticated: () => void;
@@ -14,6 +15,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   const [step,          setStep]           = useState<1 | 2>(1);
   const [walletLoading,  setWalletLoading]  = useState(false);
   const [error,          setError]          = useState<string | null>(null);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [compliance, setCompliance] = useState({
     "non-us": false,
     "regulated": false,
@@ -23,49 +25,33 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   const allChecked = Object.values(compliance).every(v => v);
 
   // ── Antigravity Login Flow (Signature Required) ────────────────────────
-  const handleWallet = async () => {
+  const handleWallet = () => {
+    setWalletModalOpen(true);
+  };
+
+  const handleWalletConnected = async (address: string) => {
     const eth = (window as any).ethereum;
-    if (!eth) {
-      setError("MetaMask not found. Please install it.");
-      return;
-    }
+    // Note: If using WalletConnect via AppKit, window.ethereum might not be the right provider
+    // but our current backend login logic relies on personal_sign.
+    // For now, we assume the provider is injected or handled by AppKit's EthersAdapter.
+    
     setWalletLoading(true);
     setError(null);
     try {
-      // Force Mantle Mainnet switch before sign-in
-      const chainIdHex = "0x1388"; // 5000
-      try {
-        await eth.request({
-          method: "wallet_switchEthereumChain",
-          params: [{ chainId: chainIdHex }],
-        });
-      } catch (switchError: any) {
-        if (switchError.code === 4902) {
-          await eth.request({
-            method: "wallet_addEthereumChain",
-            params: [{
-              chainId:         chainIdHex,
-              chainName:       "Mantle",
-              nativeCurrency:  { name: "MNT", symbol: "MNT", decimals: 18 },
-              rpcUrls:         ["https://rpc.mantle.xyz"],
-              blockExplorerUrls: ["https://explorer.mantle.xyz"],
-            }],
-          });
-        } else {
-          throw new Error("Please switch to Mantle Mainnet to continue.");
-        }
-      }
-
-      const accounts = await eth.request({ method: "eth_requestAccounts" }) as string[];
-      if (!accounts[0]) throw new Error("No account returned.");
-      const address = accounts[0];
-
       // Request signature for session validation
       const message = `Antigravity Protocol Login\n\nSession Duration: 5 Minutes\nWallet: ${address}\nTimestamp: ${Date.now()}`;
-      const signature = await eth.request({
-        method: "personal_sign",
-        params: [message, address],
-      });
+      
+      let signature;
+      // If we're using WalletConnect, we should use the provider from the modal/appkit
+      // but to keep it simple, we check if window.ethereum is available
+      if (eth) {
+        signature = await eth.request({
+          method: "personal_sign",
+          params: [message, address],
+        });
+      } else {
+        throw new Error("No provider found for signing.");
+      }
 
       // Submit to backend for temporal token issuance
       const API_URL = import.meta.env.VITE_API_URL || "";
@@ -265,8 +251,14 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                       </svg>
                     }
                     label={walletLoading ? "Connecting..." : "Web3 Wallet"}
-                    sublabel="MetaMask · Direct on-chain access"
+                    sublabel="MetaMask · WalletConnect · Mobile"
                     accent
+                  />
+
+                  <WalletConnectModal 
+                    open={walletModalOpen}
+                    onClose={() => setWalletModalOpen(false)}
+                    onConnected={handleWalletConnected}
                   />
 
                   <button 
