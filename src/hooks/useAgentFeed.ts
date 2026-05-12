@@ -93,7 +93,7 @@ export function useAgentFeed() {
     const fetchFromBackend = async () => {
       if (!sessionToken) return false;
       try {
-        const url = (import.meta as any).env?.VITE_API_URL ?? "http://localhost:8000";
+        const url = (import.meta as any).env?.VITE_API_URL || "http://20.2.233.34:8000";
         const res = await fetch(`${url}/api/agent/logs`, {
           headers: {
             'x-session-token': sessionToken

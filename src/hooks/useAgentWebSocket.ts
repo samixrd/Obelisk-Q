@@ -57,7 +57,7 @@ export function useAgentWebSocket() {
 
   useEffect(() => {
     // Attempt real WebSocket connection first
-    const url = (import.meta as any).env?.VITE_WS_URL ?? "ws://localhost:8000/ws";
+    const url = (import.meta as any).env?.VITE_WS_URL || "ws://20.2.233.34:8000/ws";
 
     const connectWs = () => {
       if (!sessionToken) return;
