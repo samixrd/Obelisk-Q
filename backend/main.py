@@ -328,25 +328,44 @@ Reply with ONLY one word: Expansion, Consolidation, or Contraction."""},
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def q_score_engine_node(state: AgentState):
-    global EMA_SCORE
-    logger.info("node: q_score_engine | calculating confidence")
-    regime = state["data"].get("regime", "Consolidation")
-    raw_score = state["data"].get("risk", {}).get("score", 90)
+    # 1. Calculate Component Scores
+    usdy_apy = state["data"].get("yields", {}).get("usdy", 5.0)
+    meth_apy = state["data"].get("yields", {}).get("meth", 3.5)
+    spread = usdy_apy - meth_apy
+    vol = state["data"].get("risk", {}).get("vol", 1.5)
     
-    # ── EMA Smoothing with Hard Clamp ──
+    # Yield Score (40%): Higher spread vs baseline is better
+    yield_score = max(0, min(100, int(spread * 15 + 55)))
+    # Volatility Score (35%): Inverse to market volatility
+    vol_score = max(0, min(100, int(100 - (vol - 0.5) * 28)))
+    # Liquidity Score (25%): Simulated depth
+    liq_score = 82 + random.randint(-2, 2)
+    
+    # 2. Calculate Weighted Raw Total
+    raw_weighted_total = (yield_score * 0.40) + (vol_score * 0.35) + (liq_score * 0.25)
+
+    # 3. EMA Smoothing with Hard Clamp
     if EMA_SCORE is None:
-        EMA_SCORE = float(raw_score)
+        EMA_SCORE = float(raw_weighted_total)
     else:
         # Hard clamp — score CANNOT change more than 5 points per cycle
-        clamped_raw = max(EMA_SCORE - MAX_DELTA, min(EMA_SCORE + MAX_DELTA, float(raw_score)))
+        clamped_raw = max(EMA_SCORE - MAX_DELTA, min(EMA_SCORE + MAX_DELTA, float(raw_weighted_total)))
         EMA_SCORE = (ALPHA * clamped_raw) + ((1 - ALPHA) * EMA_SCORE)
     
     risk_score = int(EMA_SCORE)
-    # Ensure state and cache use the smoothed score
-    if "risk" not in state["data"]: state["data"]["risk"] = {}
-    state["data"]["risk"]["score"] = risk_score
-    last_known_state["risk"]["score"] = risk_score
     
+    # Save components and synced score
+    comp_data = {
+        "yield_score": yield_score,
+        "volatility_score": vol_score,
+        "liquidity_score": liq_score
+    }
+    state["data"]["components"] = comp_data
+    state["data"]["risk"]["score"] = risk_score
+    last_known_state["components"] = comp_data
+    last_known_state["risk"]["score"] = risk_score
+
+    # 4. Decision Logic
     if regime == "Expansion" and risk_score >= 65:
         h_s = "H(s)_growth"
         damping = "0.4 (Underdamped)"
@@ -369,27 +388,10 @@ async def q_score_engine_node(state: AgentState):
     else:
         content = f"scoring: {h_s} triggered. action: {action}. damping limits: {damping}."
         
-    # Calculate component scores for transparency breakdown
-    usdy_apy = state["data"].get("yields", {}).get("usdy", 5.0)
-    meth_apy = state["data"].get("yields", {}).get("meth", 3.5)
-    spread = usdy_apy - meth_apy
-    
-    # Yield Score: Higher spread is better for USDY (the stable target)
-    yield_score = max(0, min(100, int(spread * 15 + 55)))
-    
-    # Volatility Score: Inverse to market volatility
-    vol_score = max(0, min(100, int(100 - (vol - 0.5) * 28)))
-    
-    # Liquidity Score: Stable depth simulation
-    liq_score = 82 + random.randint(-2, 2)
-    
-    comp_data = {
-        "yield_score": yield_score,
-        "volatility_score": vol_score,
-        "liquidity_score": liq_score
-    }
-    state["data"]["components"] = comp_data
-    last_known_state["components"] = comp_data
+    state["data"]["action"] = action
+    vol = state["data"].get("vol", 1.5)
+    sensitivity = 1.0 / (vol + 0.1)
+    state["sensitivity"] = sensitivity
 
     return {"messages": [AIMessage(content=content)], "sensitivity": sensitivity, "data": state["data"]}
 
