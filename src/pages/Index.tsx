@@ -16,10 +16,11 @@ import type { DashboardTab } from "@/components/obelisk/Dashboard";
 type AppStage = "landing" | "auth" | "dashboard";
 
 function AppInner() {
-  const { walletAddress, setWalletAddress, setAuthMethod, logout } = useAuth();
+  const { walletAddress, setWalletAddress, setAuthMethod, sessionToken, logout } = useAuth();
 
   const [stage, setStage] = useState<AppStage>(() => {
-    const savedToken = sessionStorage.getItem("obelisk_session");
+    // Check both session and persistent storage for initial state
+    const savedToken = sessionStorage.getItem("obelisk_session") || localStorage.getItem("obelisk_session");
     const savedAddr = localStorage.getItem("obelisk_address");
     return (savedToken && savedAddr) ? "dashboard" : "landing";
   });
@@ -38,13 +39,14 @@ function AppInner() {
 
   // Handle logout transition
   useEffect(() => {
-    const hasSession = !!sessionStorage.getItem("obelisk_session");
+    // Trust the context state instead of direct storage access to avoid race conditions
+    const hasSession = !!sessionToken;
     const hasWallet = !!walletAddress;
 
     if (!hasSession || !hasWallet) {
       if (stage === "dashboard") setStage("landing");
     }
-  }, [walletAddress, stage]);
+  }, [walletAddress, sessionToken, stage]);
 
   // Global scroll restoration: snap to top on tab or stage change
   useLayoutEffect(() => {
@@ -77,7 +79,7 @@ function AppInner() {
             transition={{ duration: 0.4, ease: "easeInOut" }}
           >
             <LandingPage onEnter={() => {
-              const hasSession = !!localStorage.getItem("obelisk_session");
+              const hasSession = !!sessionToken || !!sessionStorage.getItem("obelisk_session") || !!localStorage.getItem("obelisk_session");
               const hasWallet = !!walletAddress;
               if (hasSession && hasWallet) {
                 setStage("dashboard");
