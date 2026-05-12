@@ -484,15 +484,19 @@ export function useVault(): VaultState {
         } catch (e) { console.error("Polling error", e); }
       }, 3000);
 
-    } catch (err: unknown) {
+    } catch (err: any) {
       setTxState("error");
-      const msg = (err as Error).message ?? "Transaction failed";
+      const isCancelled = err?.code === 4001;
+      const msg = err?.message ?? "Transaction failed";
       setTxError(msg);
+      
       toast({
-        title: "Transaction failed",
-        description: "View details on Explorer ↗",
-        variant: "destructive",
-        onClick: () => txHash && window.open(getExplorerUrl(txHash), "_blank"),
+        title: isCancelled ? "Transaction Cancelled" : "Transaction failed",
+        description: isCancelled 
+          ? "Request was rejected in MetaMask." 
+          : "View details on Explorer ↗",
+        variant: isCancelled ? "default" : "destructive",
+        onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
       } as any);
     }
   }, [address, connect, refreshStats, saveTx, getExplorerUrl]);
@@ -616,15 +620,19 @@ export function useVault(): VaultState {
         } catch (e) { console.error("Polling error", e); }
       }, 3000);
 
-    } catch (err: unknown) {
+    } catch (err: any) {
       setTxState("error");
-      const msg = (err as Error).message ?? "Withdraw failed";
+      const isCancelled = err?.code === 4001;
+      const msg = err?.message ?? "Withdraw failed";
       setTxError(msg);
+      
       toast({
-        title: "Withdrawal failed",
-        description: "View details on Explorer ↗",
-        variant: "destructive",
-        onClick: () => txHash && window.open(getExplorerUrl(txHash), "_blank"),
+        title: isCancelled ? "Withdrawal Cancelled" : "Withdrawal failed",
+        description: isCancelled 
+          ? "Request was rejected in MetaMask." 
+          : "View details on Explorer ↗",
+        variant: isCancelled ? "default" : "destructive",
+        onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
       } as any);
     }
   }, [address, refreshStats, saveTx, getExplorerUrl, vaultStats?.userBalance]);
@@ -755,15 +763,19 @@ export function useVault(): VaultState {
         } catch (e) { console.error("Polling error", e); }
       }, 3000);
 
-    } catch (err: unknown) {
+    } catch (err: any) {
       setTxState("error");
-      const msg = (err as Error).message ?? "Withdraw failed";
+      const isCancelled = err?.code === 4001;
+      const msg = err?.message ?? "Withdraw failed";
       setTxError(msg);
+      
       toast({
-        title: "Withdrawal failed",
-        description: "View details on Explorer ↗",
-        variant: "destructive",
-        onClick: () => txHash && window.open(getExplorerUrl(txHash), "_blank"),
+        title: isCancelled ? "Withdrawal Cancelled" : "Withdrawal failed",
+        description: isCancelled 
+          ? "Request was rejected in MetaMask." 
+          : "View details on Explorer ↗",
+        variant: isCancelled ? "default" : "destructive",
+        onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
       } as any);
     }
   }, [address, refreshStats, saveTx, getExplorerUrl]);

@@ -4,6 +4,11 @@
  */
 import { AnimatePresence, motion } from "framer-motion";
 import { Logo } from "./Logo";
+import { modal } from "@/config/wallet";
+import { useAppKitAccount } from "@reown/appkit/react";
+import { useEffect } from "react";
+import { useVault } from "@/hooks/useVault";
+import { toast } from "@/hooks/use-toast";
 
 const WALLETS = [
   {
@@ -56,6 +61,17 @@ const WALLETS = [
       </svg>
     ),
   },
+  {
+    id: "trust",
+    name: "Trust Wallet",
+    desc: "Mobile app · Binance ecosystem",
+    icon: (
+      <svg viewBox="0 0 40 40" width="24" height="24" fill="none">
+        <rect width="40" height="40" rx="10" fill="#0500FF" fillOpacity="0.05"/>
+        <path d="M20 8l-10 4v8c0 5.5 4.3 10.7 10 12 5.7-1.3 10-6.5 10-12v-8l-10-4z" fill="#0500FF"/>
+      </svg>
+    ),
+  },
 ];
 
 interface WalletConnectModalProps {
@@ -65,10 +81,46 @@ interface WalletConnectModalProps {
 }
 
 export function WalletConnectModal({ open, onClose, onConnected }: WalletConnectModalProps) {
-  const handleConnect = (walletId: string) => {
-    const mockAddress = "0x4f3a…c12e";
-    onConnected(mockAddress);
-    onClose();
+  const { address: appKitAddress, isConnected } = useAppKitAccount();
+  const { connect } = useVault();
+
+  // Sync AppKit connection back to our auth context
+  useEffect(() => {
+    if (isConnected && appKitAddress && open) {
+      onConnected(appKitAddress);
+      onClose();
+    }
+  }, [isConnected, appKitAddress, open, onConnected, onClose]);
+
+  const handleConnect = async (walletId: string) => {
+    try {
+      if (walletId === "walletconnect") {
+        await modal.open();
+        return;
+      }
+
+      // For MetaMask, Coinbase, etc. use our standard hook logic
+      // which handles window.ethereum injection
+      await connect();
+      
+      // The address should be picked up by the auth context via the hook
+      // but we need to notify the parent to close the modal
+      const eth = (window as any).ethereum;
+      if (eth) {
+        const accounts = await eth.request({ method: 'eth_accounts' });
+        if (accounts?.[0]) {
+          onConnected(accounts[0]);
+          onClose();
+        }
+      }
+    } catch (err: any) {
+      console.error("Connection error:", err);
+      toast({
+        title: "Connection Failed",
+        description: err.message || "Could not connect wallet.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
