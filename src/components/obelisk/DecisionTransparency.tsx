@@ -40,7 +40,7 @@ export function DecisionTransparency() {
       {/* ── Section Title ────────────────────────────────────────────────── */}
       <div className="space-y-2">
         <p
-          className="text-[10px] uppercase text-muted-foreground/40 mb-3 font-bold tracking-[0.28em]"
+          className="text-[10px] uppercase text-muted-foreground mb-3 font-bold tracking-[0.28em]"
         >
           <MagneticText disabled text="AI Decision Transparency" />
         </p>
@@ -58,38 +58,38 @@ export function DecisionTransparency() {
         <div className="col-span-12 lg:col-span-7 space-y-16">
           {/* 1. LAST DECISION CARD */}
           <div className="space-y-6">
-            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]">
+            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-[0.2em]">
               Last Decision
             </p>
             <div className="grid grid-cols-2 gap-x-12 gap-y-8">
               <div>
-                <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Action Taken</p>
-                <p className="text-[15px] font-bold text-foreground leading-snug">
+                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Action Taken</p>
+                <p className="text-sm font-bold text-black leading-snug">
                   {statusOk ? `HOLD (Score ${score} ≥ ${adaptive.confidenceThreshold})` : `SYNC (Score ${score} < ${adaptive.confidenceThreshold})`}
                 </p>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Timestamp</p>
-                <p className="text-[15px] font-bold text-foreground">
+                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Timestamp</p>
+                <p className="text-sm font-bold text-black">
                   2 minutes ago
                 </p>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Confidence Score</p>
-                <div className="text-xl font-bold text-foreground">
+                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Confidence Score</p>
+                <div className="text-sm font-bold text-black tabular-nums">
                    <MagneticText disabled text={String(score)} />
                 </div>
               </div>
               <div>
-                <p className="text-[11px] text-muted-foreground/40 mb-2 font-medium">Market Regime</p>
-                <p className="text-[15px] font-bold text-foreground">{adaptive.modeLabel}</p>
+                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Market Regime</p>
+                <p className="text-sm font-bold text-black">{adaptive.modeLabel}</p>
               </div>
             </div>
           </div>
 
           {/* 2. SCORE BREAKDOWN */}
           <div className="space-y-8">
-            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]">
+            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-[0.2em]">
               Score Breakdown
             </p>
             <div className="space-y-10">
@@ -115,10 +115,10 @@ export function DecisionTransparency() {
                 note="On-chain liquidity depth is adequate" 
               />
               <div className="flex justify-between items-center pt-8 border-t border-black/[0.04]">
-                <span className="text-sm font-bold text-black/40 uppercase tracking-widest">Total:</span>
-                <div className="text-2xl font-bold text-black flex items-baseline gap-2">
+                <span className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest">Total:</span>
+                <div className="text-xl font-bold text-black flex items-baseline gap-2 tabular-nums">
                    <MagneticText disabled text={String(score)} />
-                   <span className="text-sm text-black/20">/ 100</span>
+                   <span className="text-xs text-black/20 font-bold">/ 100</span>
                 </div>
               </div>
             </div>
@@ -136,20 +136,20 @@ export function DecisionTransparency() {
 
           {/* 5. SUPERVISORY CONFIGURATION */}
           <div className="space-y-6">
-            <p className="text-[11px] uppercase text-muted-foreground/30 font-bold tracking-[0.2em]">
+            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-[0.2em]">
               Framework Status
             </p>
             <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04] space-y-6">
               <div>
-                <p className="text-[11px] text-muted-foreground/40 mb-3 font-bold uppercase tracking-wider">Antigravity Latency:</p>
-                <div className="text-3xl font-bold text-black flex items-baseline gap-2">
+                <p className="text-[9px] uppercase text-muted-foreground mb-3 font-bold tracking-widest">Antigravity Latency:</p>
+                <div className="text-2xl font-bold text-black flex items-baseline gap-2 tabular-nums">
                   <MagneticText disabled text="412" />
-                  <span className="text-xs text-black/20 font-bold uppercase tracking-widest">ms</span>
+                  <span className="text-[10px] text-black/20 font-bold uppercase tracking-widest">ms</span>
                 </div>
               </div>
               <div className="pt-6 border-t border-black/5">
-                <p className="text-[11px] text-muted-foreground/40 mb-3 font-bold uppercase tracking-wider">Persistence Layer:</p>
-                <span className="text-[13px] font-bold text-black uppercase tracking-widest">Cloud Vector Storage (0% Local Disk)</span>
+                <p className="text-[9px] uppercase text-muted-foreground mb-3 font-bold tracking-widest">Persistence Layer:</p>
+                <span className="text-sm font-bold text-black uppercase tracking-widest">Cloud Vector Storage (0% Local Disk)</span>
               </div>
             </div>
           </div>
@@ -164,12 +164,12 @@ function ScoreBar({ label, weight, score, contribution, note }: { label: string;
     <div className="space-y-4">
       <div className="flex justify-between items-end">
         <div>
-          <span className="text-[10px] uppercase text-muted-foreground/30 block mb-1.5 font-bold tracking-[0.1em]">{weight} weight</span>
+          <span className="text-[9px] uppercase text-muted-foreground mb-1.5 font-bold tracking-widest block">{weight} weight</span>
           <span className="text-sm font-bold text-black">{label}</span>
         </div>
         <div className="text-right">
-          <span className="text-[10px] text-muted-foreground/40 block mb-1 font-bold">Score: {score}/100</span>
-          <span className="text-[11px] text-black font-bold">
+          <span className="text-[9px] uppercase text-muted-foreground mb-1 font-bold tracking-widest block">Score: {score}/100</span>
+          <span className="text-sm text-black font-bold tabular-nums">
              +<MagneticText disabled text={contribution} /> pts
           </span>
         </div>
@@ -182,7 +182,7 @@ function ScoreBar({ label, weight, score, contribution, note }: { label: string;
           className="absolute inset-y-0 left-0 bg-black/20 rounded-full"
         />
       </div>
-      <p className="text-[11px] text-muted-foreground/40 font-medium italic leading-relaxed">"{note}"</p>
+      <p className="text-sm text-muted-foreground/60 font-medium italic leading-relaxed">"{note}"</p>
     </div>
   );
 }
