@@ -16,12 +16,17 @@ const WALLETS = [
     name: "MetaMask",
     desc: "Browser extension · EVM compatible",
     icon: (
-      <svg viewBox="0 0 40 40" width="24" height="24" fill="none">
-        <path d="M36.2 3L22 14.3l2.5-5.9L36.2 3z" fill="#E2761B" stroke="#E2761B" strokeWidth="0.3" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M3.8 3l14.1 11.4-2.4-6L3.8 3z" fill="#E4761B" stroke="#E4761B" strokeWidth="0.3" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M30.9 27.5l-3.8 5.8 8.1 2.2 2.3-7.9-6.6-.1zM2.6 27.6l2.3 7.9 8.1-2.2-3.8-5.8-6.6.1z" fill="#E4761B" stroke="#E4761B" strokeWidth="0.3" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M12.6 18.2l-2.2 3.4 7.9.4-.3-8.5-5.4 4.7zM27.4 18.2l-5.5-4.8-.3 8.6 7.9-.4-2.1-3.4z" fill="#E4761B" stroke="#E4761B" strokeWidth="0.3" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M13 33.3l4.7-2.3-4.1-3.2-.6 5.5zM22.3 31l4.7 2.3-.5-5.5-4.2 3.2z" fill="#E4761B" stroke="#E4761B" strokeWidth="0.3" strokeLinecap="round" strokeLinejoin="round"/>
+      <svg viewBox="0 0 32 32" width="24" height="24">
+        <path d="M29.5 5.5l-13.5 10.4 2.1-7.8L29.5 5.5z" fill="#E2761B" />
+        <path d="M2.5 5.5l13.5 10.4-2.1-7.8L2.5 5.5z" fill="#E4761B" />
+        <path d="M26.2 25.1l-3.3 4.9 6.8 1.9 1.9-6.7-5.4-.1zM5.8 25.1l1.9 6.7 6.8-1.9-3.3-4.9-5.4.1z" fill="#E4761B" />
+        <path d="M11 17.5l-2.1 3.2 7.1.4-.3-8.1-4.7 4.5zM21 17.5l-4.7-4.5-.3 8.1 7.1-.4-2.1-3.2z" fill="#E4761B" />
+        <path d="M11.3 30.1l4-1.9-3.5-2.7-.5 4.6zM20.7 30.1l-.5-4.6-3.5 2.7 4 1.9z" fill="#F6851B" />
+        <path d="M26.2 25.1l-5.2-7.6-2.5 8.1 7.7-.5zM5.8 25.1l7.7.5-2.5-8.1-5.2 7.6z" fill="#F6851B" />
+        <path d="M11 17.5l4.7-4.5.3 8.1-5 1.5-1.9 1.1 1.9-6.2zM21 17.5l-1.9 6.2 1.9-1.1-5-1.5.3-8.1 4.7 4.5z" fill="#E2761B" />
+        <path d="M11.3 30.1l.5-4.6h8.4l.5 4.6-4.7-2.3-4.7 2.3z" fill="#D7C1B3" />
+        <path d="M21 17.5l-2.1 3.2h-5.8l-2.1-3.2 4.7-4.5 5.3 4.5z" fill="#D7C1B3" />
+        <path d="M13.5 25.5l2.5 2 2.5-2v-5l-2.5 4-2.5-4v5z" fill="#233447" />
       </svg>
     ),
   },
@@ -30,9 +35,8 @@ const WALLETS = [
     name: "WalletConnect",
     desc: "QR code · Mobile wallets",
     icon: (
-      <svg viewBox="0 0 40 40" width="24" height="24" fill="none">
-        <rect width="40" height="40" rx="10" fill="#3B99FC" fillOpacity="0.1"/>
-        <path d="M9 16.5c6.1-5.9 15.9-5.9 22 0l.7.7c.3.3.3.8 0 1.1l-2.5 2.4c-.2.1-.4.1-.5 0l-1-1c-4.2-4.1-11.1-4.1-15.3 0l-1 1c-.2.1-.4.1-.5 0L8.4 18.3c-.3-.3-.3-.8 0-1.1l.6-.7zm27.2 5L38.5 24c.3.3.3.8 0 1.1L28 35.6c-.3.3-.8.3-1.1 0l-7.4-7.1c-.1-.1-.3-.1-.4 0l-7.4 7.1c-.3.3-.8.3-1.1 0L1.2 25.1c-.3-.3-.3-.8 0-1.1l2.3-2.2c.3-.3.8-.3 1.1 0l7.4 7.1c.1.1.3.1.4 0l7.4-7.1c.3-.3.8-.3 1.1 0l7.4 7.1c.1.1.3.1.4 0l7.4-7.1c.3-.3.8-.3 1.1 0z" fill="#3B99FC"/>
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+        <path d="M19.728 7.645c-4.268-4.205-11.188-4.205-15.456 0L2.348 9.539a.513.513 0 000 .734l1.373 1.353c.2.196.524.196.724 0l1.924-1.896a6.837 6.837 0 019.262 0l1.924 1.896c.2.196.524.196.724 0l1.373-1.353a.513.513 0 000-.734l-1.924-1.894zm4.09 4.028l-2.614-2.573a.513.513 0 00-.724 0l-1.373 1.353a.513.513 0 000 .734l1.924 1.894a.51.51 0 010 .734l-7.03 6.924a.51.51 0 01-.724 0l-7.03-6.924a.51.51 0 010-.734L8.27 13.19a.513.513 0 000-.734L6.897 11.103a.513.513 0 00-.724 0L.182 17.673a1.026 1.026 0 000 1.468l5.228 5.148c.4.394 1.048.394 1.448 0l7.03-6.924a.51.51 0 01.724 0l7.03 6.924c.4.394 1.048.394 1.448 0l5.228-5.148c.4-.394.4-1.04 0-1.468z" fill="#3B99FC"/>
       </svg>
     ),
   },
@@ -41,11 +45,8 @@ const WALLETS = [
     name: "Ledger",
     desc: "Hardware wallet · Maximum security",
     icon: (
-      <svg viewBox="0 0 40 40" width="24" height="24" fill="none">
-        <rect width="40" height="40" rx="10" fill="rgba(0,0,0,0.05)"/>
-        <path d="M8 8h10v3H11v10H8V8zM32 32H22v-3h7V19h3v13z" fill="rgba(0,0,0,0.8)"/>
-        <rect x="8" y="23" width="3" height="9" fill="rgba(0,0,0,0.8)"/>
-        <rect x="29" y="8" width="3" height="9" fill="rgba(0,0,0,0.8)"/>
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+        <path d="M22.5 0H1.5A1.5 1.5 0 000 1.5v21A1.5 1.5 0 001.5 24h21a1.5 1.5 0 001.5-1.5v-21A1.5 1.5 0 0022.5 0zm-1.5 22.5H3v-21h18v21zM18 6H6v2h12V6zm0 4H6v2h12v-2zm0 4H6v2h12v-2z" fill="black"/>
       </svg>
     ),
   },
@@ -54,10 +55,10 @@ const WALLETS = [
     name: "Coinbase Wallet",
     desc: "Self-custody · Mantle supported",
     icon: (
-      <svg viewBox="0 0 40 40" width="24" height="24" fill="none">
-        <rect width="40" height="40" rx="10" fill="#1652F0" fillOpacity="0.1"/>
-        <circle cx="20" cy="20" r="10" stroke="#1652F0" strokeWidth="2" fill="none"/>
-        <circle cx="20" cy="20" r="4" fill="#1652F0" fillOpacity="0.6"/>
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+        <path d="M24 12c0 6.627-5.373 12-12 12S0 18.627 0 12 5.373 0 12 0s12 5.373 12 12z" fill="#0052FF"/>
+        <path d="M12 18.75a6.75 6.75 0 100-13.5 6.75 6.75 0 000 13.5z" fill="white"/>
+        <path d="M12 15.75a3.75 3.75 0 100-7.5 3.75 3.75 0 000 7.5z" fill="#0052FF"/>
       </svg>
     ),
   },
@@ -66,9 +67,8 @@ const WALLETS = [
     name: "Trust Wallet",
     desc: "Mobile app · Binance ecosystem",
     icon: (
-      <svg viewBox="0 0 40 40" width="24" height="24" fill="none">
-        <rect width="40" height="40" rx="10" fill="#0500FF" fillOpacity="0.05"/>
-        <path d="M20 8l-10 4v8c0 5.5 4.3 10.7 10 12 5.7-1.3 10-6.5 10-12v-8l-10-4z" fill="#0500FF"/>
+      <svg viewBox="0 0 32 32" width="24" height="24" fill="none">
+        <path d="M16 0L4 4.8V14.4C4 22.1 9.1 29.1 16 32C22.9 29.1 28 22.1 28 14.4V4.8L16 0Z" fill="#3375BB"/>
       </svg>
     ),
   },
