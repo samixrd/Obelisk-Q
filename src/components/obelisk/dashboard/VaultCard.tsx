@@ -36,30 +36,30 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
           <div className="flex items-center gap-4">
             {/* Overlapping token icons */}
             <div className="flex items-center -space-x-3">
-              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-background shadow-sm flex items-center justify-center p-1.5" style={{ zIndex: 2 }}>
+              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-background flex items-center justify-center p-1.5" style={{ zIndex: 2 }}>
                 {logos.mETH ? (
                   <img src={logos.mETH} alt="mETH" className="w-full h-full object-contain" />
                 ) : (
-                  <span className="text-[10px] text-primary/60 font-bold">M</span>
+                  <span className="text-[10px] text-white/40 font-black">M</span>
                 )}
               </div>
-              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-primary/20 shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
+              <div className="h-10 w-10 rounded-full border-2 border-background overflow-hidden bg-primary/20 flex items-center justify-center" style={{ zIndex: 1 }}>
                 {logos.USDY ? (
                   <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" />
                 ) : (
-                  <span className="text-[10px] text-primary font-bold">U</span>
+                  <span className="text-[10px] text-primary font-black">U</span>
                 )}
               </div>
             </div>
             <div>
-              <div className="text-[17px] font-bold text-primary flex items-center gap-2 tracking-tight">
-                <MagneticText text="Obelisk Vault" />
-                <div className="px-2 py-0.5 bg-primary/5 text-[9px] text-emerald-600 font-bold rounded-md border border-primary/10 uppercase tracking-wider flex items-center gap-1.5">
-                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                   Mantle Optimized
+              <div className="text-xl font-black text-white flex items-center gap-2 tracking-tightest">
+                OBELISK VAULT
+                <div className="px-2 py-0.5 bg-primary/10 text-[9px] text-primary font-black rounded-md border border-primary/20 uppercase tracking-widest flex items-center gap-1.5">
+                   <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                   OPTIMIZED
                 </div>
               </div>
-              <p className="text-[12px] text-primary/60">
+              <p className="text-[10px] font-black text-white/30 uppercase tracking-widest">
                 Institutional RWA · mETH + USDY + WMNT
               </p>
             </div>
@@ -70,31 +70,23 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         <div className="flex items-start gap-0 mb-10">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider">
+              <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">
                 Est. APY
               </span>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#1976D2]">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
-                <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
             </div>
-            <p className="text-[36px] font-bold text-emerald-500 tabular-nums tracking-tighter leading-none">
+            <p className="text-[42px] font-black text-primary tabular-nums tracking-tightest leading-none">
               {usdy.loading ? "—" : `${((usdy.apy + meth.apy + (wmnt?.apy || 0)) / 3 + 0.42).toFixed(1)}%`}
             </p>
           </div>
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
-              <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider">
+              <span className="text-[10px] text-white/30 font-black uppercase tracking-widest">
                 AUM
               </span>
-              <svg width="14" height="14" viewBox="0 0 16 16" fill="none" className="text-[#1976D2]">
-                <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.2" />
-                <path d="M8 5v4M8 11h.01" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
-              </svg>
             </div>
-            <p className="text-[36px] font-bold text-[#0a0a0a] tabular-nums tracking-tighter leading-none">
+            <p className="text-[42px] font-black text-white tabular-nums tracking-tightest leading-none">
               {vaultStats?.totalDeposited ? `${parseFloat(vaultStats.totalDeposited).toFixed(2)}` : "0.00"}
-              <span className="text-[16px] font-medium text-[#6B7280] ml-1.5">MNT</span>
+              <span className="text-sm font-black text-white/30 ml-2">MNT</span>
             </p>
           </div>
         </div>
@@ -103,62 +95,45 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
       {/* Deposit Input Area */}
       <div className="px-8 pb-6">
         <div
-          className="flex items-center justify-between px-6 py-5"
-          style={{
-            background: "hsla(var(--primary) / 0.05)",
-            borderRadius: 18,
-            border: "1px solid hsla(var(--primary) / 0.1)",
-          }}
+          className="flex items-center justify-between px-6 py-5 bg-white/[0.03] rounded-[18px] border border-white/5"
         >
           <input
             type="number"
             placeholder="0"
             value={depositAmount}
             onChange={(e) => setDepositAmount(e.target.value)}
-            className="bg-transparent outline-none text-[32px] font-bold text-primary w-full tabular-nums tracking-tight max-w-[65%]"
+            className="bg-transparent outline-none text-[32px] font-black text-white w-full tabular-nums tracking-tightest max-w-[65%]"
           />
           <div
-            className="flex items-center gap-2.5 px-4 py-2.5"
-            style={{
-              background: "var(--background)",
-              border: "1px solid hsla(var(--primary) / 0.1)",
-              borderRadius: 100,
-            }}
+            className="flex items-center gap-2.5 px-4 py-2.5 bg-background border border-white/10 rounded-full"
           >
-            <div className="h-6 w-6 rounded-full overflow-hidden bg-background flex items-center justify-center border border-primary/10">
+            <div className="h-6 w-6 rounded-full overflow-hidden bg-background flex items-center justify-center border border-white/10">
               {logos.MNT ? (
                 <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" />
               ) : (
-                <span className="text-[8px] text-primary font-bold">M</span>
+                <span className="text-[8px] text-primary font-black">M</span>
               )}
             </div>
-            <span className="text-[14px] font-semibold text-primary">MNT</span>
+            <span className="text-[12px] font-black text-white uppercase tracking-widest">MNT</span>
           </div>
         </div>
 
         {/* Quick amount buttons */}
-        <div className="flex gap-2.5 mt-4">
-          {[
-            { label: "25%", value: (parseFloat(vaultStats?.walletBalance || "0") * 0.25).toFixed(4) },
-            { label: "50%", value: (parseFloat(vaultStats?.walletBalance || "0") * 0.50).toFixed(4) },
-            { label: "75%", value: (parseFloat(vaultStats?.walletBalance || "0") * 0.75).toFixed(4) },
-          ].map((item) => (
+        <div className="flex gap-2.5 mt-6">
+          {["25%", "50%", "Max"].map((label) => (
             <button
-              key={item.label}
-              onClick={() => setDepositAmount(item.value)}
-              className="text-[12px] px-4 py-2 text-primary/60 hover:text-primary hover:bg-primary/10 transition-all border border-primary/10 rounded-full font-bold"
+              key={label}
+              onClick={() => {
+                const bal = parseFloat(vaultStats?.walletBalance || "0");
+                if (label === "Max") setDepositAmount(vaultStats?.walletBalance || "0");
+                else if (label === "50%") setDepositAmount((bal * 0.5).toFixed(4));
+                else if (label === "25%") setDepositAmount((bal * 0.25).toFixed(4));
+              }}
+              className="text-[10px] px-5 py-2.5 text-white/60 font-black uppercase tracking-widest bg-white/5 hover:bg-white/10 border border-white/5 rounded-full transition-all"
             >
-              {item.label}
+              {label}
             </button>
           ))}
-          {vaultStats?.walletBalance && (
-            <button
-              onClick={() => setDepositAmount(vaultStats.walletBalance)}
-              className="text-[12px] px-4 py-2 text-[#1976D2] hover:text-[#1565C0] hover:bg-blue-50 transition-all ml-auto border border-[#1976D2]/20 rounded-full font-medium"
-            >
-              Max
-            </button>
-          )}
         </div>
 
         {/* Est. Annual Yield */}
@@ -208,18 +183,14 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         )}
 
         {/* Strategy Insight */}
-        <div className="mt-6 p-4 rounded-2xl bg-[#F0F7FF] border border-[#E0EFFF] relative overflow-hidden group">
-          <div className="flex gap-3 items-start">
-            <div className="mt-0.5 p-1 rounded-md bg-blue-100 text-blue-600">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 16v-4" />
-                <path d="M12 8h.01" />
-              </svg>
+        <div className="mt-8 p-6 rounded-3xl bg-primary/5 border border-primary/10 relative overflow-hidden group">
+          <div className="flex gap-4 items-start">
+            <div className="mt-1 p-1.5 rounded-lg bg-primary/10 text-primary">
+              <span className="material-symbols-outlined text-[18px]">info</span>
             </div>
-            <div className="space-y-1">
-              <p className="text-[11px] font-bold text-blue-900 uppercase tracking-wider">Strategy Insight</p>
-              <p className="text-[12px] leading-relaxed text-blue-800/80">
+            <div className="space-y-1.5">
+              <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Strategy Insight</p>
+              <p className="text-[12px] leading-relaxed text-white/60">
                 While static assets like USDY offer fixed yields, <strong>Obelisk Q</strong> dynamically rotates to <strong>mETH</strong> during expansions to capture growth potential, switching back to <strong>USDY</strong> to protect your capital during volatility.
               </p>
             </div>
@@ -233,31 +204,9 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
           id="tour-invest-button"
           onClick={handleDeposit}
           disabled={isPending}
-          whileHover={{ 
-            y: isPending ? 0 : -2, 
-            boxShadow: isPending ? "none" : "0 20px 40px rgba(0,0,0,0.2), 0 0 20px rgba(0,211,149,0.15)" 
-          }}
-          whileTap={{ scale: isPending ? 1 : 0.98 }}
-          className={`w-full py-5 text-[15px] font-semibold text-white transition-all duration-300 rounded-full ${isPending ? 'opacity-50 cursor-not-allowed bg-[#222]' : 'bg-[#0a0a0a]'} relative z-50`}
-          style={{
-            cursor: isPending ? 'not-allowed' : 'pointer',
-          }}
+          className={`w-full py-5 text-[13px] font-black uppercase tracking-[0.2em] transition-all duration-300 rounded-full ${isPending ? 'opacity-50 cursor-not-allowed bg-white/5 text-white/20' : 'btn-premium'}`}
         >
-          {isPending ? (
-            <span className="flex items-center justify-center gap-2.5">
-              <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-              </svg>
-              Processing...
-            </span>
-          ) : isWrongNetwork ? (
-            "Switch to Mantle"
-          ) : isConnected ? (
-            "Deposit"
-          ) : (
-            "Connect Wallet"
-          )}
+          {isPending ? "Processing..." : isWrongNetwork ? "Switch to Mantle" : isConnected ? "Deposit Funds" : "Connect Wallet"}
         </motion.button>
       </div>
     </div>

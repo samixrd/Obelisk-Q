@@ -70,9 +70,9 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
     >
       {/* Ambient Background Layer — same as landing */}
       <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="glass-blob w-[600px] h-[600px] -top-40 -left-40 bg-primary" style={{ animationDuration: '25s', animationDelay: '-2s', opacity: 0.1 }}></div>
-        <div className="glass-blob w-[500px] h-[500px] top-1/2 -right-20 bg-primary" style={{ animationDuration: '30s', animationDelay: '-5s', opacity: 0.1 }}></div>
-        <div className="glass-blob w-[400px] h-[400px] bottom-0 left-1/4 bg-primary" style={{ animationDuration: '22s', animationDelay: '-10s', opacity: 0.1 }}></div>
+        <div className="glass-blob w-[600px] h-[600px] -top-40 -left-40 bg-primary" style={{ animationDuration: '25s', animationDelay: '-2s', opacity: 0.08 }}></div>
+        <div className="glass-blob w-[500px] h-[500px] top-1/2 -right-20 bg-primary" style={{ animationDuration: '30s', animationDelay: '-5s', opacity: 0.05 }}></div>
+        <div className="glass-blob w-[400px] h-[400px] bottom-0 left-1/4 bg-primary" style={{ animationDuration: '22s', animationDelay: '-10s', opacity: 0.08 }}></div>
       </div>
 
       {/* Floating math symbols */}

@@ -47,9 +47,9 @@ export function Header({
       initial={{ opacity: 0, y: -12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-      className="fixed top-0 left-0 right-0 z-40 bg-background/80 backdrop-blur-[24px] saturate-[180%] border-b border-primary/10"
+      className="fixed top-0 left-0 right-0 z-40 bg-background/70 backdrop-blur-[24px] border-b border-white/5"
     >
-      <div className="mx-auto max-w-[1680px] px-8 md:px-14 py-5 flex items-center justify-between">
+      <div className="mx-auto max-w-[1680px] px-8 md:px-14 py-4 flex items-center justify-between">
 
         {/* Left: menu + wordmark */}
         <div className="flex items-center gap-6">
@@ -65,9 +65,11 @@ export function Header({
             onClick={onLogoClick}
             className="flex items-center gap-3 group transition-transform active:scale-95 cursor-pointer outline-none"
           >
-            <Logo size={24} className="text-primary transition-transform group-hover:scale-110" />
-            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-primary transition-opacity group-hover:opacity-80" style={{ fontFamily: "'Inter', sans-serif" }}>
-              Obelisk <span className="font-normal text-primary/40">Q</span>
+            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-background">
+              <span className="material-symbols-outlined text-sm font-bold">api</span>
+            </div>
+            <h1 className="hidden sm:block text-lg font-black tracking-tighter text-white transition-opacity group-hover:opacity-80">
+              OBELISK <span className="text-primary">Q</span>
             </h1>
           </button>
 
@@ -78,12 +80,11 @@ export function Header({
               <button
                 key={t}
                 onClick={() => onTabChange(t)}
-                className={`text-[13px] capitalize transition-all duration-300 outline-none px-6 py-2 rounded-full ${
+                className={`text-[11px] uppercase tracking-widest transition-all duration-300 outline-none px-5 py-2 rounded-full font-black ${
                   activeTab === t 
-                    ? "text-primary font-bold bg-primary/10 border border-primary/10 shadow-sm" 
-                    : "text-primary/60 hover:text-primary font-medium hover:bg-primary/5"
+                    ? "text-primary bg-primary/10 border border-primary/20" 
+                    : "text-white/40 hover:text-white hover:bg-white/5"
                 }`}
-                style={{ fontFamily: "'Inter', sans-serif", letterSpacing: "-0.01em" }}
               >
                 {t.replace('-', ' ')}
               </button>
@@ -107,13 +108,13 @@ export function Header({
           <div className="hidden md:block h-4 w-px bg-foreground/5" />
 
           <div className="flex items-center gap-5">
-            <span className="hidden md:inline-flex items-center gap-2 text-[11px] font-bold tracking-widest uppercase text-primary/60">
+            <span className="hidden md:inline-flex items-center gap-2 text-[10px] font-black tracking-[0.2em] uppercase text-white/40">
               <span style={{
                 height: 6, width: 6, borderRadius: "50%",
-                background: "#22c55e", boxShadow: "0 0 6px rgba(34,197,94,0.5)",
+                background: "hsl(var(--primary))", boxShadow: "0 0 10px hsla(var(--primary) / 0.5)",
                 display: "inline-block",
               }} />
-              Mantle Network
+              Mantle Mainnet
             </span>
 
             <div className="hidden lg:block h-4 w-px bg-foreground/5" />

@@ -36,7 +36,7 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 bg-primary/20 backdrop-blur-sm"
+            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-md"
           />
 
           {/* Drawer */}
@@ -45,7 +45,7 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
             transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-            className="fixed top-0 left-0 bottom-0 z-50 w-full max-w-[320px] flex flex-col bg-background border-r border-primary/10 p-6 md:p-10 shadow-2xl"
+            className="fixed top-0 left-0 bottom-0 z-50 w-full max-w-[320px] flex flex-col bg-background border-r border-white/5 p-6 md:p-10 shadow-2xl"
           >
             {/* Close button */}
             <button
@@ -58,10 +58,10 @@ export function Sidebar({ open, activeTab, onTabChange, onClose }: SidebarProps)
             {/* Brand area */}
             <div className="mb-14 px-2">
               <div className="flex items-center gap-3 mb-2">
-                <Logo size={40} className="text-foreground" />
-                <span className="text-xl font-semibold tracking-tight text-foreground" style={{ fontFamily: "'Inter', sans-serif" }}>
-                  Obelisk Q
-                </span>
+                <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center text-background">
+                  <span className="material-symbols-outlined font-bold">api</span>
+                </div>
+                <span className="text-xl font-black tracking-tighter text-white">OBELISK Q</span>
               </div>
             </div>
 

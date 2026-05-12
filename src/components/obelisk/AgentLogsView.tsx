@@ -18,11 +18,11 @@ const fadeUp = {
 
 // ── Node Status Palette (muted, glass-aligned) ─────────────────────────────
 const STATUS_DOT: Record<string, string> = {
-  active:      'bg-emerald-400/60',
-  calculating: 'bg-amber-400/60',
-  streaming:   'bg-sky-400/60',
-  arbitrating: 'bg-violet-400/60',
-  idle:        'bg-black/10',
+  active:      'bg-primary shadow-[0_0_8px_hsla(var(--primary)/0.4)]',
+  calculating: 'bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.4)]',
+  streaming:   'bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.4)]',
+  arbitrating: 'bg-violet-400 shadow-[0_0_8px_rgba(167,139,250,0.4)]',
+  idle:        'bg-white/10',
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -54,15 +54,15 @@ export function AgentLogsView() {
             className="glass-card rounded-[24px] px-5 py-4 transition-all border border-primary/10 hover:bg-primary/5"
           >
             <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[9px] uppercase text-black/40 tracking-[0.15em] font-light">
+              <p className="text-[9px] uppercase text-white/30 tracking-[0.15em] font-black">
                 {node.label}
               </p>
               <div className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[node.status] || STATUS_DOT.idle}`} />
             </div>
-            <div className="text-[13px] text-primary mb-0.5 font-light">
+            <div className="text-[13px] text-white mb-0.5 font-bold">
               {STATUS_LABELS[node.status] || node.status}
             </div>
-            <p className="text-[9px] text-primary/30 font-light">{node.sub}</p>
+            <p className="text-[9px] text-white/20 font-black uppercase tracking-widest">{node.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -77,16 +77,15 @@ export function AgentLogsView() {
           <motion.div key={s.label}
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            whileHover={{ y: -4, backgroundColor: "hsla(var(--primary) / 0.08)" }}
             className="glass-card rounded-[32px] px-10 py-8 transition-all"
           >
-            <p className="text-[10px] uppercase text-primary/40 mb-4 tracking-[0.24em] font-bold">
-              <MagneticText disabled text={s.label} />
+            <p className="text-[10px] uppercase text-white/30 mb-4 font-black tracking-[0.25em]">
+              {s.label}
             </p>
-            <div className="text-[28px] text-primary mb-2 tabular-nums font-bold tracking-tighter">
-              <MagneticText disabled text={s.value} />
+            <div className="text-[32px] text-white mb-2 tabular-nums font-black tracking-tightest">
+              {s.value}
             </div>
-            <p className="text-[10px] text-primary/30 uppercase tracking-wider font-bold">{s.sub}</p>
+            <p className="text-[10px] text-white/20 uppercase tracking-widest font-black">{s.sub}</p>
           </motion.div>
         ))}
       </div>
@@ -99,25 +98,24 @@ export function AgentLogsView() {
       {/* ── Agent Signals ────────────────────────────────────────────────── */}
       <div className="col-span-12 glass-card rounded-[32px] p-8 md:p-10">
         <div className="flex items-center justify-between mb-6">
-          <div className="text-[22px] text-primary flex flex-wrap gap-x-[0.25em] font-bold tracking-tight">
-            <MagneticText disabled text="Agent" />
-            <div className="text-primary/40"><MagneticText disabled text="Signals" /></div>
+          <div className="text-[22px] text-white flex flex-wrap gap-x-[0.25em] font-black tracking-tightest uppercase">
+            Agent <span className="text-white/30">Signals</span>
           </div>
         </div>
         <div className="h-[320px] overflow-y-auto pr-2 scrollbar-hidden">
 
           {logs.slice(0, 5).map((log, i) => (
-            <div key={i} className="flex items-center gap-4 py-3.5 border-t border-primary/10">
-              <span className="text-[11px] text-primary/50 w-20 tabular-nums font-mono">
+            <div key={i} className="flex items-center gap-4 py-4 border-t border-white/5">
+              <span className="text-[11px] text-white/30 w-20 tabular-nums font-mono-num font-black">
                 {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
               </span>
-              <div className={`px-3 py-1 rounded-full text-[9px] w-16 text-center tracking-wider font-bold ${log.action === 'rebalance' ? 'bg-emerald-400/10 text-emerald-700' : 'bg-primary/5 text-primary/40'}`}>
-                {log.action.toUpperCase()}
+              <div className={`px-3 py-1 rounded-full text-[9px] w-20 text-center tracking-widest font-black uppercase ${log.action === 'rebalance' ? 'bg-primary/10 text-primary' : 'bg-white/5 text-white/30'}`}>
+                {log.action}
               </div>
-              <span className="flex-1 text-[13px] text-primary/80 truncate font-medium">
+              <span className="flex-1 text-[13px] text-white/70 truncate font-bold">
                 {log.message}
               </span>
-              <span className="text-[11px] text-primary/60 w-8 text-right font-mono-num font-bold">
+              <span className="text-[11px] text-primary w-8 text-right font-black">
                 {log.score}
               </span>
             </div>
