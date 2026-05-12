@@ -111,7 +111,7 @@ export function AgentLogsView() {
               <span className="text-[11px] text-black/50 w-20 tabular-nums font-mono">
                 {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
               </span>
-              <div className={`px-3 py-1 rounded-full text-[9px] w-16 text-center tracking-wider font-light ${log.action === 'rebalance' ? 'bg-emerald-400/10 text-emerald-700' : 'bg-black/5 text-black/50'}`}>
+              <div className={`px-3 py-1 rounded-full text-[9px] w-20 text-center tracking-wider font-light ${log.action === 'rebalance' ? 'bg-emerald-400/10 text-emerald-700' : 'bg-black/5 text-black/50'}`}>
                 {log.action.toUpperCase()}
               </div>
               <span className="flex-1 text-[13px] text-[#0a0a0a]/80 truncate font-light">
