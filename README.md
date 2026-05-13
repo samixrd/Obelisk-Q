@@ -1,4 +1,8 @@
-# Obelisk Q — Autonomous Wealth Intelligence on Mantle
+# 🪐 Obelisk Q Wealth Navigator
+**One-Line Pitch**: Obelisk Q is a sovereign agentic swarm on Mantle that autonomously navigates liquid staking and institutional RWAs through hybrid consensus.
+
+[![Mantle Network](https://img.shields.io/badge/Network-Mantle-5E43FF)](https://www.mantle.xyz/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **Obelisk Q** is the first autonomous wealth navigator optimized for Mantle Mainnet. It leverages a specialized 5-node LangGraph architecture to provide institutional-grade yield optimization across mETH and USDY (RWA), protected by a real-time autonomous circuit breaker.
 
@@ -80,6 +84,16 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 *   **Agent-Level Circuit Breaker**: The agent has been granted authorized power to `pause()` the vault on-chain. If the AI detects a critical threat that requires more than a simple rebalance, it can instantly halt all vault operations to protect users.
 *   **Proportional Asset Unwinding**: Optimized withdrawal logic that only trades the specific user's share of assets. This ensures the rest of the vault's capital remains invested and earning yield.
 *   **Hybrid AI Sanity Filter**: A deterministic mathematical layer overrides the LLM (GPT-4o-mini) if it fails to account for extreme volatility (Vol > 2.5).
+
+### ⚠️ Technical Drawbacks & Roadmap
+*   **Telemetry Latency**: During peak Mantle congestion, the agent's heartbeat pulse can experience RPC timeouts. We mitigate this using a multi-RPC failover strategy and state-persistence.
+*   **V3 Roadmap**: Integration of ZK-ML for verified on-chain regime detection and cross-chain expansion via LayerZero.
+
+---
+
+### 🛡️ Security & Audits
+*   **Agent Circuit Breaker**: The agent can autonomously `pause()` the vault if a 10-point Q-Score drop is detected within 60 minutes.
+*   **Reentrancy Guard**: All financial functions are protected by custom non-reentrant logic.
 
 ---
 

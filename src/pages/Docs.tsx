@@ -52,6 +52,11 @@ const Docs = () => {
       content: "The navigator focuses on three primary yield vectors: 1) mETH (Mantle LSP) for native staked ETH rewards, 2) USDY (Ondo Finance) for institutional US Treasury exposure, and 3) WMNT (Wrapped MNT) for stable consolidation yield. The agent dynamically balances these positions to capture maximum yield during expansions, hedge into RWAs during market contractions, and stabilize in WMNT during consolidation periods.",
     },
     {
+      id: "constraints",
+      title: "Technical Constraints & Mitigations",
+      content: "Current infrastructure constraints include Telemetry Latency caused by RPC congestion on Mantle Mainnet. During high-traffic events, the pulse frequency may drop. To mitigate this, Obelisk Q utilizes state persistence via SQLite and redundant RPC endpoints to ensure the agent never loses the vault's 'Last Known State'.",
+    },
+    {
       id: "security",
       title: "Sovereign Identity (ERC-8004)",
       content: "To ensure institutional trust, the Obelisk Q agent maintains a sovereign on-chain identity (0x5698E89Ec2396e02679ddde33c2BA78de88F7fce) under the ERC-8004 standard. This manifest defines the agent's rebalancing logic and capabilities, providing a verifiable audit trail for all autonomous transactions executed on the Mantle Network.",
