@@ -456,7 +456,6 @@ def get_w3(timeout=RPC_TIMEOUT, max_attempts=MAX_RPC_ATTEMPTS):
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 async def regime_detection_node(state: AgentState):
-    """Volatility Observation Model — Environment Sensing.
     
     This node generates the primary 'observable' that drives regime classification.
     Volatility is modeled as a bounded random walk, serving as a simplified
