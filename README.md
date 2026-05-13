@@ -49,13 +49,15 @@ graph TD
     
     subgraph "AI Agent Layer (7-Node Swarm)"
         Regime[Regime Detection] --> Risk[Risk Assessment]
-        Risk --> QScore[Q-Score Engine]
+        Risk --> Analyst[Deterministic Analyst]
+        Analyst --> Consensus[Consensus Arbitrator]
+        Consensus --> QScore[Q-Score Engine]
         QScore --> Telemetry[Telemetry Aggregator]
         Telemetry --> Supervisor[Supervisory Controller]
     end
 
-    LLM((GPT-4o-mini)) -.->|Analysis| Regime
-    LLM -.->|Confirmation| Risk
+    LLM((GPT-4o-mini)) -.->|Reasoning| Regime
+    LLM -.->|Validation| Consensus
     
     Supervisor -->|setRegime| Vault
     Supervisor -->|rebalance| Vault
