@@ -36,34 +36,6 @@ DEFAULT_RPC = "https://rpc.mantle.xyz"
 MANTLE_RPC_LIST = os.getenv("MANTLE_RPC_URLS", DEFAULT_RPC).split(",")
 
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS agent_memory (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            cycle INTEGER,
-            regime TEXT,
-            score INTEGER,
-            action TEXT,
-            position TEXT,
-            meth_apy REAL,
-            usdy_apy REAL,
-            tx_hash TEXT DEFAULT 'N/A',
-            analyst_insight TEXT DEFAULT ''
-        )
-    """)
-    try:
-        conn.execute("ALTER TABLE agent_memory ADD COLUMN analyst_insight TEXT DEFAULT ''")
-    except sqlite3.OperationalError:
-        pass
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS performance_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            action TEXT,
-            from_asset TEXT,
-            to_asset TEXT,
-            vault_value_before REAL,
     """Initializes the database and performs self-healing if corrupted."""
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -456,6 +428,7 @@ def get_w3(timeout=RPC_TIMEOUT, max_attempts=MAX_RPC_ATTEMPTS):
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 async def regime_detection_node(state: AgentState):
+    """Volatility Observation Model - Environment Sensing.
     
     This node generates the primary 'observable' that drives regime classification.
     Volatility is modeled as a bounded random walk, serving as a simplified
@@ -528,25 +501,25 @@ Be concise. 1-2 sentences max."""},
         logger.error(f"node_failure: regime_detection crashed: {e}")
         state["data"]["yields"] = last_known_state.get("yields", {"usdy": 5.0, "meth": 3.5})
         state["data"]["vol"] = last_known_state["risk"].get("vol", 1.5)
-        state["data"]["analyst_insight"] = "node error — using cached state"
+        state["data"]["analyst_insight"] = "node error - using cached state"
         content = f"regime: node failure ({type(e).__name__}). using cached yield vector."
     
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def risk_assessment_node(state: AgentState):
-    """Regime Decoding Pipeline — Discrete State Classification.
+    """Regime Decoding Pipeline - Discrete State Classification.
     
     Decodes the volatility observation into one of three market states:
       1. Deterministic Threshold Decoding:
-         - vol < 1.2  → Expansion (Growth-focused)
-         - 1.2 ≤ vol ≤ 2.2 → Consolidation (Yield-focused)
-         - vol > 2.2  → Contraction (Safety-focused)
+         - vol < 1.2  -> Expansion (Growth-focused)
+         - 1.2 <= vol <= 2.2 -> Consolidation (Yield-focused)
+         - vol > 2.2  -> Contraction (Safety-focused)
       2. LLM State Confirmation (GPT-4o-mini):
          Provides qualitative validation during 'Consolidation' phases.
       3. Safety Sanity Overrides:
          Hard logic constraints that trigger based on extreme tails:
-         - vol > 2.5 → Force Contraction (Panic state)
-         - risk_score < 40 + Expansion → Force Consolidation (Bull trap)
+         - vol > 2.5 -> Force Contraction (Panic state)
+         - risk_score < 40 + Expansion -> Force Consolidation (Bull trap)
       4. Hysteresis Lock: 3-cycle state retention after any
          regime change (~30 min at 10-min cycle intervals)
     
@@ -567,7 +540,7 @@ async def risk_assessment_node(state: AgentState):
         # ── HMM STATE DECODING ──
         # Step 1: Check hysteresis lock (transition probability analogue)
         # When locked, regime is held constant for N cycles regardless
-        # of new observations — equivalent to P(stay) ≈ 1.0
+        # of new observations - equivalent to P(stay) approx 1.0
         current_regime = last_known_state.get("regime", "Consolidation")
         hysteresis = last_known_state.get("hysteresis", 0)
         
@@ -575,7 +548,7 @@ async def risk_assessment_node(state: AgentState):
             new_regime = current_regime
             last_known_state["hysteresis"] = hysteresis - 1
         else:
-            # Step 2: Threshold-based classification (emission → state)
+            # Step 2: Threshold-based classification (emission -> state)
             if vol < 1.2:
                 raw_regime = "Expansion"
             elif vol > 2.2:
@@ -651,7 +624,7 @@ async def q_score_engine_node(state: AgentState):
     if EMA_SCORE is None:
         EMA_SCORE = float(raw_weighted_total)
     else:
-        # Hard clamp — score CANNOT change more than 5 points per cycle
+        # Hard clamp - score CANNOT change more than 5 points per cycle
         clamped_raw = max(EMA_SCORE - MAX_DELTA, min(EMA_SCORE + MAX_DELTA, float(raw_weighted_total)))
         EMA_SCORE = (ALPHA * clamped_raw) + ((1 - ALPHA) * EMA_SCORE)
     
@@ -706,7 +679,7 @@ async def telemetry_aggregator_node(state: AgentState):
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def deterministic_analyst_node(state: AgentState):
-    """Deterministic Mathematical Analyst — Rule-Based Regime Suggestion.
+    """Deterministic Mathematical Analyst - Rule-Based Regime Suggestion.
     
     Provides an independent second opinion using TIGHTER thresholds
     than the primary AI classifier. This makes the math analyst
@@ -730,21 +703,21 @@ async def deterministic_analyst_node(state: AgentState):
     return {"messages": [AIMessage(content=f"math: rule-based suggestion is {suggestion}.")], "data": state["data"]}
 
 async def consensus_node(state: AgentState):
-    """Dual-Model Consensus Arbitrator — Anti-Whipsaw Trend Lock.
+    """Dual-Model Consensus Arbitrator - Anti-Whipsaw Trend Lock.
     
     Resolves disagreements between the AI regime (from risk_assessment_node)
     and the deterministic regime (from deterministic_analyst_node) using
     an ASYMMETRIC SAFETY BIAS:
     
     Conflict Resolution Matrix:
-      AI=Exp + Math=Exp → Expansion  (unanimous agreement required)
-      AI=Exp + Math=Con → Consolidation  (conservative default)
-      AI=Exp + Math=Ctr → Contraction  (safety-first)
-      AI=Con + Math=Exp → Consolidation  (conservative default)
-      AI=Con + Math=Con → Consolidation  (agreement)
-      AI=Con + Math=Ctr → Contraction  (safety-first)
-      AI=Ctr + Math=*   → Contraction  (safety-first)
-      AI=*   + Math=Ctr → Contraction  (safety-first)
+      AI=Exp + Math=Exp -> Expansion  (unanimous agreement required)
+      AI=Exp + Math=Con -> Consolidation  (conservative default)
+      AI=Exp + Math=Ctr -> Contraction  (safety-first)
+      AI=Con + Math=Exp -> Consolidation  (conservative default)
+      AI=Con + Math=Con -> Consolidation  (agreement)
+      AI=Con + Math=Ctr -> Contraction  (safety-first)
+      AI=Ctr + Math=*   -> Contraction  (safety-first)
+      AI=*   + Math=Ctr -> Contraction  (safety-first)
     
     Anti-Whipsaw: If hysteresis > 0, the current regime is maintained
     regardless of new signals (unless circuit breaker overrides).
@@ -764,8 +737,8 @@ async def consensus_node(state: AgentState):
         last_known_state["hysteresis"] -= 1
     else:
         # ── ASYMMETRIC SAFETY BIAS ARBITRATION ──
-        # Any single Contraction vote → Contraction (safety-first)
-        # Any single Consolidation vote → blocks Expansion
+        # Any single Contraction vote -> Contraction (safety-first)
+        # Any single Consolidation vote -> blocks Expansion
         # Expansion requires UNANIMOUS agreement from both models
         final_regime = ai_regime
         if ai_regime != math_regime:
@@ -796,10 +769,10 @@ async def supervisory_controller_node(state: AgentState):
     if CIRCUIT_BREAKER_ACTIVE:
         # If we already attempted an unwind this CB episode, don't retry
         if CB_UNWIND_DONE:
-            logger.info("executor: CIRCUIT BREAKER ACTIVE — unwind already attempted. waiting for score recovery above 55.")
-            return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE — unwind already attempted. awaiting score recovery.")], "data": state["data"]}
+            logger.info("executor: CIRCUIT BREAKER ACTIVE - unwind already attempted. waiting for score recovery above 55.")
+            return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE - unwind already attempted. awaiting score recovery.")], "data": state["data"]}
         
-        logger.warning(f"executor: CIRCUIT BREAKER ACTIVE — initiating EMERGENCY UNWIND. position={CURRENT_POSITION}")
+        logger.warning(f"executor: CIRCUIT BREAKER ACTIVE - initiating EMERGENCY UNWIND. position={CURRENT_POSITION}")
         asyncio.create_task(notify_critical_failure(f"Circuit Breaker Triggered! Score dropped below threshold. Emergency unwind in progress. position={CURRENT_POSITION}", severity="HIGH"))
         
         # If we are in a risky position (mETH or USDY), unwind to MNT
@@ -818,7 +791,7 @@ async def supervisory_controller_node(state: AgentState):
             CB_UNWIND_DONE = True
         else:
             CB_UNWIND_DONE = True
-            return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE — system already in safety (MNT).")], "data": state["data"]}
+            return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE - system already in safety (MNT).")], "data": state["data"]}
     
     # ── POSITION TRACKING: skip if already in target ──
     if action == "mETH" and CURRENT_POSITION == "mETH":
@@ -1483,7 +1456,7 @@ async def websocket_endpoint(websocket: WebSocket):
             global_app_state.active_connections.remove(websocket)
 
 async def run_analysis_cycle():
-    """Main agent loop — executes the LangGraph analysis pipeline on a fixed cadence.
+    """Main agent loop - executes the LangGraph analysis pipeline on a fixed cadence.
     
     HA Behavior:
       - Primary nodes: Execute the full pipeline every CYCLE_INTERVAL seconds.
@@ -1698,10 +1671,10 @@ async def leader_election():
          and run_analysis_cycle() will begin executing the full pipeline.
     
     Limitations:
-      - No distributed consensus (Raft/Paxos) — relies on shared SQLite.
+      - No distributed consensus (Raft/Paxos) - relies on shared SQLite.
       - If multiple shadows detect primary failure simultaneously,
-        both may promote themselves (split-brain). Mitigated by the
-        on-chain vault's idempotent rebalance logic.
+         both may promote themselves (split-brain). Mitigated by the
+         on-chain vault's idempotent rebalance logic.
       - SQLite file is a single point of failure for coordination.
     """
     global NODE_ROLE_GLOBAL
