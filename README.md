@@ -14,7 +14,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
 
 ### 🛠️ Technical Excellence & Deployment
-*   **Mantle Mainnet Deployment**: [ObeliskVault (0x8bD4...)](https://explorer.mantle.xyz/address/0x8bD4F86Ff1293b1571A3f5F437b7285e59deAdE0)
+*   **Mantle Mainnet Deployment**: [ObeliskVault (0x71Df...)](https://explorer.mantle.xyz/address/0x71Df51b6B5b5Fd7521E0052f5897FB51Fabf5Bed)
 *   ✅ **Verified Contract**: Deployment confirmed on Mantle Explorer with deterministic rebalance logic.
 *   ✅ **On-Chain AI Execution**: The supervisor ([0x5698...](https://explorer.mantle.xyz/address/0x5698E89Ec2396e02679ddde33c2BA78de88F7fce)) triggers execution on Mantle.
 *   ✅ **Sovereign Identity**: Integrated with [ERC-8004](https://explorer.mantle.xyz/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) for autonomous agent identity.
@@ -22,7 +22,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 ---
 
 ### 🏦 Core Protocol Details (Mantle Mainnet)
-*   **ObeliskVault**: `0x8bD4F86Ff1293b1571A3f5F437b7285e59deAdE0`
+*   **ObeliskVault**: `0x71Df51b6B5b5Fd7521E0052f5897FB51Fabf5Bed`
 *   **ERC-8004 Agent ID**: `0x5698E89Ec2396e02679ddde33c2BA78de88F7fce`
 *   **Identity Registry**: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`
 *   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`

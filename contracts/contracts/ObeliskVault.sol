@@ -40,6 +40,7 @@ contract ObeliskVault {
     uint256 public totalDeposited;
     bool    public vaultPaused;
     string  public currentRegime = "Expansion"; // Default
+    bool    private _locked; // Reentrancy Guard state
 
     // Agent keeps this buffer for swap gas — never shown to users
     uint256 public constant AGENT_BUFFER = 0.01 ether;
@@ -70,6 +71,13 @@ contract ObeliskVault {
         _;
     }
 
+    modifier nonReentrant() {
+        require(!_locked, "ReentrancyGuard: reentrant call");
+        _locked = true;
+        _;
+        _locked = false;
+    }
+
     // ── User Actions ──────────────────────────────────────────────────────
 
     function deposit() external payable {
@@ -82,7 +90,7 @@ contract ObeliskVault {
         emit Deposited(msg.sender, msg.value, block.timestamp);
     }
 
-    function withdraw() external {
+    function withdraw() external nonReentrant {
         uint256 depositAmount = balances[msg.sender];
         require(depositAmount > 0, "No balance");
 
@@ -119,7 +127,7 @@ contract ObeliskVault {
 
     // ── Agent Actions ─────────────────────────────────────────────────────
 
-    function rebalance(address targetToken, uint256 minAmountOut) external payable onlyAgent {
+    function rebalance(address targetToken, uint256 minAmountOut) external payable onlyAgent nonReentrant {
         require(targetToken == METH || targetToken == USDY || targetToken == WMNT || targetToken == address(0), "Invalid target");
         
         if (targetToken == address(0)) {

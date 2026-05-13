@@ -55,10 +55,16 @@ def init_db():
         )
     """)
     conn.execute("""
-        CREATE TABLE IF NOT EXISTS heartbeats (
-            node_id TEXT PRIMARY KEY,
-            last_pulse TEXT,
-            role TEXT
+        CREATE TABLE IF NOT EXISTS agent_transactions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            cycle INTEGER,
+            action TEXT,
+            score INTEGER,
+            regime TEXT,
+            status TEXT,
+            vault_address TEXT,
+            tx_hash TEXT
         )
     """)
     conn.commit()
@@ -841,18 +847,9 @@ async def login(auth: AuthRequest):
             }
             logger.info(f"Session issued (verified): {auth.address[:10]}...")
             return {"token": token, "address": auth.address}
-        elif recovered_address:
-            logger.error(f"Address mismatch: recovered={recovered_address}, expected={auth.address}")
-            raise HTTPException(status_code=401, detail="Invalid_Signature")
         else:
-            # Both methods failed — accept based on signed request (frontend verified via personal_sign)
-            logger.warning(f"Signature lib unavailable, issuing session for: {auth.address[:10]}...")
-            token = secrets.token_hex(32)
-            SESSIONS[token] = {
-                "address": auth.address,
-                "last_seen": time.time()
-            }
-            return {"token": token, "address": auth.address}
+            logger.error(f"Signature verification failed completely for: {auth.address}")
+            raise HTTPException(status_code=401, detail="Invalid_Signature_Library")
 
     except HTTPException:
         raise
@@ -862,9 +859,24 @@ async def login(auth: AuthRequest):
 
 @app.get("/api/agent/transactions")
 async def get_agent_transactions():
-    """Returns the last 10 agent transactions, newest first."""
-    load_transactions() # Reload from disk to sync across PM2 workers
-    return AGENT_TRANSACTIONS[::-1][:10]
+    """Returns the last 10 agent transactions from SQLite, newest first."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        rows = conn.execute("""
+            SELECT tx_hash, action, score, regime, timestamp, status, vault_address, cycle 
+            FROM agent_transactions 
+            ORDER BY id DESC LIMIT 10
+        """).fetchall()
+        conn.close()
+        return [
+            {
+                "tx_hash": r[0], "action": r[1], "score": r[2], "regime": r[3],
+                "timestamp": r[4], "status": r[5], "vault_address": r[6], "cycle_number": r[7]
+            } for r in rows
+        ]
+    except Exception as e:
+        logger.error(f"Failed to fetch transactions from DB: {e}")
+        return []
 
 API_CACHE = {}
 
@@ -883,36 +895,25 @@ async def get_agent_logs():
     return {"logs": [{"timestamp": r[0], "cycle": r[1], "regime": r[2], "score": r[3], "action": r[4], "position": r[5], "tx_hash": r[6]} for r in rows]}
 
 def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A"):
-    global AGENT_TRANSACTIONS
-    
     # Only record real on-chain transactions (must start with 0x)
     if not tx_hash or not str(tx_hash).startswith("0x") or str(tx_hash).startswith("SIM_"):
         logger.info(f"tx_recorded: skipped {status} log for cycle {cycle} (no real on-chain hash)")
         return
 
-    vault_addr = os.getenv("VAULT_ADDRESS", "0x0f433D5287dB6E3F8128bEDb96F68E0E50DaeaFa")
-    entry = {
-        "tx_hash": tx_hash,
-        "action": action,
-        "score": score,
-        "regime": regime,
-        "timestamp": datetime.now().isoformat(),
-        "status": status,
-        "vault_address": vault_addr,
-        "cycle_number": cycle
-    }
-    AGENT_TRANSACTIONS.append(entry)
-    if len(AGENT_TRANSACTIONS) > 100: # keep up to 100 on disk
-        AGENT_TRANSACTIONS.pop(0)
+    vault_addr = os.getenv("VAULT_ADDRESS", "0x71Df51b6B5b5Fd7521E0052f5897FB51Fabf5Bed")
     
-    # Persist to disk
     try:
-        with open(TRANSACTIONS_FILE, "w") as f:
-            json.dump(AGENT_TRANSACTIONS, f)
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("""
+            INSERT INTO agent_transactions 
+            (timestamp, cycle, action, score, regime, status, vault_address, tx_hash)
+            VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?)
+        """, (cycle, action, score, regime, status, vault_addr, tx_hash))
+        conn.commit()
+        conn.close()
+        logger.info(f"tx_recorded: cycle={cycle} action={action} status={status} (DB saved)")
     except Exception as e:
-        logger.error(f"Failed to save transactions: {e}")
-        
-    logger.info(f"tx_recorded: cycle={cycle} action={action} status={status}")
+        logger.error(f"Failed to save transaction to DB: {e}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -1166,6 +1167,27 @@ async def sync_current_position():
 @app.on_event("startup")
 async def startup():
     init_db()
+    
+    # ── STATE RECOVERY: Load last known state from DB ──
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        last_row = conn.execute("""
+            SELECT score, regime, position 
+            FROM agent_memory 
+            ORDER BY id DESC LIMIT 1
+        """).fetchone()
+        conn.close()
+        
+        if last_row:
+            global EMA_SCORE, CURRENT_POSITION
+            EMA_SCORE = float(last_row[0])
+            last_known_state["regime"] = last_row[1]
+            last_known_state["risk"]["score"] = int(last_row[0])
+            # position is synced from blockchain below
+            logger.info(f"startup: state recovered from DB. score={EMA_SCORE} regime={last_row[1]}")
+    except Exception as e:
+        logger.warning(f"startup: state recovery failed: {e}")
+
     await sync_current_position() # Determine current position from blockchain
     asyncio.create_task(run_analysis_cycle())
     asyncio.create_task(session_reaper())

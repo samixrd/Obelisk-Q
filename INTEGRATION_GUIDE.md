@@ -33,7 +33,7 @@ npm run dev
 ## 3. Deployment Configuration (Mantle Mainnet)
 The project is optimized for Mantle Mainnet (Chain ID: 5000).
 
-*   **Current Vault**: `0x8bD4F86Ff1293b1571A3f5F437b7285e59deAdE0`
+*   **Current Vault**: `0x71Df51b6B5b5Fd7521E0052f5897FB51Fabf5Bed`
 *   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`
 *   **Buffer**: 0.01 MNT (Hardcoded for safety)
 
