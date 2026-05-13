@@ -14,7 +14,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
 
 ### 🛠️ Technical Excellence & Deployment
-*   **Mantle Mainnet Deployment**: [ObeliskVault (0x71Df...)](https://explorer.mantle.xyz/address/0x71Df51b6B5b5Fd7521E0052f5897FB51Fabf5Bed)
+*   **Mantle Mainnet Deployment**: [ObeliskVault (0x54Dc...)](https://explorer.mantle.xyz/address/0x54Dc21FA9Aa55ad53e23b80609b8bB1ea234Bca7)
 *   ✅ **Verified Contract**: Deployment confirmed on Mantle Explorer with deterministic rebalance logic.
 *   ✅ **On-Chain AI Execution**: The supervisor ([0x5698...](https://explorer.mantle.xyz/address/0x5698E89Ec2396e02679ddde33c2BA78de88F7fce)) triggers execution on Mantle.
 *   ✅ **Sovereign Identity**: Integrated with [ERC-8004](https://explorer.mantle.xyz/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) for autonomous agent identity.
@@ -22,7 +22,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 ---
 
 ### 🏦 Core Protocol Details (Mantle Mainnet)
-*   **ObeliskVault**: `0x71Df51b6B5b5Fd7521E0052f5897FB51Fabf5Bed`
+*   **ObeliskVault**: `0x54Dc21FA9Aa55ad53e23b80609b8bB1ea234Bca7`
 *   **ERC-8004 Agent ID**: `0x5698E89Ec2396e02679ddde33c2BA78de88F7fce`
 *   **Identity Registry**: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`
 *   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`
@@ -74,11 +74,11 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 *   **Graceful Fallback**: If the LLM call fails (network issue, rate limit, timeout), the agent automatically falls back to pure rule-based logic with zero downtime. The system never stalls waiting for AI.
 
 ### 4. Institutional Safeguards & Technical Excellence
-*   **Deterministic Slippage Guard (Anti-MEV)**: The agent executes a pre-flight `getAmountsOut` check on Merchant Moe, enforcing a 1% slippage buffer. This prevents MEV bots from "sandwiching" the vault's autonomous rebalances.
-*   **Proportional Asset Unwinding**: Optimized withdrawal logic that only trades the specific user's share of assets. This ensures the rest of the vault's capital remains invested and earning yield, significantly reducing gas costs and swap fees.
-*   **Hybrid AI Sanity Filter**: A deterministic mathematical layer overrides the LLM (GPT-4o-mini) if it fails to account for extreme volatility (Vol > 2.5), ensuring the system always defaults to a safe state (Contraction) during crashes.
-*   **Verified Unwind Logic**: Deterministic cross-token swaps (mETH ↔ USDY) with a fixed safety buffer.
-*   **Non-Custodial Hardening**: Removed administrative "Owner Rescue" backdoors to ensure capital is controlled only by the agent's logic and the user's withdrawal rights.
+*   **Deterministic Slippage Guard (Anti-MEV)**: The agent now utilizes a **Dynamic Slippage Engine** that adjusts its tolerance (0.5% to 2.5%) based on market volatility and regime, ensuring execution success even during flash crashes.
+*   **Dynamic Asset Registry**: The vault is no longer limited to hardcoded tokens. The owner can add or remove any Mantle-native assets (mETH, USDY, FBTC, etc.) via an on-chain registry, making the protocol future-proof.
+*   **Agent-Level Circuit Breaker**: The agent has been granted authorized power to `pause()` the vault on-chain. If the AI detects a critical threat that requires more than a simple rebalance, it can instantly halt all vault operations to protect users.
+*   **Proportional Asset Unwinding**: Optimized withdrawal logic that only trades the specific user's share of assets. This ensures the rest of the vault's capital remains invested and earning yield.
+*   **Hybrid AI Sanity Filter**: A deterministic mathematical layer overrides the LLM (GPT-4o-mini) if it fails to account for extreme volatility (Vol > 2.5).
 
 ---
 

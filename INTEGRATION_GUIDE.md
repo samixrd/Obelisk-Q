@@ -33,12 +33,12 @@ npm run dev
 ## 3. Deployment Configuration (Mantle Mainnet)
 The project is optimized for Mantle Mainnet (Chain ID: 5000).
 
-*   **Current Vault**: `0x71Df51b6B5b5Fd7521E0052f5897FB51Fabf5Bed`
+*   **Current Vault**: `0x54Dc21FA9Aa55ad53e23b80609b8bB1ea234Bca7`
 *   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`
-*   **Buffer**: 0.01 MNT (Hardcoded for safety)
+*   **Asset Registry**: The vault uses a dynamic registry. To add new assets (e.g. FBTC), the owner must call `addAsset(address)`.
 
-### Agent Authorization
-If you redeploy, you must authorize the agent address in the vault:
+### Agent Authorization & Protection
+The agent is authorized to `rebalance` and `togglePause` the vault. To authorize a new agent:
 ```bash
 cd contracts
 npx hardhat run scripts/setAgent.js --network mantle

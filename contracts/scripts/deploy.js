@@ -3,6 +3,16 @@ const hre = require("hardhat");
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
   const network = await hre.ethers.provider.getNetwork();
+  
+  // The agent address — use AGENT_ADDRESS env or default to deployer
+  const agentAddress = process.env.AGENT_ADDRESS || "0x5698E89Ec2396e02679ddde33c2BA78de88F7fce";
+  
+  // Initial assets for the registry (Mantle Mainnet)
+  const initialAssets = [
+    "0xcDA86A272531e8640cD7F1a92c01839911B90bb0", // mETH
+    "0x5bE26527e817998A7206475496fDE1E68957c5A6", // USDY
+    "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"  // WMNT
+  ];
 
   console.log("═══════════════════════════════════════════════");
   console.log("  ObeliskVault Deployment — Mantle Network");
@@ -13,14 +23,12 @@ async function main() {
     await hre.ethers.provider.getBalance(deployer.address)
   ), "MNT");
   console.log("");
-
-  // The agent address — use AGENT_ADDRESS env or default to deployer
-  const agentAddress = process.env.AGENT_ADDRESS || deployer.address;
   console.log("Agent address:", agentAddress);
+  console.log("Initial assets:", initialAssets.length);
 
   // Deploy
   const Vault = await hre.ethers.getContractFactory("ObeliskVault");
-  const vault = await Vault.deploy(agentAddress);
+  const vault = await Vault.deploy(agentAddress, initialAssets);
   await vault.waitForDeployment();
 
   const address = await vault.getAddress();

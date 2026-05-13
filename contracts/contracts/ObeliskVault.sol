@@ -47,17 +47,19 @@ contract ObeliskVault {
 
     // Tokens & Router (Mantle Mainnet)
     IRouter public constant ROUTER = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a);
-    address public constant WMNT   = 0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8;
-    address public constant METH   = 0xcDA86A272531e8640cD7F1a92c01839911B90bb0;
-    address public constant USDY   = 0x5bE26527e817998A7206475496fDE1E68957c5A6;
+    mapping(address => bool) public isAssetAllowed;
+    address[] public allowedAssets;
 
     mapping(address => uint256) public balances;
     address[] private depositors;
 
     // ── Constructor ───────────────────────────────────────────────────────
-    constructor(address _agent) {
+    constructor(address _agent, address[] memory _initialAssets) {
         owner = msg.sender;
         agent = _agent;
+        for (uint i = 0; i < _initialAssets.length; i++) {
+            _addAsset(_initialAssets[i]);
+        }
     }
 
     // ── Modifiers ─────────────────────────────────────────────────────────
@@ -95,13 +97,11 @@ contract ObeliskVault {
         require(depositAmount > 0, "No balance");
 
         // 1. Calculate user's share of each token and unwind ONLY that share
-        uint256 methShare = (IERC20(METH).balanceOf(address(this)) * depositAmount) / totalDeposited;
-        uint256 usdyShare = (IERC20(USDY).balanceOf(address(this)) * depositAmount) / totalDeposited;
-        uint256 wmntShare = (IERC20(WMNT).balanceOf(address(this)) * depositAmount) / totalDeposited;
-
-        if (methShare > 0) _unwindToken(METH, methShare, 0);
-        if (usdyShare > 0) _unwindToken(USDY, usdyShare, 0);
-        if (wmntShare > 0) _unwindToken(WMNT, wmntShare, 0);
+        for (uint i = 0; i < allowedAssets.length; i++) {
+            address token = allowedAssets[i];
+            uint256 share = (IERC20(token).balanceOf(address(this)) * depositAmount) / totalDeposited;
+            if (share > 0) _unwindToken(token, share, 0);
+        }
 
         // 2. Calculate user's share of the raw MNT in the vault
         uint256 vaultMnt = address(this).balance;
@@ -128,24 +128,19 @@ contract ObeliskVault {
     // ── Agent Actions ─────────────────────────────────────────────────────
 
     function rebalance(address targetToken, uint256 minAmountOut) external payable onlyAgent nonReentrant {
-        require(targetToken == METH || targetToken == USDY || targetToken == WMNT || targetToken == address(0), "Invalid target");
-        
         if (targetToken == address(0)) {
             // Unwind everything to MNT
-            _unwindToken(METH, type(uint256).max, 0);
-            _unwindToken(USDY, type(uint256).max, 0);
-            _unwindToken(WMNT, type(uint256).max, 0);
+            for (uint i = 0; i < allowedAssets.length; i++) {
+                _unwindToken(allowedAssets[i], type(uint256).max, 0);
+            }
         } else {
-            // 1. Unwind the OTHER token if we have any
-            if (targetToken == METH) {
-                _unwindToken(USDY, type(uint256).max, 0);
-                _unwindToken(WMNT, type(uint256).max, 0);
-            } else if (targetToken == USDY) {
-                _unwindToken(METH, type(uint256).max, 0);
-                _unwindToken(WMNT, type(uint256).max, 0);
-            } else if (targetToken == WMNT) {
-                _unwindToken(METH, type(uint256).max, 0);
-                _unwindToken(USDY, type(uint256).max, 0);
+            require(isAssetAllowed[targetToken], "Asset not registered");
+            // 1. Unwind OTHER tokens if we have any
+            for (uint i = 0; i < allowedAssets.length; i++) {
+                address token = allowedAssets[i];
+                if (token != targetToken) {
+                    _unwindToken(token, type(uint256).max, 0);
+                }
             }
 
             // 2. Swap MNT to target
@@ -154,14 +149,15 @@ contract ObeliskVault {
 
             uint256 amountToSwap = mntToSwap - 0.01 ether; // Keep 0.01 MNT buffer
             
-            if (targetToken == WMNT) {
+            address wmnt = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a).WETH();
+            if (targetToken == wmnt) {
                 // Wrap MNT to WMNT
-                (bool success, ) = WMNT.call{value: amountToSwap}(abi.encodeWithSignature("deposit()"));
+                (bool success, ) = wmnt.call{value: amountToSwap}(abi.encodeWithSignature("deposit()"));
                 require(success, "WMNT wrap failed");
                 emit Rebalanced(targetToken, amountToSwap, amountToSwap);
             } else {
                 address[] memory path = new address[](2);
-                path[0] = WMNT;
+                path[0] = wmnt;
                 path[1] = targetToken;
                 
                 uint[] memory amounts = ROUTER.swapExactNativeForTokens{value: amountToSwap}(
@@ -189,15 +185,16 @@ contract ObeliskVault {
         
         uint256 toUnwind = amount > tokenBal ? tokenBal : amount;
 
-        if (token == WMNT) {
-            (bool success, ) = WMNT.call(abi.encodeWithSignature("withdraw(uint256)", toUnwind));
+        address wmnt = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a).WETH();
+        if (token == wmnt) {
+            (bool success, ) = wmnt.call(abi.encodeWithSignature("withdraw(uint256)", toUnwind));
             require(success, "WMNT unwrap failed");
             return;
         }
 
         address[] memory path = new address[](2);
         path[0] = token;
-        path[1] = WMNT;
+        path[1] = wmnt;
 
         IERC20(token).approve(address(ROUTER), toUnwind);
         
@@ -217,14 +214,38 @@ contract ObeliskVault {
         emit AgentUpdated(_agent);
     }
 
-    function togglePause() external onlyOwner {
+    function togglePause() external onlyAgent {
         vaultPaused = !vaultPaused;
     }
 
+    function addAsset(address token) external onlyOwner {
+        _addAsset(token);
+    }
+
+    function removeAsset(address token) external onlyOwner {
+        require(isAssetAllowed[token], "Not registered");
+        isAssetAllowed[token] = false;
+        // Remove from array (swap with last)
+        for (uint i = 0; i < allowedAssets.length; i++) {
+            if (allowedAssets[i] == token) {
+                allowedAssets[i] = allowedAssets[allowedAssets.length - 1];
+                allowedAssets.pop();
+                break;
+            }
+        }
+    }
+
+    function _addAsset(address token) internal {
+        if (!isAssetAllowed[token]) {
+            isAssetAllowed[token] = true;
+            allowedAssets.push(token);
+        }
+    }
+
     /// @notice Allows the owner to rescue accidentally sent ERC20 tokens.
-    ///         Cannot be used to rescue the vault's primary managed assets (mETH, USDY, WMNT).
+    ///         Cannot be used to rescue the vault's primary managed assets.
     function rescueERC20(address token, uint256 amount) external onlyOwner {
-        require(token != METH && token != USDY && token != WMNT, "ObeliskVault: cannot rescue managed assets");
+        require(!isAssetAllowed[token], "ObeliskVault: cannot rescue managed assets");
         IERC20(token).transfer(owner, amount);
     }
 
@@ -237,10 +258,11 @@ contract ObeliskVault {
 
     /// @notice Returns the total value of all assets held by the vault
     function getTotalVaultValue() public view returns (uint256) {
-        return address(this).balance
-            + IERC20(METH).balanceOf(address(this))
-            + IERC20(USDY).balanceOf(address(this))
-            + IERC20(WMNT).balanceOf(address(this));
+        uint256 total = address(this).balance;
+        for (uint i = 0; i < allowedAssets.length; i++) {
+            total += IERC20(allowedAssets[i]).balanceOf(address(this));
+        }
+        return total;
     }
 
     /// @notice Returns the user's yield-inclusive withdrawable balance,

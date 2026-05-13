@@ -602,13 +602,21 @@ async def supervisory_controller_node(state: AgentState):
                             amount_in = balance - w3.to_wei(0.01, 'ether')
                             path = [w3.to_checksum_address(WMNT_ADDRESS), w3.to_checksum_address(target_token)]
                             
+                            # ── DYNAMIC SLIPPAGE ENGINE ──
+                            volatility = state["data"].get("volatility", 1.0)
+                            if current_regime == "Contraction" or volatility > 2.0:
+                                slippage_buffer = 0.025 # 2.5% during panic/high-vol
+                            elif current_regime == "Consolidation":
+                                slippage_buffer = 0.005 # 0.5% during stable markets
+                            else:
+                                slippage_buffer = 0.01  # 1.0% standard
+
                             if target_token == w3.to_checksum_address(WMNT_ADDRESS):
                                 # Direct wrap, 1:1
-                                min_amount_out = int(amount_in * 0.99)
+                                min_amount_out = int(amount_in * (1 - slippage_buffer))
                             else:
                                 amounts_out = router_contract.functions.getAmountsOut(amount_in, path).call()
-                                # apply 1% slippage (99% of quote)
-                                min_amount_out = int(amounts_out[-1] * 0.99)
+                                min_amount_out = int(amounts_out[-1] * (1 - slippage_buffer))
                                 
                             logger.info(f"executor: slippage check - amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out}")
                         except Exception as e:
