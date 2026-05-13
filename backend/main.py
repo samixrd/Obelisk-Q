@@ -1002,6 +1002,8 @@ async def get_stats():
         "active_nodes": active_nodes,
         "score": last_known_state["risk"]["score"],
         "regime": last_known_state["regime"],
+        "confidence": last_known_state.get("confidence", 85),
+        "reasoning": last_known_state.get("reasoning", "Analyzing market vectors..."),
         "components": last_known_state["components"],
         "score_history": last_known_state["score_history"],
         "circuit_breaker_active": CIRCUIT_BREAKER_ACTIVE,

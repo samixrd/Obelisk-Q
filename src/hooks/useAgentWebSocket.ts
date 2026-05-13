@@ -18,6 +18,8 @@ interface TelemetryLog {
   message: string;
   score: number;
   cycle: number;
+  confidence?: number;
+  reasoning?: string;
 }
 
 const NODE_LABELS: Record<string, string> = {
@@ -93,7 +95,9 @@ export function useAgentWebSocket() {
             score: l.score,
             cycle: l.cycle,
             action: l.action,
-            tx_hash: l.tx_hash
+            tx_hash: l.tx_hash,
+            confidence: l.confidence,
+            reasoning: l.reasoning
           }));
           setAgentLogs(mapped);
         }

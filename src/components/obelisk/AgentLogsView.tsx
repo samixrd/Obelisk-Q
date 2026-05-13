@@ -214,6 +214,13 @@ function LogRow({ log }: { log: any }) {
           {message}
         </span>
 
+        {log.confidence && (
+          <div className="flex items-center gap-2 px-2 py-0.5 bg-sky-400/5 rounded-md">
+            <span className="text-[9px] text-sky-600/70 font-mono tracking-tighter">CONF:</span>
+            <span className="text-[10px] text-sky-700/80 font-bold tabular-nums">{log.confidence}%</span>
+          </div>
+        )}
+
         <div className="flex items-center gap-3">
           <div className="h-[3px] w-12 bg-black/[0.03] rounded-full overflow-hidden">
             <motion.div 
@@ -228,6 +235,15 @@ function LogRow({ log }: { log: any }) {
           </span>
         </div>
       </div>
+
+      {log.reasoning && (
+        <div className="pl-[100px] mt-2 mb-1">
+          <p className="text-[11px] text-black/40 font-light italic leading-snug">
+            <span className="text-[9px] uppercase tracking-wider not-italic mr-2 opacity-50 font-bold">Reasoning:</span>
+            "{log.reasoning}"
+          </p>
+        </div>
+      )}
 
       {isAction && (
         <motion.div 

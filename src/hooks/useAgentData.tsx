@@ -24,6 +24,8 @@ interface AgentData {
     message: string;
     score: number;
     cycle: number;
+    confidence?: number;
+    reasoning?: string;
   }>;
   nodes: Array<{
     id: string;
