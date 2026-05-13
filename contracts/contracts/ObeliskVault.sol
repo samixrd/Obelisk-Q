@@ -172,6 +172,31 @@ contract ObeliskVault {
         }
     }
 
+    /**
+     * @notice Harvests any loose MNT in the vault and compounds it into the target asset.
+     * @param targetToken The asset to compound into.
+     * @param minAmountOut Slippage protection.
+     */
+    function compound(address targetToken, uint256 minAmountOut) external onlyAgent nonReentrant {
+        require(isAssetAllowed[targetToken], "Asset not registered");
+        uint256 mntToCompound = address(this).balance;
+        if (mntToCompound > AGENT_BUFFER) {
+            uint256 amountToSwap = mntToCompound - AGENT_BUFFER;
+            address wmnt = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a).WETH();
+            
+            address[] memory path = new address[](2);
+            path[0] = wmnt;
+            path[1] = targetToken;
+            
+            ROUTER.swapExactNativeForTokens{value: amountToSwap}(
+                minAmountOut,
+                path,
+                address(this),
+                block.timestamp + 600
+            );
+        }
+    }
+
     function setRegime(string calldata _regime) external onlyAgent {
         currentRegime = _regime;
         emit RegimeUpdated(_regime, block.timestamp);

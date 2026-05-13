@@ -956,10 +956,30 @@ async def get_memory():
 
 @app.get("/api/stats")
 async def get_stats():
+    # ── NODE HEALTH CALCULATION ──
+    nodes = []
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        nodes = conn.execute("SELECT node_id, last_pulse, role FROM heartbeats").fetchall()
+        conn.close()
+    except: pass
+    
+    active_nodes = 0
+    now = datetime.now()
+    for n in nodes:
+        try:
+            pulse = datetime.fromisoformat(n[1])
+            if (now - pulse).total_seconds() < 60:
+                active_nodes += 1
+        except: pass
+
+    resiliency = "Optimal" if active_nodes > 1 else ("Stable" if active_nodes == 1 else "Degraded")
+
     return {
         "total_aum": "1,240,500",
         "active_users": 142,
-        "vault_health": "Optimal",
+        "vault_health": resiliency,
+        "active_nodes": active_nodes,
         "score": last_known_state["risk"]["score"],
         "regime": last_known_state["regime"],
         "components": last_known_state["components"],

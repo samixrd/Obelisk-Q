@@ -33,7 +33,7 @@ npm run dev
 ## 3. Deployment Configuration (Mantle Mainnet)
 The project is optimized for Mantle Mainnet (Chain ID: 5000).
 
-*   **Current Vault**: `0x54Dc21FA9Aa55ad53e23b80609b8bB1ea234Bca7`
+*   **Current Vault**: `0x2e7D0D1642Faf1b2FCb433597c34252d8c7F11bB`
 *   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`
 *   **Asset Registry**: The vault uses a dynamic registry. To add new assets (e.g. FBTC), the owner must call `addAsset(address)`.
 
