@@ -16,14 +16,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **Asset Category**: Real World Assets (USDY - US Treasury backed), Liquid Staking Tokens (mETH), and Wrapped MNT (WMNT).
 *   **The AI Role**: A 5-node autonomous swarm (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital between stable RWA yield, stable Mantle yield (WMNT), and aggressive staking growth without human intervention.
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
-
-### 🎨 Best UI/UX Track: Design Excellence
-Obelisk Q is purpose-built for the **Best UI/UX Award**, focusing on institutional-grade aesthetics and human-centric AI interaction:
-
-*   **Visual Design (30%)**: Implemented a bespoke "Antigravity" design system using glassmorphic cards, fluid typography, and a cohesive Navy-and-White institutional palette that builds trust.
-*   **Interaction & Flow (30%)**: Zero-friction navigation with Framer Motion transitions. The entire complex DeFi onboarding is simplified into a **30-second Guided Tour**.
-*   **AI Interaction Design (25%)**: Solved the "Black Box" problem with a real-time **Decision Transparency Card** and **Confidence Engine**, making autonomous intelligence human-readable and verifiable.
-*   **Accessibility (15%)**: Designed for "Beginner-Friendliness." Users can manage institutional-grade portfolios with a single dial, removing the high entry barrier of manual Mantle yield-farming.
+*   **UI/UX Focus**: Competing for the **Best UI/UX Award** with a bespoke glassmorphic design, 30-second guided onboarding, and a first-of-its-kind **AI Transparency Feed** for human-readable auditability.
 
 
 ### 🛠️ Technical Excellence & Deployment
