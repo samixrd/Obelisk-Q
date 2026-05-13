@@ -85,6 +85,16 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 *   **Proportional Asset Unwinding**: Optimized withdrawal logic that only trades the specific user's share of assets. This ensures the rest of the vault's capital remains invested and earning yield.
 *   **Hybrid AI Sanity Filter**: A deterministic mathematical layer overrides the LLM (GPT-4o-mini) if it fails to account for extreme volatility (Vol > 2.5).
 
+### 🎨 Best UI/UX Track: Design Excellence
+Obelisk Q is purpose-built for the **Best UI/UX Award**, focusing on institutional-grade aesthetics and human-centric AI interaction:
+
+*   **Visual Design (30%)**: Implemented a bespoke "Antigravity" design system using glassmorphic cards, fluid typography, and a cohesive Navy-and-White institutional palette that builds trust.
+*   **Interaction & Flow (30%)**: Zero-friction navigation with Framer Motion transitions. The entire complex DeFi onboarding is simplified into a **30-second Guided Tour**.
+*   **AI Interaction Design (25%)**: Solved the "Black Box" problem with a real-time **Decision Transparency Card** and **Confidence Engine**, making autonomous intelligence human-readable and verifiable.
+*   **Accessibility (15%)**: Designed for "Beginner-Friendliness." Users can manage institutional-grade portfolios with a single dial, removing the high entry barrier of manual Mantle yield-farming.
+
+---
+
 ### ⚠️ Technical Drawbacks & Roadmap
 *   **Telemetry Latency**: During peak Mantle congestion, the agent's heartbeat pulse can experience RPC timeouts. We mitigate this using a multi-RPC failover strategy and state-persistence.
 *   **V3 Roadmap**: Integration of ZK-ML for verified on-chain regime detection and cross-chain expansion via LayerZero.
