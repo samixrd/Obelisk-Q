@@ -25,6 +25,8 @@ interface TelemetryLog {
 const NODE_LABELS: Record<string, string> = {
   'regime-detection': 'Regime Detection',
   'risk-assessment': 'Risk Assessment',
+  'deterministic-analyst': 'Deterministic Analyst',
+  'consensus-arbitrator': 'Consensus Arbitrator',
   'q-score-engine': 'Q-Score Engine',
   'telemetry-aggregator': 'Telemetry Aggregator',
   'supervisory-controller': 'Supervisory Controller',
@@ -36,7 +38,7 @@ export function useAgentWebSocket() {
   const [score, setScore] = useState<number>(0);
   const [regime, setRegime] = useState<string>("Loading...");
   const [countdown, setCountdown] = useState<number>(10);
-  const [lastMessage, setLastMessage] = useState<string>("Antigravity Protocol online — 5-node LangGraph active");
+  const [lastMessage, setLastMessage] = useState<string>("Antigravity Protocol online — 7-node LangGraph active");
   const [liveYields, setLiveYields] = useState({ usdy: 5.1, meth: 3.6 });
   const [livePrices, setLivePrices] = useState({ usdy: 1.00, meth: 3450.20 });
   const [agentLogs, setAgentLogs] = useState<TelemetryLog[]>([]);
@@ -47,9 +49,11 @@ export function useAgentWebSocket() {
   const [nodes, setNodes] = useState<LangGraphNode[]>([
     { id: 'regime-detection',      label: 'Regime Detection',      status: 'active',      sub: 'Market State Analysis',    lastPulse: Date.now() },
     { id: 'risk-assessment',       label: 'Risk Assessment',       status: 'active',      sub: 'Exposure Calculation',     lastPulse: Date.now() },
+    { id: 'deterministic-analyst', label: 'Deterministic Analyst', status: 'calculating', sub: 'Pure Math Validation',     lastPulse: Date.now() },
+    { id: 'consensus-arbitrator',  label: 'Consensus Arbitrator',  status: 'arbitrating', sub: 'Safety Bias Control',      lastPulse: Date.now() },
     { id: 'q-score-engine',        label: 'Q-Score Engine',        status: 'calculating', sub: 'Confidence Scoring',       lastPulse: Date.now() },
     { id: 'telemetry-aggregator',  label: 'Telemetry Aggregator',  status: 'streaming',   sub: 'Live Feedback Loop',       lastPulse: Date.now() },
-    { id: 'supervisory-controller',label: 'Supervisory Controller',status: 'arbitrating', sub: 'Node Arbitration',         lastPulse: Date.now() },
+    { id: 'supervisory-controller',label: 'Supervisory Controller',status: 'active',      sub: 'Node Arbitration',         lastPulse: Date.now() },
   ]);
 
   const cycleRef = useRef(1);

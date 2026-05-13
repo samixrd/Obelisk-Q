@@ -108,7 +108,7 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         <p className="landing-hero-sub">
           The first autonomous wealth navigator optimized for Mantle Mainnet.
           <br />
-          Experience automated yields from mETH and USDY through a verified 5-node LangGraph swarm with real-time protection.
+          Experience automated yields from mETH and USDY through a verified 7-node LangGraph swarm with real-time protection.
         </p>
         <div className="landing-hero-actions">
           <button onClick={onLaunch} className="landing-hero-cta">
@@ -147,9 +147,9 @@ function ProtocolSection() {
           Obelisk Q uses the Antigravity Protocol to ensure 100% uptime and deterministic rebalancing through verified cross-token unwind logic on Mantle Mainnet.
         </p>
         <ul className="landing-bullet-list">
-          <li><span className="landing-bullet" /> 5-node LangGraph swarm (regime, risk, score, telemetry, supervisor)</li>
+          <li><span className="landing-bullet" /> 7-node LangGraph pipeline (regime, risk, analyst, consensus, score, telemetry, supervisor)</li>
           <li><span className="landing-bullet" /> autonomous circuit breaker (halts allocation on volatility)</li>
-          <li><span className="landing-bullet" /> real-time telemetry synchronization (10s dashboard polling)</li>
+          <li><span className="landing-bullet" /> real-time telemetry synchronization (Antigravity Cloud)</li>
         </ul>
       </motion.div>
     </section>

@@ -46,7 +46,7 @@ export function AgentLogsView() {
 
       
       {/* ── Supervisory Node Status ────────────────────────────────────────── */}
-      <div className="col-span-12 grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="col-span-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
         {nodes.map((node, i) => (
           <motion.div key={node.id}
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
@@ -70,7 +70,7 @@ export function AgentLogsView() {
       {/* ── Global Stats Row ─────────────────────────────────────────────── */}
       <div className="col-span-12 grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { label: "Active Framework", value: "LangGraph 5-Node", sub: "Supervisory Configuration" },
+          { label: "Active Framework", value: "LangGraph 7-Node", sub: "Supervisory Configuration" },
           { label: "Stability Score", value: String(score), sub: "AI Weighted Confidence" },
           { label: "State Latency", value: "< 500ms", sub: "Antigravity Protocol" },
         ].map((s, i) => (
