@@ -29,7 +29,7 @@ Obelisk Q operates a **Multi-Node Agent Swarm** designed for high availability:
 *   **Yield Auto-Compounding**: Native `compound()` logic harvests MNT rewards and re-invests them back into the target yield position.
 
 ### 🏦 Core Protocol Details (Mantle Mainnet)
-*   **ObeliskVault**: `0x2e7D0D1642Faf1b2FCb433597c34252d8c7F11bB`
+*   **ObeliskVault**: `0x7924ce8e072c84D4028B04754207146e3aC6429A`
 *   **ERC-8004 Agent ID**: `0x5698E89Ec2396e02679ddde33c2BA78de88F7fce`
 *   **Network**: Mantle Mainnet (Chain ID 5000)
 *   **Primary Assets**: mETH (Staking), USDY (RWA), WMNT (Liquidity)
