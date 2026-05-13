@@ -1620,14 +1620,17 @@ async def sync_current_position():
 
 @app.on_event("startup")
 async def startup():
-    """Server initialization with fault-tolerant recovery."""
+    """Server initialization logic (shared between API and Agent modes)."""
+    await initialize_logic()
+
+async def initialize_logic():
+    """Core logic initialization: DB, state recovery, and background tasks."""
     try:
         init_db()
     except Exception as e:
         logger.critical(f"startup_failure: database initialization failed: {e}")
-        # We don't exit; we enter DEGRADED mode
     
-    # ── STATE RECOVERY: Load last known state from DB ──
+    # ── STATE RECOVERY ──
     try:
         conn = sqlite3.connect(DB_PATH)
         last_row = conn.execute("""
@@ -1642,16 +1645,15 @@ async def startup():
             EMA_SCORE = float(last_row[0])
             last_known_state["regime"] = last_row[1]
             last_known_state["risk"]["score"] = int(last_row[0])
-            # position is synced from blockchain below
             logger.info(f"startup: state recovered from DB. score={EMA_SCORE} regime={last_row[1]}")
     except Exception as e:
-        logger.warning(f"startup: state recovery failed (non-fatal): {e}")
+        logger.warning(f"startup: state recovery failed: {e}")
 
     try:
-        await sync_current_position() # Determine current position from blockchain
+        await sync_current_position()
     except Exception as e:
-        logger.error(f"startup: blockchain sync failed: {e}. starting in DEGRADED mode.")
-        asyncio.create_task(notify_critical_failure(f"Blockchain sync failed on startup: {e}", severity="MEDIUM"))
+        logger.error(f"startup: blockchain sync failed: {e}")
+        asyncio.create_task(notify_critical_failure(f"Blockchain sync failed: {e}", severity="MEDIUM"))
 
     # Initialize non-blocking background tasks
     asyncio.create_task(run_analysis_cycle())
@@ -1720,4 +1722,25 @@ async def node_heartbeat_loop():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    import sys
+
+    # Try starting the API server
+    try:
+        logger.info(f"Starting Obelisk Q Engine on port 8000 (Node: {NODE_ID_GLOBAL}, Role: {NODE_ROLE_GLOBAL})")
+        uvicorn.run(app, host="0.0.0.0", port=8000, log_level="error")
+    except OSError as e:
+        if e.errno == 98:
+            logger.warning("PORT_COLLISION: Port 8000 already in use. Entering AGENT-ONLY mode.")
+            # If port is busy, we run the logic manually without the API server
+            async def run_agent_only():
+                await initialize_logic()
+                while True:
+                    await asyncio.sleep(3600)
+            
+            try:
+                asyncio.run(run_agent_only())
+            except KeyboardInterrupt:
+                logger.info("Agent mode stopped by user.")
+        else:
+            logger.error(f"Failed to start engine: {e}")
+            sys.exit(1)
