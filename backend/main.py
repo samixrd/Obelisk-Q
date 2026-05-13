@@ -1722,25 +1722,43 @@ async def node_heartbeat_loop():
 
 if __name__ == "__main__":
     import uvicorn
+    import socket
     import sys
 
-    # Try starting the API server
+    # ── PORT COLLISION DEFENSE ──
+    # Manually check if the port is free before letting uvicorn take over.
+    # This prevents uvicorn's internal sys.exit() on bind failure.
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    port_available = False
     try:
-        logger.info(f"Starting Obelisk Q Engine on port 8000 (Node: {NODE_ID_GLOBAL}, Role: {NODE_ROLE_GLOBAL})")
-        uvicorn.run(app, host="0.0.0.0", port=8000, log_level="error")
-    except OSError as e:
-        if e.errno == 98:
-            logger.warning("PORT_COLLISION: Port 8000 already in use. Entering AGENT-ONLY mode.")
-            # If port is busy, we run the logic manually without the API server
-            async def run_agent_only():
-                await initialize_logic()
-                while True:
-                    await asyncio.sleep(3600)
-            
-            try:
-                asyncio.run(run_agent_only())
-            except KeyboardInterrupt:
-                logger.info("Agent mode stopped by user.")
-        else:
-            logger.error(f"Failed to start engine: {e}")
+        # Try to bind to the port
+        sock.bind(("0.0.0.0", 8000))
+        sock.close()
+        port_available = True
+    except OSError:
+        port_available = False
+
+    if port_available:
+        try:
+            logger.info(f"Starting Obelisk Q Engine (Full Mode) on port 8000. Node: {NODE_ID_GLOBAL}")
+            uvicorn.run(app, host="0.0.0.0", port=8000, log_level="error")
+        except Exception as e:
+            logger.error(f"Uvicorn failed unexpectedly: {e}")
+            sys.exit(1)
+    else:
+        # Entering AGENT-ONLY mode
+        logger.warning(f"PORT_COLLISION: Port 8000 occupied. Entering AGENT-ONLY mode (Node: {NODE_ID_GLOBAL})")
+        
+        async def run_agent_only():
+            await initialize_logic()
+            # Keep the loop alive
+            while True:
+                await asyncio.sleep(3600)
+        
+        try:
+            asyncio.run(run_agent_only())
+        except KeyboardInterrupt:
+            logger.info("Agent mode stopped.")
+        except Exception as e:
+            logger.critical(f"Agent-only mode crashed: {e}")
             sys.exit(1)
