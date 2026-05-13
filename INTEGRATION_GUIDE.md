@@ -15,10 +15,31 @@ source venv/bin/activate
 
 pip install -r requirements.txt
 python main.py
-
-# To start a High Availability Shadow Node:
-# NODE_ROLE=shadow NODE_ID=shadow-1 python main.py
 ```
+
+### High Availability (Shadow Nodes)
+The agent supports a 3-process failover topology via PM2:
+
+```bash
+# Start all 3 nodes (primary + 2 shadows):
+pm2 start ecosystem.config.js
+
+# Or start individual shadow nodes manually:
+NODE_ROLE=shadow NODE_ID=shadow-1 python main.py
+NODE_ROLE=shadow NODE_ID=shadow-2 python main.py
+```
+
+**Leader Election Protocol:**
+- Shadow nodes poll the primary's heartbeat every 15s via shared SQLite.
+- If no primary pulse for 45s, a shadow auto-promotes to primary.
+- PM2 `autorestart` handles individual process crashes.
+- Staggered restart delays (4s/10s/15s) prevent simultaneous promotion.
+
+**Environment Variables:**
+| Variable | Values | Default |
+|---|---|---|
+| `NODE_ROLE` | `primary` or `shadow` | `primary` |
+| `NODE_ID` | Any unique string | `local-1` |
 *Ensure `.env` in `backend/` contains your `AGENT_PRIVATE_KEY` and `VAULT_ADDRESS`.*
 
 ## 2. Start the Frontend (Vite)

@@ -1,16 +1,19 @@
-{
-  "name": "vite_react_shadcn_ts",
+  "name": "obelisk-q-monorepo",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
+    "setup": "npm install && npm run install:backend && npm run install:contracts",
+    "install:backend": "pip install -r backend/requirements.txt",
+    "install:contracts": "cd contracts && npm install",
     "dev": "vite",
+    "dev:backend": "cd backend && python -m uvicorn main:app --reload --port 8000",
+    "dev:all": "concurrently \"npm run dev\" \"npm run dev:backend\"",
+    "contracts:compile": "cd contracts && npx hardhat compile",
+    "contracts:test": "cd contracts && npx hardhat test",
     "build": "vite build",
-    "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -81,6 +84,7 @@
     "@types/three": "^0.184.0",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.4.21",
+    "concurrently": "^8.2.2",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",

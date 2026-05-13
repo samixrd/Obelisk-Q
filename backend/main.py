@@ -6,9 +6,10 @@ from typing import Annotated, List, TypedDict, Union, Literal
 from datetime import datetime
 import secrets
 import time
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException, Depends
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Header, HTTPException, Depends, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from dotenv import load_dotenv
 
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
@@ -16,10 +17,23 @@ from openai import OpenAI
 import os
 import logging
 from logging.handlers import RotatingFileHandler
-from dotenv import load_dotenv
+from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
+import aiohttp
 import sqlite3
+from web3 import Web3
 
 DB_PATH = "obelisk_memory.db"
+
+RPC_TIMEOUT = int(os.getenv("AGENT_RPC_TIMEOUT", "15"))      # Max seconds for a single on-chain call
+CYCLE_TIMEOUT = int(os.getenv("AGENT_CYCLE_TIMEOUT", "45"))  # Max seconds for total graph execution
+MAX_RPC_ATTEMPTS = int(os.getenv("MAX_RPC_ATTEMPTS", "3"))   # Max retries per cycle (staggered)
+BACKOFF_FACTOR = float(os.getenv("BACKOFF_FACTOR", "0.5"))   # Delay multiplier for retries
+
+START_TIME = time.time()
+
+# Multi-RPC Failover Strategy: Provide comma-separated URLs in .env
+DEFAULT_RPC = "https://rpc.mantle.xyz"
+MANTLE_RPC_LIST = os.getenv("MANTLE_RPC_URLS", DEFAULT_RPC).split(",")
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
@@ -72,41 +86,89 @@ def init_db():
         CREATE TABLE IF NOT EXISTS heartbeats (
             node_id TEXT PRIMARY KEY,
             last_pulse TEXT,
-            role TEXT
+            role TEXT,
+            status TEXT DEFAULT 'OK'
         )
     """)
+    try:
+        conn.execute("ALTER TABLE heartbeats ADD COLUMN status TEXT DEFAULT 'OK'")
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()
 
-def update_heartbeat():
-    node_id = os.getenv("NODE_ID", "local-1")
-    role = os.getenv("NODE_ROLE", "primary")
+# ─── Alerting & Monitoring ───────────────────────────────────────────────────
+WEBHOOK_URL = os.getenv("ERROR_WEBHOOK_URL")
+
+async def notify_critical_failure(error_msg: str, severity: str = "HIGH"):
+    """Broadcasts a critical failure to the external webhook and logs it."""
+    logger.critical(f"CRITICAL_{severity}: {error_msg}")
+    if not WEBHOOK_URL:
+        return
+    
+    try:
+        payload = {
+            "node_id": NODE_ID_GLOBAL,
+            "severity": severity,
+            "timestamp": datetime.now().isoformat(),
+            "error": error_msg,
+            "regime": last_known_state.get("regime", "N/A"),
+            "score": last_known_state["risk"].get("score", 0)
+        }
+        async with aiohttp.ClientSession() as session:
+            async with session.post(WEBHOOK_URL, json=payload, timeout=5.0) as resp:
+                if resp.status != 200:
+                    logger.warning(f"webhook: alert delivery failed with status {resp.status}")
+    except Exception as e:
+        logger.warning(f"webhook: alert delivery error: {e}")
+
+# ─── HA Module Globals ────────────────────────────────────────────────────────
+# These are module-level so leader_election() can promote a shadow → primary
+# and the change is visible to run_analysis_cycle() in the same process.
+NODE_ID_GLOBAL = os.getenv("NODE_ID", "local-1")
+NODE_ROLE_GLOBAL = os.getenv("NODE_ROLE", "primary")
+
+def update_heartbeat(node_id=None, role=None, rpc_status="OK"):
+    """Write a heartbeat pulse to the shared SQLite state.
+    
+    Includes an 'rpc_status' field to allow shadow nodes to detect
+    when a primary is alive but disconnected from the blockchain.
+    """
+    _id = node_id or NODE_ID_GLOBAL
+    _role = role or NODE_ROLE_GLOBAL
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.execute("""
-            INSERT OR REPLACE INTO heartbeats (node_id, last_pulse, role)
-            VALUES (?, ?, ?)
-        """, (node_id, datetime.now().isoformat(), role))
+            INSERT OR REPLACE INTO heartbeats (node_id, last_pulse, role, status)
+            VALUES (?, ?, ?, ?)
+        """, (_id, datetime.now().isoformat(), _role, rpc_status))
         conn.commit()
         conn.close()
     except Exception as e:
         logger.warning(f"heartbeat: update failed: {e}")
 
 def get_primary_health():
+    """Check if any primary node is healthy and connected to RPC.
+    
+    Returns True if primary is pulsing AND reporting OK status.
+    """
     try:
         conn = sqlite3.connect(DB_PATH)
         row = conn.execute("""
-            SELECT last_pulse FROM heartbeats 
+            SELECT last_pulse, status FROM heartbeats 
             WHERE role = 'primary' 
             ORDER BY last_pulse DESC LIMIT 1
         """).fetchone()
         conn.close()
         if row:
-            last_pulse = datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S')
-            diff = (datetime.utcnow() - last_pulse).total_seconds()
-            return diff < 60 # Healthy if pulsed in last 60s
+            last_pulse = datetime.fromisoformat(row[0])
+            status = row[1]
+            diff = (datetime.now() - last_pulse).total_seconds()
+            # Unhealthy if pulse > 60s OR status is ERROR
+            return (diff < 60) and (status == "OK")
         return False
-    except:
+    except Exception as e:
+        logger.warning(f"get_primary_health: check failed: {e}")
         return False
 
 def save_cycle_memory(cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash="N/A", analyst_insight=""):
@@ -141,8 +203,12 @@ except ImportError:
 
 load_dotenv()
 
-# Create logs directory if it doesn't exist
-os.makedirs("logs", exist_ok=True)
+# Create logs directory with restricted permissions (0o700: owner-only access)
+if not os.path.exists("logs"):
+    os.makedirs("logs", mode=0o700, exist_ok=True)
+else:
+    # Ensure existing dir has correct permissions
+    os.chmod("logs", 0o700)
 
 logger = logging.getLogger("obelisk")
 logger.setLevel(logging.INFO)
@@ -157,12 +223,19 @@ fh = RotatingFileHandler("logs/agent_audit.log", maxBytes=10*1024*1024, backupCo
 fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - [%(node_id)s] %(message)s'))
 logger.addHandler(fh)
 
-# Context filter for node_id
-class NodeFilter(logging.Filter):
+# Security Filter: Redacts sensitive patterns (private keys, etc)
+class SecurityFilter(logging.Filter):
     def filter(self, record):
+        msg = str(record.msg)
+        # Redact private key patterns (simple hex strings of 64 chars)
+        if len(msg) > 60 and "0x" in msg:
+            # Masking middle of potential hex addresses
+            record.msg = f"{msg[:10]}...REDACTED...{msg[-10:]}"
+        
         record.node_id = os.getenv("NODE_ID", "local")
         return True
-logger.addFilter(NodeFilter())
+
+logger.addFilter(SecurityFilter())
 
 # ─── LLM Configuration ────────────────────────────────────────────────────────
 
@@ -186,6 +259,71 @@ class AgentState(TypedDict):
     data: dict
     cycle_count: int
     sensitivity: float
+
+# ─── External Data Services ───────────────────────────────────────────────────
+class ExternalDataService:
+    """Aggregates market data from DeFiLlama, CoinGecko, and Fear/Greed index.
+    
+    Includes an internal 15-minute cache to prevent hitting rate limits
+    on short-interval agent cycles.
+    """
+    _cache = {}
+    _cache_ttl = 900 # 15 minutes
+    
+    @classmethod
+    async def get_market_context(cls):
+        now = time.time()
+        if cls._cache.get("expiry", 0) > now:
+            return cls._cache["data"]
+            
+        logger.info("telemetry: fetching fresh market context from external APIs")
+        data = {
+            "usdy": 5.1, # Default fallbacks
+            "meth": 3.4,
+            "mnt_change": 0.0,
+            "fear_greed": 50
+        }
+        
+        try:
+            async with aiohttp.ClientSession() as session:
+                # 1. DeFiLlama Yields (mETH & USDY)
+                async with session.get("https://yields.llama.fi/pools", timeout=5) as resp:
+                    if resp.status == 200:
+                        yields = await resp.json()
+                        # Pool IDs for mETH (Mantle) and USDY (Ondo)
+                        meth_pool = next((p for p in yields["data"] if p["symbol"] == "mETH" and p["chain"] == "Mantle"), None)
+                        usdy_pool = next((p for p in yields["data"] if p["symbol"] == "USDY" and p["chain"] == "Mantle"), None)
+                        if meth_pool: data["meth"] = float(meth_pool["apy"])
+                        if usdy_pool: data["usdy"] = float(usdy_pool["apy"])
+                
+                # 2. CoinGecko (MNT Price Change)
+                cg_key = os.getenv("COINGECKO_API_KEY")
+                url = f"https://api.coingecko.com/api/v3/simple/price?ids=mantle&vs_currencies=usd&include_24hr_change=true"
+                headers = {"x-cg-demo-api-key": cg_key} if cg_key else {}
+                async with session.get(url, headers=headers, timeout=5) as resp:
+                    if resp.status == 200:
+                        prices = await resp.json()
+                        data["mnt_change"] = round(prices["mantle"]["usd_24h_change"], 2)
+                
+                # 3. Fear & Greed Index
+                async with session.get("https://api.alternative.me/fng/", timeout=5) as resp:
+                    if resp.status == 200:
+                        fng = await resp.json()
+                        data["fear_greed"] = int(fng["data"][0]["value"])
+                        
+            cls._cache = {"data": data, "expiry": now + cls._cache_ttl}
+            return data
+        except Exception as e:
+            logger.warning(f"telemetry: external API fetch failed, using fallbacks: {e}")
+            return data
+
+# ─── Prometheus Metrics ───────────────────────────────────────────────────────
+Q_SCORE_GAUGE = Gauge("obelisk_q_score", "Current autonomous risk score")
+REBALANCE_COUNTER = Counter("obelisk_rebalance_total", "Total on-chain rebalances", ["action", "status"])
+RPC_ERROR_COUNTER = Counter("obelisk_rpc_errors_total", "Total RPC communication failures", ["node"])
+CYCLE_COUNTER = Counter("obelisk_analysis_cycles_total", "Total agent analysis cycles")
+BREAKER_GAUGE = Gauge("obelisk_circuit_breaker_active", "Status of safety circuit breaker")
+ACTIVE_SESSIONS = Gauge("obelisk_active_sessions", "Number of active user sessions")
 
 # ─── Last Known State Cache (Antigravity Resilience) ─────────────────────────
 last_known_state = {
@@ -246,20 +384,42 @@ WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 async def regime_detection_node(state: AgentState):
+    """Volatility Observation Model — Environment Sensing.
+    
+    This node generates the primary 'observable' that drives regime classification.
+    Volatility is modeled as a bounded random walk, serving as a simplified
+    Emission Model in a state-space analogy.
+    
+    Emission characteristics:
+      - Step size: ±0.4 per cycle
+      - Bounds: [0.5, 3.5]
+      - Initial: 1.5 ("calm market")
+    
+    Resilience: On node failure or timeout, falls back to last_known_state
+    cached values to ensure zero-downtime decision continuity.
+    """
     logger.info("node: regime_detection | starting market scan")
     try:
         # simulated latency
         await asyncio.sleep(0.2) 
         
-        # Simulate random walk for volatility (HMM Emission)
-        prev_vol = last_known_state["risk"].get("vol", 1.5)
-        vol_change = random.uniform(-0.4, 0.4)
-        vol = max(0.5, min(3.5, prev_vol + vol_change))
+        # ── HMM EMISSION MODEL ──
+        # Volatility is modeled as a bounded random walk.
+        # This serves as the "observation" in the HMM analogy.
+        # In production, replace with actual ETH/MNT price volatility.
+        # ── EXTERNAL DATA AGGREGATION ──
+        market_data = await ExternalDataService.get_market_context()
         
-        usdy_apy = 5.1
-        meth_apy = 3.4
-        mnt_change = round(random.uniform(-2.0, 2.0), 2)
-        fear_greed = random.randint(30, 75)
+        usdy_apy = market_data["usdy"]
+        meth_apy = market_data["meth"]
+        mnt_change = market_data["mnt_change"]
+        fear_greed = market_data["fear_greed"]
+        
+        # Volatility remains a random walk in this version for stability, 
+        # but is influenced by fear_greed in the next iteration.
+        prev_vol = last_known_state["risk"].get("vol", 1.5)
+        vol_change = random.uniform(-0.3, 0.3)
+        vol = max(0.5, min(3.5, prev_vol + vol_change))
         
         yield_data = {"usdy": usdy_apy, "meth": meth_apy}
         state["data"]["yields"] = yield_data
@@ -293,15 +453,35 @@ Be concise. 1-2 sentences max."""},
             state["data"]["analyst_insight"] = analysis
         
         content = f"regime: liquidity markers scanned. usdy {usdy_apy}%. meth {meth_apy}%. vol {vol:.2f}. LLM insight: {analysis[:80]}"
-    except asyncio.TimeoutError:
-        state["data"]["yields"] = last_known_state["yields"]
-        state["data"]["vol"] = last_known_state["risk"]["vol"]
-        state["data"]["analyst_insight"] = "timeout — no LLM insight available"
-        content = "regime: timeout. using last known yield vector."
+    except (asyncio.TimeoutError, Exception) as e:
+        logger.error(f"node_failure: regime_detection crashed: {e}")
+        state["data"]["yields"] = last_known_state.get("yields", {"usdy": 5.0, "meth": 3.5})
+        state["data"]["vol"] = last_known_state["risk"].get("vol", 1.5)
+        state["data"]["analyst_insight"] = "node error — using cached state"
+        content = f"regime: node failure ({type(e).__name__}). using cached yield vector."
     
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def risk_assessment_node(state: AgentState):
+    """Regime Decoding Pipeline — Discrete State Classification.
+    
+    Decodes the volatility observation into one of three market states:
+      1. Deterministic Threshold Decoding:
+         - vol < 1.2  → Expansion (Growth-focused)
+         - 1.2 ≤ vol ≤ 2.2 → Consolidation (Yield-focused)
+         - vol > 2.2  → Contraction (Safety-focused)
+      2. LLM State Confirmation (GPT-4o-mini):
+         Provides qualitative validation during 'Consolidation' phases.
+      3. Safety Sanity Overrides:
+         Hard logic constraints that trigger based on extreme tails:
+         - vol > 2.5 → Force Contraction (Panic state)
+         - risk_score < 40 + Expansion → Force Consolidation (Bull trap)
+      4. Hysteresis Lock: 3-cycle state retention after any
+         regime change (~30 min at 10-min cycle intervals)
+    
+    Antigravity Resilience: On timeout/LLM failure, falls back
+    to rule-based classification with zero downtime.
+    """
     logger.info("node: risk_assessment | starting regime audit")
     try:
         await asyncio.sleep(0.1)
@@ -313,7 +493,10 @@ async def risk_assessment_node(state: AgentState):
         state["data"]["risk"] = {"score": risk_score}
         last_known_state["risk"]["score"] = risk_score
         
-        # Regime Identification (HMM & Hysteresis logic)
+        # ── HMM STATE DECODING ──
+        # Step 1: Check hysteresis lock (transition probability analogue)
+        # When locked, regime is held constant for N cycles regardless
+        # of new observations — equivalent to P(stay) ≈ 1.0
         current_regime = last_known_state.get("regime", "Consolidation")
         hysteresis = last_known_state.get("hysteresis", 0)
         
@@ -321,6 +504,7 @@ async def risk_assessment_node(state: AgentState):
             new_regime = current_regime
             last_known_state["hysteresis"] = hysteresis - 1
         else:
+            # Step 2: Threshold-based classification (emission → state)
             if vol < 1.2:
                 raw_regime = "Expansion"
             elif vol > 2.2:
@@ -449,7 +633,17 @@ async def telemetry_aggregator_node(state: AgentState):
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def deterministic_analyst_node(state: AgentState):
-    """Mathematical analyst that provides a second opinion based on hard rules."""
+    """Deterministic Mathematical Analyst — Rule-Based Regime Suggestion.
+    
+    Provides an independent second opinion using TIGHTER thresholds
+    than the primary AI classifier. This makes the math analyst
+    inherently more conservative:
+      - Expansion:   vol < 1.1 AND score > 75  (vs AI: vol < 1.2)
+      - Contraction:  vol > 2.2 OR score < 40   (same as AI)
+      - Consolidation: everything else
+    
+    The suggestion feeds into the Consensus Node for arbitration.
+    """
     vol = state["data"].get("vol", 1.5)
     score = state["data"].get("risk", {}).get("score", 50)
     
@@ -463,7 +657,26 @@ async def deterministic_analyst_node(state: AgentState):
     return {"messages": [AIMessage(content=f"math: rule-based suggestion is {suggestion}.")], "data": state["data"]}
 
 async def consensus_node(state: AgentState):
-    """Arbitrator that resolves conflicts and enforces Trend-Lock (Anti-Whipsaw)."""
+    """Dual-Model Consensus Arbitrator — Anti-Whipsaw Trend Lock.
+    
+    Resolves disagreements between the AI regime (from risk_assessment_node)
+    and the deterministic regime (from deterministic_analyst_node) using
+    an ASYMMETRIC SAFETY BIAS:
+    
+    Conflict Resolution Matrix:
+      AI=Exp + Math=Exp → Expansion  (unanimous agreement required)
+      AI=Exp + Math=Con → Consolidation  (conservative default)
+      AI=Exp + Math=Ctr → Contraction  (safety-first)
+      AI=Con + Math=Exp → Consolidation  (conservative default)
+      AI=Con + Math=Con → Consolidation  (agreement)
+      AI=Con + Math=Ctr → Contraction  (safety-first)
+      AI=Ctr + Math=*   → Contraction  (safety-first)
+      AI=*   + Math=Ctr → Contraction  (safety-first)
+    
+    Anti-Whipsaw: If hysteresis > 0, the current regime is maintained
+    regardless of new signals (unless circuit breaker overrides).
+    On regime change, a new 3-cycle lock is activated.
+    """
     global CIRCUIT_BREAKER_ACTIVE
     ai_regime = state["data"].get("regime", "Consolidation")
     math_regime = state["data"].get("deterministic_suggestion", "Consolidation")
@@ -471,11 +684,16 @@ async def consensus_node(state: AgentState):
     hysteresis = last_known_state.get("hysteresis", 0)
     
     # ── TREND LOCK: Prevent flip-flopping unless critical ──
+    # Circuit breaker (10pt Q-Score drop in 60min) can override this lock
     if hysteresis > 0 and not CIRCUIT_BREAKER_ACTIVE:
         logger.info(f"consensus: TREND LOCK active ({hysteresis} cycles left). maintaining {current_regime}.")
         final_regime = current_regime
         last_known_state["hysteresis"] -= 1
     else:
+        # ── ASYMMETRIC SAFETY BIAS ARBITRATION ──
+        # Any single Contraction vote → Contraction (safety-first)
+        # Any single Consolidation vote → blocks Expansion
+        # Expansion requires UNANIMOUS agreement from both models
         final_regime = ai_regime
         if ai_regime != math_regime:
             if "Contraction" in [ai_regime, math_regime]:
@@ -483,7 +701,7 @@ async def consensus_node(state: AgentState):
             elif "Consolidation" in [ai_regime, math_regime]:
                 final_regime = "Consolidation"
         
-        # If we ARE changing regime, start a new lock-in period
+        # If we ARE changing regime, start a new 3-cycle lock-in period
         if final_regime != current_regime:
             logger.warning(f"consensus: REGIME SHIFT to {final_regime}. starting 3-cycle trend lock.")
             last_known_state["hysteresis"] = 3
@@ -509,6 +727,7 @@ async def supervisory_controller_node(state: AgentState):
             return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE — unwind already attempted. awaiting score recovery.")], "data": state["data"]}
         
         logger.warning(f"executor: CIRCUIT BREAKER ACTIVE — initiating EMERGENCY UNWIND. position={CURRENT_POSITION}")
+        asyncio.create_task(notify_critical_failure(f"Circuit Breaker Triggered! Score dropped below threshold. Emergency unwind in progress. position={CURRENT_POSITION}", severity="HIGH"))
         
         # If we are in a risky position (mETH or USDY), unwind to MNT
         if CURRENT_POSITION != "MNT":
@@ -565,7 +784,6 @@ async def supervisory_controller_node(state: AgentState):
         CURRENT_POSITION = action # Update position even in simulation
         return {"messages": [AIMessage(content="executor: web3 unavailable. operating in simulation.")], "data": state["data"]}
     
-    rpc_url = os.getenv("MANTLE_RPC_URL", "https://rpc.mantle.xyz")
     private_key = os.getenv("AGENT_PRIVATE_KEY")
     vault_addr = os.getenv("VAULT_ADDRESS", "0x1cA9813c83e6d012798acD19Af1CF87a91F119DD")
     
@@ -615,16 +833,20 @@ async def supervisory_controller_node(state: AgentState):
     elif action == "UNWIND":
         target_token = ZERO_ADDR
 
-    # ── 500ms ANTIGRAVITY SLA & EXPONENTIAL BACKOFF: 3 attempts ──
+    # ── 500ms ANTIGRAVITY SLA & EXPONENTIAL BACKOFF: Multi-RPC Failover ──
     async def _rpc_execute():
         global LAST_REBALANCE_TIME, CURRENT_POSITION
         loop = asyncio.get_event_loop()
-        for attempt in range(3):
+        
+        # We cycle through available RPC nodes on each failure
+        for attempt in range(MAX_RPC_ATTEMPTS):
+            rpc_url = MANTLE_RPC_LIST[attempt % len(MANTLE_RPC_LIST)]
             try:
                 def sync_tx():
-                    w3 = Web3(Web3.HTTPProvider(rpc_url))
+                    logger.info(f"executor: attempt {attempt+1} using node: {rpc_url}")
+                    w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': RPC_TIMEOUT}))
                     if not w3.is_connected():
-                        raise ConnectionError("rpc unreachable")
+                        raise ConnectionError(f"rpc unreachable: {rpc_url}")
                         
                     vault_address = w3.to_checksum_address(vault_addr)
                     # Check vault balance
@@ -799,16 +1021,17 @@ async def supervisory_controller_node(state: AgentState):
                 await asyncio.sleep(0.1 * (2 ** attempt))
 
     try:
-        content = await asyncio.wait_for(_rpc_execute(), timeout=10.0)
+        # Total SLA window for the entire executor node
+        content = await asyncio.wait_for(_rpc_execute(), timeout=float(RPC_TIMEOUT * 2))
         logger.info(content)
     except asyncio.TimeoutError:
-        logger.warning("executor: rpc call exceeded total sla limit. state locked.")
-        content = "executor: rpc timeout. sla breached. state locked. retrying next cycle."
-    except ConnectionError:
-        content = "executor: rpc unreachable. state locked. retrying next cycle."
-    except Exception as e:
-        logger.error(f"executor rpc error: {e}")
-        content = f"executor: rpc error. state locked. error: {str(e)[:40]}"
+        logger.warning("executor: rpc call exceeded total SLA window. state locked.")
+        content = f"executor: total SLA breached ({RPC_TIMEOUT*2}s). state locked. retrying next cycle."
+    except ConnectionError as ce:
+        content = f"executor: all {MAX_RPC_ATTEMPTS} RPC nodes unreachable. check MANTLE_RPC_URLS."
+        RPC_ERROR_COUNTER.labels(node=NODE_ID_GLOBAL).inc()
+        asyncio.create_task(notify_critical_failure(f"Supervisory Controller RPC Failure: {e}", severity="CRITICAL"))
+        content = f"executor: terminal rpc error. error: {str(e)[:40]}"
 
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
@@ -896,6 +1119,42 @@ class AuthRequest(BaseModel):
 
 app = FastAPI(title="Obelisk Q Engine")
 
+# ─── API Security: CORS & Rate Limiting ──────────────────────────────────────
+ALLOWED_ORIGINS = os.getenv("FRONTEND_URL", "http://localhost:5173").split(",")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+RATE_LIMITS = {} # Simple in-memory rate limiter: {ip: [timestamps]}
+
+async def rate_limit_middleware(request, call_next):
+    """Temporal rate limiter to prevent API abuse."""
+    ip = request.client.host
+    now = time.time()
+    
+    # Allow 100 requests per minute
+    window = 60
+    limit = 100
+    
+    if ip not in RATE_LIMITS:
+        RATE_LIMITS[ip] = []
+    
+    RATE_LIMITS[ip] = [t for t in RATE_LIMITS[ip] if now - t < window]
+    
+    if len(RATE_LIMITS[ip]) >= limit:
+        return HTTPException(status_code=429, detail="Rate_Limit_Exceeded")
+    
+    RATE_LIMITS[ip].append(now)
+    return await call_next(request)
+
+# app.middleware("http")(rate_limit_middleware) # Enable if high-traffic expected
+app.middleware("http")(rate_limit_middleware)
+
 @app.post("/api/auth/login")
 async def login(auth: AuthRequest):
     """
@@ -948,8 +1207,8 @@ async def login(auth: AuthRequest):
         raise HTTPException(status_code=401, detail=f"Authentication_Failed: {str(e)}")
 
 @app.get("/api/agent/transactions")
-async def get_agent_transactions():
-    """Returns the last 10 agent transactions from SQLite, newest first."""
+async def get_agent_transactions(session: dict = Depends(verify_session)):
+    """Returns the last 10 agent transactions. Protected by session."""
     try:
         conn = sqlite3.connect(DB_PATH)
         rows = conn.execute("""
@@ -964,9 +1223,30 @@ async def get_agent_transactions():
                 "timestamp": r[4], "status": r[5], "vault_address": r[6], "cycle_number": r[7]
             } for r in rows
         ]
-    except Exception as e:
-        logger.error(f"Failed to fetch transactions from DB: {e}")
-        return []
+@app.get("/health")
+async def health():
+    """Deep Health check for monitoring systems (UptimeRobot, etc)."""
+    rpc_ok = False
+    try:
+        w3 = Web3(Web3.HTTPProvider(MANTLE_RPC_LIST[0], request_kwargs={'timeout': 2}))
+        rpc_ok = w3.is_connected()
+    except: pass
+    
+    return {
+        "status": "healthy" if rpc_ok else "degraded",
+        "node_id": NODE_ID_GLOBAL,
+        "role": NODE_ROLE_GLOBAL,
+        "rpc": "connected" if rpc_ok else "disconnected",
+        "uptime": int(time.time() - START_TIME)
+    }
+
+@app.get("/metrics")
+async def metrics():
+    """Prometheus metrics endpoint."""
+    Q_SCORE_GAUGE.set(last_known_state["risk"]["score"])
+    BREAKER_GAUGE.set(1 if CIRCUIT_BREAKER_ACTIVE else 0)
+    ACTIVE_SESSIONS.set(len(SESSIONS))
+    return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
 
 API_CACHE = {}
 
@@ -1005,18 +1285,12 @@ def record_transaction(action, score, regime, cycle, status="success", tx_hash="
     except Exception as e:
         logger.error(f"Failed to save transaction to DB: {e}")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 # ─── REST Endpoints ───────────────────────────────────────────────────────────
 
 @app.get("/api/performance")
-async def get_performance():
+async def get_performance(session: dict = Depends(verify_session)):
     conn = sqlite3.connect(DB_PATH)
     rows = conn.execute("""
         SELECT timestamp, action, from_asset, to_asset, 
@@ -1032,7 +1306,7 @@ async def get_performance():
     }
 
 @app.get("/api/memory")
-async def get_memory():
+async def get_memory(session: dict = Depends(verify_session)):
     rows = get_recent_memory(20)
     return {"memory": [{"timestamp": r[0], "cycle": r[1], "regime": r[2], "score": r[3], "action": r[4], "position": r[5], "tx_hash": r[6]} for r in rows]}
 
@@ -1123,18 +1397,26 @@ async def websocket_endpoint(websocket: WebSocket):
             global_app_state.active_connections.remove(websocket)
 
 async def run_analysis_cycle():
+    """Main agent loop — executes the LangGraph analysis pipeline on a fixed cadence.
+    
+    HA Behavior:
+      - Primary nodes: Execute the full pipeline every CYCLE_INTERVAL seconds.
+      - Shadow nodes: Poll primary health every 30s. If primary is dead,
+        leader_election() promotes this node to primary (via NODE_ROLE_GLOBAL),
+        and subsequent iterations of this loop will execute the full pipeline.
+    """
+    global NODE_ROLE_GLOBAL
     from memory import agent_memory
     cycle_num = 0
-    NODE_ID = os.getenv("NODE_ID", f"node_{secrets.token_hex(4)}")
-    NODE_ROLE = os.getenv("NODE_ROLE", "primary") # primary or shadow
     
-    logger.info(f"run_analysis_cycle: initialization successful. node={NODE_ID} role={NODE_ROLE}")
+    logger.info(f"run_analysis_cycle: initialization successful. node={NODE_ID_GLOBAL} role={NODE_ROLE_GLOBAL}")
     
     while True:
-        # Update our own heartbeat
-        update_heartbeat(NODE_ID, NODE_ROLE)
+        # Update our own heartbeat (uses module-level globals)
+        update_heartbeat()
         
-        if NODE_ROLE == "shadow":
+        # Shadow nodes wait for primary failure before executing
+        if NODE_ROLE_GLOBAL == "shadow":
             is_primary_healthy = get_primary_health()
             if is_primary_healthy:
                 logger.info("shadow_node: primary is healthy. standby mode.")
@@ -1150,6 +1432,7 @@ async def run_analysis_cycle():
                 await asyncio.sleep(1)
             
             cycle_num += 1
+            CYCLE_COUNTER.inc()
             initial_state = {
                 "messages": [HumanMessage(content="init")],
                 "data": {},
@@ -1278,7 +1561,12 @@ async def sync_current_position():
 
 @app.on_event("startup")
 async def startup():
-    init_db()
+    """Server initialization with fault-tolerant recovery."""
+    try:
+        init_db()
+    except Exception as e:
+        logger.critical(f"startup_failure: database initialization failed: {e}")
+        # We don't exit; we enter DEGRADED mode
     
     # ── STATE RECOVERY: Load last known state from DB ──
     try:
@@ -1298,20 +1586,41 @@ async def startup():
             # position is synced from blockchain below
             logger.info(f"startup: state recovered from DB. score={EMA_SCORE} regime={last_row[1]}")
     except Exception as e:
-        logger.warning(f"startup: state recovery failed: {e}")
+        logger.warning(f"startup: state recovery failed (non-fatal): {e}")
 
-    await sync_current_position() # Determine current position from blockchain
+    try:
+        await sync_current_position() # Determine current position from blockchain
+    except Exception as e:
+        logger.error(f"startup: blockchain sync failed: {e}. starting in DEGRADED mode.")
+        asyncio.create_task(notify_critical_failure(f"Blockchain sync failed on startup: {e}", severity="MEDIUM"))
+
+    # Initialize non-blocking background tasks
     asyncio.create_task(run_analysis_cycle())
     asyncio.create_task(session_reaper())
     asyncio.create_task(node_heartbeat_loop())
     logger.info("startup: swarm logic (analysis + reaper + heartbeats) initialized.")
 
 async def leader_election():
-    """Autonomous failover logic: Promote a shadow node if primary is dead."""
-    global NODE_ROLE
-    role = os.getenv("NODE_ROLE", "primary")
-    if role == "primary" or NODE_ROLE == "primary":
-        return
+    """Autonomous failover logic: Promote a shadow node if primary is dead.
+    
+    Leader Election Protocol:
+      1. Only shadow nodes participate in elections.
+      2. Shadow queries the heartbeats table for the latest primary pulse.
+      3. If no primary exists OR primary's last pulse > 45s ago,
+         the shadow promotes itself by setting NODE_ROLE_GLOBAL = 'primary'.
+      4. The promoted node's next heartbeat write updates the DB,
+         and run_analysis_cycle() will begin executing the full pipeline.
+    
+    Limitations:
+      - No distributed consensus (Raft/Paxos) — relies on shared SQLite.
+      - If multiple shadows detect primary failure simultaneously,
+        both may promote themselves (split-brain). Mitigated by the
+        on-chain vault's idempotent rebalance logic.
+      - SQLite file is a single point of failure for coordination.
+    """
+    global NODE_ROLE_GLOBAL
+    if NODE_ROLE_GLOBAL == "primary":
+        return  # Already primary, no election needed
 
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -1321,20 +1630,32 @@ async def leader_election():
 
         if not primary:
             logger.warning("leader_election: NO PRIMARY DETECTED. promoting self.")
-            NODE_ROLE = "primary"
+            NODE_ROLE_GLOBAL = "primary"
             return
 
         last_pulse = datetime.fromisoformat(primary[1])
         if (datetime.now() - last_pulse).total_seconds() > 45:
             logger.warning(f"leader_election: primary {primary[0]} DEAD (last pulse {primary[1]}). PROMOTING SELF.")
-            NODE_ROLE = "primary"
+            NODE_ROLE_GLOBAL = "primary"
     except Exception as e:
         logger.error(f"leader_election: failover check failed: {e}")
 
 async def node_heartbeat_loop():
-    """Background loop to pulse heartbeat and check for leader election."""
+    """Background loop: pulse heartbeat every 15s and run leader election.
+    
+    Performs 'Deep Health' checks by verifying RPC reachability before pulsing.
+    """
     while True:
-        update_heartbeat()
+        rpc_status = "OK"
+        try:
+            # Quick check on the first RPC in the list
+            w3 = Web3(Web3.HTTPProvider(MANTLE_RPC_LIST[0], request_kwargs={'timeout': 5}))
+            if not w3.is_connected():
+                rpc_status = "ERROR"
+        except:
+            rpc_status = "ERROR"
+            
+        update_heartbeat(rpc_status=rpc_status)
         await leader_election()
         await asyncio.sleep(15)
 

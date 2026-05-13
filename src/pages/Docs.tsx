@@ -18,13 +18,18 @@ const Docs = () => {
     },
     {
       id: "architecture",
-      title: "5-Node LangGraph Swarm",
-      content: "At its core, Obelisk Q utilizes a 5-node LangGraph orchestration: 1) Regime Detection (HMM-based market analysis), 2) Risk Assessment (volatility audit), 3) Q-Score Engine (confidence calculation), 4) Telemetry Aggregator (state broadcasting), and 5) Supervisory Controller (on-chain execution authority).",
+      title: "7-Node LangGraph Swarm",
+      content: "At its core, Obelisk Q utilizes a 7-node LangGraph orchestration: 1) Regime Detection (HMM-inspired market analysis), 2) Risk Assessment (volatility audit \u0026 regime classification), 3) Deterministic Analyst (math-based second opinion), 4) Consensus Node (dual-model arbitration), 5) Q-Score Engine (confidence calculation), 6) Telemetry Aggregator (state broadcasting), and 7) Supervisory Controller (on-chain execution authority).",
+    },
+    {
+      id: "hmm-regime",
+      title: "HMM Regime Detection Algorithm",
+      content: "Obelisk Q classifies markets into three hidden states: Expansion (vol \u003c 1.2), Consolidation (1.2 ≤ vol ≤ 2.2), and Contraction (vol \u003e 2.2). Volatility is modeled via a bounded random walk (±0.4 per cycle, clamped to [0.5, 3.5]). In the ambiguous Consolidation zone, GPT-4o-mini provides a second opinion using the last 3 regime history, Q-Score, and MNT price change. A deterministic Sanity Override forces Contraction if vol \u003e 2.5, and blocks Expansion if risk_score \u003c 40. When a regime change occurs, a 3-cycle hysteresis lock (~30 min) prevents rapid switching. Finally, a Consensus Node arbitrates between the AI regime and a deterministic analyst: any single Contraction vote overrides all, and Expansion requires unanimous agreement. The result maps to allocation: Expansion + score ≥ 65 → mETH, Contraction + score ≤ 45 → USDY, Consolidation + 50 ≤ score ≤ 65 → WMNT, else HOLD.",
     },
     {
       id: "circuit-breaker",
-      title: "Safety & Hybrid AI Logic",
-      content: "The system features a hybrid safety architecture. A real-time autonomous circuit breaker monitors the Q-Score, while a deterministic Sanity Filter overrides the AI (GPT-4o-mini) if volatility exceeds institutional safety thresholds (Vol > 2.5). This ensures that during a rapid regime shift, the agent always defaults to a safe position (MNT/Mantle native), regardless of non-deterministic AI outlooks.",
+      title: "Safety \u0026 Hybrid AI Logic",
+      content: "The system features a hybrid safety architecture. A real-time autonomous circuit breaker monitors the Q-Score, while a deterministic Sanity Filter overrides the AI (GPT-4o-mini) if volatility exceeds institutional safety thresholds (Vol \u003e 2.5). This ensures that during a rapid regime shift, the agent always defaults to a safe position (MNT/Mantle native), regardless of non-deterministic AI outlooks.",
     },
     {
       id: "mainnet",
@@ -34,12 +39,12 @@ const Docs = () => {
     {
       id: "swarm",
       title: "Sovereign Swarm Architecture",
-      content: "Obelisk Q utilizes a multi-node failover system. A primary node supervises the vault, while secondary 'shadow' nodes monitor the primary's heartbeat in a shared SQLite state. If the primary node fails to pulse for 45 seconds, an autonomous leader election is triggered, and a shadow node is promoted to primary status.",
+      content: "Obelisk Q runs a 3-process PM2 topology: one primary executor and two hot-standby shadow nodes with staggered restart delays (4s/10s/15s). Shadow nodes poll the primary's heartbeat in a shared SQLite table every 15 seconds. If the primary fails to pulse for 45 seconds, a shadow autonomously promotes itself to primary and resumes vault supervision. Current limitation: all processes share a single Azure VM and SQLite file. Cross-VM deployment requires replacing SQLite with PostgreSQL or Redis for the heartbeat store.",
     },
     {
       id: "consensus",
       title: "Hybrid AI/Math Consensus",
-      content: "Decisions are routed through a 5-node LangGraph. The 'Consensus Node' arbitrates between the AI's LLM-driven market sentiment and a deterministic mathematical analyst. To prevent capital loss, any conflict between the two models defaults the vault to a 'Safety' regime (USDY/RWA).",
+      content: "Decisions are routed through a 7-node LangGraph. The 'Consensus Node' arbitrates between the AI's LLM-driven market sentiment and a deterministic mathematical analyst. The arbitration has an asymmetric safety bias: any single Contraction vote overrides all other signals, any Consolidation vote blocks Expansion, and Expansion requires unanimous agreement from both models. This ensures capital is never exposed to growth risk unless both the AI and mathematical models agree conditions are favorable.",
     },
     {
       id: "whipsaw",
@@ -48,12 +53,12 @@ const Docs = () => {
     },
     {
       id: "yield",
-      title: "Yield & Asset Framework",
+      title: "Yield \u0026 Asset Framework",
       content: "The navigator focuses on three primary yield vectors: 1) mETH (Mantle LSP) for native staked ETH rewards, 2) USDY (Ondo Finance) for institutional US Treasury exposure, and 3) WMNT (Wrapped MNT) for stable consolidation yield. The agent dynamically balances these positions to capture maximum yield during expansions, hedge into RWAs during market contractions, and stabilize in WMNT during consolidation periods.",
     },
     {
       id: "constraints",
-      title: "Technical Constraints & Mitigations",
+      title: "Technical Constraints \u0026 Mitigations",
       content: "Current infrastructure constraints include Telemetry Latency caused by RPC congestion on Mantle Mainnet. During high-traffic events, the pulse frequency may drop. To mitigate this, Obelisk Q utilizes state persistence via SQLite and redundant RPC endpoints to ensure the agent never loses the vault's 'Last Known State'.",
     },
     {
@@ -63,7 +68,7 @@ const Docs = () => {
     },
     {
       id: "growth-alpha",
-      title: "Growth Alpha & Dynamic Rotation",
+      title: "Growth Alpha \u0026 Dynamic Rotation",
       content: "Unlike static yield-bearing products that fix capital in a single asset, Obelisk Q prioritizes 'Growth Alpha'. By dynamically rotating capital into mETH during market expansions, the system captures price appreciation and higher staking incentives that exceed stable RWA yields. Conversely, it automatically retreats to USDY during market contractions to protect capital, ensuring that users benefit from the best of both worlds: high-growth upside and institutional-grade downside protection.",
     }
   ];
