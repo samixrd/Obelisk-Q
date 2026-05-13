@@ -20,11 +20,6 @@ describe("ObeliskVault Unit Tests", function () {
     wmntAddress = await mockRouter.WETH();
 
     // 3. Deploy Vault
-    // Note: In real life, the address of ROUTER is hardcoded in the contract.
-    // To test with a mock router, we would ideally use a factory or dependency injection.
-    // However, since the ROUTER is constant in ObeliskVault.sol, we will focus on
-    // testing logical paths that don't depend on the external router first, 
-    // and acknowledge that integration tests would require a Mantle fork.
     const ObeliskVault = await ethers.getContractFactory("ObeliskVault");
     vault = await ObeliskVault.deploy(agent.address, [mockToken1.target, mockToken2.target]);
   });
@@ -101,6 +96,27 @@ describe("ObeliskVault Unit Tests", function () {
       // Withdrawble should be deposit - 0.01 buffer
       const expected = ethers.parseEther("0.99");
       expect(await vault.getWithdrawableBalance(user1.address)).to.equal(expected);
+    });
+  });
+
+  describe("Slippage & Gas Buffer", function () {
+    it("Should preserve the 0.01 MNT gas buffer on withdrawable calculations", async function () {
+      const depositAmount = ethers.parseEther("1.0");
+      await vault.connect(user1).deposit({ value: depositAmount });
+      
+      const withdrawable = await vault.getWithdrawableBalance(user1.address);
+      const buffer = depositAmount - withdrawable;
+      
+      expect(buffer).to.equal(ethers.parseEther("0.01"));
+    });
+
+    it("Should return correct balances for multiple users", async function () {
+      await vault.connect(user1).deposit({ value: ethers.parseEther("1.0") });
+      await vault.connect(user2).deposit({ value: ethers.parseEther("2.0") });
+      
+      expect(await vault.balances(user1.address)).to.equal(ethers.parseEther("1.0"));
+      expect(await vault.balances(user2.address)).to.equal(ethers.parseEther("2.0"));
+      expect(await vault.totalDeposited()).to.equal(ethers.parseEther("3.0"));
     });
   });
 });
