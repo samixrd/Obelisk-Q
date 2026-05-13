@@ -1223,6 +1223,10 @@ async def get_agent_transactions(session: dict = Depends(verify_session)):
                 "timestamp": r[4], "status": r[5], "vault_address": r[6], "cycle_number": r[7]
             } for r in rows
         ]
+    except Exception as e:
+        logger.error(f"Failed to fetch transactions from DB: {e}")
+        return []
+
 @app.get("/health")
 async def health():
     """Deep Health check for monitoring systems (UptimeRobot, etc)."""
