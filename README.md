@@ -14,18 +14,19 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
 
 ### 🛠️ Technical Excellence & Deployment
-*   **Mantle Mainnet Deployment**: [ObeliskVault (0x2e7D...)](https://explorer.mantle.xyz/address/0x2e7D0D1642Faf1b2FCb433597c34252d8c7F11bB)
-*   ✅ **Verified Contract**: Deployment confirmed on Mantle Explorer with deterministic rebalance logic.
-*   ✅ **On-Chain AI Execution**: The supervisor ([0x5698...](https://explorer.mantle.xyz/address/0x5698E89Ec2396e02679ddde33c2BA78de88F7fce)) triggers execution on Mantle.
-*   ✅ **Sovereign Identity**: Integrated with [ERC-8004](https://explorer.mantle.xyz/address/0x8004A169FB4a3325136EB29fA0ceB6D2e539a432) for autonomous agent identity.
-
----
+### 🏛️ Sovereign Swarm Architecture
+Obelisk Q operates a **Multi-Node Agent Swarm** designed for 100% uptime and mathematical certainty:
+*   **Autonomous Leader Election**: If the primary VM fails, a shadow node automatically promotes itself to maintain vault supervision.
+*   **Hybrid Consensus Voting**: Every rebalance is validated by both a GPT-4o reasoning engine and a deterministic mathematical analyst.
+*   **Trend-Locked Rebalancing (Anti-Whipsaw)**: Enforces a 3-cycle stability window to minimize gas burn and slippage during market noise.
+*   **Yield Auto-Compounding**: Native `compound()` logic harvests MNT rewards and re-invests them back into the target yield position.
 
 ### 🏦 Core Protocol Details (Mantle Mainnet)
 *   **ObeliskVault**: `0x2e7D0D1642Faf1b2FCb433597c34252d8c7F11bB`
 *   **ERC-8004 Agent ID**: `0x5698E89Ec2396e02679ddde33c2BA78de88F7fce`
-*   **Identity Registry**: `0x8004A169FB4a3325136EB29fA0ceB6D2e539a432`
-*   **Merchant Moe Router**: `0xeaEE7EE68874218c3558b40063c42B82D3E7232a`
+*   **Network**: Mantle Mainnet (Chain ID 5000)
+*   **Primary Assets**: mETH (Staking), USDY (RWA), WMNT (Liquidity)
+
 *   **USDY (Ondo RWA)**: `0x8D6857216076fb05316B3C068694086E6689799c`
 *   **mETH (Mantle LSP)**: `0xcDA86A272531e8640cD7F1a92c01839911B90bb0`
 *   **WMNT (Wrapped MNT)**: `0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8`

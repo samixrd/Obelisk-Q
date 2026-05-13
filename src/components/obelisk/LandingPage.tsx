@@ -178,9 +178,21 @@ function FeaturesSection() {
     },
     {
       num: "04",
-      title: "Mantle Mainnet",
-      desc: "Fully operational at 0x2e7D...11bB. Orchestrated rebalancing with Merchant Moe to capture deep liquidity and institutional RWA spreads.",
-      tags: ["Mainnet", "Verified", "Merchant Moe"],
+      title: "Sovereign Swarm",
+      desc: "Multi-node failover with autonomous leader election. If the primary supervisor lags, a shadow node promotes itself to maintain 24/7 vault oversight.",
+      tags: ["Failover", "PM2 Swarm", "Leader Election"],
+    },
+    {
+      num: "05",
+      title: "Hybrid Consensus",
+      desc: "Every rebalance is dual-validated by GPT-4o reasoning and a deterministic math engine. Conflict-resolution logic defaults to safety during volatility.",
+      tags: ["AI Consensus", "LangGraph", "Safety-First"],
+    },
+    {
+      num: "06",
+      title: "Auto-Compounding",
+      desc: "Autonomous yield harvesting. The agent automatically sweeps MNT rewards and re-invests them into mETH or USDY to maximize returns.",
+      tags: ["Compounding", "Gas-Optimized", "Yield+"],
     },
   ];
 

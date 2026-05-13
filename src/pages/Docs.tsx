@@ -32,6 +32,21 @@ const Docs = () => {
       content: "Obelisk Q is live on Mantle Mainnet (Chain ID: 5000). The primary entry point is the ObeliskVault contract: 0x2e7D0D1642Faf1b2FCb433597c34252d8c7F11bB. The vault is non-custodial, integrated with Merchant Moe liquidity, and maintains a strictly enforced 0.01 MNT gas buffer for autonomous operation.",
     },
     {
+      id: "swarm",
+      title: "Sovereign Swarm Architecture",
+      content: "Obelisk Q utilizes a multi-node failover system. A primary node supervises the vault, while secondary 'shadow' nodes monitor the primary's heartbeat in a shared SQLite state. If the primary node fails to pulse for 45 seconds, an autonomous leader election is triggered, and a shadow node is promoted to primary status.",
+    },
+    {
+      id: "consensus",
+      title: "Hybrid AI/Math Consensus",
+      content: "Decisions are routed through a 5-node LangGraph. The 'Consensus Node' arbitrates between the AI's LLM-driven market sentiment and a deterministic mathematical analyst. To prevent capital loss, any conflict between the two models defaults the vault to a 'Safety' regime (USDY/RWA).",
+    },
+    {
+      id: "whipsaw",
+      title: "Anti-Whipsaw Protection",
+      content: "To optimize gas efficiency on Mantle, the protocol enforces a 3-cycle Trend-Lock. Once a regime shift occurs, the vault enters a lock-in period where rebalancing is restricted unless a critical 10-point drop in the Q-Score triggers the Agent-Level Circuit Breaker.",
+    },
+    {
       id: "yield",
       title: "Yield & Asset Framework",
       content: "The navigator focuses on three primary yield vectors: 1) mETH (Mantle LSP) for native staked ETH rewards, 2) USDY (Ondo Finance) for institutional US Treasury exposure, and 3) WMNT (Wrapped MNT) for stable consolidation yield. The agent dynamically balances these positions to capture maximum yield during expansions, hedge into RWAs during market contractions, and stabilize in WMNT during consolidation periods.",
