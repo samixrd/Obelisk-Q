@@ -289,32 +289,40 @@ async def risk_assessment_node(state: AgentState):
             else:
                 raw_regime = "Consolidation"
             
-            # ── LLM Regime Confirmation (GPT-4o-mini) ──
-            try:
-                recent = get_recent_memory(3)
-                last_regimes = [r[2] for r in recent] if recent else []
-                
-                regime_confirm = call_llm([
-                    {"role": "system", "content": f"""You are a DeFi risk manager. 
-Last 3 regimes: {last_regimes}
-Reply with ONLY one word: Expansion, Consolidation, or Contraction."""},
-                    {"role": "user", "content": f"Q-Score={risk_score}, ETH vol={vol:.2f}, MNT change={mnt_change}%, signal={raw_regime}. Confirm regime?"}
-                ])
-                regime_confirm = regime_confirm.strip()
-                logger.info(f"tracker LLM regime: {regime_confirm}")
-                
-                # Only accept valid LLM regime values
-                if regime_confirm in ("Expansion", "Consolidation", "Contraction"):
-                    new_regime = regime_confirm
-                else:
-                    logger.warning(f"LLM returned invalid regime '{regime_confirm}'. using rule-based: {raw_regime}")
+                # ── LLM Regime Confirmation (GPT-4o-mini) ──
+                try:
+                    recent = get_recent_memory(3)
+                    last_regimes = [r[2] for r in recent] if recent else []
+                    
+                    regime_confirm = call_llm([
+                        {"role": "system", "content": f"""You are a DeFi risk manager. 
+    Last 3 regimes: {last_regimes}
+    Reply with ONLY one word: Expansion, Consolidation, or Contraction."""},
+                        {"role": "user", "content": f"Q-Score={risk_score}, ETH vol={vol:.2f}, MNT change={mnt_change}%, signal={raw_regime}. Confirm regime?"}
+                    ])
+                    regime_confirm = regime_confirm.strip()
+                    logger.info(f"tracker LLM regime: {regime_confirm}")
+                    
+                    # Only accept valid LLM regime values
+                    if regime_confirm in ("Expansion", "Consolidation", "Contraction"):
+                        new_regime = regime_confirm
+                    else:
+                        logger.warning(f"LLM returned invalid regime '{regime_confirm}'. using rule-based: {raw_regime}")
+                        new_regime = raw_regime
+                except Exception as e:
+                    logger.warning(f"LLM call failed: {e}. using rule-based fallback.")
                     new_regime = raw_regime
-            except Exception as e:
-                logger.warning(f"LLM call failed: {e}. using rule-based fallback.")
-                new_regime = raw_regime
-                
-            if new_regime != current_regime:
-                last_known_state["hysteresis"] = 3 # Lock state for 3 cycles to prevent chatter
+
+                # ── SANITY OVERRIDE (Safety First) ──
+                if vol > 2.5 and new_regime != "Contraction":
+                    logger.warning(f"SANITY OVERRIDE: vol {vol:.2f} too high for {new_regime}. forcing Contraction.")
+                    new_regime = "Contraction"
+                elif risk_score < 40 and new_regime == "Expansion":
+                    logger.warning(f"SANITY OVERRIDE: risk score {risk_score} too low for Expansion. forcing Consolidation.")
+                    new_regime = "Consolidation"
+                    
+                if new_regime != current_regime:
+                    last_known_state["hysteresis"] = 3 # Lock state for 3 cycles to prevent chatter
                 
         last_known_state["regime"] = new_regime
         state["data"]["regime"] = new_regime
@@ -492,7 +500,8 @@ async def supervisory_controller_node(state: AgentState):
     vault_abi = [
         {
             "inputs": [
-                {"internalType": "address", "name": "targetToken", "type": "address"}
+                {"internalType": "address", "name": "targetToken", "type": "address"},
+                {"internalType": "uint256", "name": "minAmountOut", "type": "uint256"}
             ],
             "name": "rebalance",
             "outputs": [],
@@ -575,11 +584,36 @@ async def supervisory_controller_node(state: AgentState):
                     # We can bundle multiple calls if needed, but for now we'll just rebalance
                     # To land regime on-chain, we can call setRegime first if it's a new regime
                     
-                    tx = contract.functions.rebalance(target_token).build_transaction({
+                    # ── SLIPPAGE PROTECTION: Calculate minAmountOut ──
+                    min_amount_out = 0
+                    if target_token != ZERO_ADDR:
+                        try:
+                            # 1% slippage buffer
+                            router_abi = [{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"}],"name":"getAmountsOut","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"view","type":"function"}]
+                            router_addr = "0xeaEE7EE68874218c3558b40063c42B82D3E7232a"
+                            router_contract = w3.eth.contract(address=w3.to_checksum_address(router_addr), abi=router_abi)
+                            
+                            amount_in = balance - w3.to_wei(0.01, 'ether')
+                            path = [w3.to_checksum_address(WMNT_ADDRESS), w3.to_checksum_address(target_token)]
+                            
+                            if target_token == w3.to_checksum_address(WMNT_ADDRESS):
+                                # Direct wrap, 1:1
+                                min_amount_out = int(amount_in * 0.99)
+                            else:
+                                amounts_out = router_contract.functions.getAmountsOut(amount_in, path).call()
+                                # apply 1% slippage (99% of quote)
+                                min_amount_out = int(amounts_out[-1] * 0.99)
+                                
+                            logger.info(f"executor: slippage check - amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out}")
+                        except Exception as e:
+                            logger.warning(f"executor: quote failed, using 0 as fallback (risky): {e}")
+                            min_amount_out = 0
+
+                    tx = contract.functions.rebalance(target_token, min_amount_out).build_transaction({
                         'from': account.address,
                         'value': 0,
                         'chainId': 5000,
-                        'gas': 500000, 
+                        'gas': 600000, # Increased for complex swaps
                         'gasPrice': gas_price,
                         'nonce': nonce,
                     })

@@ -86,26 +86,25 @@ contract ObeliskVault {
         uint256 depositAmount = balances[msg.sender];
         require(depositAmount > 0, "No balance");
 
-        // Unwind ALL tokens back to MNT first
-        _unwindToken(METH, type(uint256).max);
-        _unwindToken(USDY, type(uint256).max);
-        _unwindToken(WMNT, type(uint256).max);
+        // 1. Calculate user's share of each token and unwind ONLY that share
+        uint256 methShare = (IERC20(METH).balanceOf(address(this)) * depositAmount) / totalDeposited;
+        uint256 usdyShare = (IERC20(USDY).balanceOf(address(this)) * depositAmount) / totalDeposited;
+        uint256 wmntShare = (IERC20(WMNT).balanceOf(address(this)) * depositAmount) / totalDeposited;
 
-        // Calculate user's proportional share of total vault MNT
-        uint256 totalMnt = address(this).balance;
-        uint256 toPay;
+        if (methShare > 0) _unwindToken(METH, methShare, 0);
+        if (usdyShare > 0) _unwindToken(USDY, usdyShare, 0);
+        if (wmntShare > 0) _unwindToken(WMNT, wmntShare, 0);
 
-        if (totalDeposited <= depositAmount) {
-            // Last depositor — gets everything minus buffer
-            toPay = totalMnt > AGENT_BUFFER ? totalMnt - AGENT_BUFFER : 0;
+        // 2. Calculate user's share of the raw MNT in the vault
+        uint256 vaultMnt = address(this).balance;
+        uint256 mntShare = (vaultMnt * depositAmount) / totalDeposited;
+
+        // 3. Final payout (share of unwound assets + share of MNT)
+        uint256 toPay = mntShare;
+        if (toPay > AGENT_BUFFER) {
+            toPay -= AGENT_BUFFER;
         } else {
-            // Proportional share minus per-user buffer fraction
-            toPay = (totalMnt * depositAmount) / totalDeposited;
-            if (toPay > AGENT_BUFFER) {
-                toPay -= AGENT_BUFFER;
-            } else {
-                toPay = 0;
-            }
+            toPay = 0;
         }
 
         // Clear user state
@@ -120,25 +119,25 @@ contract ObeliskVault {
 
     // ── Agent Actions ─────────────────────────────────────────────────────
 
-    function rebalance(address targetToken) external payable onlyAgent {
+    function rebalance(address targetToken, uint256 minAmountOut) external payable onlyAgent {
         require(targetToken == METH || targetToken == USDY || targetToken == WMNT || targetToken == address(0), "Invalid target");
         
         if (targetToken == address(0)) {
             // Unwind everything to MNT
-            _unwindToken(METH, type(uint256).max);
-            _unwindToken(USDY, type(uint256).max);
-            _unwindToken(WMNT, type(uint256).max);
+            _unwindToken(METH, type(uint256).max, 0);
+            _unwindToken(USDY, type(uint256).max, 0);
+            _unwindToken(WMNT, type(uint256).max, 0);
         } else {
             // 1. Unwind the OTHER token if we have any
             if (targetToken == METH) {
-                _unwindToken(USDY, type(uint256).max);
-                _unwindToken(WMNT, type(uint256).max);
+                _unwindToken(USDY, type(uint256).max, 0);
+                _unwindToken(WMNT, type(uint256).max, 0);
             } else if (targetToken == USDY) {
-                _unwindToken(METH, type(uint256).max);
-                _unwindToken(WMNT, type(uint256).max);
+                _unwindToken(METH, type(uint256).max, 0);
+                _unwindToken(WMNT, type(uint256).max, 0);
             } else if (targetToken == WMNT) {
-                _unwindToken(METH, type(uint256).max);
-                _unwindToken(USDY, type(uint256).max);
+                _unwindToken(METH, type(uint256).max, 0);
+                _unwindToken(USDY, type(uint256).max, 0);
             }
 
             // 2. Swap MNT to target
@@ -158,7 +157,7 @@ contract ObeliskVault {
                 path[1] = targetToken;
                 
                 uint[] memory amounts = ROUTER.swapExactNativeForTokens{value: amountToSwap}(
-                    0, 
+                    minAmountOut, 
                     path, 
                     address(this), 
                     block.timestamp + 600
@@ -176,12 +175,14 @@ contract ObeliskVault {
 
     // ── Internal ──────────────────────────────────────────────────────────
 
-    function _unwindToken(address token, uint256 /* amountMntNeeded */) internal {
+    function _unwindToken(address token, uint256 amount, uint256 minAmountOut) internal {
         uint256 tokenBal = IERC20(token).balanceOf(address(this));
-        if (tokenBal == 0) return;
+        if (tokenBal == 0 || amount == 0) return;
+        
+        uint256 toUnwind = amount > tokenBal ? tokenBal : amount;
 
         if (token == WMNT) {
-            (bool success, ) = WMNT.call(abi.encodeWithSignature("withdraw(uint256)", tokenBal));
+            (bool success, ) = WMNT.call(abi.encodeWithSignature("withdraw(uint256)", toUnwind));
             require(success, "WMNT unwrap failed");
             return;
         }
@@ -190,12 +191,11 @@ contract ObeliskVault {
         path[0] = token;
         path[1] = WMNT;
 
-        IERC20(token).approve(address(ROUTER), tokenBal);
+        IERC20(token).approve(address(ROUTER), toUnwind);
         
-        // Swap as much as needed or everything
         ROUTER.swapExactTokensForNative(
-            tokenBal,
-            0,
+            toUnwind,
+            minAmountOut,
             path,
             address(this),
             block.timestamp + 600
@@ -213,10 +213,11 @@ contract ObeliskVault {
         vaultPaused = !vaultPaused;
     }
 
-    function ownerRescue(uint256 amount) external onlyOwner {
-        require(amount <= address(this).balance, "Insufficient balance");
-        (bool ok, ) = payable(owner).call{value: amount}("");
-        require(ok, "Rescue failed");
+    /// @notice Allows the owner to rescue accidentally sent ERC20 tokens.
+    ///         Cannot be used to rescue the vault's primary managed assets (mETH, USDY, WMNT).
+    function rescueERC20(address token, uint256 amount) external onlyOwner {
+        require(token != METH && token != USDY && token != WMNT, "ObeliskVault: cannot rescue managed assets");
+        IERC20(token).transfer(owner, amount);
     }
 
     // ── View ──────────────────────────────────────────────────────────────
