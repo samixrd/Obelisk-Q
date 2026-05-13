@@ -631,6 +631,7 @@ async def risk_assessment_node(state: AgentState):
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
 async def q_score_engine_node(state: AgentState):
+    global EMA_SCORE
     # 1. Calculate Component Scores
     usdy_apy = state["data"].get("yields", {}).get("usdy", 5.0)
     meth_apy = state["data"].get("yields", {}).get("meth", 3.5)
@@ -1326,6 +1327,11 @@ async def metrics():
     BREAKER_GAUGE.set(1 if CIRCUIT_BREAKER_ACTIVE else 0)
     ACTIVE_SESSIONS.set(len(SESSIONS))
     return Response(generate_latest(), media_type=CONTENT_TYPE_LATEST)
+
+@app.get("/api/v1/tenants/default_tenant")
+async def get_tenant_default():
+    """Dummy endpoint to quiet tenant-discovery logs from certain libraries."""
+    return {"id": "default_tenant", "name": "Default Tenant"}
 
 API_CACHE = {}
 
