@@ -1301,11 +1301,11 @@ async def get_agent_transactions(session: dict = Depends(verify_session)):
         logger.error(f"Failed to fetch transactions from DB: {e}")
         return []
 
+
 @app.get("/health")
 async def health():
     """Deep Health check for monitoring systems (UptimeRobot, etc)."""
     rpc_ok = False
-    try:
     try:
         w3 = get_w3(timeout=2, max_attempts=2)
         rpc_ok = True

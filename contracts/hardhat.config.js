@@ -43,4 +43,7 @@ module.exports = {
   sourcify: {
     enabled: true,
   },
+  mocha: {
+    timeout: 40000,
+  },
 };
