@@ -15,6 +15,7 @@ from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from openai import OpenAI
 import os
 import logging
+from logging.handlers import RotatingFileHandler
 from dotenv import load_dotenv
 import sqlite3
 
