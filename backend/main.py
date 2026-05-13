@@ -651,7 +651,7 @@ async def q_score_engine_node(state: AgentState):
         h_s = "H(s)_hedge"
         damping = "1.0 (Critically Damped)"
         action = "USDY"
-    elif regime == "Consolidation" and 50 <= risk_score <= 65:
+    elif regime == "Consolidation" and risk_score >= 50:
         h_s = "H(s)_stability"
         damping = "0.707 (Optimal Damping)"
         action = "WMNT"
@@ -940,35 +940,35 @@ async def supervisory_controller_node(state: AgentState):
                     # ── SLIPPAGE PROTECTION: Calculate minAmountOut ──
                     min_amount_out = 0
                     if target_token != ZERO_ADDR:
-                        try:
-                            # 1% slippage buffer
-                            router_abi = [{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"}],"name":"getAmountsOut","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"view","type":"function"}]
-                            router_addr = "0xeaEE7EE68874218c3558b40063c42B82D3E7232a"
-                            router_contract = w3.eth.contract(address=w3.to_checksum_address(router_addr), abi=router_abi)
-                            
-                            amount_in = balance - w3.to_wei(0.01, 'ether')
-                            path = [w3.to_checksum_address(WMNT_ADDRESS), w3.to_checksum_address(target_token)]
-                            
-                            # ── DYNAMIC SLIPPAGE ENGINE ──
-                            volatility = state["data"].get("volatility", 1.0)
-                            if current_regime == "Contraction" or volatility > 2.0:
-                                slippage_buffer = 0.025 # 2.5% during panic/high-vol
-                            elif current_regime == "Consolidation":
-                                slippage_buffer = 0.005 # 0.5% during stable markets
-                            else:
-                                slippage_buffer = 0.01  # 1.0% standard
+                        amount_in = balance - w3.to_wei(0.01, 'ether')
+                        
+                        # ── WMNT WRAP: Skip router entirely (1:1 wrap, no swap needed) ──
+                        if action == "WMNT":
+                            min_amount_out = amount_in
+                            logger.info(f"executor: WMNT wrap detected. 1:1 ratio. amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out}")
+                        else:
+                            try:
+                                router_abi = [{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"}],"name":"getAmountsOut","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"view","type":"function"}]
+                                router_addr = "0xeaEE7EE68874218c3558b40063c42B82D3E7232a"
+                                router_contract = w3.eth.contract(address=w3.to_checksum_address(router_addr), abi=router_abi)
+                                
+                                path = [w3.to_checksum_address(WMNT_ADDRESS), w3.to_checksum_address(target_token)]
+                                
+                                # ── DYNAMIC SLIPPAGE ENGINE ──
+                                volatility = state["data"].get("volatility", 1.0)
+                                if current_regime == "Contraction" or volatility > 2.0:
+                                    slippage_buffer = 0.025
+                                elif current_regime == "Consolidation":
+                                    slippage_buffer = 0.005
+                                else:
+                                    slippage_buffer = 0.01
 
-                            if target_token == w3.to_checksum_address(WMNT_ADDRESS):
-                                # Direct wrap, 1:1
-                                min_amount_out = int(amount_in * (1 - slippage_buffer))
-                            else:
                                 amounts_out = router_contract.functions.getAmountsOut(amount_in, path).call()
                                 min_amount_out = int(amounts_out[-1] * (1 - slippage_buffer))
-                                
-                            logger.info(f"executor: slippage check - amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out}")
-                        except Exception as e:
-                            logger.warning(f"executor: quote failed, using 0 as fallback (risky): {e}")
-                            min_amount_out = 0
+                                logger.info(f"executor: slippage check - amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out}")
+                            except Exception as e:
+                                logger.warning(f"executor: quote failed, using 0 as fallback (risky): {e}")
+                                min_amount_out = 0
 
                     tx = contract.functions.rebalance(target_token, min_amount_out).build_transaction({
                         'from': account.address,

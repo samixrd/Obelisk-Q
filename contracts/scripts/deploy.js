@@ -3,7 +3,11 @@ const hre = require("hardhat");
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
   const network = await hre.ethers.provider.getNetwork();
-  
+  const agentAddress = process.env.AGENT_ADDRESS;
+  if (!agentAddress) {
+    console.error("Set AGENT_ADDRESS in .env");
+    return;
+  }
   
   // Initial assets for the registry (Mantle Mainnet)
   const initialAssets = [

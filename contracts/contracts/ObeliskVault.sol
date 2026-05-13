@@ -45,6 +45,9 @@ contract ObeliskVault {
     // Agent keeps this buffer for swap gas — never shown to users
     uint256 public constant AGENT_BUFFER = 0.01 ether;
 
+    // Hardcoded WMNT address (avoids broken WETH() call on LB Router)
+    address public constant WMNT = 0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8;
+
     // Tokens & Router (Mantle Mainnet)
     IRouter public constant ROUTER = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a);
     mapping(address => bool) public isAssetAllowed;
@@ -149,15 +152,14 @@ contract ObeliskVault {
 
             uint256 amountToSwap = mntToSwap - 0.01 ether; // Keep 0.01 MNT buffer
             
-            address wmnt = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a).WETH();
-            if (targetToken == wmnt) {
+            if (targetToken == WMNT) {
                 // Wrap MNT to WMNT
-                (bool success, ) = wmnt.call{value: amountToSwap}(abi.encodeWithSignature("deposit()"));
+                (bool success, ) = WMNT.call{value: amountToSwap}(abi.encodeWithSignature("deposit()"));
                 require(success, "WMNT wrap failed");
                 emit Rebalanced(targetToken, amountToSwap, amountToSwap);
             } else {
                 address[] memory path = new address[](2);
-                path[0] = wmnt;
+                path[0] = WMNT;
                 path[1] = targetToken;
                 
                 uint[] memory amounts = ROUTER.swapExactNativeForTokens{value: amountToSwap}(
@@ -182,10 +184,8 @@ contract ObeliskVault {
         uint256 mntToCompound = address(this).balance;
         if (mntToCompound > AGENT_BUFFER) {
             uint256 amountToSwap = mntToCompound - AGENT_BUFFER;
-            address wmnt = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a).WETH();
-            
             address[] memory path = new address[](2);
-            path[0] = wmnt;
+            path[0] = WMNT;
             path[1] = targetToken;
             
             ROUTER.swapExactNativeForTokens{value: amountToSwap}(
@@ -210,16 +210,15 @@ contract ObeliskVault {
         
         uint256 toUnwind = amount > tokenBal ? tokenBal : amount;
 
-        address wmnt = IRouter(0xeaEE7EE68874218c3558b40063c42B82D3E7232a).WETH();
-        if (token == wmnt) {
-            (bool success, ) = wmnt.call(abi.encodeWithSignature("withdraw(uint256)", toUnwind));
+        if (token == WMNT) {
+            (bool success, ) = WMNT.call(abi.encodeWithSignature("withdraw(uint256)", toUnwind));
             require(success, "WMNT unwrap failed");
             return;
         }
 
         address[] memory path = new address[](2);
         path[0] = token;
-        path[1] = wmnt;
+        path[1] = WMNT;
 
         IERC20(token).approve(address(ROUTER), toUnwind);
         
