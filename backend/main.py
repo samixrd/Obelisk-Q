@@ -128,8 +128,28 @@ except ImportError:
 
 load_dotenv()
 
-logger = logging.getLogger("obelisk-q")
-logging.basicConfig(level=logging.INFO)
+# Create logs directory if it doesn't exist
+os.makedirs("logs", exist_ok=True)
+
+logger = logging.getLogger("obelisk")
+logger.setLevel(logging.INFO)
+
+# Console Handler
+ch = logging.StreamHandler()
+ch.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(ch)
+
+# Persistent Audit File Handler (Rotating)
+fh = RotatingFileHandler("logs/agent_audit.log", maxBytes=10*1024*1024, backupCount=5)
+fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - [%(node_id)s] %(message)s'))
+logger.addHandler(fh)
+
+# Context filter for node_id
+class NodeFilter(logging.Filter):
+    def filter(self, record):
+        record.node_id = os.getenv("NODE_ID", "local")
+        return True
+logger.addFilter(NodeFilter())
 
 # ─── LLM Configuration ────────────────────────────────────────────────────────
 
