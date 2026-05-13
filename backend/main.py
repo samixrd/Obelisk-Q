@@ -67,17 +67,29 @@ def init_db():
             tx_hash TEXT
         )
     """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS heartbeats (
+            node_id TEXT PRIMARY KEY,
+            last_pulse TEXT,
+            role TEXT
+        )
+    """)
     conn.commit()
     conn.close()
 
-def update_heartbeat(node_id, role):
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("""
-        INSERT OR REPLACE INTO heartbeats (node_id, last_pulse, role)
-        VALUES (?, datetime('now'), ?)
-    """, (node_id, role))
-    conn.commit()
-    conn.close()
+def update_heartbeat():
+    node_id = os.getenv("NODE_ID", "local-1")
+    role = os.getenv("NODE_ROLE", "primary")
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("""
+            INSERT OR REPLACE INTO heartbeats (node_id, last_pulse, role)
+            VALUES (?, ?, ?)
+        """, (node_id, datetime.now().isoformat(), role))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.warning(f"heartbeat: update failed: {e}")
 
 def get_primary_health():
     try:
@@ -435,6 +447,51 @@ async def telemetry_aggregator_node(state: AgentState):
     content = "telemetry: packet broadcast complete. cross-node consensus achieved in 12ms."
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
+async def deterministic_analyst_node(state: AgentState):
+    """Mathematical analyst that provides a second opinion based on hard rules."""
+    vol = state["data"].get("vol", 1.5)
+    score = state["data"].get("risk", {}).get("score", 50)
+    
+    suggestion = "Consolidation"
+    if vol > 2.2 or score < 40:
+        suggestion = "Contraction"
+    elif vol < 1.1 and score > 75:
+        suggestion = "Expansion"
+        
+    state["data"]["deterministic_suggestion"] = suggestion
+    return {"messages": [AIMessage(content=f"math: rule-based suggestion is {suggestion}.")], "data": state["data"]}
+
+async def consensus_node(state: AgentState):
+    """Arbitrator that resolves conflicts and enforces Trend-Lock (Anti-Whipsaw)."""
+    global CIRCUIT_BREAKER_ACTIVE
+    ai_regime = state["data"].get("regime", "Consolidation")
+    math_regime = state["data"].get("deterministic_suggestion", "Consolidation")
+    current_regime = last_known_state.get("regime", "Consolidation")
+    hysteresis = last_known_state.get("hysteresis", 0)
+    
+    # ── TREND LOCK: Prevent flip-flopping unless critical ──
+    if hysteresis > 0 and not CIRCUIT_BREAKER_ACTIVE:
+        logger.info(f"consensus: TREND LOCK active ({hysteresis} cycles left). maintaining {current_regime}.")
+        final_regime = current_regime
+        last_known_state["hysteresis"] -= 1
+    else:
+        final_regime = ai_regime
+        if ai_regime != math_regime:
+            if "Contraction" in [ai_regime, math_regime]:
+                final_regime = "Contraction"
+            elif "Consolidation" in [ai_regime, math_regime]:
+                final_regime = "Consolidation"
+        
+        # If we ARE changing regime, start a new lock-in period
+        if final_regime != current_regime:
+            logger.warning(f"consensus: REGIME SHIFT to {final_regime}. starting 3-cycle trend lock.")
+            last_known_state["hysteresis"] = 3
+            
+    state["data"]["regime"] = final_regime
+    last_known_state["regime"] = final_regime
+    
+    return {"messages": [AIMessage(content=f"consensus: stabilized on {final_regime}.")], "data": state["data"]}
+
 async def supervisory_controller_node(state: AgentState):
     logger.info("node: supervisory_controller | validating q-score authority")
     global LAST_REBALANCE_TIME, CURRENT_POSITION, CIRCUIT_BREAKER_ACTIVE, CB_UNWIND_DONE
@@ -760,13 +817,17 @@ async def supervisory_controller_node(state: AgentState):
 workflow = StateGraph(AgentState)
 workflow.add_node("regime", regime_detection_node)
 workflow.add_node("risk", risk_assessment_node)
+workflow.add_node("math", deterministic_analyst_node)
+workflow.add_node("consensus", consensus_node)
 workflow.add_node("scoring", q_score_engine_node)
 workflow.add_node("telemetry", telemetry_aggregator_node)
 workflow.add_node("supervisor", supervisory_controller_node)
 
 workflow.set_entry_point("regime")
 workflow.add_edge("regime", "risk")
-workflow.add_edge("risk", "scoring")
+workflow.add_edge("risk", "math")
+workflow.add_edge("math", "consensus")
+workflow.add_edge("consensus", "scoring")
 workflow.add_edge("scoring", "telemetry")
 workflow.add_edge("telemetry", "supervisor")
 workflow.add_edge("supervisor", END)
@@ -1241,7 +1302,40 @@ async def startup():
     await sync_current_position() # Determine current position from blockchain
     asyncio.create_task(run_analysis_cycle())
     asyncio.create_task(session_reaper())
-    logger.info("startup: analysis cycle + session reaper initialized.")
+    asyncio.create_task(node_heartbeat_loop())
+    logger.info("startup: swarm logic (analysis + reaper + heartbeats) initialized.")
+
+async def leader_election():
+    """Autonomous failover logic: Promote a shadow node if primary is dead."""
+    global NODE_ROLE
+    role = os.getenv("NODE_ROLE", "primary")
+    if role == "primary" or NODE_ROLE == "primary":
+        return
+
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        # Check if any primary node has pulsed in the last 45 seconds
+        primary = conn.execute("SELECT node_id, last_pulse FROM heartbeats WHERE role='primary'").fetchone()
+        conn.close()
+
+        if not primary:
+            logger.warning("leader_election: NO PRIMARY DETECTED. promoting self.")
+            NODE_ROLE = "primary"
+            return
+
+        last_pulse = datetime.fromisoformat(primary[1])
+        if (datetime.now() - last_pulse).total_seconds() > 45:
+            logger.warning(f"leader_election: primary {primary[0]} DEAD (last pulse {primary[1]}). PROMOTING SELF.")
+            NODE_ROLE = "primary"
+    except Exception as e:
+        logger.error(f"leader_election: failover check failed: {e}")
+
+async def node_heartbeat_loop():
+    """Background loop to pulse heartbeat and check for leader election."""
+    while True:
+        update_heartbeat()
+        await leader_election()
+        await asyncio.sleep(15)
 
 if __name__ == "__main__":
     import uvicorn
