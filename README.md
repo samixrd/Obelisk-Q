@@ -4,7 +4,7 @@
 [![Mantle Network](https://img.shields.io/badge/Network-Mantle-5E43FF)](https://www.mantle.xyz/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Obelisk Q** is the first autonomous wealth navigator optimized for Mantle Mainnet. It leverages a specialized 5-node LangGraph architecture to provide institutional-grade yield optimization across mETH and USDY (RWA), protected by a real-time autonomous circuit breaker.
+**Obelisk Q** is the first autonomous wealth navigator optimized for Mantle Mainnet. It leverages a specialized 7-node LangGraph architecture to provide institutional-grade yield optimization across mETH and USDY (RWA), protected by a real-time autonomous circuit breaker and a 5-node High Availability swarm.
 
 ---
 
@@ -14,7 +14,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 
 ### 📝 The Pitch: Bringing Intelligence to RWAs
 *   **Asset Category**: Real World Assets (USDY - US Treasury backed), Liquid Staking Tokens (mETH), and Wrapped MNT (WMNT).
-*   **The AI Role**: A 5-node autonomous swarm (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital between stable RWA yield, stable Mantle yield (WMNT), and aggressive staking growth without human intervention.
+*   **The AI Role**: A 7-node autonomous pipeline (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital between stable RWA yield, stable Mantle yield (WMNT), and aggressive staking growth without human intervention.
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
 *   **UI/UX Focus**: Competing for the **Best UI/UX Award** with a bespoke glassmorphic design, 30-second guided onboarding, and a first-of-its-kind **AI Transparency Feed** for human-readable auditability.
 
@@ -22,7 +22,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 ### 🛠️ Technical Excellence & Deployment
 ### 🏛️ Sovereign Swarm Architecture
 Obelisk Q operates a **Multi-Node Agent Swarm** designed for high availability:
-*   **3-Process PM2 Topology**: One primary executor + two hot-standby shadow nodes, managed by PM2 with `autorestart` and staggered restart delays (4s / 10s / 15s) for cascading failover.
+*   **5-Process PM2 Topology**: One primary executor + four hot-standby shadow nodes, managed by PM2 with `autorestart` and staggered restart delays for cascading failover.
 *   **Autonomous Leader Election**: Shadow nodes poll the primary's heartbeat in a shared SQLite table every 15 seconds. If no primary pulse is detected for 45 seconds, a shadow promotes itself to primary and resumes vault supervision.
 *   **Hybrid Consensus Voting**: Every rebalance is validated by both a GPT-4o reasoning engine and a deterministic mathematical analyst.
 *   **Trend-Locked Rebalancing (Anti-Whipsaw)**: Enforces a 3-cycle stability window to minimize gas burn and slippage during market noise.
@@ -47,7 +47,7 @@ Obelisk Q operates a **Multi-Node Agent Swarm** designed for high availability:
 graph TD
     User((User)) -->|Deposit MNT| Vault[ObeliskVault Contract]
     
-    subgraph "AI Agent Layer (5-Node Swarm)"
+    subgraph "AI Agent Layer (7-Node Swarm)"
         Regime[Regime Detection] --> Risk[Risk Assessment]
         Risk --> QScore[Q-Score Engine]
         QScore --> Telemetry[Telemetry Aggregator]
