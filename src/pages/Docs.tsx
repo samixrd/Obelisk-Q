@@ -14,7 +14,7 @@ const Docs = () => {
     {
       id: "protocol",
       title: "Antigravity Protocol",
-      content: "The Antigravity Protocol is the high-availability backbone of Obelisk Q. It provides a deterministic execution environment with verified cross-token unwind logic. The protocol enforces strict telemetry synchronization (10s polling) to maintain a sub-500ms state latency between the agent node and the on-chain vault.",
+      content: "The Antigravity Protocol is the high-availability backbone of Obelisk Q. It provides a deterministic execution environment with verified Anti-MEV slippage guards (1% buffer) and optimized proportional asset unwinding. The protocol enforces strict telemetry synchronization (10s polling) to maintain a sub-500ms state latency between the agent node and the on-chain vault.",
     },
     {
       id: "architecture",
@@ -23,8 +23,8 @@ const Docs = () => {
     },
     {
       id: "circuit-breaker",
-      title: "Safety & Circuit Breaker",
-      content: "The system features an autonomous circuit breaker that continuously monitors the Q-Score (confidence index). If the agent detects a volatility spike causing a 10-point drop within a 60-minute window, the system triggers an emergency unwind to safety (MNT/Mantle native), protecting user capital from rapid regime shifts.",
+      title: "Safety & Hybrid AI Logic",
+      content: "The system features a hybrid safety architecture. A real-time autonomous circuit breaker monitors the Q-Score, while a deterministic Sanity Filter overrides the AI (GPT-4o-mini) if volatility exceeds institutional safety thresholds (Vol > 2.5). This ensures that during a rapid regime shift, the agent always defaults to a safe position (MNT/Mantle native), regardless of non-deterministic AI outlooks.",
     },
     {
       id: "mainnet",

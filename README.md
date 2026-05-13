@@ -73,12 +73,12 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 *   **Regime Confirmation** (`risk_assessment_node`): After the rule-based HMM computes a raw regime signal, GPT-4o-mini acts as a second opinion — confirming or overriding the regime classification (Expansion / Consolidation / Contraction) based on the full market context.
 *   **Graceful Fallback**: If the LLM call fails (network issue, rate limit, timeout), the agent automatically falls back to pure rule-based logic with zero downtime. The system never stalls waiting for AI.
 
-### 4. Institutional Safeguards
-*   **Autonomous Circuit Breaker**: Halts all capital allocation if the Q-Score drops 10 points within a 60-minute window.
-*   **Yield-Inclusive Withdrawals**: Users earn yield on their entire proportional share of the vault, with an automated 0.01 MNT gas buffer for agent operations.
-*   **Institutional Session Smoothing**: 30-minute inactivity window for professional stability.
-*   **Real-Time Dashboards**: Premium UX with 10s telemetry polling, providing transparent visibility into the agent's logic.
+### 4. Institutional Safeguards & Technical Excellence
+*   **Deterministic Slippage Guard (Anti-MEV)**: The agent executes a pre-flight `getAmountsOut` check on Merchant Moe, enforcing a 1% slippage buffer. This prevents MEV bots from "sandwiching" the vault's autonomous rebalances.
+*   **Proportional Asset Unwinding**: Optimized withdrawal logic that only trades the specific user's share of assets. This ensures the rest of the vault's capital remains invested and earning yield, significantly reducing gas costs and swap fees.
+*   **Hybrid AI Sanity Filter**: A deterministic mathematical layer overrides the LLM (GPT-4o-mini) if it fails to account for extreme volatility (Vol > 2.5), ensuring the system always defaults to a safe state (Contraction) during crashes.
 *   **Verified Unwind Logic**: Deterministic cross-token swaps (mETH ↔ USDY) with a fixed safety buffer.
+*   **Non-Custodial Hardening**: Removed administrative "Owner Rescue" backdoors to ensure capital is controlled only by the agent's logic and the user's withdrawal rights.
 
 ---
 
