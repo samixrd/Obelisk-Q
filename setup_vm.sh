@@ -9,8 +9,6 @@ echo "════════════════════════�
 sudo apt-get update
 sudo apt-get install -y python3-pip python3-venv nodejs npm git nginx curl
 
-# 2. Install PM2 Globally
-sudo npm install -g pm2
 
 # 3. Setup Python Virtual Environment
 cd backend

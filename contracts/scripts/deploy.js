@@ -4,8 +4,6 @@ async function main() {
   const [deployer] = await hre.ethers.getSigners();
   const network = await hre.ethers.provider.getNetwork();
   
-  // The agent address — use AGENT_ADDRESS env or default to deployer
-  const agentAddress = process.env.AGENT_ADDRESS || "0x5698E89Ec2396e02679ddde33c2BA78de88F7fce";
   
   // Initial assets for the registry (Mantle Mainnet)
   const initialAssets = [

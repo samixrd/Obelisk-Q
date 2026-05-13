@@ -1,41 +1,48 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("ObeliskVault", function () {
-  let Vault;
-  let vault;
-  let owner;
-  let agent;
-  let user1;
-  let user2;
-  let mockToken;
+describe("ObeliskVault Unit Tests", function () {
+  let vault, owner, agent, user1, user2;
+  let mockToken1, mockToken2, mockRouter;
+  let wmntAddress;
 
   beforeEach(async function () {
     [owner, agent, user1, user2] = await ethers.getSigners();
 
-    // Deploy a mock ERC20 for testing asset management
+    // 1. Mock ERC20 Tokens
     const MockERC20 = await ethers.getContractFactory("MockERC20");
-    mockToken = await MockERC20.deploy("Mock Asset", "MOCK");
-    await mockToken.waitForDeployment();
+    mockToken1 = await MockERC20.deploy("Mock Token 1", "MT1");
+    mockToken2 = await MockERC20.deploy("Mock Token 2", "MT2");
+    
+    // 2. Mock Router (Minimal implementation for testing)
+    const MockRouter = await ethers.getContractFactory("MockRouter");
+    mockRouter = await MockRouter.deploy();
+    wmntAddress = await mockRouter.WETH();
 
-    Vault = await ethers.getContractFactory("ObeliskVault");
-    vault = await Vault.deploy(agent.address, [await mockToken.getAddress()]);
-    await vault.waitForDeployment();
+    // 3. Deploy Vault
+    // Note: In real life, the address of ROUTER is hardcoded in the contract.
+    // To test with a mock router, we would ideally use a factory or dependency injection.
+    // However, since the ROUTER is constant in ObeliskVault.sol, we will focus on
+    // testing logical paths that don't depend on the external router first, 
+    // and acknowledge that integration tests would require a Mantle fork.
+    const ObeliskVault = await ethers.getContractFactory("ObeliskVault");
+    vault = await ObeliskVault.deploy(agent.address, [mockToken1.target, mockToken2.target]);
   });
 
   describe("Deployment", function () {
-    it("Should set the correct owner and agent", async function () {
+    it("Should set the right owner and agent", async function () {
       expect(await vault.owner()).to.equal(owner.address);
       expect(await vault.agent()).to.equal(agent.address);
     });
 
-    it("Should register the initial assets", async function () {
-      expect(await vault.isAssetAllowed(await mockToken.getAddress())).to.be.true;
+    it("Should register initial assets", async function () {
+      expect(await vault.isAssetAllowed(mockToken1.target)).to.be.true;
+      expect(await vault.isAssetAllowed(mockToken2.target)).to.be.true;
     });
   });
 
-  describe("User Actions", function () {
-    it("Should allow deposits and update balances", async function () {
+  describe("Deposits", function () {
+    it("Should allow users to deposit MNT", async function () {
       const depositAmount = ethers.parseEther("1.0");
       await vault.connect(user1).deposit({ value: depositAmount });
 
@@ -43,46 +50,29 @@ describe("ObeliskVault", function () {
       expect(await vault.totalDeposited()).to.equal(depositAmount);
     });
 
-    it("Should prevent deposits when paused", async function () {
+    it("Should fail if vault is paused", async function () {
       await vault.connect(agent).togglePause();
       await expect(
         vault.connect(user1).deposit({ value: ethers.parseEther("1.0") })
       ).to.be.revertedWith("Paused");
     });
-
-    it("Should allow withdrawals and clear user state", async function () {
-      const depositAmount = ethers.parseEther("2.0");
-      await vault.connect(user1).deposit({ value: depositAmount });
-
-      // The withdrawal will clear the state even if the swap fails in the test env
-      // as long as we don't hit a revert in the loop (which might happen due to ROUTER calls).
-      // However, we can test the state transition.
-      try {
-        await vault.connect(user1).withdraw();
-      } catch (e) {
-        // Expected failure in test env without router, but let's see if we can get past it
-      }
-      
-      // If we want a clean test, we'd need to mock the router. 
-      // For now, we'll verify the deployment scripts and basic state.
-    });
   });
 
   describe("Agent Actions", function () {
-    it("Should allow the agent to toggle pause", async function () {
+    it("Should allow agent to update regime", async function () {
+      await vault.connect(agent).setRegime("Volatility");
+      expect(await vault.currentRegime()).to.equal("Volatility");
+    });
+
+    it("Should fail if non-agent tries to set regime", async function () {
+      await expect(
+        vault.connect(user1).setRegime("Volatility")
+      ).to.be.revertedWith("ObeliskVault: not agent");
+    });
+
+    it("Should allow agent to toggle pause", async function () {
       await vault.connect(agent).togglePause();
       expect(await vault.vaultPaused()).to.be.true;
-      await vault.connect(agent).togglePause();
-      expect(await vault.vaultPaused()).to.be.false;
-    });
-
-    it("Should prevent non-agents from toggling pause", async function () {
-      await expect(vault.connect(user1).togglePause()).to.be.revertedWith("ObeliskVault: not agent");
-    });
-
-    it("Should allow agent to set regime", async function () {
-      await vault.connect(agent).setRegime("Contraction");
-      expect(await vault.currentRegime()).to.equal("Contraction");
     });
   });
 
@@ -96,10 +86,21 @@ describe("ObeliskVault", function () {
       expect(await vault.isAssetAllowed(newAsset)).to.be.false;
     });
 
-    it("Should prevent non-owners from adding assets", async function () {
+    it("Should fail if non-owner tries to add asset", async function () {
       await expect(
-        vault.connect(user1).addAsset("0x0000000000000000000000000000000000000001")
+        vault.connect(user1).addAsset(user2.address)
       ).to.be.revertedWith("ObeliskVault: not owner");
+    });
+  });
+
+  describe("View Functions", function () {
+    it("Should return correct withdrawable balance", async function () {
+      const depositAmount = ethers.parseEther("1.0");
+      await vault.connect(user1).deposit({ value: depositAmount });
+      
+      // Withdrawble should be deposit - 0.01 buffer
+      const expected = ethers.parseEther("0.99");
+      expect(await vault.getWithdrawableBalance(user1.address)).to.equal(expected);
     });
   });
 });

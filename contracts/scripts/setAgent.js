@@ -1,8 +1,12 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  const vaultAddress = "0xfEDA159aA1E6fE3aEDd0AD566d492D2C94591389";
-  const agentAddress = "0x5698E89Ec2396e02679ddde33c2BA78de88F7fce";
+  const vaultAddress = process.env.VAULT_ADDRESS;
+  const agentAddress = process.env.AGENT_ADDRESS;
+
+  if (!vaultAddress || !agentAddress) {
+    throw new Error("VAULT_ADDRESS and AGENT_ADDRESS must be set in .env");
+  }
 
   console.log("Setting agent on vault:", vaultAddress);
   console.log("Agent:", agentAddress);

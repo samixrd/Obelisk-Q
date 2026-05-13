@@ -1,8 +1,8 @@
 const { ethers } = require("hardhat");
 
 async function main() {
-  const vaultAddress = "0xEF3513E91098e893b6a925A018120d920aF90cD4";
-  const mETHAddress = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0";
+  const vaultAddress = process.env.VAULT_ADDRESS;
+  const mETHAddress = process.env.METH_ADDRESS || "0xcDA86A272531e8640cD7F1a92c01839911B90bb0";
 
   const bal = await ethers.provider.getBalance(vaultAddress);
   console.log("Vault MNT Balance:", ethers.formatEther(bal), "MNT");

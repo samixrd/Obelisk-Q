@@ -2,7 +2,8 @@ const { ethers } = require("hardhat");
 
 async function main() {
   const [owner] = await ethers.getSigners();
-  const vaultAddress = "0xfEDA159aA1E6fE3aEDd0AD566d492D2C94591389";
+  const vaultAddress = process.env.VAULT_ADDRESS;
+  if (!vaultAddress) throw new Error("VAULT_ADDRESS not set");
   
   console.log("Funding vault:", vaultAddress);
   console.log("From owner:", owner.address);

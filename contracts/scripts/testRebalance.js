@@ -2,9 +2,8 @@ const { ethers } = require("hardhat");
 
 async function main() {
   const [owner] = await ethers.getSigners();
-  const vaultAddress = "0xEF3513E91098e893b6a925A018120d920aF90cD4";
-  const targetToken = "0x5be26527e817998a7206475496fde1e68957c5a6"; // USDY
-  const agentAddress = "0x5698E89Ec2396e02679ddde33c2BA78de88F7fce";
+  const vaultAddress = process.env.VAULT_ADDRESS;
+  const targetToken = process.env.USDY_ADDRESS; 
 
   console.log("Vault:", vaultAddress);
   console.log("Triggering rebalance from owner (acting as agent)...");

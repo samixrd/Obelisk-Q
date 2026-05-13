@@ -64,38 +64,86 @@ def init_db():
             from_asset TEXT,
             to_asset TEXT,
             vault_value_before REAL,
-            vault_value_after REAL,
-            pnl REAL,
-            tx_hash TEXT
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS agent_transactions (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            timestamp TEXT,
-            cycle INTEGER,
-            action TEXT,
-            score INTEGER,
-            regime TEXT,
-            status TEXT,
-            vault_address TEXT,
-            tx_hash TEXT
-        )
-    """)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS heartbeats (
-            node_id TEXT PRIMARY KEY,
-            last_pulse TEXT,
-            role TEXT,
-            status TEXT DEFAULT 'OK'
-        )
-    """)
+    """Initializes the database and performs self-healing if corrupted."""
     try:
-        conn.execute("ALTER TABLE heartbeats ADD COLUMN status TEXT DEFAULT 'OK'")
-    except sqlite3.OperationalError:
-        pass
-    conn.commit()
-    conn.close()
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("PRAGMA journal_mode=WAL") # Improved concurrency
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS agent_memory (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT,
+                cycle INTEGER,
+                regime TEXT,
+                score INTEGER,
+                action TEXT,
+                position TEXT,
+                meth_apy REAL,
+                usdy_apy REAL,
+                tx_hash TEXT DEFAULT 'N/A',
+                analyst_insight TEXT DEFAULT ''
+            )
+        """)
+        try:
+            conn.execute("ALTER TABLE agent_memory ADD COLUMN analyst_insight TEXT DEFAULT ''")
+        except sqlite3.OperationalError:
+            pass
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS performance_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT,
+                action TEXT,
+                from_asset TEXT,
+                to_asset TEXT,
+                vault_value_before REAL,
+                vault_value_after REAL,
+                pnl REAL,
+                tx_hash TEXT
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS agent_transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tx_hash TEXT UNIQUE,
+                action TEXT,
+                score REAL,
+                regime TEXT,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                status TEXT,
+                vault_address TEXT,
+                cycle INTEGER
+            )
+        """)
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS heartbeats (
+                node_id TEXT PRIMARY KEY,
+                role TEXT,
+                last_pulse DATETIME DEFAULT CURRENT_TIMESTAMP,
+                status TEXT
+            )
+        """)
+        conn.commit()
+        conn.close()
+    except sqlite3.DatabaseError as e:
+        logger.error(f"init_db: critical failure (corruption?). Attempting self-heal. Error: {e}")
+        # Self-heal: If heartbeats (transient) is corrupted, drop and recreate
+        try:
+            if os.path.exists(DB_PATH):
+                # We don't delete the whole DB to preserve tx history, just try to fix heartbeats
+                conn = sqlite3.connect(DB_PATH)
+                conn.execute("DROP TABLE IF EXISTS heartbeats")
+                conn.execute("""
+                    CREATE TABLE IF NOT EXISTS heartbeats (
+                        node_id TEXT PRIMARY KEY,
+                        role TEXT,
+                        last_pulse DATETIME DEFAULT CURRENT_TIMESTAMP,
+                        status TEXT
+                    )
+                """)
+                conn.commit()
+                conn.close()
+                logger.info("init_db: self-heal successful. heartbeats table reset.")
+        except Exception as e2:
+            logger.critical(f"init_db: self-heal failed. Operating in stateless mode. Error: {e2}")
 
 # ─── Alerting & Monitoring ───────────────────────────────────────────────────
 WEBHOOK_URL = os.getenv("ERROR_WEBHOOK_URL")
@@ -381,6 +429,30 @@ METH_ADDRESS = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0"
 USDY_ADDRESS = "0x5bE26527e817998A7206475496fDE1e68957c5A6"
 WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
 
+# ─── Multi-RPC Failover Strategy (Antigravity Protocol) ───────────────────
+def get_w3(timeout=RPC_TIMEOUT, max_attempts=MAX_RPC_ATTEMPTS):
+    """
+    Returns a connected Web3 instance by cycling through MANTLE_RPC_LIST.
+    Implements exponential backoff and node rotation.
+    """
+    for attempt in range(max_attempts):
+        rpc_url = MANTLE_RPC_LIST[attempt % len(MANTLE_RPC_LIST)]
+        try:
+            w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': timeout}))
+            if w3.is_connected():
+                if attempt > 0:
+                    logger.info(f"rpc_failover: recovered using node: {rpc_url}")
+                return w3
+            logger.warning(f"rpc_failover: node {rpc_url} unreachable (attempt {attempt+1})")
+        except Exception as e:
+            logger.warning(f"rpc_failover: connection error on {rpc_url}: {e}")
+        
+        if attempt < max_attempts - 1:
+            time.sleep(0.1 * (2 ** attempt)) # Exponential backoff
+            
+    RPC_ERROR_COUNTER.labels(node=NODE_ID_GLOBAL).inc()
+    raise ConnectionError(f"rpc_failover: all {max_attempts} RPC nodes failed.")
+
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 async def regime_detection_node(state: AgentState):
@@ -597,6 +669,7 @@ async def q_score_engine_node(state: AgentState):
     last_known_state["risk"]["score"] = risk_score
 
     # 4. Decision Logic
+    regime = state["data"].get("regime", "Consolidation")
     if regime == "Expansion" and risk_score >= 65:
         h_s = "H(s)_growth"
         damping = "0.4 (Underdamped)"
@@ -785,7 +858,10 @@ async def supervisory_controller_node(state: AgentState):
         return {"messages": [AIMessage(content="executor: web3 unavailable. operating in simulation.")], "data": state["data"]}
     
     private_key = os.getenv("AGENT_PRIVATE_KEY")
-    vault_addr = os.getenv("VAULT_ADDRESS", "0x1cA9813c83e6d012798acD19Af1CF87a91F119DD")
+    vault_addr = os.getenv("VAULT_ADDRESS")
+    if not vault_addr:
+        logger.error("VAULT_ADDRESS not set in environment")
+        return []
     
     if not private_key or not vault_addr:
         logger.error(f"executor: pre-flight check failed. private_key={bool(private_key)}, vault_addr={vault_addr}")
@@ -843,10 +919,8 @@ async def supervisory_controller_node(state: AgentState):
             rpc_url = MANTLE_RPC_LIST[attempt % len(MANTLE_RPC_LIST)]
             try:
                 def sync_tx():
-                    logger.info(f"executor: attempt {attempt+1} using node: {rpc_url}")
-                    w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': RPC_TIMEOUT}))
-                    if not w3.is_connected():
-                        raise ConnectionError(f"rpc unreachable: {rpc_url}")
+                    logger.info(f"executor: preparing transaction for cycle...")
+                    w3 = get_w3(timeout=RPC_TIMEOUT)
                         
                     vault_address = w3.to_checksum_address(vault_addr)
                     # Check vault balance
@@ -1030,8 +1104,8 @@ async def supervisory_controller_node(state: AgentState):
     except ConnectionError as ce:
         content = f"executor: all {MAX_RPC_ATTEMPTS} RPC nodes unreachable. check MANTLE_RPC_URLS."
         RPC_ERROR_COUNTER.labels(node=NODE_ID_GLOBAL).inc()
-        asyncio.create_task(notify_critical_failure(f"Supervisory Controller RPC Failure: {e}", severity="CRITICAL"))
-        content = f"executor: terminal rpc error. error: {str(e)[:40]}"
+        asyncio.create_task(notify_critical_failure(f"Supervisory Controller RPC Failure: {ce}", severity="CRITICAL"))
+        content = f"executor: terminal rpc error. error: {str(ce)[:40]}"
 
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
@@ -1232,8 +1306,9 @@ async def health():
     """Deep Health check for monitoring systems (UptimeRobot, etc)."""
     rpc_ok = False
     try:
-        w3 = Web3(Web3.HTTPProvider(MANTLE_RPC_LIST[0], request_kwargs={'timeout': 2}))
-        rpc_ok = w3.is_connected()
+    try:
+        w3 = get_w3(timeout=2, max_attempts=2)
+        rpc_ok = True
     except: pass
     
     return {
@@ -1255,7 +1330,7 @@ async def metrics():
 API_CACHE = {}
 
 @app.get("/api/yields")
-async def get_yields():
+async def get_yields(session: dict = Depends(verify_session)):
     return {
         "meth_apy": API_CACHE.get("meth_apy", 3.8),
         "usdy_apy": API_CACHE.get("usdy_apy", 5.0),
@@ -1264,7 +1339,7 @@ async def get_yields():
     }
 
 @app.get("/api/agent/logs")
-async def get_agent_logs():
+async def get_agent_logs(session: dict = Depends(verify_session)):
     rows = get_recent_memory(20)
     return {"logs": [{"timestamp": r[0], "cycle": r[1], "regime": r[2], "score": r[3], "action": r[4], "position": r[5], "tx_hash": r[6]} for r in rows]}
 
@@ -1274,7 +1349,9 @@ def record_transaction(action, score, regime, cycle, status="success", tx_hash="
         logger.info(f"tx_recorded: skipped {status} log for cycle {cycle} (no real on-chain hash)")
         return
 
-    vault_addr = os.getenv("VAULT_ADDRESS", "0x71Df51b6B5b5Fd7521E0052f5897FB51Fabf5Bed")
+    vault_addr = os.getenv("VAULT_ADDRESS")
+    if not vault_addr:
+        return {"status": "error", "message": "VAULT_ADDRESS not configured"}
     
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -1410,7 +1487,6 @@ async def run_analysis_cycle():
         and subsequent iterations of this loop will execute the full pipeline.
     """
     global NODE_ROLE_GLOBAL
-    from memory import agent_memory
     cycle_num = 0
     
     logger.info(f"run_analysis_cycle: initialization successful. node={NODE_ID_GLOBAL} role={NODE_ROLE_GLOBAL}")
@@ -1479,19 +1555,10 @@ async def run_analysis_cycle():
                         "node": node_name
                     })
             
-            try:
-                analyst_insight = final_state.get("data", {}).get("analyst_insight", None)
-                if not analyst_insight:
-                    messages = final_state.get("messages", [])
-                    analyst_insight = messages[1].content if len(messages) > 1 else "no insight"
-                agent_memory.store_cycle(
-                    score=score,
-                    regime=regime,
-                    decision=action,
-                    analyst_insight=analyst_insight
-                )
-            except Exception as e:
-                logger.warning(f"cycle {cycle_num}: memory store failed: {e}")
+            analyst_insight = final_state.get("data", {}).get("analyst_insight", None)
+            if not analyst_insight:
+                messages = final_state.get("messages", [])
+                analyst_insight = messages[1].content if len(messages) > 1 else "no insight"
             
             yields = final_state.get("data", {}).get("yields", {"usdy": 5.0, "meth": 3.5})
             tx_hash = "N/A"
@@ -1527,9 +1594,19 @@ async def run_analysis_cycle():
             
             logger.info(f"cycle {cycle_num} complete. score={score} regime={regime} action={action}")
             
+        except sqlite3.OperationalError as e:
+            if "database is locked" in str(e).lower():
+                # Backoff and retry
+                time.sleep(1)
+                continue
+            logger.error(f"leader_election: DB error. node={NODE_ID_GLOBAL} role={NODE_ROLE_GLOBAL}. Error: {e}")
+            # Stateless Fallback: If DB is down, use staggered delays to avoid collisions
+            if NODE_ROLE_GLOBAL == "primary":
+                return True # Assume leadership if explicitly told to be primary
+            time.sleep(20) # Passive wait
         except Exception as e:
             logger.error(f"cycle {cycle_num}: unhandled error: {e}")
-            await asyncio.sleep(5)  # back off before retrying
+            time.sleep(5)  # back off before retrying
 
 async def sync_current_position():
     global CURRENT_POSITION
