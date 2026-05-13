@@ -17,6 +17,15 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **The AI Role**: A 5-node autonomous swarm (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital between stable RWA yield, stable Mantle yield (WMNT), and aggressive staking growth without human intervention.
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
 
+### 🎨 Best UI/UX Track: Design Excellence
+Obelisk Q is purpose-built for the **Best UI/UX Award**, focusing on institutional-grade aesthetics and human-centric AI interaction:
+
+*   **Visual Design (30%)**: Implemented a bespoke "Antigravity" design system using glassmorphic cards, fluid typography, and a cohesive Navy-and-White institutional palette that builds trust.
+*   **Interaction & Flow (30%)**: Zero-friction navigation with Framer Motion transitions. The entire complex DeFi onboarding is simplified into a **30-second Guided Tour**.
+*   **AI Interaction Design (25%)**: Solved the "Black Box" problem with a real-time **Decision Transparency Card** and **Confidence Engine**, making autonomous intelligence human-readable and verifiable.
+*   **Accessibility (15%)**: Designed for "Beginner-Friendliness." Users can manage institutional-grade portfolios with a single dial, removing the high entry barrier of manual Mantle yield-farming.
+
+
 ### 🛠️ Technical Excellence & Deployment
 ### 🏛️ Sovereign Swarm Architecture
 Obelisk Q operates a **Multi-Node Agent Swarm** designed for 100% uptime and mathematical certainty:
@@ -84,14 +93,6 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 *   **Agent-Level Circuit Breaker**: The agent has been granted authorized power to `pause()` the vault on-chain. If the AI detects a critical threat that requires more than a simple rebalance, it can instantly halt all vault operations to protect users.
 *   **Proportional Asset Unwinding**: Optimized withdrawal logic that only trades the specific user's share of assets. This ensures the rest of the vault's capital remains invested and earning yield.
 *   **Hybrid AI Sanity Filter**: A deterministic mathematical layer overrides the LLM (GPT-4o-mini) if it fails to account for extreme volatility (Vol > 2.5).
-
-### 🎨 Best UI/UX Track: Design Excellence
-Obelisk Q is purpose-built for the **Best UI/UX Award**, focusing on institutional-grade aesthetics and human-centric AI interaction:
-
-*   **Visual Design (30%)**: Implemented a bespoke "Antigravity" design system using glassmorphic cards, fluid typography, and a cohesive Navy-and-White institutional palette that builds trust.
-*   **Interaction & Flow (30%)**: Zero-friction navigation with Framer Motion transitions. The entire complex DeFi onboarding is simplified into a **30-second Guided Tour**.
-*   **AI Interaction Design (25%)**: Solved the "Black Box" problem with a real-time **Decision Transparency Card** and **Confidence Engine**, making autonomous intelligence human-readable and verifiable.
-*   **Accessibility (15%)**: Designed for "Beginner-Friendliness." Users can manage institutional-grade portfolios with a single dial, removing the high entry barrier of manual Mantle yield-farming.
 
 ---
 
