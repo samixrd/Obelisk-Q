@@ -45,26 +45,48 @@ export function AgentLogsView() {
     <div className="grid grid-cols-12 gap-6 md:gap-8 pb-24">
 
       
-      {/* ── Supervisory Node Status ────────────────────────────────────────── */}
-      <div className="col-span-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-        {nodes.map((node, i) => (
-          <motion.div key={node.id}
-            initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            className="glass-card rounded-[24px] px-5 py-4 transition-all border border-black/[0.04]"
-          >
-            <div className="flex items-center justify-between mb-2.5">
-              <p className="text-[9px] uppercase text-black/40 tracking-[0.15em] font-light">
-                {node.label}
-              </p>
-              <div className={`h-1.5 w-1.5 rounded-full ${STATUS_DOT[node.status] || STATUS_DOT.idle}`} />
+      {/* ── Supervisory Node Status (Flowchart Aesthetic) ────────────────────────────────────────── */}
+      <div className="col-span-12 relative p-6 md:p-8 border border-slate-200 bg-[#fafafa] shadow-inner rounded-sm overflow-x-auto scrollbar-hidden">
+        {/* Canvas dotted background */}
+        <div className="absolute inset-0 opacity-[0.15] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#64748b 1px, transparent 1px)', backgroundSize: '16px 16px' }} />
+        
+        <p className="relative z-10 text-[10px] uppercase text-zinc-500 tracking-[0.2em] font-mono mb-6 bg-white w-fit px-2 border border-slate-200">System Architecture Pipeline</p>
+
+        <div className="relative z-10 flex items-center gap-2 min-w-max pb-2">
+          {nodes.map((node, i) => (
+            <div key={node.id} className="flex items-center">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: i * 0.05, duration: 0.3 }}
+                className="w-44 flex flex-col border border-slate-300 bg-white shadow-sm"
+              >
+                {/* Node Header (Black background, white monospace text) */}
+                <div className="bg-zinc-900 text-white px-2.5 py-1.5 flex items-center justify-between">
+                  <p className="text-[9px] uppercase font-mono tracking-widest truncate mr-2">
+                    {node.label}
+                  </p>
+                  <div className={`h-1.5 w-1.5 flex-shrink-0 ${node.status === 'active' ? 'bg-emerald-400' : node.status === 'calculating' ? 'bg-amber-400' : 'bg-sky-400'}`} />
+                </div>
+                {/* Node Body */}
+                <div className="p-3 h-[72px] flex flex-col justify-center bg-white">
+                  <div className="text-[11px] text-zinc-800 font-mono mb-1 font-semibold uppercase tracking-wide">
+                    {STATUS_LABELS[node.status] || node.status}
+                  </div>
+                  <p className="text-[9px] text-zinc-500 leading-tight">
+                    {node.sub}
+                  </p>
+                </div>
+              </motion.div>
+              
+              {/* Connection Line / Arrow */}
+              {i < nodes.length - 1 && (
+                <div className="flex w-6 h-[1px] bg-slate-400 mx-1 relative">
+                  <div className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-1 border-t border-r border-slate-400 rotate-45 transform translate-x-px" />
+                </div>
+              )}
             </div>
-            <div className="text-[13px] text-[#0a0a0a] mb-0.5 font-light">
-              {STATUS_LABELS[node.status] || node.status}
-            </div>
-            <p className="text-[9px] text-black/30 font-light">{node.sub}</p>
-          </motion.div>
-        ))}
+          ))}
+        </div>
       </div>
 
       {/* ── Global Stats Row ─────────────────────────────────────────────── */}

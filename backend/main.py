@@ -21,8 +21,49 @@ import logging
 from logging.handlers import RotatingFileHandler
 from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
 import aiohttp
-import aioredis
+import sqlite3
+import redis.asyncio as aioredis
 from rpc_manager import rpc_manager
+
+DB_PATH = "obelisk_memory.db"
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.execute('''CREATE TABLE IF NOT EXISTS agent_memory (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cycle INTEGER,
+        timestamp TEXT,
+        score INTEGER,
+        regime TEXT,
+        action TEXT,
+        volatility REAL,
+        position TEXT,
+        tx_hash TEXT
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS agent_transactions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT,
+        cycle INTEGER,
+        action TEXT,
+        score INTEGER,
+        regime TEXT,
+        status TEXT,
+        vault_address TEXT,
+        tx_hash TEXT
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS performance_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT,
+        action TEXT,
+        from_asset TEXT,
+        to_asset TEXT,
+        vault_value_before REAL,
+        vault_value_after REAL,
+        pnl REAL,
+        tx_hash TEXT
+    )''')
+    conn.commit()
+    conn.close()
 
 # Redis client (for HA heartbeat & leader election)
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
@@ -353,19 +394,14 @@ class ExternalDataService:
                     if resp.status == 200:
                         fng = await resp.json()
                         data["fear_greed"] = int(fng["data"][0]["value"])
-          # Add Bybit Institutional Sentiment
-        bybit = await cls.get_bybit_data()
-        
-        ctx = {
-            "meth_apy": 3.82,
-            "usdy_apy": 5.0,
-            "fear_greed": 64,
-            "mnt_price": 0.72,
-            "bybit_btc_reference": bybit["btc_price"],
-            "market_sentiment": "Bullish" if float(bybit.get("btc_price", 0)) > 60000 else "Neutral"
-        }
-        cls._cache = {"data": ctx, "expiry": now + cls._cache_ttl}
-        return ctx
+            
+            # Add Bybit Institutional Sentiment
+            bybit = await cls.get_bybit_data()
+            data["bybit_btc_reference"] = bybit["btc_price"]
+            data["market_sentiment"] = "Bullish" if float(bybit.get("btc_price", 0)) > 60000 else "Neutral"
+            
+            cls._cache = {"data": data, "expiry": now + cls._cache_ttl}
+            return data
         except Exception as e:
             logger.warning(f"telemetry: external API fetch failed, using fallbacks: {e}")
             return data

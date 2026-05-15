@@ -181,7 +181,13 @@ With the RWA sector projected to reach $16T by 2030, Obelisk Q positions Mantle 
 ---
 
 ## 🎯 Innovation & Ecosystem Value
-... (keep existing content) ...
+Obelisk Q proposes a new **AI × Web3 paradigm**: where the agent is not just a chatbot, but a **Sovereign Financial Actor**.
+
+1.  **Technical Depth**: High-precision integration between LangGraph's multi-agent coordination and Mantle's high-throughput execution environment.
+2.  **Innovation**: Moves beyond simple "auto-compounders" to a system that understands *why* it is allocating capital, using advanced statistical modeling (HMM).
+3.  **Growth Alpha**: By dynamically rotating between growth assets (mETH) and stable yield (USDY), Obelisk Q captures significant upside during market expansions that static holders miss.
+4.  **Ecosystem Contribution**: Automates capital flow into mETH, USDY, and WMNT, directly increasing TVL and liquidity for Mantle's core primitives.
+5.  **Completeness**: A fully production-ready, glassmorphic frontend paired with a hardened distributed backend and verified smart contracts.
 
 ---
 

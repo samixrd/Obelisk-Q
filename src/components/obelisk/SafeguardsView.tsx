@@ -107,52 +107,62 @@ export function SafeguardsView() {
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-20">
 
-      {/* Global Circuit Breaker Status */}
-      <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10 border-l-4 transition-all duration-500" 
-           style={{ borderLeftColor: circuitBreakerActive ? "#ef4444" : "#10b981" }}>
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="flex items-center gap-6">
-            <div className={`relative flex items-center justify-center h-16 w-16 rounded-full ${circuitBreakerActive ? "bg-red-500/10" : "bg-emerald-500/10"}`}>
-              <div className={`h-4 w-4 rounded-full ${circuitBreakerActive ? "bg-red-500 animate-pulse shadow-[0_0_12px_rgba(239,68,68,0.8)]" : "bg-emerald-500"}`} />
-              {circuitBreakerActive && (
-                 <div className="absolute inset-0 rounded-full border-2 border-red-500/20 animate-ping" />
-              )}
-            </div>
-            <div>
-              <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Autonomous Protection</p>
-              <h3 className="text-xl font-bold text-foreground tracking-tight">
-                {circuitBreakerActive ? "ACTIVE — All allocation halted" : "INACTIVE — All systems normal"}
-              </h3>
-              <p className="text-sm text-muted-foreground mt-1 font-medium">
-                {circuitBreakerActive 
-                  ? "Automatic halt triggered due to rapid Q-Score degradation. No on-chain swaps permitted." 
-                  : "Q-Score volatility within nominal parameters. Real-time rebalancing is enabled."}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-12 px-8 py-5 rounded-[24px] bg-black/[0.02] border border-black/5">
-             <div className="text-center">
-                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Current Q-Score</p>
-                <p className="text-2xl font-bold text-black tabular-nums">{score}</p>
-             </div>
-             <div className="h-10 w-px bg-black/10" />
-             <div className="text-center">
-                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1">Market Regime</p>
-                <p className="text-2xl font-bold text-black">{regime}</p>
-             </div>
-          </div>
+      {/* Developer-style Stats Grid */}
+      <div className="col-span-12 border-2 border-[#0ea5e9] bg-white grid grid-cols-1 md:grid-cols-3">
+        {/* Box 1 */}
+        <div className="p-6 md:p-8 border-b md:border-b-0 md:border-r border-dashed border-[#0ea5e9]/50">
+           <p className="text-xs uppercase font-mono text-muted-foreground tracking-[0.2em] mb-4">System Status</p>
+           <div className="flex items-baseline justify-between">
+              <span className="text-5xl font-light font-mono text-slate-900 tracking-tighter">
+                {circuitBreakerActive ? "HALTED" : "99.9%"}
+              </span>
+              <span className={`text-sm font-medium font-mono ${circuitBreakerActive ? "text-red-600" : "text-emerald-600"}`}>
+                {circuitBreakerActive ? "↓ ER" : "↑ 0.1%"}
+              </span>
+           </div>
         </div>
 
-        <div className="mt-10 pt-10 border-t border-black/5">
-          <div className="flex items-center justify-between mb-6">
-            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest">Stability Vector · Real-Time Telemetry</p>
-            <div className="flex items-center gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[9px] uppercase text-emerald-600 font-bold tracking-widest">Live Feed</span>
-            </div>
+        {/* Box 2 */}
+        <div className="p-6 md:p-8 border-b md:border-b-0 md:border-r border-dashed border-[#0ea5e9]/50">
+           <p className="text-xs uppercase font-mono text-muted-foreground tracking-[0.2em] mb-4">Current Q-Score</p>
+           <div className="flex items-baseline justify-between">
+              <span className="text-5xl font-light font-mono text-slate-900 tracking-tighter">
+                {score}<span className="text-3xl text-slate-300">/100</span>
+              </span>
+              <span className="text-sm font-medium font-mono text-emerald-600">
+                ↑ 1%
+              </span>
+           </div>
+        </div>
+
+        {/* Box 3 */}
+        <div className="p-6 md:p-8">
+           <p className="text-xs uppercase font-mono text-muted-foreground tracking-[0.2em] mb-4">Market Regime</p>
+           <div className="flex items-baseline justify-between">
+              <span className="text-4xl md:text-5xl font-light font-mono text-slate-900 tracking-tighter truncate capitalize">
+                {regime.length > 10 ? regime.substring(0, 10) + '..' : regime}
+              </span>
+              <span className="text-sm font-medium font-mono text-slate-400">
+                —
+              </span>
+           </div>
+        </div>
+      </div>
+
+      {/* Developer-style Chart Box */}
+      <div className="col-span-12 border border-slate-200 bg-white rounded-md p-6 md:p-8 relative overflow-hidden shadow-sm mt-4">
+        {/* Dotted background overlay */}
+        <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(#000 1.5px, transparent 1.5px)', backgroundSize: '16px 16px' }} />
+        
+        <div className="relative z-10 flex justify-between items-center mb-10">
+          <p className="text-xs uppercase font-mono text-muted-foreground tracking-[0.2em]">Stability Vector</p>
+          <div className="flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-[10px] uppercase text-emerald-600 font-bold tracking-widest font-mono">Live Feed</span>
           </div>
-          <StabilityGraph data={scoreHistory} height={140} />
+        </div>
+        <div className="relative z-10">
+          <StabilityGraph data={scoreHistory} height={240} />
         </div>
       </div>
 
