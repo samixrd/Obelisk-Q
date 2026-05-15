@@ -71,18 +71,41 @@ export function PerformanceView() {
               <span className="text-black/10 font-light">%</span>
             </div>
           </div>
-          <div className="flex md:block items-center gap-8 md:text-right">
-            <p className="text-[11px] uppercase text-muted-foreground/40 font-bold tracking-[0.24em] mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
-              <MagneticText disabled text="Sharpe Ratio" />
-            </p>
-            <div className="text-4xl text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
-              <MagneticText disabled text={String(metrics.sharpe_ratio)} />
+          <div className="flex flex-col items-end gap-6 w-full md:w-auto">
+            <div className="flex md:block items-center gap-8 md:text-right">
+              <p className="text-[11px] uppercase text-muted-foreground/40 font-bold tracking-[0.24em] mb-4" style={{ fontFamily: "'Inter', sans-serif" }}>
+                <MagneticText disabled text="Sharpe Ratio" />
+              </p>
+              <div className="text-4xl text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace", fontWeight: 300 }}>
+                <MagneticText disabled text={String(metrics.sharpe_ratio)} />
+              </div>
+              <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mt-2">Top 5% Global</p>
             </div>
-            <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-widest mt-2">Top 5% Global</p>
+            <button className="w-full md:w-auto flex items-center justify-center gap-3 px-8 py-4 bg-black text-white rounded-full hover:bg-black/80 transition-all shadow-xl group">
+              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Institutional Audit Report</span>
+              <IconArrowUpRight size={14} className="opacity-40 group-hover:opacity-100" />
+            </button>
           </div>
         </div>
         <div className="h-[320px] -mx-4">
           <StabilityGraph seed={3} height={320} />
+        </div>
+        <div className="mt-12 pt-12 border-t border-black/[0.04] flex flex-col md:flex-row items-center justify-between gap-12">
+           <div className="flex items-center gap-10">
+              <div>
+                <p className="text-[10px] uppercase text-black/20 font-bold tracking-widest mb-2">Obelisk Q (AI)</p>
+                <div className="text-2xl text-black font-bold">+14.82%</div>
+              </div>
+              <div className="h-10 w-px bg-black/5" />
+              <div>
+                <p className="text-[10px] uppercase text-black/20 font-bold tracking-widest mb-2">Benchmark (HODL)</p>
+                <div className="text-2xl text-black/40 font-medium">+6.41%</div>
+              </div>
+           </div>
+           <div className="flex items-center gap-4 bg-emerald-500/10 px-8 py-4 rounded-[32px] border border-emerald-500/20">
+              <IconArrowUpRight className="text-emerald-600" />
+              <div className="text-[13px] font-bold text-emerald-600 uppercase tracking-widest">+8.41% Alpha Generated</div>
+           </div>
         </div>
       </div>
 

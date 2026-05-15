@@ -12,3 +12,4 @@ chromadb==0.4.24
 web3==6.15.1
 python-dotenv==1.0.1
 prometheus-client==0.20.0
+aioredis==2.0.1

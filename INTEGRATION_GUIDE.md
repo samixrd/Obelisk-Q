@@ -29,18 +29,20 @@ NODE_ROLE=shadow NODE_ID=shadow-1 python main.py
 NODE_ROLE=shadow NODE_ID=shadow-2 python main.py
 ```
 
-**Leader Election Protocol:**
-- Shadow nodes poll the primary's heartbeat every 15s via shared SQLite.
+**Leader Election Protocol (Distributed HA):**
+- Coordination is managed via **Redis**. Ensure a Redis instance is reachable by all nodes.
+- Shadow nodes poll the primary's heartbeat in Redis every 15s.
 - If no primary pulse for 45s, a shadow auto-promotes to primary.
 - PM2 `autorestart` handles individual process crashes.
-- Staggered restart delays (4s/10s/15s) prevent simultaneous promotion.
+- Cross-VM support: Point all nodes to the same `REDIS_URL` for global failover.
 
 **Environment Variables:**
 | Variable | Values | Default |
 |---|---|---|
 | `NODE_ROLE` | `primary` or `shadow` | `primary` |
 | `NODE_ID` | Any unique string | `local-1` |
-*Ensure `.env` in `backend/` contains your `AGENT_PRIVATE_KEY` and `VAULT_ADDRESS`.*
+| `REDIS_URL` | `redis://host:port` | `redis://localhost:6379` |
+*Ensure `.env` in `backend/` contains your `AGENT_PRIVATE_KEY`, `VAULT_ADDRESS`, and `REDIS_URL`.*
 
 ## 2. Start the Frontend (Vite)
 Ensure your `.env.local` has the correct `VITE_VAULT_ADDRESS` and `VITE_RPC_URL`.

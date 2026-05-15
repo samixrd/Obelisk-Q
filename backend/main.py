@@ -21,7 +21,17 @@ import logging
 from logging.handlers import RotatingFileHandler
 from prometheus_client import Counter, Gauge, generate_latest, CONTENT_TYPE_LATEST
 import aiohttp
-import sqlite3
+import aioredis
+
+# Redis client (for HA heartbeat & leader election)
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379")
+redis = None
+async def init_redis():
+    global redis
+    if redis is None:
+        redis = await aioredis.from_url(REDIS_URL, encoding="utf-8", decode_responses=True)
+        logger.info(f"redis: connected to {REDIS_URL}")
+
 from web3 import Web3
 
 DB_PATH = "obelisk_memory.db"
@@ -171,44 +181,33 @@ async def notify_critical_failure(error_msg: str, severity: str = "HIGH"):
 NODE_ID_GLOBAL = os.getenv("NODE_ID", "local-1")
 NODE_ROLE_GLOBAL = os.getenv("NODE_ROLE", "primary")
 
-def update_heartbeat(node_id=None, role=None, rpc_status="OK"):
-    """Write a heartbeat pulse to the shared SQLite state.
-    
-    Includes an 'rpc_status' field to allow shadow nodes to detect
-    when a primary is alive but disconnected from the blockchain.
-    """
+async def update_heartbeat(node_id=None, role=None, rpc_status="OK"):
+    """Write a heartbeat pulse to Redis."""
     _id = node_id or NODE_ID_GLOBAL
     _role = role or NODE_ROLE_GLOBAL
     try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.execute("""
-            INSERT OR REPLACE INTO heartbeats (node_id, last_pulse, role, status)
-            VALUES (?, ?, ?, ?)
-        """, (_id, datetime.now().isoformat(), _role, rpc_status))
-        conn.commit()
-        conn.close()
+        await redis.set(f"heartbeat:{_id}", json.dumps({
+            "last_pulse": datetime.now().isoformat(),
+            "role": _role,
+            "status": rpc_status
+        }), ex=60)
     except Exception as e:
         logger.warning(f"heartbeat: update failed: {e}")
 
-def get_primary_health():
-    """Check if any primary node is healthy and connected to RPC.
-    
-    Returns True if primary is pulsing AND reporting OK status.
-    """
+async def get_primary_health():
+    """Check if any primary node is healthy and connected to RPC."""
     try:
-        conn = sqlite3.connect(DB_PATH)
-        row = conn.execute("""
-            SELECT last_pulse, status FROM heartbeats 
-            WHERE role = 'primary' 
-            ORDER BY last_pulse DESC LIMIT 1
-        """).fetchone()
-        conn.close()
-        if row:
-            last_pulse = datetime.fromisoformat(row[0])
-            status = row[1]
-            diff = (datetime.now() - last_pulse).total_seconds()
-            # Unhealthy if pulse > 60s OR status is ERROR
-            return (diff < 60) and (status == "OK")
+        keys = await redis.keys("heartbeat:*")
+        now = datetime.now()
+        for key in keys:
+            data_str = await redis.get(key)
+            if data_str:
+                data = json.loads(data_str)
+                if data.get("role") == "primary" and data.get("status") == "OK":
+                    last_pulse = datetime.fromisoformat(data.get("last_pulse", now.isoformat()))
+                    diff = (now - last_pulse).total_seconds()
+                    if diff < 60:
+                        return True
         return False
     except Exception as e:
         logger.warning(f"get_primary_health: check failed: {e}")
@@ -1388,9 +1387,12 @@ async def get_stats():
     # ── NODE HEALTH CALCULATION ──
     nodes = []
     try:
-        conn = sqlite3.connect(DB_PATH)
-        nodes = conn.execute("SELECT node_id, last_pulse, role FROM heartbeats").fetchall()
-        conn.close()
+        keys = await redis.keys("heartbeat:*")
+        for key in keys:
+            data_str = await redis.get(key)
+            if data_str:
+                data = json.loads(data_str)
+                nodes.append((key.split(":")[1], data.get("last_pulse"), data.get("role")))
     except: pass
     
     active_nodes = 0
@@ -1487,11 +1489,11 @@ async def run_analysis_cycle():
     
     while True:
         # Update our own heartbeat (uses module-level globals)
-        update_heartbeat()
+        await update_heartbeat()
         
         # Shadow nodes wait for primary failure before executing
         if NODE_ROLE_GLOBAL == "shadow":
-            is_primary_healthy = get_primary_health()
+            is_primary_healthy = await get_primary_health()
             if is_primary_healthy:
                 logger.info("shadow_node: primary is healthy. standby mode.")
                 await asyncio.sleep(30)
@@ -1665,6 +1667,7 @@ async def sync_current_position():
 @app.on_event("startup")
 async def startup():
     """Server initialization logic (shared between API and Agent modes)."""
+    await init_redis()
     await initialize_logic()
 
 async def initialize_logic():
@@ -1728,10 +1731,20 @@ async def leader_election():
         return  # Already primary, no election needed
 
     try:
-        conn = sqlite3.connect(DB_PATH)
-        # Check if any primary node has pulsed in the last 45 seconds
-        primary = conn.execute("SELECT node_id, last_pulse FROM heartbeats WHERE role='primary'").fetchone()
-        conn.close()
+        keys = await redis.keys("heartbeat:*")
+        primary = None
+        now = datetime.now()
+        
+        for key in keys:
+            data_str = await redis.get(key)
+            if data_str:
+                data = json.loads(data_str)
+                if data.get("role") == "primary":
+                    # Get the most recent primary pulse
+                    last_pulse = datetime.fromisoformat(data.get("last_pulse", now.isoformat()))
+                    node_id = key.split(":")[1]
+                    if not primary or last_pulse > datetime.fromisoformat(primary[1]):
+                        primary = (node_id, data.get("last_pulse", now.isoformat()))
 
         if not primary:
             logger.warning("leader_election: NO PRIMARY DETECTED. promoting self.")
@@ -1739,7 +1752,7 @@ async def leader_election():
             return
 
         last_pulse = datetime.fromisoformat(primary[1])
-        if (datetime.now() - last_pulse).total_seconds() > 45:
+        if (now - last_pulse).total_seconds() > 45:
             logger.warning(f"leader_election: primary {primary[0]} DEAD (last pulse {primary[1]}). PROMOTING SELF.")
             NODE_ROLE_GLOBAL = "primary"
     except Exception as e:
@@ -1760,7 +1773,7 @@ async def node_heartbeat_loop():
         except:
             rpc_status = "ERROR"
             
-        update_heartbeat(rpc_status=rpc_status)
+        await update_heartbeat(rpc_status=rpc_status)
         await leader_election()
         await asyncio.sleep(15)
 
