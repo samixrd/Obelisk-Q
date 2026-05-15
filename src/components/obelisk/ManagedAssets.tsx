@@ -134,7 +134,7 @@ export function ManagedAssets() {
                     {a.yieldLabel}
                   </p>
                   <div className="flex items-center gap-3">
-                    <p className="text-4xl text-foreground font-light font-mono tracking-tighter">{a.yield}</p>
+                    <p className="text-4xl text-foreground font-light tracking-tighter tabular-nums">{a.yield}</p>
                     {a.trend && (
                       <p className="text-[10px] text-emerald-500 flex items-center gap-0.5 font-mono">
                         <IconArrowUpRight size={10} />
@@ -145,11 +145,7 @@ export function ManagedAssets() {
                 </div>
               </div>
 
-              <p className="text-sm text-muted-foreground leading-relaxed mb-8">{a.blurb}</p>
-
-              <div className="-mx-2 mb-8">
-                <StabilityGraph seed={a.seed} height={70} />
-              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed mb-4">{a.blurb}</p>
 
             </div>
           </motion.div>
