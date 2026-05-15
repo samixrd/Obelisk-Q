@@ -1322,7 +1322,7 @@ async def get_tenant_default():
 API_CACHE = {}
 
 @app.get("/api/yields")
-async def get_yields(session: dict = Depends(verify_session)):
+async def get_yields():
     return {
         "meth_apy": API_CACHE.get("meth_apy", 3.8),
         "usdy_apy": API_CACHE.get("usdy_apy", 5.0),
@@ -1331,7 +1331,7 @@ async def get_yields(session: dict = Depends(verify_session)):
     }
 
 @app.get("/api/agent/logs")
-async def get_agent_logs(session: dict = Depends(verify_session)):
+async def get_agent_logs():
     rows = get_recent_memory(20)
     return {"logs": [{"timestamp": r[0], "cycle": r[1], "regime": r[2], "score": r[3], "action": r[4], "position": r[5], "tx_hash": r[6]} for r in rows]}
 
@@ -1363,7 +1363,7 @@ def record_transaction(action, score, regime, cycle, status="success", tx_hash="
 # ─── REST Endpoints ───────────────────────────────────────────────────────────
 
 @app.get("/api/performance")
-async def get_performance(session: dict = Depends(verify_session)):
+async def get_performance():
     conn = sqlite3.connect(DB_PATH)
     rows = conn.execute("""
         SELECT timestamp, action, from_asset, to_asset, 
@@ -1379,7 +1379,7 @@ async def get_performance(session: dict = Depends(verify_session)):
     }
 
 @app.get("/api/memory")
-async def get_memory(session: dict = Depends(verify_session)):
+async def get_memory():
     rows = get_recent_memory(20)
     return {"memory": [{"timestamp": r[0], "cycle": r[1], "regime": r[2], "score": r[3], "action": r[4], "position": r[5], "tx_hash": r[6]} for r in rows]}
 
@@ -1445,29 +1445,21 @@ async def websocket_endpoint(websocket: WebSocket):
     # Extract token from query params or subprotocols
     token = websocket.query_params.get("token")
     
-    if not token or token not in SESSIONS:
-        await websocket.accept() # Must accept before closing with code
-        await websocket.close(code=4001) # Session_Expired
-        return
+    # Guest access allowed for broadcasts
+    is_guest = not token or token not in SESSIONS
     
-    # Verify timeout even on WS handshake
-    session = SESSIONS[token]
-    if time.time() - session["last_seen"] > SESSION_TIMEOUT:
-        await websocket.accept()
-        await websocket.close(code=4001)
-        return
-
     await websocket.accept()
     global_app_state.active_connections.append(websocket)
     try:
         while True: 
             # Heartbeat via WS activity
             data = await websocket.receive_text()
-            if token in SESSIONS:
+            if not is_guest and token in SESSIONS:
                 SESSIONS[token]["last_seen"] = time.time()
     except WebSocketDisconnect:
         if websocket in global_app_state.active_connections:
             global_app_state.active_connections.remove(websocket)
+    return
 
 async def run_analysis_cycle():
     """Main agent loop - executes the LangGraph analysis pipeline on a fixed cadence.

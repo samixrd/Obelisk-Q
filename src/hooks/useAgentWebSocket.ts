@@ -112,11 +112,9 @@ export function useAgentWebSocket() {
   };
 
   useEffect(() => {
-    if (!sessionToken) return;
-
     // ── Fetch data IMMEDIATELY on mount ──
-    fetchStats(sessionToken);
-    fetchLogs(sessionToken);
+    fetchStats(sessionToken || "");
+    fetchLogs(sessionToken || "");
 
     // ── WebSocket: derive URL from page origin ──
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -124,7 +122,10 @@ export function useAgentWebSocket() {
 
     const connectWs = () => {
       try {
-        const urlWithToken = `${wsUrl}${wsUrl.includes('?') ? '&' : '?'}token=${sessionToken}`;
+        const urlWithToken = sessionToken 
+          ? `${wsUrl}${wsUrl.includes('?') ? '&' : '?'}token=${sessionToken}`
+          : wsUrl;
+        
         wsRef.current = new WebSocket(urlWithToken);
 
         const timeout = setTimeout(() => {
@@ -192,9 +193,8 @@ export function useAgentWebSocket() {
 
     // ── Polling: fetch stats + logs every 10s via relative URLs (Vercel proxy) ──
     const statsInterval = setInterval(() => {
-      if (!sessionToken) return;
-      fetchStats(sessionToken);
-      fetchLogs(sessionToken);
+      fetchStats(sessionToken || "");
+      fetchLogs(sessionToken || "");
     }, 10000);
 
     return () => {
