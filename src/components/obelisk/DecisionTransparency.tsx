@@ -36,20 +36,19 @@ export function DecisionTransparency() {
   const statusOk = score >= adaptive.confidenceThreshold;
 
   return (
-    <motion.div {...fadeUp} className="col-span-12 glass-card rounded-[48px] p-10 md:p-14 space-y-16 mb-12 transition-all shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)] bg-white/70 backdrop-blur-3xl">
+    <motion.div {...fadeUp} className="col-span-12 border border-slate-200 bg-white rounded-sm p-8 md:p-12 space-y-16 mb-12 transition-all shadow-sm">
       {/* ── Section Title ────────────────────────────────────────────────── */}
-      <div className="space-y-2">
+      <div className="space-y-2 border-b border-slate-200 pb-6">
         <p
-          className="text-[10px] uppercase text-muted-foreground mb-3 font-bold tracking-[0.28em]"
+          className="text-[10px] uppercase text-zinc-500 font-mono mb-3 tracking-[0.2em]"
         >
           <MagneticText disabled text="AI Decision Transparency" />
         </p>
         <h2
-          className="text-3xl font-bold text-foreground"
-          style={{ letterSpacing: "-0.03em" }}
+          className="text-2xl md:text-3xl font-light text-zinc-900 font-mono uppercase tracking-tighter"
         >
-          <MagneticText disabled text="Supervisory logic" />
-          <MagneticText text="by Obelisk Q" />
+          <MagneticText disabled text="Supervisory logic " />
+          <span className="font-semibold"><MagneticText text="by Obelisk Q" /></span>
         </h2>
       </div>
 
@@ -58,38 +57,38 @@ export function DecisionTransparency() {
         <div className="col-span-12 lg:col-span-7 space-y-16">
           {/* 1. LAST DECISION CARD */}
           <div className="space-y-6">
-            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-[0.2em]">
+            <p className="text-[10px] uppercase text-zinc-500 font-mono tracking-[0.2em]">
               Last Decision
             </p>
-            <div className="grid grid-cols-2 gap-x-12 gap-y-8">
+            <div className="grid grid-cols-2 gap-x-12 gap-y-8 p-6 border border-slate-200 bg-[#fafafa]">
               <div>
-                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Action Taken</p>
-                <p className="text-sm font-bold text-black leading-snug">
+                <p className="text-[9px] uppercase text-zinc-400 font-mono tracking-widest mb-1.5">Action Taken</p>
+                <p className="text-sm font-bold text-zinc-900 font-mono leading-snug">
                   {statusOk ? `HOLD (Score ${score} ≥ ${adaptive.confidenceThreshold})` : `SYNC (Score ${score} < ${adaptive.confidenceThreshold})`}
                 </p>
               </div>
               <div>
-                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Timestamp</p>
-                <p className="text-sm font-bold text-black">
+                <p className="text-[9px] uppercase text-zinc-400 font-mono tracking-widest mb-1.5">Timestamp</p>
+                <p className="text-sm font-bold text-zinc-900 font-mono">
                   2 minutes ago
                 </p>
               </div>
               <div>
-                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Confidence Score</p>
-                <div className="text-sm font-bold text-black tabular-nums">
+                <p className="text-[9px] uppercase text-zinc-400 font-mono tracking-widest mb-1.5">Confidence Score</p>
+                <div className="text-2xl font-light text-zinc-900 font-mono tabular-nums tracking-tighter">
                    <MagneticText disabled text={String(score)} />
                 </div>
               </div>
               <div>
-                <p className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest mb-1.5">Market Regime</p>
-                <p className="text-sm font-bold text-black">{adaptive.modeLabel}</p>
+                <p className="text-[9px] uppercase text-zinc-400 font-mono tracking-widest mb-1.5">Market Regime</p>
+                <p className="text-sm font-bold text-zinc-900 font-mono">{adaptive.modeLabel}</p>
               </div>
             </div>
           </div>
 
           {/* 2. SCORE BREAKDOWN */}
           <div className="space-y-8">
-            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-[0.2em]">
+            <p className="text-[10px] uppercase text-zinc-500 font-mono tracking-[0.2em]">
               Score Breakdown
             </p>
             <div className="space-y-10">
@@ -114,11 +113,11 @@ export function DecisionTransparency() {
                 contribution={liqCont} 
                 note="On-chain liquidity depth is adequate" 
               />
-              <div className="flex justify-between items-center pt-8 border-t border-black/[0.04]">
-                <span className="text-[9px] uppercase text-muted-foreground font-bold tracking-widest">Total:</span>
-                <div className="text-xl font-bold text-black flex items-baseline gap-2 tabular-nums">
+              <div className="flex justify-between items-center pt-8 border-t border-slate-200">
+                <span className="text-[9px] uppercase text-zinc-500 font-mono tracking-widest">Total Composite:</span>
+                <div className="text-3xl font-light text-zinc-900 font-mono flex items-baseline gap-1 tabular-nums">
                    <MagneticText disabled text={String(score)} />
-                   <span className="text-xs text-black/20 font-bold">/ 100</span>
+                   <span className="text-sm text-zinc-400 font-medium">/100</span>
                 </div>
               </div>
             </div>
@@ -136,20 +135,20 @@ export function DecisionTransparency() {
 
           {/* 5. SUPERVISORY CONFIGURATION */}
           <div className="space-y-6">
-            <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-[0.2em]">
+            <p className="text-[10px] uppercase text-zinc-500 font-mono tracking-[0.2em]">
               Framework Status
             </p>
-            <div className="p-8 rounded-[32px] bg-black/[0.02] border border-black/[0.04] space-y-6">
+            <div className="p-6 border border-slate-200 bg-[#fafafa] space-y-6">
               <div>
-                <p className="text-[9px] uppercase text-muted-foreground mb-3 font-bold tracking-widest">Antigravity Latency:</p>
-                <div className="text-2xl font-bold text-black flex items-baseline gap-2 tabular-nums">
+                <p className="text-[9px] uppercase text-zinc-400 font-mono tracking-widest mb-2">Antigravity Latency:</p>
+                <div className="text-3xl font-light text-zinc-900 font-mono flex items-baseline gap-2 tabular-nums tracking-tighter">
                   <MagneticText disabled text="412" />
-                  <span className="text-[10px] text-black/20 font-bold uppercase tracking-widest">ms</span>
+                  <span className="text-[10px] text-zinc-400 font-medium uppercase tracking-widest">ms</span>
                 </div>
               </div>
-              <div className="pt-6 border-t border-black/5">
-                <p className="text-[9px] uppercase text-muted-foreground mb-3 font-bold tracking-widest">Persistence Layer:</p>
-                <span className="text-sm font-bold text-black uppercase tracking-widest">Cloud Vector Storage (0% Local Disk)</span>
+              <div className="pt-6 border-t border-slate-200">
+                <p className="text-[9px] uppercase text-zinc-400 font-mono tracking-widest mb-2">Persistence Layer:</p>
+                <span className="text-xs font-medium text-zinc-900 font-mono uppercase tracking-wider">Cloud Vector Storage (0% Local)</span>
               </div>
             </div>
           </div>
@@ -161,28 +160,31 @@ export function DecisionTransparency() {
 
 function ScoreBar({ label, weight, score, contribution, note }: { label: string; weight: string; score: number; contribution: string; note: string }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <div className="flex justify-between items-end">
         <div>
-          <span className="text-[9px] uppercase text-muted-foreground mb-1.5 font-bold tracking-widest block">{weight} weight</span>
-          <span className="text-sm font-bold text-black">{label}</span>
+          <span className="text-[9px] uppercase text-zinc-400 font-mono mb-1 tracking-widest block">{weight} weight</span>
+          <span className="text-sm font-medium text-zinc-900 font-mono tracking-tight">{label}</span>
         </div>
         <div className="text-right">
-          <span className="text-[9px] uppercase text-muted-foreground mb-1 font-bold tracking-widest block">Score: {score}/100</span>
-          <span className="text-sm text-black font-bold tabular-nums">
+          <span className="text-[9px] uppercase text-zinc-400 font-mono mb-1 tracking-widest block">Score: {score}/100</span>
+          <span className="text-sm text-emerald-600 font-mono font-medium tabular-nums">
              +<MagneticText disabled text={contribution} /> pts
           </span>
         </div>
       </div>
-      <div className="relative h-1.5 w-full bg-black/[0.04] rounded-full overflow-hidden">
-        <motion.div 
-          initial={{ width: 0 }}
-          animate={{ width: `${score}%` }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-          className="absolute inset-y-0 left-0 bg-black/20 rounded-full"
-        />
+      <div className="flex h-[4px] w-full gap-[2px]">
+        {Array.from({ length: 40 }).map((_, i) => (
+          <motion.div 
+            key={i}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: i < (score / 2.5) ? 1 : 0.08 }}
+            transition={{ duration: 0.5, delay: i * 0.01 }}
+            className="h-full flex-1 bg-zinc-800"
+          />
+        ))}
       </div>
-      <p className="text-sm text-muted-foreground/60 font-medium italic leading-relaxed">"{note}"</p>
+      <p className="text-[10px] text-zinc-500 font-mono italic leading-relaxed mt-2">{note}</p>
     </div>
   );
 }
