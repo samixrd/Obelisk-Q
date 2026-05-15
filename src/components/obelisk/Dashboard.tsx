@@ -1,5 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
-import { useLayoutEffect, useState } from "react";
+import { useLayoutEffect, useState, useEffect } from "react";
 
 import { SafeguardsView } from "./SafeguardsView";
 import { PortfolioView } from "./PortfolioView";
