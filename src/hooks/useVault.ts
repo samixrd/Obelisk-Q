@@ -504,7 +504,7 @@ export function useVault(): VaultState {
   // ── Withdraw ────────────────────────────────────────────────────────────
   const withdraw = useCallback(async () => {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
-    if (!eth || !address) return;
+    if (!eth || !address) { await connect(); return; }
 
     // Safety check
     const onCorrectNetwork = await checkAndSwitchNetwork();
@@ -640,7 +640,7 @@ export function useVault(): VaultState {
   // ── Withdraw Partial ───────────────────────────────────────────────────
   const withdrawPartial = useCallback(async (amountMnt: string) => {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
-    if (!eth || !address) return;
+    if (!eth || !address) { await connect(); return; }
 
     // Safety check
     const onCorrectNetwork = await checkAndSwitchNetwork();

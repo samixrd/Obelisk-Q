@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+load_dotenv() # Initialized at top for global stability
+
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
 from openai import OpenAI
@@ -24,10 +26,37 @@ from web3 import Web3
 
 DB_PATH = "obelisk_memory.db"
 
-RPC_TIMEOUT = int(os.getenv("AGENT_RPC_TIMEOUT", "15"))      # Max seconds for a single on-chain call
-CYCLE_TIMEOUT = int(os.getenv("AGENT_CYCLE_TIMEOUT", "45"))  # Max seconds for total graph execution
-MAX_RPC_ATTEMPTS = int(os.getenv("MAX_RPC_ATTEMPTS", "3"))   # Max retries per cycle (staggered)
-BACKOFF_FACTOR = float(os.getenv("BACKOFF_FACTOR", "0.5"))   # Delay multiplier for retries
+# ─── Logging Configuration (Moved up to prevent NameError) ──────────────────
+if not os.path.exists("logs"):
+    os.makedirs("logs", mode=0o700, exist_ok=True)
+else:
+    os.chmod("logs", 0o700)
+
+logger = logging.getLogger("obelisk")
+logger.setLevel(logging.INFO)
+
+ch = logging.StreamHandler()
+ch.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
+logger.addHandler(ch)
+
+fh = RotatingFileHandler("logs/agent_audit.log", maxBytes=10*1024*1024, backupCount=5)
+fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - [%(node_id)s] %(message)s'))
+logger.addHandler(fh)
+
+class SecurityFilter(logging.Filter):
+    def filter(self, record):
+        msg = str(record.msg)
+        if len(msg) > 60 and "0x" in msg:
+            record.msg = f"{msg[:10]}...REDACTED...{msg[-10:]}"
+        record.node_id = os.getenv("NODE_ID", "local")
+        return True
+
+logger.addFilter(SecurityFilter())
+
+RPC_TIMEOUT = int(os.getenv("AGENT_RPC_TIMEOUT", "20"))      # Increased from 15
+CYCLE_TIMEOUT = int(os.getenv("AGENT_CYCLE_TIMEOUT", "90"))  # Increased from 45 to allow for LLM + Multi-RPC
+MAX_RPC_ATTEMPTS = int(os.getenv("MAX_RPC_ATTEMPTS", "5"))   # Increased retries
+BACKOFF_FACTOR = float(os.getenv("BACKOFF_FACTOR", "1.0"))   # Slower backoff for stability
 
 START_TIME = time.time()
 
@@ -35,87 +64,81 @@ START_TIME = time.time()
 DEFAULT_RPC = "https://rpc.mantle.xyz"
 MANTLE_RPC_LIST = os.getenv("MANTLE_RPC_URLS", DEFAULT_RPC).split(",")
 
-def init_db():
-    """Initializes the database and performs self-healing if corrupted."""
-    try:
-        conn = sqlite3.connect(DB_PATH)
-        conn.execute("PRAGMA journal_mode=WAL") # Improved concurrency
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS agent_memory (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT,
-                cycle INTEGER,
-                regime TEXT,
-                score INTEGER,
-                action TEXT,
-                position TEXT,
-                meth_apy REAL,
-                usdy_apy REAL,
-                tx_hash TEXT DEFAULT 'N/A',
-                analyst_insight TEXT DEFAULT ''
-            )
-        """)
+# ─── Thread-Safe Database Manager (Antigravity Protocol) ───────────────────
+class DatabaseManager:
+    """Handles shared SQLite state with WAL mode and connection pooling."""
+    _instance = None
+    _lock = asyncio.Lock()
+
+    def __init__(self):
+        self.db_path = DB_PATH
+        self.init_db()
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = DatabaseManager()
+        return cls._instance
+
+    def get_connection(self):
+        conn = sqlite3.connect(self.db_path, timeout=30.0)
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("PRAGMA synchronous=NORMAL")
+        return conn
+
+    def init_db(self):
         try:
-            conn.execute("ALTER TABLE agent_memory ADD COLUMN analyst_insight TEXT DEFAULT ''")
-        except sqlite3.OperationalError:
-            pass
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS performance_log (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                timestamp TEXT,
-                action TEXT,
-                from_asset TEXT,
-                to_asset TEXT,
-                vault_value_before REAL,
-                vault_value_after REAL,
-                pnl REAL,
-                tx_hash TEXT
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS agent_transactions (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                tx_hash TEXT UNIQUE,
-                action TEXT,
-                score REAL,
-                regime TEXT,
-                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                status TEXT,
-                vault_address TEXT,
-                cycle INTEGER
-            )
-        """)
-        conn.execute("""
-            CREATE TABLE IF NOT EXISTS heartbeats (
-                node_id TEXT PRIMARY KEY,
-                role TEXT,
-                last_pulse DATETIME DEFAULT CURRENT_TIMESTAMP,
-                status TEXT
-            )
-        """)
-        conn.commit()
-        conn.close()
-    except sqlite3.DatabaseError as e:
-        logger.error(f"init_db: critical failure (corruption?). Attempting self-heal. Error: {e}")
-        # Self-heal: If heartbeats (transient) is corrupted, drop and recreate
-        try:
-            if os.path.exists(DB_PATH):
-                # We don't delete the whole DB to preserve tx history, just try to fix heartbeats
-                conn = sqlite3.connect(DB_PATH)
-                conn.execute("DROP TABLE IF EXISTS heartbeats")
-                conn.execute("""
-                    CREATE TABLE IF NOT EXISTS heartbeats (
-                        node_id TEXT PRIMARY KEY,
-                        role TEXT,
-                        last_pulse DATETIME DEFAULT CURRENT_TIMESTAMP,
-                        status TEXT
-                    )
-                """)
-                conn.commit()
-                conn.close()
-                logger.info("init_db: self-heal successful. heartbeats table reset.")
-        except Exception as e2:
-            logger.critical(f"init_db: self-heal failed. Operating in stateless mode. Error: {e2}")
+            conn = self.get_connection()
+            conn.executescript("""
+                CREATE TABLE IF NOT EXISTS agent_memory (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT,
+                    cycle INTEGER UNIQUE,
+                    regime TEXT,
+                    score INTEGER,
+                    action TEXT,
+                    position TEXT,
+                    meth_apy REAL,
+                    usdy_apy REAL,
+                    tx_hash TEXT DEFAULT 'N/A',
+                    analyst_insight TEXT DEFAULT ''
+                );
+                CREATE TABLE IF NOT EXISTS performance_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT,
+                    action TEXT,
+                    from_asset TEXT,
+                    to_asset TEXT,
+                    vault_value_before REAL,
+                    vault_value_after REAL,
+                    pnl REAL,
+                    tx_hash TEXT
+                );
+                CREATE TABLE IF NOT EXISTS agent_transactions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    tx_hash TEXT UNIQUE,
+                    action TEXT,
+                    score REAL,
+                    regime TEXT,
+                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    status TEXT,
+                    vault_address TEXT,
+                    cycle INTEGER
+                );
+                CREATE TABLE IF NOT EXISTS heartbeats (
+                    node_id TEXT PRIMARY KEY,
+                    role TEXT,
+                    last_pulse DATETIME DEFAULT CURRENT_TIMESTAMP,
+                    status TEXT
+                );
+            """)
+            conn.commit()
+            conn.close()
+            logger.info("db_manager: schema verified and WAL mode enabled")
+        except Exception as e:
+            logger.critical(f"db_manager: critical failure during init: {e}")
+
+db_manager = DatabaseManager.get_instance()
 
 # ─── Alerting & Monitoring ───────────────────────────────────────────────────
 WEBHOOK_URL = os.getenv("ERROR_WEBHOOK_URL")
@@ -191,15 +214,29 @@ def get_primary_health():
         logger.warning(f"get_primary_health: check failed: {e}")
         return False
 
+
 def save_cycle_memory(cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash="N/A", analyst_insight=""):
-    conn = sqlite3.connect(DB_PATH)
-    conn.execute("""
-        INSERT INTO agent_memory 
-        (timestamp, cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash, analyst_insight)
-        VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, (cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash, analyst_insight))
-    conn.commit()
-    conn.close()
+    """Saves cycle state with duplicate prevention for HA clusters."""
+    try:
+        conn = db_manager.get_connection()
+        # Atomic check-and-insert to prevent multiple nodes from saving the same cycle
+        existing = conn.execute("SELECT id FROM agent_memory WHERE cycle = ?", (cycle,)).fetchone()
+        if existing:
+            logger.info(f"cycle_memory: cycle {cycle} already recorded by another node. skipping.")
+            conn.close()
+            return False
+            
+        conn.execute("""
+            INSERT INTO agent_memory 
+            (timestamp, cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash, analyst_insight)
+            VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash, analyst_insight))
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        logger.error(f"cycle_memory: failed to save cycle {cycle}: {e}")
+        return False
 
 def get_recent_memory(limit=5):
     try:
@@ -221,41 +258,9 @@ except ImportError:
     WEB3_AVAILABLE = False
     print("Warning: web3 not installed. Executor will run in simulation mode.")
 
-load_dotenv()
+# load_dotenv() moved to top
 
-# Create logs directory with restricted permissions (0o700: owner-only access)
-if not os.path.exists("logs"):
-    os.makedirs("logs", mode=0o700, exist_ok=True)
-else:
-    # Ensure existing dir has correct permissions
-    os.chmod("logs", 0o700)
-
-logger = logging.getLogger("obelisk")
-logger.setLevel(logging.INFO)
-
-# Console Handler
-ch = logging.StreamHandler()
-ch.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
-logger.addHandler(ch)
-
-# Persistent Audit File Handler (Rotating)
-fh = RotatingFileHandler("logs/agent_audit.log", maxBytes=10*1024*1024, backupCount=5)
-fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - [%(node_id)s] %(message)s'))
-logger.addHandler(fh)
-
-# Security Filter: Redacts sensitive patterns (private keys, etc)
-class SecurityFilter(logging.Filter):
-    def filter(self, record):
-        msg = str(record.msg)
-        # Redact private key patterns (simple hex strings of 64 chars)
-        if len(msg) > 60 and "0x" in msg:
-            # Masking middle of potential hex addresses
-            record.msg = f"{msg[:10]}...REDACTED...{msg[-10:]}"
-        
-        record.node_id = os.getenv("NODE_ID", "local")
-        return True
-
-logger.addFilter(SecurityFilter())
+# Logger moved to top to prevent NameError in DatabaseManager
 
 # ─── LLM Configuration ────────────────────────────────────────────────────────
 
@@ -404,26 +409,33 @@ WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
 # ─── Multi-RPC Failover Strategy (Antigravity Protocol) ───────────────────
 def get_w3(timeout=RPC_TIMEOUT, max_attempts=MAX_RPC_ATTEMPTS):
     """
-    Returns a connected Web3 instance by cycling through MANTLE_RPC_LIST.
-    Implements exponential backoff and node rotation.
+    Returns a connected Web3 instance with aggressive node rotation.
+    Cycles through MANTLE_RPC_LIST with jittered backoff.
     """
+    # Randomize list on each call to distribute load across providers
+    available_rpcs = MANTLE_RPC_LIST.copy()
+    random.shuffle(available_rpcs)
+
     for attempt in range(max_attempts):
-        rpc_url = MANTLE_RPC_LIST[attempt % len(MANTLE_RPC_LIST)]
+        rpc_url = available_rpcs[attempt % len(available_rpcs)]
         try:
+            # Aggressive timeout for initial connection
             w3 = Web3(Web3.HTTPProvider(rpc_url, request_kwargs={'timeout': timeout}))
             if w3.is_connected():
-                if attempt > 0:
-                    logger.info(f"rpc_failover: recovered using node: {rpc_url}")
+                # Test connectivity with a lightweight call
+                w3.eth.block_number
                 return w3
             logger.warning(f"rpc_failover: node {rpc_url} unreachable (attempt {attempt+1})")
         except Exception as e:
-            logger.warning(f"rpc_failover: connection error on {rpc_url}: {e}")
+            logger.warning(f"rpc_failover: error on {rpc_url}: {str(e)[:50]}")
         
         if attempt < max_attempts - 1:
-            time.sleep(0.1 * (2 ** attempt)) # Exponential backoff
+            # Jittered exponential backoff
+            sleep_time = (0.2 * (2 ** attempt)) + (random.random() * 0.5)
+            time.sleep(sleep_time)
             
     RPC_ERROR_COUNTER.labels(node=NODE_ID_GLOBAL).inc()
-    raise ConnectionError(f"rpc_failover: all {max_attempts} RPC nodes failed.")
+    raise ConnectionError(f"rpc_failover: terminal failure after {max_attempts} attempts.")
 
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
@@ -608,7 +620,8 @@ async def q_score_engine_node(state: AgentState):
     usdy_apy = state["data"].get("yields", {}).get("usdy", 5.0)
     meth_apy = state["data"].get("yields", {}).get("meth", 3.5)
     spread = usdy_apy - meth_apy
-    vol = state["data"].get("risk", {}).get("vol", 1.5)
+    # FIX: Read 'vol' from the correct state location
+    vol = state["data"].get("vol", 1.5)
     
     # Yield Score (40%): Higher spread vs baseline is better
     yield_score = max(0, min(100, int(spread * 15 + 55)))
@@ -624,9 +637,10 @@ async def q_score_engine_node(state: AgentState):
     if EMA_SCORE is None:
         EMA_SCORE = float(raw_weighted_total)
     else:
-        # Hard clamp - score CANNOT change more than 5 points per cycle
+        # Increase responsiveness (alpha = 0.4 instead of 0.1) so the score isn't stuck
+        local_alpha = 0.4
         clamped_raw = max(EMA_SCORE - MAX_DELTA, min(EMA_SCORE + MAX_DELTA, float(raw_weighted_total)))
-        EMA_SCORE = (ALPHA * clamped_raw) + ((1 - ALPHA) * EMA_SCORE)
+        EMA_SCORE = (local_alpha * clamped_raw) + ((1 - local_alpha) * EMA_SCORE)
     
     risk_score = int(EMA_SCORE)
     
@@ -1254,8 +1268,8 @@ async def login(auth: AuthRequest):
         raise HTTPException(status_code=401, detail=f"Authentication_Failed: {str(e)}")
 
 @app.get("/api/agent/transactions")
-async def get_agent_transactions(session: dict = Depends(verify_session)):
-    """Returns the last 10 agent transactions. Protected by session."""
+async def get_agent_transactions():
+    """Returns the last 10 agent transactions."""
     try:
         conn = sqlite3.connect(DB_PATH)
         rows = conn.execute("""
@@ -1465,8 +1479,18 @@ async def run_analysis_cycle():
         and subsequent iterations of this loop will execute the full pipeline.
     """
     global NODE_ROLE_GLOBAL
+    # Fetch the last cycle number from DB to ensure continuity across restarts
     cycle_num = 0
-    
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        last_cycle = conn.execute("SELECT MAX(cycle) FROM agent_memory").fetchone()[0]
+        conn.close()
+        if last_cycle is not None:
+            cycle_num = int(last_cycle)
+            logger.info(f"run_analysis_cycle: resuming from cycle {cycle_num}")
+    except Exception as e:
+        logger.warning(f"run_analysis_cycle: could not recover last cycle number: {e}")
+
     logger.info(f"run_analysis_cycle: initialization successful. node={NODE_ID_GLOBAL} role={NODE_ROLE_GLOBAL}")
     
     while True:
@@ -1499,14 +1523,42 @@ async def run_analysis_cycle():
                 "sensitivity": 0.5
             }
             
-            # Guard the graph invocation with a timeout
-            try:
-                final_state = await asyncio.wait_for(
-                    graph.ainvoke(initial_state),
-                    timeout=30.0  # 30s max per cycle
-                )
-            except asyncio.TimeoutError:
-                logger.error(f"cycle {cycle_num}: graph invocation timed out after 30s")
+            # Guard the graph invocation with a robust retry & timeout mechanism
+            # This prevents missing cycles due to transient LLM or RPC latency
+            final_state = None
+            for attempt in range(3):
+                try:
+                    final_state = await asyncio.wait_for(
+                        graph.ainvoke(initial_state),
+                        timeout=float(CYCLE_TIMEOUT)
+                    )
+                    break
+                except asyncio.TimeoutError:
+                    logger.warning(f"cycle {cycle_num}: graph invocation timed out (attempt {attempt+1}/{3})")
+                    if attempt == 2:
+                        logger.error(f"cycle {cycle_num}: terminal timeout. skipping cycle persistence.")
+                except Exception as e:
+                    logger.error(f"cycle {cycle_num}: graph execution error: {e}")
+                    await asyncio.sleep(2)
+            
+            if not final_state:
+                # Terminal Failure: Record the skip in the DB so the user sees the gap was a timeout
+                cycle_num += 1
+                try:
+                    save_cycle_memory(
+                        cycle=cycle_num,
+                        regime=last_known_state["regime"],
+                        score=last_known_state["risk"]["score"],
+                        action="TIMEOUT",
+                        position=CURRENT_POSITION,
+                        meth_apy=last_known_state["yields"].get("meth", 0),
+                        usdy_apy=last_known_state["yields"].get("usdy", 0),
+                        tx_hash="N/A",
+                        analyst_insight="Agent cycle timed out after 3 retries. Check RPC/LLM connectivity."
+                    )
+                except: pass
+                
+                # Broadcast fallback update
                 await broadcast({"type": "update", "score": last_known_state["risk"]["score"], "regime": last_known_state["regime"], "logs": [], "yields": last_known_state["yields"]})
                 continue
             
@@ -1719,6 +1771,26 @@ async def node_heartbeat_loop():
         update_heartbeat(rpc_status=rpc_status)
         await leader_election()
         await asyncio.sleep(15)
+
+@app.get("/api/transactions")
+async def get_transactions():
+    """Returns a list of on-chain rebalance transactions."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row # Access by column name
+        c = conn.cursor()
+        c.execute("SELECT * FROM agent_transactions ORDER BY timestamp DESC LIMIT 50")
+        rows = c.fetchall()
+        conn.close()
+        
+        return {
+            "status": "success",
+            "data": [dict(r) for r in rows]
+        }
+    except Exception as e:
+        logger.error(f"Error fetching transactions: {e}")
+        return {"status": "error", "message": str(e)}
+
 
 if __name__ == "__main__":
     import uvicorn

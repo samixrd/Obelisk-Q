@@ -84,7 +84,7 @@ function AppInner() {
               if (hasSession && hasWallet) {
                 setStage("dashboard");
               } else {
-                setStage("auth");
+                setStage("dashboard");
               }
             }} />
           </motion.div>

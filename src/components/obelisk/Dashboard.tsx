@@ -36,6 +36,21 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
   }, [tab]);
 
   const [investOpen, setInvestOpen] = useState(false);
+  const [compliance, setCompliance] = useState(() => {
+    const saved = localStorage.getItem("obelisk_compliance_accepted");
+    if (saved === "true") {
+      return { "non-us": true, "regulated": true, "terms": true };
+    }
+    return { "non-us": false, "regulated": false, "terms": false };
+  });
+  const allComplianceChecked = Object.values(compliance).every(v => v);
+
+  // Persist compliance
+  useEffect(() => {
+    if (allComplianceChecked) {
+      localStorage.setItem("obelisk_compliance_accepted", "true");
+    }
+  }, [allComplianceChecked]);
 
   const TABS: DashboardTab[] = ["earn", "portfolio", "safeguards", "agent-logs", "preferences"];
   const [prevTab, setPrevTab] = useState<DashboardTab>(tab);
@@ -83,6 +98,90 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
       {/* Tab Content Area */}
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-10 md:mt-14 relative z-10">
+        {!walletAddress && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-10 glass-card rounded-[40px] p-10 flex flex-col lg:flex-row items-stretch justify-between gap-10 border border-blue-200/20 shadow-[0_20px_50px_rgba(100,150,255,0.08)]"
+            style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(245,250,255,0.85) 100%)" }}
+          >
+            <div className="flex-1 space-y-6">
+              <div>
+                <h2 className="text-2xl font-bold text-black tracking-tight mb-2">Access the Vault.</h2>
+                <p className="text-[14px] text-muted-foreground/80 max-w-md leading-relaxed">
+                  Connect your identity to begin navigating Mantle's yield landscape with institutional-grade AI.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-1 gap-4 pt-2">
+                {localStorage.getItem("obelisk_compliance_accepted") === "true" ? (
+                  <div className="flex items-center gap-2 py-2 px-4 bg-emerald-50 rounded-xl border border-emerald-100 w-fit">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider">Compliance Verified</span>
+                  </div>
+                ) : (
+                  [
+                    { id: "non-us", label: "I confirm I am not a US person or entity" },
+                    { id: "regulated", label: "I understand USDY is a regulated financial instrument" },
+                    { id: "terms", label: "I accept the Terms of Service and Risk Disclosure" },
+                  ].map((item) => (
+                    <label key={item.id} className="flex items-center gap-3 cursor-pointer group select-none">
+                      <div className="relative flex items-center justify-center">
+                        <input
+                          type="checkbox"
+                          checked={compliance[item.id as keyof typeof compliance]}
+                          onChange={(e) => setCompliance(prev => ({ ...prev, [item.id]: e.target.checked }))}
+                          className="peer appearance-none h-5 w-5 rounded-md border border-black/10 bg-white checked:bg-black checked:border-black transition-all duration-300 cursor-pointer"
+                        />
+                        <svg 
+                          className="absolute w-3.5 h-3.5 text-white opacity-0 peer-checked:opacity-100 transition-opacity duration-300 pointer-events-none" 
+                          viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"
+                        >
+                          <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                      </div>
+                      <span className="text-[12px] text-muted-foreground group-hover:text-black transition-colors font-medium">
+                        {item.label}
+                      </span>
+                    </label>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div className="flex flex-col justify-center items-center md:items-end gap-6 lg:border-l border-black/[0.05] lg:pl-10">
+              <div className="text-center md:text-right">
+                <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold mb-1">Step 2: Authenticate</p>
+                <p className="text-[13px] font-medium text-black/60">Choose your preferred provider</p>
+              </div>
+              
+              <motion.button
+                onClick={onConnectWallet}
+                disabled={!allComplianceChecked}
+                whileHover={allComplianceChecked ? { scale: 1.02, y: -2 } : {}}
+                whileTap={allComplianceChecked ? { scale: 0.98 } : {}}
+                className={`px-10 py-5 rounded-full text-[14px] font-bold flex items-center gap-3 transition-all ${allComplianceChecked ? 'bg-black text-white shadow-2xl shadow-black/20' : 'bg-black/5 text-black/20 cursor-not-allowed'}`}
+              >
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="2" y="6" width="20" height="14" rx="2"/>
+                  <path d="M2 10h20"/>
+                  <circle cx="17" cy="15" r="1.5" fill="currentColor"/>
+                  <path d="M16 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1"/>
+                </svg>
+                Connect Wallet
+              </motion.button>
+              
+              {!allComplianceChecked && (
+                <p className="text-[10px] text-orange-500 font-bold uppercase tracking-widest animate-pulse">
+                  Please accept terms to continue
+                </p>
+              )}
+            </div>
+          </motion.div>
+        )}
+
         <AnimatePresence mode="wait" custom={direction}>
           <motion.div
             key={tab}

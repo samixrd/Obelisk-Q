@@ -27,7 +27,7 @@ const fadeUp = {
 
 export function PortfolioView() {
   const { sessionToken, logout } = useAuth();
-  const { vaultStats, withdraw, withdrawPartial, txState, address } = useVault();
+  const { vaultStats, withdraw, withdrawPartial, txState, address, connect } = useVault();
   const { currentPosition } = useAgentData();
   const { usdy, meth, wmnt } = useYieldData();
   const logos = useTokenLogos();
@@ -207,17 +207,21 @@ export function PortfolioView() {
         <div className="p-10 pt-10">
           <motion.button
             onClick={() => {
+              if (!address) {
+                connect();
+                return;
+              }
               if (withdrawAmount && !isInsufficient && parseFloat(withdrawAmount) > 0) {
                 if (parseFloat(withdrawAmount) >= balance) withdraw();
                 else withdrawPartial(withdrawAmount);
               }
             }}
-            disabled={isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isPending || isZeroBalance}
-            whileHover={!(isInsufficient || !withdrawAmount || isPending || isZeroBalance) ? { y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" } : {}}
-            whileTap={!(isInsufficient || !withdrawAmount || isPending || isZeroBalance) ? { scale: 0.98 } : {}}
-            className={`w-full py-5 rounded-full text-[15px] font-bold transition-all duration-300 ${isInsufficient || !withdrawAmount || isPending || isZeroBalance ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
+            disabled={isPending || (address && (isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isZeroBalance))}
+            whileHover={!(isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance))) ? { y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" } : {}}
+            whileTap={!(isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance))) ? { scale: 0.98 } : {}}
+            className={`w-full py-5 rounded-full text-[15px] font-bold transition-all duration-300 ${isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance)) ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
           >
-            {isPending ? "Processing..." : isZeroBalance ? "Insufficient Funds" : "Withdraw Funds"}
+            {isPending ? "Processing..." : !address ? "Connect Wallet" : isZeroBalance ? "Insufficient Funds" : "Withdraw Funds"}
           </motion.button>
         </div>
       </div>
