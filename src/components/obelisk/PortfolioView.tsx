@@ -259,9 +259,9 @@ export function PortfolioView() {
                   </div>
                   <span className="text-[15px] text-black font-bold">{p.name}</span>
                 </div>
-                <div className="col-span-3 text-[13px] text-[#6B7280] font-bold">{p.strategy}</div>
-                <div className="col-span-2 text-[15px] text-black text-right font-mono-num">{p.balance}</div>
-                <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-mono-num ${p.up ? "text-emerald-500" : "text-[#9CA3AF]"}`}>
+                <div className="col-span-3 text-[13px] text-[#6B7280] font-mono tracking-tight">{p.strategy}</div>
+                <div className="col-span-2 text-lg text-black text-right font-mono font-light tracking-tighter">{p.balance}</div>
+                <div className={`col-span-2 text-[13px] text-right flex items-center justify-end gap-1.5 font-mono ${p.up ? "text-emerald-500" : "text-[#9CA3AF]"}`}>
                   {p.up ? <IconArrowUpRight size={14} /> : <IconArrowDownRight size={14} />}
                   {p.change}
                 </div>

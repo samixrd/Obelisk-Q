@@ -130,13 +130,13 @@ export function ManagedAssets() {
                   </div>
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] uppercase text-muted-foreground mb-1" style={{ letterSpacing: "0.2em" }}>
+                  <p className="text-[10px] uppercase text-muted-foreground mb-1 tracking-[0.2em] font-mono">
                     {a.yieldLabel}
                   </p>
                   <div className="flex items-center gap-3">
-                    <p className="text-2xl text-foreground font-medium" style={{ fontFamily: "'JetBrains Mono', monospace" }}>{a.yield}</p>
+                    <p className="text-4xl text-foreground font-light font-mono tracking-tighter">{a.yield}</p>
                     {a.trend && (
-                      <p className="text-[10px] text-neon flex items-center gap-0.5" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+                      <p className="text-[10px] text-emerald-500 flex items-center gap-0.5 font-mono">
                         <IconArrowUpRight size={10} />
                         {a.trend}% (7d)
                       </p>
