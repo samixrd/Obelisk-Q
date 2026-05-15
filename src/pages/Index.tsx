@@ -38,15 +38,8 @@ function AppInner() {
   }, [activeTab]);
 
   // Handle logout transition
-  useEffect(() => {
-    // Trust the context state instead of direct storage access to avoid race conditions
-    const hasSession = !!sessionToken;
-    const hasWallet = !!walletAddress;
-
-    if (!hasSession || !hasWallet) {
-      if (stage === "dashboard") setStage("landing");
-    }
-  }, [walletAddress, sessionToken, stage]);
+  // NOTE: Guest mode enabled. We no longer force landing if session/wallet is missing.
+  // This allows users to explore the dashboard before connecting.
 
   // Global scroll restoration: snap to top on tab or stage change
   useLayoutEffect(() => {
