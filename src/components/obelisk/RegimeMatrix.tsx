@@ -16,7 +16,7 @@ export function RegimeMatrix() {
             return (
               <div 
                 key={`${i}-${j}`}
-                className={`p-4 flex flex-col items-center justify-center gap-2 transition-all ${isDiagonal ? "bg-zinc-900 text-white" : "bg-white text-zinc-500"}`}
+                className={`p-2 sm:p-4 flex flex-col items-center justify-center gap-2 transition-all ${isDiagonal ? "bg-zinc-900 text-white" : "bg-white text-zinc-500"}`}
               >
                 <span className="text-[9px] uppercase font-mono tracking-widest opacity-60">
                   {row.slice(0, 3)} → {col.slice(0, 3)}

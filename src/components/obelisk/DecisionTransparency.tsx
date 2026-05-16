@@ -36,7 +36,7 @@ export function DecisionTransparency() {
   const statusOk = score >= adaptive.confidenceThreshold;
 
   return (
-    <motion.div {...fadeUp} className="col-span-12 border border-slate-200 bg-white rounded-sm p-8 md:p-12 space-y-16 mb-12 transition-all shadow-sm">
+    <motion.div {...fadeUp} className="col-span-12 border border-slate-200 bg-white rounded-sm p-6 md:p-12 space-y-12 md:space-y-16 mb-12 transition-all shadow-sm">
       {/* ── Section Title ────────────────────────────────────────────────── */}
       <div className="space-y-2 border-b border-slate-200 pb-6">
         <p
@@ -60,7 +60,7 @@ export function DecisionTransparency() {
             <p className="text-[10px] uppercase text-zinc-500 font-mono tracking-[0.2em]">
               Last Decision
             </p>
-            <div className="grid grid-cols-2 gap-x-12 gap-y-8 p-6 border border-slate-200 bg-[#fafafa]">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 md:gap-x-12 gap-y-6 md:gap-y-8 p-5 md:p-6 border border-slate-200 bg-[#fafafa]">
               <div>
                 <p className="text-[9px] uppercase text-zinc-400 font-mono tracking-widest mb-1.5">Action Taken</p>
                 <p className="text-sm font-bold text-zinc-900 font-mono leading-snug">
@@ -173,12 +173,12 @@ function ScoreBar({ label, weight, score, contribution, note }: { label: string;
           </span>
         </div>
       </div>
-      <div className="flex h-[4px] w-full gap-[2px]">
-        {Array.from({ length: 40 }).map((_, i) => (
+      <div className="flex h-[4px] w-full gap-[1px] md:gap-[2px]">
+        {Array.from({ length: 30 }).map((_, i) => (
           <motion.div 
             key={i}
             initial={{ opacity: 0 }}
-            animate={{ opacity: i < (score / 2.5) ? 1 : 0.08 }}
+            animate={{ opacity: i < (score / 3.33) ? 1 : 0.08 }}
             transition={{ duration: 0.5, delay: i * 0.01 }}
             className="h-full flex-1 bg-zinc-800"
           />
