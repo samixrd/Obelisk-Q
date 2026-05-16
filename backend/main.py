@@ -1511,38 +1511,44 @@ async def get_memory():
 @app.get("/api/stats")
 async def get_stats():
     # ── NODE HEALTH CALCULATION ──
-    nodes = []
-    try:
-        keys = await redis.keys("heartbeat:*")
-        for key in keys:
-            data_str = await redis.get(key)
-            if data_str:
-                data = json.loads(data_str)
-                nodes.append((key.split(":")[1], data.get("last_pulse"), data.get("role")))
-    except: pass
-    
     active_nodes = 0
-    now = datetime.now()
-    for n in nodes:
-        try:
-            pulse = datetime.fromisoformat(n[1])
-            if (now - pulse).total_seconds() < 60:
-                active_nodes += 1
-        except: pass
-
+    try:
+        if redis:
+            keys = await redis.keys("heartbeat:*")
+            now = datetime.now()
+            for key in keys:
+                try:
+                    data_str = await redis.get(key)
+                    if data_str:
+                        data = json.loads(data_str)
+                        pulse_str = data.get("last_pulse")
+                        if pulse_str:
+                            pulse = datetime.fromisoformat(pulse_str)
+                            if (now - pulse).total_seconds() < 60:
+                                active_nodes += 1
+                except: continue
+    except Exception as e:
+        logger.warning(f"api: health check failed: {e}")
+    
     resiliency = "Optimal" if active_nodes > 1 else ("Stable" if active_nodes == 1 else "Degraded")
+
+    # Safety defaults
+    score = last_known_state.get("risk", {}).get("score", 0)
+    regime = last_known_state.get("regime", "Loading...")
+    components = last_known_state.get("components", {"yield_score": 0, "volatility_score": 0, "liquidity_score": 0})
+    history = last_known_state.get("score_history", [])
 
     return {
         "total_aum": "1,240,500",
         "active_users": 142,
         "vault_health": resiliency,
         "active_nodes": active_nodes,
-        "score": last_known_state["risk"]["score"],
-        "regime": last_known_state["regime"],
+        "score": score,
+        "regime": regime,
         "confidence": last_known_state.get("confidence", 85),
         "reasoning": last_known_state.get("reasoning", "Analyzing market vectors..."),
-        "components": last_known_state["components"],
-        "score_history": last_known_state["score_history"],
+        "components": components,
+        "score_history": history,
         "circuit_breaker_active": CIRCUIT_BREAKER_ACTIVE,
         "current_position": CURRENT_POSITION,
         "supported_assets": ["MNT", "mETH", "USDY", "WMNT"]
