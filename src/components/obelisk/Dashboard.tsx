@@ -80,8 +80,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
   return (
     <main 
-      className="relative min-h-screen pb-20 landing-root overflow-y-auto scroll-smooth" 
-      style={{ WebkitOverflowScrolling: "touch" }}
+      className="relative min-h-screen pb-20 landing-root" 
     >
 
 
@@ -204,7 +203,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
       </div>
 
       {/* Unified Footer */}
-      <div className="relative mx-auto max-w-[1400px] px-4 md:px-14 mt-32">
+      <div className="relative mx-auto max-w-[1400px] px-4 md:px-14 mt-16 md:mt-32">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 -bottom-8 flex items-end justify-center overflow-hidden select-none"
