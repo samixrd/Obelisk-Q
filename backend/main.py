@@ -63,6 +63,18 @@ def init_db():
         tx_hash TEXT
     )''')
     conn.commit()
+    
+    # ── Database Migration: Add 'volatility' column if missing ──
+    try:
+        cursor = conn.execute("PRAGMA table_info(agent_memory)")
+        columns = [column[1] for column in cursor.fetchall()]
+        if "volatility" not in columns:
+            logger.info("db_manager: migrating table agent_memory - adding 'volatility' column")
+            conn.execute("ALTER TABLE agent_memory ADD COLUMN volatility REAL DEFAULT 0.0")
+            conn.commit()
+    except Exception as e:
+        logger.warning(f"db_manager: migration failed: {e}")
+        
     conn.close()
 
 # Redis client (for HA heartbeat & leader election)
@@ -615,7 +627,10 @@ async def risk_assessment_node(state: AgentState):
             else:
                 raw_regime = "Consolidation"
             
-                # ── LLM Regime Confirmation (GPT-4o-mini) ──
+            new_regime = raw_regime # Initialize new_regime with rule-based value
+            
+            # ── LLM Regime Confirmation (GPT-4o-mini) ──
+            if raw_regime == "Consolidation": # Only confirm if uncertain
                 try:
                     recent = get_recent_memory(3)
                     last_regimes = [r[2] for r in recent] if recent else []
