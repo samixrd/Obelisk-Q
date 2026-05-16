@@ -116,9 +116,10 @@ export function useAgentWebSocket() {
     fetchStats(sessionToken || "");
     fetchLogs(sessionToken || "");
 
-    // ── WebSocket: derive URL from page origin ──
+    // ── WebSocket: derive URL (use direct IP for Vercel stability) ──
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsUrl = (import.meta as any).env?.VITE_WS_URL || `${wsProto}//${window.location.host}/ws`;
+    const backendIp = "20.2.233.34:8000";
+    const wsUrl = (import.meta as any).env?.VITE_WS_URL || `${wsProto}//${backendIp}/ws`;
 
     const connectWs = () => {
       try {

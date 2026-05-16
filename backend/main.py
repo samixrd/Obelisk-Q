@@ -1225,11 +1225,11 @@ class AuthRequest(BaseModel):
 app = FastAPI(title="Obelisk Q Engine")
 
 # ─── API Security: CORS & Rate Limiting ──────────────────────────────────────
-ALLOWED_ORIGINS = os.getenv("FRONTEND_URL", "http://localhost:5173").split(",")
+ALLOWED_ORIGINS = os.getenv("FRONTEND_URL", "*").split(",")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=["*"] if "*" in ALLOWED_ORIGINS else ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
