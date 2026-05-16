@@ -869,6 +869,17 @@ async def supervisory_controller_node(state: AgentState):
             CB_UNWIND_DONE = True
             return {"messages": [AIMessage(content="executor: CIRCUIT BREAKER ACTIVE - system already in safety (MNT).")], "data": state["data"]}
     
+    # ── EMPTY VAULT PROTECTION ──
+    try:
+        w3 = get_w3()
+        vault_balance = w3.eth.get_balance(VAULT_ADDRESS)
+        # Also check total value if possible, but raw balance is a good proxy for 'empty'
+        if vault_balance < w3.to_wei(0.01, 'ether'):
+            logger.info(f"executor: empty or near-empty vault ({w3.from_wei(vault_balance, 'ether')} MNT). skipping swap to save gas.")
+            return {"messages": [AIMessage(content="supervisory: empty vault detected. rebalance skipped.")], "data": state["data"]}
+    except Exception as e:
+        logger.warning(f"supervisory: failed to check vault balance: {e}. proceeding with caution.")
+
     # ── POSITION TRACKING: skip if already in target ──
     if action == "mETH" and CURRENT_POSITION == "mETH":
         logger.info("executor: already in mETH position. skipping swap.")
