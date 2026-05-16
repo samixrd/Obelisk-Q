@@ -100,7 +100,10 @@ class SecurityFilter(logging.Filter):
         msg = str(record.msg)
         if len(msg) > 60 and "0x" in msg:
             record.msg = f"{msg[:10]}...REDACTED...{msg[-10:]}"
-        record.node_id = os.getenv("NODE_ID", "local")
+        try:
+            record.node_id = getattr(record, 'node_id', os.getenv("NODE_ID", "local"))
+        except:
+            record.node_id = "local"
         return True
 
 logger.addFilter(SecurityFilter())
@@ -1937,6 +1940,7 @@ if __name__ == "__main__":
         logger.warning(f"PORT_COLLISION: Port 8000 occupied. Entering AGENT-ONLY mode (Node: {NODE_ID_GLOBAL})")
         
         async def run_agent_only():
+            await init_redis()
             await initialize_logic()
             # Keep the loop alive
             while True:
