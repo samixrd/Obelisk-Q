@@ -441,15 +441,15 @@ last_known_state = {
 }
 
 LAST_REBALANCE_TIME = 0
-COOLDOWN_SECONDS = 300  # Reduced to 5 mins for demo
-CYCLE_INTERVAL = 300    # Reduced to 5 mins for demo
+COOLDOWN_SECONDS = 1800 
+CYCLE_INTERVAL = 600 
 CURRENT_POSITION = "MNT"  # Global position state
 SCORE_HISTORY = []        # List of (timestamp, score)
 CIRCUIT_BREAKER_ACTIVE = False
 CB_UNWIND_DONE = False
 EMA_SCORE = None
-ALPHA = 0.4
-MAX_DELTA = 15 # Increased to allow faster score movement
+ALPHA = 0.1
+MAX_DELTA = 5
 MAX_SCORE_CHANGE = 10 # This is used elsewhere, keeping it for now
 
 def update_circuit_breaker(current_score):
@@ -533,7 +533,7 @@ async def regime_detection_node(state: AgentState):
         # Volatility remains a random walk in this version for stability, 
         # but is influenced by fear_greed in the next iteration.
         prev_vol = last_known_state["risk"].get("vol", 1.5)
-        vol_change = random.uniform(-0.8, 0.8) # More aggressive changes for demo
+        vol_change = random.uniform(-0.3, 0.3)
         vol = max(0.5, min(3.5, prev_vol + vol_change))
         
         yield_data = {"usdy": usdy_apy, "meth": meth_apy}
