@@ -97,12 +97,12 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
 
       {/* Tab Content Area */}
-      <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-10 md:mt-14 relative z-10">
+      <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-14 relative z-10">
         {!walletAddress && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mb-10 glass-card rounded-[40px] p-10 flex flex-col lg:flex-row items-stretch justify-between gap-10 border border-blue-200/20 shadow-[0_20px_50px_rgba(100,150,255,0.08)]"
+            className="mb-10 glass-card rounded-[32px] md:rounded-[40px] p-6 md:p-10 flex flex-col lg:flex-row items-stretch justify-between gap-8 md:gap-10 border border-blue-200/20 shadow-[0_20px_50px_rgba(100,150,255,0.08)]"
             style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(245,250,255,0.85) 100%)" }}
           >
             <div className="flex-1 space-y-6">
@@ -151,7 +151,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
               </div>
             </div>
 
-            <div className="flex flex-col justify-center items-center md:items-end gap-6 lg:border-l border-black/[0.05] lg:pl-10">
+            <div className="flex flex-col justify-center items-center md:items-end gap-6 lg:border-l border-black/[0.05] lg:pl-10 pt-4 lg:pt-0">
               <div className="text-center md:text-right">
                 <p className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground font-bold mb-1">Step 2: Authenticate</p>
                 <p className="text-[13px] font-medium text-black/60">Choose your preferred provider</p>

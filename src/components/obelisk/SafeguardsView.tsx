@@ -109,7 +109,7 @@ export function SafeguardsView() {
 
 
       {/* Developer-style Chart Box */}
-      <div className="col-span-12 border border-slate-200 bg-white rounded-md p-6 md:p-8 relative overflow-hidden shadow-sm mt-4">
+      <div className="col-span-12 border border-slate-200 bg-white rounded-md p-6 md:p-8 relative overflow-hidden shadow-sm">
         {/* Dotted background overlay */}
         <div className="absolute inset-0 opacity-[0.05]" style={{ backgroundImage: 'radial-gradient(#000 1.5px, transparent 1.5px)', backgroundSize: '16px 16px' }} />
         

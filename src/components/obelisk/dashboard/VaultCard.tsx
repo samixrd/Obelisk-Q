@@ -31,7 +31,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
   return (
     <div className="col-span-12 lg:col-span-6 glass-card rounded-3xl overflow-hidden">
       {/* Card Header — Token icons + vault name */}
-      <div className="p-8 pb-0">
+      <div className="p-6 md:p-8 pb-0">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             {/* Overlapping token icons */}
@@ -67,14 +67,14 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         </div>
 
         {/* Stats Row — APY + AUM */}
-        <div className="flex items-start gap-0 mb-10">
+        <div className="flex flex-col sm:flex-row items-start gap-6 sm:gap-0 mb-10">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-[12px] text-[#6B7280] font-semibold uppercase tracking-wider">
                 Est. APY
               </span>
             </div>
-            <p className="text-[36px] font-bold text-emerald-500 tabular-nums tracking-tighter leading-none">
+            <p className="text-[28px] md:text-[36px] font-bold text-emerald-500 tabular-nums tracking-tighter leading-none">
               {usdy.loading ? "—" : `${((usdy.apy + meth.apy + (wmnt?.apy || 0)) / 3 + 0.42).toFixed(1)}%`}
             </p>
           </div>
@@ -84,16 +84,16 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
                 AUM
               </span>
             </div>
-            <p className="text-[36px] font-bold text-[#0a0a0a] tabular-nums tracking-tighter leading-none">
+            <p className="text-[28px] md:text-[36px] font-bold text-[#0a0a0a] tabular-nums tracking-tighter leading-none">
               {vaultStats?.totalDeposited ? `${parseFloat(vaultStats.totalDeposited).toFixed(2)}` : "0.00"}
-              <span className="text-[16px] font-medium text-[#6B7280] ml-1.5">MNT</span>
+              <span className="text-[14px] md:text-[16px] font-medium text-[#6B7280] ml-1.5">MNT</span>
             </p>
           </div>
         </div>
       </div>
 
       {/* Deposit Input Area */}
-      <div className="px-8 pb-6">
+      <div className="px-6 md:px-8 pb-6">
         <div
           className="flex items-center justify-between px-6 py-5"
           style={{
@@ -107,7 +107,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
             placeholder="0"
             value={depositAmount}
             onChange={(e) => setDepositAmount(e.target.value)}
-            className="bg-transparent outline-none text-[32px] font-bold text-[#0a0a0a] w-full tabular-nums tracking-tight max-w-[65%]"
+            className="bg-transparent outline-none text-[24px] md:text-[32px] font-bold text-[#0a0a0a] w-full tabular-nums tracking-tight max-w-[65%]"
           />
           <div
             className="flex items-center gap-2.5 px-4 py-2.5"
@@ -130,7 +130,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
         </div>
 
         {/* Quick amount buttons */}
-        <div className="flex gap-2.5 mt-4">
+        <div className="flex flex-wrap gap-2 md:gap-2.5 mt-4">
           {[
             { label: "25%", value: (parseFloat(vaultStats?.walletBalance || "0") * 0.25).toFixed(4) },
             { label: "50%", value: (parseFloat(vaultStats?.walletBalance || "0") * 0.50).toFixed(4) },
@@ -221,7 +221,7 @@ export function VaultCard({ onOpenInvest }: VaultCardProps) {
       </div>
 
       {/* Deposit Button — full width, pill shape, solid black */}
-      <div className="px-8 pb-10">
+      <div className="px-6 md:px-8 pb-8 md:pb-10">
         <motion.button
           id="tour-invest-button"
           onClick={handleDeposit}

@@ -124,8 +124,8 @@ export function PortfolioView() {
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-24">
       
       {/* ── Top Metrics Bar ── */}
-      <div className="col-span-12 glass-card rounded-[32px] px-10 py-7 flex flex-wrap items-center justify-between shadow-[0_4px_24px_-10px_rgba(0,0,0,0.04)] mb-2">
-        <div className="flex items-center gap-16">
+      <div className="col-span-12 glass-card rounded-[32px] px-6 md:px-10 py-5 md:py-7 flex flex-wrap items-center justify-between shadow-[0_4px_24px_-10px_rgba(0,0,0,0.04)] mb-2">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 sm:gap-16 w-full sm:w-auto">
           <div className="flex flex-col">
             <span className="text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em] mb-2">Portfolio Balance</span>
             <div className="flex items-baseline gap-2">
@@ -136,7 +136,7 @@ export function PortfolioView() {
             </div>
           </div>
           
-          <div className="h-10 w-px bg-black/[0.06]" />
+          <div className="hidden sm:block h-10 w-px bg-black/[0.06]" />
 
           <div className="flex flex-col">
             <span className="text-[10px] uppercase text-[#9CA3AF] font-bold tracking-[0.2em] mb-2">Est. YTD Return</span>
@@ -155,8 +155,8 @@ export function PortfolioView() {
       </div>
 
       {/* ── Withdrawal Card Interface ── */}
-      <div className="col-span-12 lg:col-span-6 glass-card rounded-[40px] overflow-hidden flex flex-col shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
-        <div className="p-10 pb-0">
+      <div className="col-span-12 lg:col-span-6 glass-card rounded-[32px] md:rounded-[40px] overflow-hidden flex flex-col shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
+        <div className="p-6 md:p-10 pb-0">
           <div className="flex items-center gap-4 mb-10">
             <div className="flex items-center -space-x-3">
               <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm flex items-center justify-center" style={{ zIndex: 2 }}>
@@ -172,7 +172,7 @@ export function PortfolioView() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between px-7 py-6 bg-[#F9FAFB] rounded-[24px] border border-black/[0.04]">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-5 md:px-7 py-5 md:py-6 bg-[#F9FAFB] rounded-[24px] border border-black/[0.04] gap-4 sm:gap-0">
             <input
               type="number" placeholder="0" value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
@@ -186,7 +186,7 @@ export function PortfolioView() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 mt-5">
+          <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-5">
             {["25%", "50%", "Max"].map((label) => (
               <button
                 key={label}
@@ -204,7 +204,7 @@ export function PortfolioView() {
           </div>
         </div>
 
-        <div className="p-10 pt-10">
+        <div className="p-6 md:p-10 pt-6 md:pt-10">
           <motion.button
             onClick={() => {
               if (!address) {
@@ -235,7 +235,7 @@ export function PortfolioView() {
 
 
       {/* ── Position Table ── */}
-      <div className="col-span-12 glass-card rounded-[40px] p-10 transition-all hover:bg-white/80 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
+      <div className="col-span-12 glass-card rounded-[32px] md:rounded-[40px] p-6 md:p-10 transition-all hover:bg-white/80 shadow-[0_32px_64px_-16px_rgba(0,0,0,0.06)]">
         <div className="text-[24px] text-black font-bold mb-10 flex items-baseline gap-2 tracking-tight">
           Active <span className="font-light text-[#9CA3AF]">Positions</span>
         </div>

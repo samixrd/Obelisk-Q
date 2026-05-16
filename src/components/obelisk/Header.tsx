@@ -49,7 +49,7 @@ export function Header({
       transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
       className="fixed top-0 left-0 right-0 z-40 bg-background/85 backdrop-blur-[20px] saturate-[160%] border-b border-foreground/10"
     >
-      <div className="mx-auto max-w-[1680px] px-8 md:px-14 py-5 flex items-center justify-between">
+      <div className="mx-auto max-w-[1680px] px-4 md:px-14 py-4 md:py-5 flex items-center justify-between">
 
         {/* Left: menu + wordmark */}
         <div className="flex items-center gap-6">
@@ -63,10 +63,10 @@ export function Header({
           <div className="h-4 w-px bg-foreground/10" />
           <button 
             onClick={onLogoClick}
-            className="flex items-center gap-3 group transition-transform active:scale-95 cursor-pointer"
+            className="flex items-center gap-2 md:gap-3 group transition-transform active:scale-95 cursor-pointer"
           >
-            <Logo size={24} className="text-foreground transition-transform group-hover:scale-110" />
-            <h1 className="hidden sm:block text-xl font-bold tracking-tight text-foreground transition-opacity group-hover:opacity-80" style={{ fontFamily: "'Inter', sans-serif" }}>
+            <Logo size={20} className="md:w-6 md:h-6 text-foreground transition-transform group-hover:scale-110" />
+            <h1 className="text-base md:text-xl font-bold tracking-tight text-foreground transition-opacity group-hover:opacity-80" style={{ fontFamily: "'Inter', sans-serif" }}>
               Obelisk <span className="font-normal text-muted-foreground/50">Q</span>
             </h1>
           </button>

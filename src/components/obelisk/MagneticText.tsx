@@ -12,7 +12,9 @@ export function MagneticText({ text, className, disabled = false }: MagneticText
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    if (disabled) return;
+    // Disable on touch devices or small screens
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    if (disabled || isTouch) return;
     const handleMouseMove = (e: MouseEvent) => {
       setMousePos({ x: e.clientX, y: e.clientY });
     };

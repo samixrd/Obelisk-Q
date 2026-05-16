@@ -100,12 +100,12 @@ export function AgentLogsView() {
             initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
             whileHover={{ y: -4, backgroundColor: "rgba(255,255,255,0.95)" }}
-            className="glass-card rounded-[32px] px-10 py-8 transition-all"
+            className="glass-card rounded-[32px] px-6 md:px-10 py-6 md:py-8 transition-all"
           >
-            <p className="text-[10px] uppercase text-black/40 mb-4 tracking-[0.24em] font-light">
+            <p className="text-[10px] uppercase text-black/40 mb-3 md:mb-4 tracking-[0.24em] font-light">
               <MagneticText disabled text={s.label} />
             </p>
-            <div className="text-[28px] text-[#0a0a0a] mb-2 tabular-nums font-light tracking-tighter">
+            <div className="text-[24px] md:text-[28px] text-[#0a0a0a] mb-2 tabular-nums font-light tracking-tighter">
               <MagneticText disabled text={s.value} />
             </div>
             <p className="text-[10px] text-black/30 uppercase tracking-wider font-light">{s.sub}</p>
@@ -119,7 +119,7 @@ export function AgentLogsView() {
       </div>
       
       {/* ── Agent Signals ────────────────────────────────────────────────── */}
-      <div className="col-span-12 glass-card rounded-[32px] p-8 md:p-10">
+      <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">
         <div className="flex items-center justify-between mb-6">
           <div className="text-[22px] text-[#0a0a0a] flex flex-wrap gap-x-[0.25em] font-bold tracking-tight">
             <MagneticText disabled text="Agent" />
@@ -127,19 +127,20 @@ export function AgentLogsView() {
           </div>
         </div>
         <div className="h-[320px] overflow-y-auto pr-2 scrollbar-hidden">
-
-          {logs.slice(0, 5).map((log, i) => (
-            <div key={i} className="flex items-center gap-4 py-3.5 border-t border-black/[0.03]">
-              <span className="text-[11px] text-black/50 w-20 tabular-nums font-mono">
-                {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
-              </span>
-              <div className={`px-3 py-1 rounded-full text-[9px] w-20 text-center tracking-wider font-light ${log.action === 'rebalance' ? 'bg-emerald-400/10 text-emerald-700' : 'bg-black/5 text-black/50'}`}>
-                {log.action.toUpperCase()}
+          {logs.slice(0, 10).map((log, i) => (
+            <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-3.5 border-t border-black/[0.03]">
+              <div className="flex items-center justify-between sm:justify-start gap-4">
+                <span className="text-[11px] text-black/50 w-20 tabular-nums font-mono">
+                  {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
+                </span>
+                <div className={`px-3 py-1 rounded-full text-[9px] w-20 text-center tracking-wider font-light ${log.action === 'rebalance' ? 'bg-emerald-400/10 text-emerald-700' : 'bg-black/5 text-black/50'}`}>
+                  {log.action.toUpperCase()}
+                </div>
               </div>
               <span className="flex-1 text-[13px] text-[#0a0a0a]/80 truncate font-light">
                 {log.message}
               </span>
-              <span className="text-[11px] text-[#0a0a0a]/60 w-8 text-right font-mono-num">
+              <span className="text-[11px] text-[#0a0a0a]/60 w-8 text-right font-mono-num hidden sm:block">
                 {log.score}
               </span>
             </div>
@@ -153,7 +154,7 @@ export function AgentLogsView() {
       </div>
 
       {/* ── Log Stream ───────────────────────────────────────────────────── */}
-      <div className="col-span-12 glass-card rounded-[40px] p-8 md:p-10 flex flex-col h-[700px] transition-all">
+      <div className="col-span-12 glass-card rounded-[32px] md:rounded-[40px] p-6 md:p-10 flex flex-col h-[700px] transition-all">
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div className="space-y-1">
@@ -259,7 +260,7 @@ function LogRow({ log }: { log: any }) {
       </div>
 
       {log.reasoning && (
-        <div className="pl-[100px] mt-2 mb-1">
+        <div className="pl-4 md:pl-[100px] mt-2 mb-1">
           <p className="text-[11px] text-black/40 font-light italic leading-snug">
             <span className="text-[9px] uppercase tracking-wider not-italic mr-2 opacity-50 font-bold">Reasoning:</span>
             "{log.reasoning}"
@@ -271,7 +272,7 @@ function LogRow({ log }: { log: any }) {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="pl-[100px] mt-3"
+          className="pl-4 md:pl-[100px] mt-3"
         >
 
           <AgentAttestation signature={mockSig} hash={displayHash} />

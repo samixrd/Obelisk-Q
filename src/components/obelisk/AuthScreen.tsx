@@ -101,7 +101,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
         initial={{ opacity: 0, y: 24, scale: 0.96 }}
         animate={{ opacity: 1, y: 0,  scale: 1 }}
         transition={{ duration: 0.45, delay: 0, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full max-w-[440px] mx-6"
+        className="relative w-full max-w-[440px] mx-4 sm:mx-6"
         style={{
           background: "#ffffff",
           border: "1px solid rgba(0,0,0,0.08)",
@@ -112,7 +112,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           flexDirection: "column"
         }}
       >
-        <div className="p-10 flex-1 flex flex-col">
+        <div className="p-6 md:p-10 flex-1 flex flex-col">
           <Logo size={48} className="mx-auto mb-8 text-foreground" />
           
           {/* Identity badge */}
@@ -137,10 +137,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
               >
                 {/* Greeting */}
                 <div className="mb-8">
-                  <h2 style={{
-                    fontSize: 32, lineHeight: 1.1, letterSpacing: "-0.03em",
-                    color: "#0a0a0a", fontWeight: 700, fontFamily: "'Inter', sans-serif",
-                  }}>
+                  <h2 className="text-[26px] md:text-[32px] font-bold text-[#0a0a0a] leading-tight tracking-tight">
                     Compliance
                     <br />
                     <span style={{ fontWeight: 400, color: "#888" }}>Verification.</span>
@@ -207,10 +204,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
               >
                 {/* Identity Header */}
                 <div className="mb-8">
-                  <h2 style={{
-                    fontSize: 32, lineHeight: 1.1, letterSpacing: "-0.03em",
-                    color: "#0a0a0a", fontWeight: 700, fontFamily: "'Inter', sans-serif",
-                  }}>
+                  <h2 className="text-[26px] md:text-[32px] font-bold text-[#0a0a0a] leading-tight tracking-tight">
                     Identity
                     <br />
                     <span style={{ fontWeight: 400, color: "#888" }}>Selection.</span>
