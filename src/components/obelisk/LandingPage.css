@@ -6,7 +6,9 @@
 .landing-root {
   position: relative;
   min-height: 100vh;
-  background: #f5f5f8;
+  background-color: #f5f5f8;
+  background-image: radial-gradient(rgba(0,0,0,0.06) 1.5px, transparent 1.5px);
+  background-size: 16px 16px;
   color: #0a0a0a;
   overflow-x: hidden;
 }
