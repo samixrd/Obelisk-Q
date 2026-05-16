@@ -86,7 +86,9 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
-    background: hsl(var(--background));
+    background-color: hsl(var(--background));
+    background-image: radial-gradient(rgba(0,0,0,0.06) 1.5px, transparent 1.5px);
+    background-size: 16px 16px;
     letter-spacing: -0.011em;
   }
 
