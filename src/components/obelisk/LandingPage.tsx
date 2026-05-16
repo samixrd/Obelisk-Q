@@ -131,6 +131,7 @@ function ProtocolSection() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-100px" }}
         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+        className="flex flex-col items-center text-center"
       >
         <Reveal>
           <span className="landing-section-label">ANTIGRAVITY PROTOCOL</span>
@@ -143,10 +144,10 @@ function ProtocolSection() {
             <MagneticText text="agent resilience" />
           </Reveal>
         </div>
-        <p className="landing-section-desc">
+        <p className="landing-section-desc mx-auto">
           Obelisk Q uses the Antigravity Protocol to ensure 100% uptime and deterministic rebalancing through verified cross-token unwind logic on Mantle Mainnet.
         </p>
-        <ul className="landing-bullet-list">
+        <ul className="landing-bullet-list items-start sm:items-center">
           <li><span className="landing-bullet" /> 7-node LangGraph pipeline (regime, risk, analyst, consensus, score, telemetry, supervisor)</li>
           <li><span className="landing-bullet" /> autonomous circuit breaker (halts allocation on volatility)</li>
           <li><span className="landing-bullet" /> real-time telemetry synchronization (Antigravity Cloud)</li>
