@@ -112,14 +112,16 @@ export function useAgentWebSocket() {
   };
 
   useEffect(() => {
-    // ── Fetch data IMMEDIATELY on mount ──
-    fetchStats(sessionToken || "");
-    fetchLogs(sessionToken || "");
-
-    // ── WebSocket: derive URL (use direct IP for Vercel stability) ──
+    // ── WebSocket: derive URL ──
     const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const backendIp = "20.2.233.34:8000";
-    const wsUrl = (import.meta as any).env?.VITE_WS_URL || `${wsProto}//${backendIp}/ws`;
+    // For Vercel, we must try to connect directly for WS, but browsers might block it.
+    // The Polling Fallback below will handle data if WS fails.
+    const wsUrl = `${wsProto}//${backendIp}/ws`;
+
+    // ── Immediate data fetch on mount ──
+    fetchStats(sessionToken || "");
+    fetchLogs(sessionToken || "");
 
     const connectWs = () => {
       try {
@@ -132,14 +134,13 @@ export function useAgentWebSocket() {
         const timeout = setTimeout(() => {
           if (!connectedRef.current) {
             wsRef.current?.close();
-            console.warn("WebSocket connection timed out — polling fallback active");
           }
-        }, 3000);
+        }, 5000);
 
         wsRef.current.onopen = () => {
           connectedRef.current = true;
           clearTimeout(timeout);
-          setLastMessage("Connected to Obelisk Q backend — live telemetry active");
+          setLastMessage("Live telemetry active via Obelisk Swarm");
 
           heartbeatRef.current = setInterval(() => {
             setNodes(prev => prev.map(n => ({ ...n, lastPulse: Date.now() })));
