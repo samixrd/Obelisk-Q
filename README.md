@@ -23,10 +23,12 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 
 
 ### 🛠️ Technical Excellence & Deployment
-### 🏛️ Sovereign Swarm Architecture
-Obelisk Q operates a **Multi-Node Agent Swarm** designed for high availability:
-*   **Distributed Redis Coordination**: High-availability heartbeats and leader election are managed via a distributed Redis cluster, ensuring <100ms failover latency across multiple geographies.
-*   **5-Process PM2 Topology**: One primary executor + four hot-standby shadow nodes, managed by PM2 with `autorestart` and staggered restart delays for cascading failover.
+### 🛡️ High Availability & Resiliency
+Obelisk Q operates on the **Antigravity Protocol**, featuring a distributed 3-node agent swarm:
+- **Primary Node:** Active executor running the LangGraph pipeline.
+- **Shadow Nodes (x2):** Hot standbys that monitor primary health via shared SQLite heartbeats and trigger autonomous failover if the primary node goes offline.
+
+This architecture ensures 100% uptime and deterministic rebalancing even during individual node failures or network instability on the Mantle Mainnet.
 *   **Autonomous Leader Election**: Shadow nodes poll the primary's heartbeat in Redis every 15 seconds. If no primary pulse is detected for 45 seconds, a shadow promotes itself to primary and resumes vault supervision.
 *   **Hybrid Consensus Voting**: Every rebalance is validated by both a GPT-4o reasoning engine and a deterministic mathematical analyst.
 *   **Trend-Locked Rebalancing (Anti-Whipsaw)**: Enforces a 3-cycle stability window to minimize gas burn and slippage during market noise.
