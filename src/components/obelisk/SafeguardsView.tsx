@@ -107,47 +107,6 @@ export function SafeguardsView() {
   return (
     <motion.div {...fadeUp} className="grid grid-cols-12 gap-6 pb-20">
 
-      {/* Developer-style Stats Grid */}
-      <div className="col-span-12 border-2 border-[#0ea5e9] bg-white grid grid-cols-1 md:grid-cols-3">
-        {/* Box 1 */}
-        <div className="p-6 md:p-8 border-b md:border-b-0 md:border-r border-dashed border-[#0ea5e9]/50">
-           <p className="text-xs uppercase font-mono text-muted-foreground tracking-[0.2em] mb-4">System Status</p>
-           <div className="flex items-baseline justify-between">
-              <span className="text-5xl font-light font-mono text-slate-900 tracking-tighter">
-                {circuitBreakerActive ? "HALTED" : "99.9%"}
-              </span>
-              <span className={`text-sm font-medium font-mono ${circuitBreakerActive ? "text-red-600" : "text-emerald-600"}`}>
-                {circuitBreakerActive ? "↓ ER" : "↑ 0.1%"}
-              </span>
-           </div>
-        </div>
-
-        {/* Box 2 */}
-        <div className="p-6 md:p-8 border-b md:border-b-0 md:border-r border-dashed border-[#0ea5e9]/50">
-           <p className="text-xs uppercase font-mono text-muted-foreground tracking-[0.2em] mb-4">Current Q-Score</p>
-           <div className="flex items-baseline justify-between">
-              <span className="text-5xl font-light font-mono text-slate-900 tracking-tighter">
-                {score}<span className="text-3xl text-slate-300">/100</span>
-              </span>
-              <span className="text-sm font-medium font-mono text-emerald-600">
-                ↑ 1%
-              </span>
-           </div>
-        </div>
-
-        {/* Box 3 */}
-        <div className="p-6 md:p-8">
-           <p className="text-xs uppercase font-mono text-muted-foreground tracking-[0.2em] mb-4">Market Regime</p>
-           <div className="flex items-baseline justify-between">
-              <span className="text-4xl md:text-5xl font-light font-mono text-slate-900 tracking-tighter truncate capitalize">
-                {regime.length > 10 ? regime.substring(0, 10) + '..' : regime}
-              </span>
-              <span className="text-sm font-medium font-mono text-slate-400">
-                —
-              </span>
-           </div>
-        </div>
-      </div>
 
       {/* Developer-style Chart Box */}
       <div className="col-span-12 border border-slate-200 bg-white rounded-md p-6 md:p-8 relative overflow-hidden shadow-sm mt-4">
