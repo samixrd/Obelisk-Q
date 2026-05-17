@@ -502,13 +502,13 @@ async def regime_detection_node(state: AgentState):
     """Volatility Observation Model - Environment Sensing.
     
     This node generates the primary 'observable' that drives regime classification.
-    Volatility is modeled as a bounded random walk, serving as a simplified
-    Emission Model in a state-space analogy.
+    Volatility is derived from REAL market signals each cycle:
     
     Emission characteristics:
-      - Step size: ±0.4 per cycle
-      - Bounds: [0.5, 3.5]
-      - Initial: 1.5 ("calm market")
+      - Signal 1: Fear & Greed Index (alternative.me)  → maps to vol range [0.0, 2.0]
+      - Signal 2: MNT 24h price change (CoinGecko)     → maps to vol range [0.0, 1.5]
+      - Combined: vol = 0.5 + fng_vol + price_vol      → clamped to [0.5, 3.5]
+      - Smoothing: EMA (α=0.4) with previous cycle vol → prevents whipsaw
     
     Resilience: On node failure or timeout, falls back to last_known_state
     cached values to ensure zero-downtime decision continuity.
@@ -538,10 +538,44 @@ async def regime_detection_node(state: AgentState):
         
         yield_data = {"usdy": usdy_apy, "meth": meth_apy}
         state["data"]["yields"] = yield_data
-        state["data"]["vol"] = vol
         state["data"]["mnt_change"] = mnt_change
         state["data"]["fear_greed"] = fear_greed
         last_known_state["yields"] = yield_data
+        
+        # ── REAL MARKET VOLATILITY MODEL ──────────────────────────────────────
+        # Replaces the legacy random walk with a signal derived from live data.
+        #
+        # Signal 1: Fear & Greed Index (0–100)
+        #   - Extreme Fear (0–20)  → High vol contribution: up to +2.0
+        #   - Extreme Greed (80–100) → Low vol contribution: ~0.2
+        #   - Formula: fng_vol = (100 - fear_greed) / 50.0   → range [0.0, 2.0]
+        #
+        # Signal 2: MNT 24h absolute price change (%)
+        #   - Large moves (|Δ| > 10%) → high vol contribution: capped at +1.5
+        #   - Formula: price_vol = min(1.5, abs(mnt_change) / 5.0) → range [0.0, 1.5]
+        #
+        # Combined raw volatility: 0.5 (floor) + fng_vol + price_vol → [0.5, 4.0]
+        #   - Clamped to agent bounds: max(0.5, min(3.5, ...))
+        #
+        # EMA smoothing (α=0.4): Prevents single-cycle spikes from triggering
+        #   immediate regime changes — equivalent to hysteresis in signal space.
+        # ──────────────────────────────────────────────────────────────────────
+        fng_vol   = (100 - fear_greed) / 50.0           # 0.0 (greed) → 2.0 (fear)
+        price_vol = min(1.5, abs(mnt_change) / 5.0)     # 0.0 → 1.5 based on % move
+        raw_vol   = 0.5 + fng_vol + price_vol            # base + signals → [0.5, 4.0]
+        
+        # EMA smoothing: blend with previous cycle's vol for stability
+        prev_vol  = last_known_state["risk"].get("vol", 1.5)
+        vol_alpha = 0.4  # responsiveness weight
+        vol = max(0.5, min(3.5, vol_alpha * raw_vol + (1 - vol_alpha) * prev_vol))
+        
+        logger.info(
+            f"volatility_model: fng={fear_greed} fng_vol={fng_vol:.2f} "
+            f"mnt_change={mnt_change}% price_vol={price_vol:.2f} "
+            f"raw={raw_vol:.2f} ema_vol={vol:.2f}"
+        )
+        
+        state["data"]["vol"] = vol
         last_known_state["risk"]["vol"] = vol
         
         # ── LLM Market Analysis (GPT-4o-mini) ──

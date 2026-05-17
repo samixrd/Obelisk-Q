@@ -19,7 +19,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **Asset Category**: Real World Assets (USDY - US Treasury backed), Liquid Staking Tokens (mETH), and Wrapped MNT (WMNT).
 *   **The AI Role**: A 7-node autonomous pipeline (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital between stable RWA yield, stable Mantle yield (WMNT), and aggressive staking growth without human intervention.
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
-*   **UI/UX Focus**: Competing for the **Best UI/UX Award** with a bespoke glassmorphic design, 30-second guided onboarding, and a first-of-its-kind **AI Transparency Feed** for human-readable auditability.
+*   **UI/UX Focus**: Competing for the **Best UI/UX Award** with a bespoke glassmorphic design, 30-second guided onboarding, an **EIP-4337 Account Abstraction** gasless wallet stub for retail accessibility, and a first-of-its-kind **AI Transparency Feed** for human-readable auditability.
 
 
 ### 🛠️ Technical Excellence & Deployment
@@ -98,10 +98,14 @@ The system defines three market regimes:
 | **Contraction** | High volatility, risk-off | USDY (US Treasury RWA) |
 
 #### 2.2 Observation Model (Emission)
-Volatility is generated via a bounded random walk, serving as the observable "emission":
-*   **Step size**: `±0.3` per cycle
-*   **Bounds**: `[0.5, 3.5]`
-*   **Initial value**: `1.5`
+Volatility is derived from **live market signals** each cycle — replacing a naive random walk with real data:
+
+$$V_t = \max(0.5, \min(3.5,\ 0.4 \cdot V_{raw} + 0.6 \cdot V_{t-1}))$$
+
+*   **Fear & Greed Index** (alternative.me): $V_{fng} = (100 - FearGreed) / 50$ → range \[0.0, 2.0\]
+*   **MNT 24h Price Change** (CoinGecko): $V_{price} = \min(1.5, |\Delta MNT| / 5)$ → range \[0.0, 1.5\]
+*   **EMA Smoothing** (α=0.4): Blends with previous cycle to prevent whipsaw
+*   **Bounds**: `[0.5, 3.5]` · **Initial**: `1.5` (calm market fallback)
 
 #### 2.3 State Classification (Decoding)
 Raw regime is determined by hard volatility thresholds:

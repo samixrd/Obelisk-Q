@@ -232,7 +232,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
                 {/* Auth buttons */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {/* Wallet */}
+                  {/* Web3 Wallet */}
                   <AuthButton
                     onClick={handleWallet}
                     loading={walletLoading}
@@ -248,6 +248,39 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                     sublabel="MetaMask · WalletConnect · Mobile"
                     accent
                   />
+
+                  {/* AA / Gasless stub (EIP-4337) */}
+                  <AuthButton
+                    onClick={() => {}}
+                    loading={false}
+                    disabled={true}
+                    icon={
+                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#888" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    }
+                    label="Gasless Wallet (EIP-4337)"
+                    sublabel="Account Abstraction · No ETH for gas · Coming soon"
+                  />
+
+                  {/* AA Info badge */}
+                  <div style={{
+                    display: "flex", alignItems: "flex-start", gap: 10,
+                    padding: "10px 14px", borderRadius: 10,
+                    background: "rgba(99,102,241,0.05)",
+                    border: "1px solid rgba(99,102,241,0.12)",
+                  }}>
+                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+                      <circle cx="8" cy="8" r="7" stroke="#6366f1" strokeWidth="1.2"/>
+                      <path d="M8 7v5M8 5v.5" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round"/>
+                    </svg>
+                    <p style={{
+                      fontSize: 11, color: "#6366f1", lineHeight: 1.5,
+                      fontFamily: "'Inter', sans-serif", margin: 0,
+                    }}>
+                      <strong>EIP-4337 Account Abstraction</strong> will enable gasless transactions on Mantle — users pay zero gas fees via sponsored bundlers, lowering the barrier for retail onboarding.
+                    </p>
+                  </div>
 
                   <WalletConnectModal 
                     open={walletModalOpen}

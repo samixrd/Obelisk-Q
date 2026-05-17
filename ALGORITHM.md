@@ -27,15 +27,26 @@ This is the core **BGA (Blockchain for Good Alliance)** value proposition: reduc
 ---
 
 ## 3. Observation Model (Emissions)
-The "Observable" variable ($O_t$) is defined as **Realized Volatility**, modeled as a bounded random walk to simulate market noise and trends:
+The \"Observable\" variable ($O_t$) is defined as **Realized Volatility**, derived from **live market signals** fetched each cycle via `ExternalDataService`:
 
-$$V_t = \max(0.5, \min(3.5, V_{t-1} + \epsilon))$$
-Where $\epsilon \sim \text{Uniform}(-0.3, 0.3)$.
+$$V_t = \max(0.5, \min(3.5,\ \alpha \cdot V_{raw} + (1-\alpha) \cdot V_{t-1}))$$
 
-*   **Min Bound (0.5)**: Deep calm, high confidence.
-*   **Max Bound (3.5)**: Extreme panic, zero confidence.
+Where $\alpha = 0.4$ (EMA responsiveness) and $V_{raw} = 0.5 + V_{fng} + V_{price}$.
 
-> In production, $V_t$ is supplemented by live market signals: DeFiLlama yield spreads (mETH/USDY APY), CoinGecko MNT 24h price change, and the Fear & Greed Index — all fetched each cycle via `ExternalDataService`.
+**Signal 1 — Fear & Greed Index** ([alternative.me](https://api.alternative.me/fng/)):
+$$V_{fng} = \frac{100 - FearGreed}{50} \quad \in [0.0,\ 2.0]$$
+- Extreme Fear (index=0) → $V_{fng} = 2.0$ · Extreme Greed (index=100) → $V_{fng} = 0.0$
+
+**Signal 2 — MNT 24h Price Change** ([CoinGecko](https://api.coingecko.com)):
+$$V_{price} = \min\!\left(1.5,\ \frac{|\Delta MNT_{24h}|}{5.0}\right) \quad \in [0.0,\ 1.5]$$
+- ±10% MNT move → $V_{price} = 1.5$ · Flat market → $V_{price} \approx 0$
+
+**EMA Smoothing** prevents single-spike whipsaw by blending new signal with prior cycle's vol.
+
+*   **Min Bound (0.5)**: Extreme Greed + flat MNT price.
+*   **Max Bound (3.5)**: Extreme Fear + large MNT crash.
+
+> On external API failure, the previous cycle's $V_{t-1}$ is retained (graceful degradation — zero downtime).
 
 ---
 
