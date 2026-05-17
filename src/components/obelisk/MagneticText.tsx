@@ -29,15 +29,15 @@ export function MagneticText({ text, className, disabled = false }: MagneticText
   const words = text.split(" ");
 
   return (
-    <div ref={containerRef} className={className} style={{ display: "inline-flex", flexWrap: "wrap", columnGap: "0.25em" }}>
+    <span ref={containerRef} className={className} style={{ display: "inline" }}>
       {words.map((word, wordIndex) => (
-        <span key={wordIndex} style={{ display: "inline-block", whiteSpace: "nowrap" }}>
+        <span key={wordIndex} style={{ display: "inline-block", whiteSpace: "nowrap", marginRight: wordIndex !== words.length - 1 ? "0.25em" : "0" }}>
           {word.split("").map((char, i) => (
-            <MagneticChar key={i} char={char} mousePos={mousePos} />
+            <MagneticChar key={`${wordIndex}-${i}`} char={char} mousePos={mousePos} />
           ))}
         </span>
       ))}
-    </div>
+    </span>
   );
 }
 
