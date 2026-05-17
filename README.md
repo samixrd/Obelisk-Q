@@ -9,6 +9,7 @@
 *   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.5%–2.5% based on regime and volatility).
 *   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
+*   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report at [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) — regime, allocation, live USDY/mETH APY, last rotation tx.
 
 ---
 
@@ -261,6 +262,7 @@ Obelisk Q is designed to protect users, not exploit them:
 ## 🛠️ Getting Started
 *   **Live Demo**: [www.obeliskq.app](https://www.obeliskq.app/)
 *   **Local Setup Guide**: See [SETUP.md](./SETUP.md) ← Start here for judges
+*   **RWA Strategy Deep Dive**: See [RWA_REPORT.md](./RWA_REPORT.md) ← RWA track judges
 *   **Algorithm Deep Dive**: See [ALGORITHM.md](./ALGORITHM.md)
 *   **Security Policy**: See [SECURITY.md](./SECURITY.md)
 

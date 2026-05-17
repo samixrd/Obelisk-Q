@@ -1480,6 +1480,109 @@ async def get_agent_transactions():
         return []
 
 
+@app.get("/api/rwa/status")
+async def get_rwa_status():
+    """
+    🏦 RWA Intelligence Report — Judge-Facing Endpoint.
+
+    Returns a complete snapshot of the current Real World Asset strategy:
+    - Current regime + recommended allocation
+    - Live USDY APY (from Ondo Finance / DeFiLlama)
+    - Live mETH APY (from DeFiLlama)
+    - Last rotation event (mETH ↔ USDY) with on-chain tx hash
+    - Vault contract address + Mantle Explorer links
+    - Safety metrics (circuit breaker status, Q-Score)
+    """
+    try:
+        # ── Current strategy state ─────────────────────────────────────────
+        regime    = last_known_state.get("regime", "Consolidation")
+        score     = last_known_state["risk"].get("score", 50)
+        vol       = last_known_state["risk"].get("vol", 1.5)
+        yields    = last_known_state.get("yields", {"usdy": 5.1, "meth": 3.4})
+        usdy_apy  = yields.get("usdy", 5.1)
+        meth_apy  = yields.get("meth", 3.4)
+
+        # ── Recommended allocation from current regime ─────────────────────
+        REGIME_ALLOCATION = {
+            "Expansion":     {"USDY": 20, "mETH": 60, "WMNT": 20, "rationale": "Growth phase — favour mETH staking yield + MNT liquidity"},
+            "Consolidation": {"USDY": 45, "mETH": 40, "WMNT": 15, "rationale": "Neutral — balanced USDY treasury anchor + mETH staking"},
+            "Contraction":   {"USDY": 75, "mETH": 15, "WMNT": 10, "rationale": "Risk-off — USDY as safe harbor, capital protection priority"},
+        }
+        allocation = REGIME_ALLOCATION.get(regime, REGIME_ALLOCATION["Consolidation"])
+
+        # ── Last rotation event from DB ────────────────────────────────────
+        conn = sqlite3.connect(DB_PATH)
+        last_rotation = conn.execute("""
+            SELECT tx_hash, action, score, regime, timestamp, status
+            FROM agent_transactions
+            WHERE action NOT IN ('HOLD', 'SYNC', 'N/A')
+              AND tx_hash LIKE '0x%'
+            ORDER BY id DESC LIMIT 1
+        """).fetchone()
+
+        # ── Cycle stats ─────────────────────────────────────────────────────
+        total_cycles    = conn.execute("SELECT COUNT(*) FROM agent_memory").fetchone()[0]
+        total_rotations = conn.execute(
+            "SELECT COUNT(*) FROM agent_transactions WHERE status='success'"
+        ).fetchone()[0]
+        contraction_cycles = conn.execute(
+            "SELECT COUNT(*) FROM agent_memory WHERE regime='Contraction'"
+        ).fetchone()[0]
+        conn.close()
+
+        vault_addr = os.getenv("VAULT_ADDRESS", "0x7924ce8e072c84D4028B04754207146e3aC6429A")
+        explorer   = f"https://explorer.mantle.xyz/address/{vault_addr}"
+
+        return {
+            "rwa_strategy": {
+                "current_regime":    regime,
+                "q_score":           score,
+                "volatility_index":  round(vol, 2),
+                "circuit_breaker":   CIRCUIT_BREAKER_ACTIVE,
+            },
+            "live_apy": {
+                "usdy_apy_pct":     round(usdy_apy, 2),
+                "usdy_backing":     "US Treasury Bills (Ondo Finance)",
+                "usdy_contract":    "0x5bE26527e817998A7206475496fDE1e68957c5A6",
+                "meth_apy_pct":     round(meth_apy, 2),
+                "meth_backing":     "Mantle Liquid Staking Protocol",
+                "meth_contract":    "0xcDA86A272531e8640cD7F1a92c01839911B90bb0",
+                "yield_spread_pct": round(usdy_apy - meth_apy, 2),
+            },
+            "current_allocation_target": {
+                "USDY_pct":  allocation["USDY"],
+                "mETH_pct":  allocation["mETH"],
+                "WMNT_pct":  allocation["WMNT"],
+                "rationale": allocation["rationale"],
+            },
+            "last_rotation_event": {
+                "tx_hash":       last_rotation[0] if last_rotation else None,
+                "action":        last_rotation[1] if last_rotation else "No rotations yet",
+                "q_score":       last_rotation[2] if last_rotation else None,
+                "regime":        last_rotation[3] if last_rotation else None,
+                "timestamp":     last_rotation[4] if last_rotation else None,
+                "status":        last_rotation[5] if last_rotation else None,
+                "explorer_link": f"https://explorer.mantle.xyz/tx/{last_rotation[0]}" if last_rotation else None,
+            },
+            "vault": {
+                "address":         vault_addr,
+                "network":         "Mantle Mainnet (Chain ID 5000)",
+                "explorer":        explorer,
+                "total_cycles":    total_cycles,
+                "total_rotations": total_rotations,
+                "contraction_safe_harbor_activations": contraction_cycles,
+            },
+            "data_sources": {
+                "usdy_apy":    "Ondo Finance API → DeFiLlama fallback",
+                "meth_apy":    "DeFiLlama /pools (chain=Mantle)",
+                "volatility":  "Fear & Greed Index (alternative.me) + MNT 24h change (CoinGecko)",
+                "sentiment":   "Bybit institutional BTC reference price",
+            }
+        }
+    except Exception as e:
+        logger.error(f"rwa_status: error: {e}")
+        return {"status": "error", "message": str(e)}
+
 @app.get("/health")
 async def health():
     """Deep Health check for monitoring systems (UptimeRobot, etc)."""
