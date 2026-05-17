@@ -5,8 +5,8 @@
 
 ## ⚡ Quick Wins (Judge's Summary)
 *   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet** ([0x7924ce8e072c84D4028B04754207146e3aC6429A](https://explorer.mantle.xyz/address/0x7924ce8e072c84D4028B04754207146e3aC6429A)).
-*   ✅ **Continuous Execution**: Agent swarm running 24/7 with **1,200+ cycles** completed and **99.9% uptime**.
-*   ✅ **Proven Performance**: **12 real rebalances** executed autonomously with an average slippage of only **0.32%**.
+*   ✅ **Continuous Execution**: Agent swarm running 24/7 — cycle count and uptime verifiable live at [`/api/agent/health`](https://obeliskq.app/api/agent/health).
+*   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.5%–2.5% based on regime and volatility).
 *   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 

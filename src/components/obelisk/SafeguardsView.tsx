@@ -61,6 +61,19 @@ export function SafeguardsView() {
     });
   }
 
+  // Derive last Contraction cycle timestamp from real logs for VolatilityDampener
+  const lastContractionLog = logsSource.find((l: any) => l.regime === "Contraction");
+  const lastVolTrigger = (() => {
+    if (isHighVol) return "Engaged now";
+    if (!lastContractionLog) return "Never triggered";
+    const secs = Math.floor((Date.now() - new Date(lastContractionLog.timestamp).getTime()) / 1000);
+    if (secs < 60)   return `${secs}s ago`;
+    if (secs < 3600) return `${Math.floor(secs / 60)}m ago`;
+    const hrs = Math.floor(secs / 3600);
+    if (hrs < 48)    return `${hrs}h ago`;
+    return `${Math.floor(hrs / 24)} days ago`;
+  })();
+
   const PROTOCOLS = [
     {
       name: "Drawdown Circuit Breaker",
@@ -76,7 +89,7 @@ export function SafeguardsView() {
       statusOk: true,
       description: "Reduces position size when realized volatility exceeds 2σ of 30-day baseline.",
       threshold: "σ > 2.0",
-      lastTrigger: isHighVol ? "Engaged now" : "11 days ago",
+      lastTrigger: lastVolTrigger,
     },
     {
       name: "Liquidity Reserve Lock",
