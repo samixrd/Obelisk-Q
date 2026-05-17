@@ -44,6 +44,8 @@ export interface VaultStats {
   currentRegime:   string;
   userBalance:     string;   // in MNT (formatted)
   walletBalance:   string;   // native MNT balance
+  vaultMntBalance: string;   // native MNT balance of the vault contract
+  userRawBalance:  string;   // user raw deposited MNT balance
 }
 
 export interface TransactionRecord {
@@ -345,6 +347,21 @@ export function useVault(): VaultState {
         }
       }
 
+      let userRawBalance = "0.0000";
+      if (address) {
+        userRawBalance = formatMnt(rawBalanceOfUser);
+      }
+
+      let vaultMntBalance = "0.0000";
+      try {
+        const rawVaultBal = await rpcCall("eth_getBalance", [VAULT_ADDRESS, "latest"]);
+        if (rawVaultBal && rawVaultBal !== "0x") {
+          vaultMntBalance = formatMnt(BigInt(rawVaultBal));
+        }
+      } catch (e) {
+        console.error("Failed to fetch vault MNT balance", e);
+      }
+
       // Use userBalance as a floor for totalDeposited to ensure AUM is never lower than user's own stake
       const userBalBigInt = address ? parseMntToWei(userBalance) : 0n;
       const finalTotal = total > userBalBigInt ? total : userBalBigInt;
@@ -357,6 +374,8 @@ export function useVault(): VaultState {
         currentRegime,
         userBalance,
         walletBalance,
+        vaultMntBalance,
+        userRawBalance,
       });
 
       lastFetchRef.current = Date.now();

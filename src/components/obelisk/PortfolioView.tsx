@@ -35,31 +35,78 @@ export function PortfolioView() {
   // 1. Memoize Allocation Logic
   const POSITIONS = useMemo(() => {
     const list = [];
-    const userBalanceValue = vaultStats?.userBalance ?? "0.0000";
+    const totalUserBalance = parseFloat(vaultStats?.userBalance ?? "0.0000");
+    const userRawDeposited = parseFloat(vaultStats?.userRawBalance ?? "0.0000");
+    const vaultRawMnt = parseFloat(vaultStats?.vaultMntBalance ?? "0.0000");
+    const totalDepositedAll = parseFloat(vaultStats?.totalDeposited ?? "1.0000");
 
-    if (currentPosition === "mETH") {
-      list.push({ 
-        symbol: "mETH", name: "Mantle Staked Ether", strategy: "Balanced · Auto",      
-        balance: `${userBalanceValue} MNT`, change: "—", up: true, alloc: 100, id: "mETH" 
-      });
-    } else if (currentPosition === "USDY") {
-      list.push({ 
-        symbol: "USDY", name: "Ondo US Dollar Yield", strategy: "Conservative · Auto",  
-        balance: `${userBalanceValue} MNT`, change: "—", up: true, alloc: 100, id: "USDY" 
-      });
-    } else if (currentPosition === "WMNT") {
-      list.push({ 
-        symbol: "WMNT", name: "Wrapped Mantle", strategy: "Growth · Auto",  
-        balance: `${userBalanceValue} MNT`, change: "—", up: true, alloc: 100, id: "WMNT" 
-      });
-    } else {
+    // Calculate user's share of raw MNT in the vault
+    let pendingMnt = 0;
+    if (totalDepositedAll > 0 && userRawDeposited > 0) {
+      pendingMnt = (vaultRawMnt * userRawDeposited) / totalDepositedAll;
+      // Deduct the small gas buffer from pending MNT
+      if (pendingMnt > 0.01) {
+        pendingMnt -= 0.01;
+      } else {
+        pendingMnt = 0;
+      }
+    }
+
+    // Floor and limit pending MNT
+    pendingMnt = Math.min(pendingMnt, totalUserBalance);
+    if (pendingMnt < 0.05) {
+      pendingMnt = 0;
+    }
+
+    const activeAssetBalance = Math.max(0, totalUserBalance - pendingMnt);
+
+    if (totalUserBalance <= 0) {
+      // Default empty state
       list.push({ 
         symbol: "MNT", name: "Mantle Network Token", strategy: "Liquid · Buffer",  
-        balance: `${userBalanceValue} MNT`, change: "—", up: true, alloc: 100, id: "MNT" 
+        balance: "0.0000 MNT", change: "—", up: true, alloc: 100, id: "MNT" 
+      });
+      return list;
+    }
+
+    // 1. Push active yield asset
+    if (activeAssetBalance > 0.01 || pendingMnt === 0) {
+      const activeDisplayBal = pendingMnt === 0 ? totalUserBalance : activeAssetBalance;
+      const allocationPercent = Math.round((activeDisplayBal / totalUserBalance) * 100);
+      if (currentPosition === "mETH") {
+        list.push({ 
+          symbol: "mETH", name: "Mantle Staked Ether", strategy: "Balanced · Auto",      
+          balance: `${activeDisplayBal.toFixed(4)} MNT`, change: "+3.5% (APY)", up: true, alloc: allocationPercent, id: "mETH" 
+        });
+      } else if (currentPosition === "USDY") {
+        list.push({ 
+          symbol: "USDY", name: "Ondo US Dollar Yield", strategy: "Conservative · Auto",  
+          balance: `${activeDisplayBal.toFixed(4)} MNT`, change: "+5.0% (APY)", up: true, alloc: allocationPercent, id: "USDY" 
+        });
+      } else if (currentPosition === "WMNT") {
+        list.push({ 
+          symbol: "WMNT", name: "Wrapped Mantle", strategy: "Growth · Auto",  
+          balance: `${activeDisplayBal.toFixed(4)} MNT`, change: "—", up: true, alloc: allocationPercent, id: "WMNT" 
+        });
+      } else {
+        list.push({ 
+          symbol: "MNT", name: "Mantle Network Token", strategy: "Liquid · Buffer",  
+          balance: `${activeDisplayBal.toFixed(4)} MNT`, change: "—", up: true, alloc: allocationPercent, id: "MNT" 
+        });
+      }
+    }
+
+    // 2. Push pending raw MNT
+    if (pendingMnt > 0.01) {
+      const allocationPercent = Math.round((pendingMnt / totalUserBalance) * 100);
+      list.push({
+        symbol: "MNT", name: "Mantle (Pending Rebalance)", strategy: "Liquid · Buffer",
+        balance: `${pendingMnt.toFixed(4)} MNT`, change: "Pending Cycle", up: false, alloc: allocationPercent, id: "MNT"
       });
     }
+
     return list;
-  }, [currentPosition, vaultStats?.userBalance]);
+  }, [currentPosition, vaultStats]);
 
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [metrics, setMetrics] = useState({ ytd_return: "—", sharpe_ratio: 2.41 });
