@@ -2174,13 +2174,15 @@ if __name__ == "__main__":
     # This prevents uvicorn's internal sys.exit() on bind failure.
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     port_available = False
-    try:
-        # Try to bind to the port
-        sock.bind(("0.0.0.0", 8000))
-        sock.close()
-        port_available = True
-    except OSError:
-        port_available = False
+    for _ in range(5):
+        try:
+            sock.bind(("0.0.0.0", 8000))
+            sock.close()
+            port_available = True
+            break
+        except OSError:
+            time.sleep(1)
+            pass
 
     if port_available:
         try:
