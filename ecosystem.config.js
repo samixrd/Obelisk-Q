@@ -55,23 +55,6 @@ module.exports = {
       merge_logs: true,
       autorestart: true,
       restart_delay: 10000
-    },
-    {
-      name: "obelisk-shadow-2",
-      script: "python3",
-      args: "main.py",
-      cwd: "./backend",
-      env: {
-        NODE_ROLE: "shadow",
-        NODE_ID: "vm-shadow-2",
-        PYTHONUNBUFFERED: "1"
-      },
-      log_date_format: "YYYY-MM-DD HH:mm:ss",
-      error_file: "./logs/shadow2_error.log",
-      out_file: "./logs/shadow2_out.log",
-      merge_logs: true,
-      autorestart: true,
-      restart_delay: 15000
     }
   ]
 };
