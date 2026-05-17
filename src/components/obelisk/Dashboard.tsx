@@ -80,7 +80,8 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
   return (
     <main 
-      className="relative min-h-screen pb-20 landing-root" 
+      className="relative min-h-screen pb-10 landing-root flex flex-col justify-between"
+      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
     >
 
 
@@ -96,7 +97,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
 
       {/* Tab Content Area */}
-      <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-14 relative z-10">
+      <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-14 relative z-10 flex-grow w-full" style={{ flexGrow: 1 }}>
         {!walletAddress && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
