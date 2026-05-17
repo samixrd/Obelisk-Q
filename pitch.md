@@ -33,7 +33,7 @@ Obelisk Q demonstrates excellence across technology, innovation, ecosystem contr
 ### 3. BGA Alignment: Blockchain for Good
 This is not just a technical project — it is a **financial inclusion product**:
 
-- **Democratizing US Treasury Access**: During market Contraction, the agent automatically rotates capital into **USDY** (Ondo Finance) — a Mantle-native stablecoin backed by US Treasury Bills. A retail user with as little as **0.01 MNT** receives the same ~5% Treasury yield historically reserved for institutional investors. Zero manual action required.
+- **Democratizing US Treasury Access**: During market Contraction, the agent automatically rotates capital into **USDY** (Ondo Finance) — a Mantle-native token backed by US Treasury Bills. **USDY acts as an autonomous safe harbor during extreme DeFi volatility events.** A retail user with as little as 0.01 MNT receives the same institutional Treasury protection and yield, with zero manual intervention required.
 
 - **Reducing Information Asymmetry**: Retail DeFi users lack institutional-grade market data pipelines. Obelisk Q runs a 24/7 regime detection pipeline fed by DeFiLlama, CoinGecko, Fear & Greed Index, and Bybit sentiment — and publishes every AI decision with full score breakdown transparency in the UI.
 
@@ -57,6 +57,13 @@ This is not just a technical project — it is a **financial inclusion product**
 - **Institutional UX**: A premium interface with guided onboarding tour, guest-mode telemetry (no wallet required), and a first-of-its-kind **AI Decision Transparency** feed showing every score component and regime decision in plain English.
 - **Live on Mainnet**: Vault deployed and verified at `0x7924ce8e072c84D4028B04754207146e3aC6429A` on Mantle Mainnet (Chain ID 5000).
 - **Judge-Ready Audit Endpoints**: `/api/agent/health`, `/api/cycles/history`, `/api/agent/transactions` — all public, no authentication required.
+
+---
+
+### 6. Roadmap: ZK-ML for Trustless Verifiability
+While the current AI Transparency Feed provides human-readable auditability, our immediate next milestone is integrating **Zero-Knowledge Machine Learning (ZK-ML)** via Mantle's verification ecosystem. 
+- **The Goal**: Generate cryptographic proofs that the autonomous agent's Q-Score and regime decisions exactly followed the stated model weights and LLM logic without hallucination or tampering.
+- **The Impact**: Users will verify on-chain that the agent acted faithfully, transforming "Trust our AI" into "Verify our Math" — a critical leap for institutional RWA adoption.
 
 ---
 **Obelisk Q is not just a demo; it is the blueprint for the next generation of autonomous, inclusive, and transparent DeFi finance.**

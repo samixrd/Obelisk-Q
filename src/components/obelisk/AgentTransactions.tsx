@@ -124,8 +124,10 @@ export function AgentTransactions() {
                     {new Date(tx.timestamp).toLocaleTimeString("en-GB", { hour12: false })}
                   </div>
                   <div className="col-span-1">
-                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md ${tx.action === 'HOLD' ? 'bg-black/5 text-black/40' : 'bg-black/10 text-black'}`}>
-                      {tx.action}
+                    <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md ${tx.action === 'HOLD' || tx.action === 'SYNC' ? 'bg-black/5 text-black/40' : 'bg-black/10 text-black whitespace-nowrap'}`}>
+                      {tx.action.includes("USDY") || tx.action === "ALLOCATE_USDY" ? "mETH → USDY" : 
+                       tx.action.includes("METH") || tx.action === "ALLOCATE_METH" ? "USDY → mETH" : 
+                       tx.action}
                     </span>
                   </div>
                   <div className="col-span-1 text-center text-[14px] font-bold text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>

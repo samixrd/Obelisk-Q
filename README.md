@@ -18,8 +18,10 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 ### 📝 The Pitch: Bringing Intelligence to RWAs
 *   **Asset Category**: Real World Assets (USDY - US Treasury backed), Liquid Staking Tokens (mETH), and Wrapped MNT (WMNT).
 *   **The AI Role**: A 7-node autonomous pipeline (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital between stable RWA yield, stable Mantle yield (WMNT), and aggressive staking growth without human intervention.
+*   **The Strategy (RWA Safe Harbor)**: Captures "Growth Alpha" with mETH during expansions, and autonomously rotates into **USDY (US Treasury backed)** as a safe harbor during DeFi volatility events to protect user capital while retaining institutional-grade yield.
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
 *   **UI/UX Focus**: Competing for the **Best UI/UX Award** with a bespoke glassmorphic design, 30-second guided onboarding, an **EIP-4337 Account Abstraction** gasless wallet stub for retail accessibility, and a first-of-its-kind **AI Transparency Feed** for human-readable auditability.
+*   **Verifiability Roadmap (ZK-ML)**: Immediate next steps involve generating Zero-Knowledge Machine Learning (ZK-ML) proofs for all AI decisions, transforming "Trust our AI" into mathematically verifiable "Verify our Math" execution on-chain.
 
 
 ### 🛠️ Technical Excellence & Deployment

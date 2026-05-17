@@ -385,7 +385,17 @@ class ExternalDataService:
         
         try:
             async with aiohttp.ClientSession() as session:
-                # 1. DeFiLlama Yields (mETH & USDY)
+                # 1. Ondo Finance Direct API (Primary USDY Oracle)
+                try:
+                    async with session.get("https://ondo.finance/api/apy", timeout=3) as resp:
+                        if resp.status == 200:
+                            ondo_data = await resp.json()
+                            if "usdy_apy" in ondo_data:
+                                data["usdy"] = float(ondo_data["usdy_apy"])
+                except Exception as e:
+                    logger.warning(f"telemetry: Ondo Finance oracle failed, falling back to DeFiLlama: {e}")
+
+                # 2. DeFiLlama Yields (mETH & USDY fallback)
                 async with session.get("https://yields.llama.fi/pools", timeout=5) as resp:
                     if resp.status == 200:
                         yields = await resp.json()
@@ -393,9 +403,10 @@ class ExternalDataService:
                         meth_pool = next((p for p in yields["data"] if p["symbol"] == "mETH" and p["chain"] == "Mantle"), None)
                         usdy_pool = next((p for p in yields["data"] if p["symbol"] == "USDY" and p["chain"] == "Mantle"), None)
                         if meth_pool: data["meth"] = float(meth_pool["apy"])
-                        if usdy_pool: data["usdy"] = float(usdy_pool["apy"])
+                        if usdy_pool and data["usdy"] == 5.1: # Only override if Ondo direct fetch failed
+                            data["usdy"] = float(usdy_pool["apy"])
                 
-                # 2. CoinGecko (MNT Price Change)
+                # 3. CoinGecko (MNT Price Change)
                 cg_key = os.getenv("COINGECKO_API_KEY")
                 url = f"https://api.coingecko.com/api/v3/simple/price?ids=mantle&vs_currencies=usd&include_24hr_change=true"
                 headers = {"x-cg-demo-api-key": cg_key} if cg_key else {}
