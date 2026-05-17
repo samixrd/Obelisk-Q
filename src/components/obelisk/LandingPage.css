@@ -257,20 +257,23 @@
 .landing-bullet-list {
   list-style: none;
   padding: 0;
-  margin: 0;
+  margin: 32px auto 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 18px;
+  align-items: flex-start;
+  max-width: 600px;
 }
 
 .landing-bullet-list li {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
   font-size: 15px;
-  font-weight: 450;
+  line-height: 1.55;
   color: #1a1a1a;
   letter-spacing: -0.01em;
+  text-align: left;
 }
 
 .landing-bullet {
@@ -279,6 +282,7 @@
   border-radius: 50%;
   background: #0a0a0a;
   flex-shrink: 0;
+  margin-top: 7px;
 }
 
 /* ── Features Grid ────────────────────────────────────────────────────────── */
@@ -459,8 +463,13 @@
   }
 
   .landing-hero {
-    padding: 110px 16px 40px;
-    min-height: auto;
+    padding: 130px 16px 60px;
+    min-height: 80vh;
+    min-height: 80dvh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
   }
 
   .landing-hero-heading {
@@ -476,7 +485,7 @@
   }
 
   .landing-section {
-    padding: 50px 20px 60px;
+    padding: 90px 20px 90px;
   }
 
   .landing-section-heading {
