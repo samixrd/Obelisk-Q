@@ -14,7 +14,15 @@ The algorithm classifies the Mantle market into three discrete hidden states:
 |---|---|---|---|
 | **Expansion** | Low Volatility / Bullish | **mETH** | Maximize Staking Yield |
 | **Consolidation** | Moderate Volatility / Sideways | **WMNT / HOLD** | Maintain Neutrality |
-| **Contraction** | High Volatility / Bearish | **USDY (RWA)** | Capital Preservation (Treasuries) |
+| **Contraction** | High Volatility / Bearish | **USDY (RWA)** | Capital Preservation via US Treasuries |
+
+### Why USDY as the Safety Asset?
+During **Contraction**, the agent autonomously rotates all capital into **USDY** (Ondo Finance, Mantle-native), a yield-bearing stablecoin backed by US Treasury Bills. This provides:
+- **Near-zero counterparty risk**: Backed by short-duration US government debt.
+- **Continued yield generation** (~5% APY) even during DeFi market downturns.
+- **Financial inclusion benefit**: Retail users on Mantle gain access to US Treasury returns — historically only available to institutional investors — through a fully autonomous, non-custodial vault.
+
+This is the core **BGA (Blockchain for Good Alliance)** value proposition: reducing information and access asymmetry between retail participants and institutional capital allocators.
 
 ---
 
@@ -22,10 +30,12 @@ The algorithm classifies the Mantle market into three discrete hidden states:
 The "Observable" variable ($O_t$) is defined as **Realized Volatility**, modeled as a bounded random walk to simulate market noise and trends:
 
 $$V_t = \max(0.5, \min(3.5, V_{t-1} + \epsilon))$$
-Where $\epsilon \sim \text{Uniform}(-0.4, 0.4)$.
+Where $\epsilon \sim \text{Uniform}(-0.3, 0.3)$.
 
 *   **Min Bound (0.5)**: Deep calm, high confidence.
 *   **Max Bound (3.5)**: Extreme panic, zero confidence.
+
+> In production, $V_t$ is supplemented by live market signals: DeFiLlama yield spreads (mETH/USDY APY), CoinGecko MNT 24h price change, and the Fear & Greed Index — all fetched each cycle via `ExternalDataService`.
 
 ---
 

@@ -193,6 +193,28 @@ Obelisk Q proposes a new **AI × Web3 paradigm**: where the agent is not just a 
 
 ---
 
+## 🌍 BGA Alignment: Blockchain for Good
+Obelisk Q is explicitly designed around the **Blockchain for Good Alliance (BGA)** principles of financial inclusion, market fairness, and transparency.
+
+### 🏦 Democratizing Institutional Yield Access
+Historically, US Treasury yields (the safest fixed-income returns on earth) have only been accessible to institutional investors. **Obelisk Q breaks this barrier**:
+- During market Contraction, the agent automatically rotates retail user deposits into **USDY** (Ondo Finance), a Mantle-native stablecoin fully backed by US Treasury Bills (~5% APY).
+- A retail user with as little as **0.01 MNT** can access the same Treasury-backed yield as a billion-dollar hedge fund — with zero manual action required.
+
+### ⚖️ Reducing Information Asymmetry
+Retail DeFi users lack the tools and data pipelines that institutional traders use to time market cycles. Obelisk Q closes this gap by:
+- Running a **24/7 autonomous regime detection pipeline** that processes DeFiLlama yield data, CoinGecko price signals, and the Fear & Greed Index each cycle.
+- Publishing every AI decision with **full reasoning transparency** via the on-chain audit trail (`/api/cycles/history`) and the in-app **AI Decision Transparency** feed.
+- Ensuring users can always verify *why* capital was moved — not just *that* it was moved.
+
+### 🛡️ Non-Extractive Design
+Obelisk Q is designed to protect users, not exploit them:
+- **Circuit Breaker**: The AI can autonomously `pause()` the vault if a critical Q-Score drop is detected — protecting users even if the agent makes a wrong call.
+- **Hysteresis Lock**: Prevents excessive rebalancing (gas burn) that would erode small retail positions.
+- **Zero Custody Risk**: The vault is a non-custodial smart contract on Mantle — Obelisk Q the company cannot access user funds.
+
+---
+
 ## 🛠️ Getting Started
 *   **Official Website**: [www.obeliskq.app](https://www.obeliskq.app/)
 *   **Setup Instructions**: See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)
