@@ -9,7 +9,7 @@ The world's first autonomous multi-agent wealth navigator for institutional RWA 
 Obelisk Q demonstrates excellence across technology, innovation, and ecosystem contribution by bridging the gap between high-fidelity AI orchestration and on-chain Real-World Assets.
 
 ### 1. Technical Depth (AI × On-Chain)
-- **LangGraph Supervisory Graph**: A 5-node configuration (Regime, Risk, Score, Telemetry, Controller) arbitrating capital rotation.
+- **LangGraph Supervisory Graph**: A 6-node configuration (Regime, Risk, Score, Telemetry, Controller, Safeguard) arbitrating capital rotation.
 - **GPT-4o-mini Intelligence Layer**: Powered by Azure OpenAI, the agent uses GPT-4o-mini at two critical nodes:
   - *Market Analysis* — Analyzes real-time DeFiLlama yield data, CoinGecko price data, and the Fear & Greed Index to generate AI-powered market insights each cycle.
   - *Regime Confirmation* — Acts as a second opinion on the HMM regime classification, confirming or overriding the signal based on full market context.

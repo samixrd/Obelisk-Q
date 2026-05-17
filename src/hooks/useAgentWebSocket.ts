@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 
-// ── 5-Node LangGraph Architecture ──────────────────────────────────────────
+// ── 6-Node LangGraph Architecture ──────────────────────────────────────────
 type NodeStatus = 'active' | 'calculating' | 'streaming' | 'arbitrating' | 'idle';
 
 interface LangGraphNode {

@@ -38,7 +38,7 @@ const SIGNAL_POOL: { action: AgentAction; messages: string[] }[] = [
       "Allocation optimal — holding 60/40 mETH/USDY split",
       "No rebalance signal — yield differential within 1.5% tolerance",
       "Strategy confirmed: passive yield accumulation in current regime",
-      "Hold signal reinforced — all 5 nodes in consensus",
+      "Hold signal reinforced — all 6 nodes in consensus",
     ],
   },
   {
