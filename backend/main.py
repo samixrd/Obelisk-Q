@@ -1413,7 +1413,7 @@ async def get_agent_transactions():
         rows = conn.execute("""
             SELECT tx_hash, action, score, regime, timestamp, status, vault_address, cycle 
             FROM agent_transactions 
-            ORDER BY id DESC LIMIT 10
+            ORDER BY id DESC LIMIT 25
         """).fetchall()
         conn.close()
         return [
