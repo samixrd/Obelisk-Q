@@ -1583,9 +1583,29 @@ async def get_rwa_status():
         logger.error(f"rwa_status: error: {e}")
         return {"status": "error", "message": str(e)}
 
+@app.get("/api/agent/identity")
+async def get_agent_identity():
+    """Returns the ERC-8004 Agent Identity Manifest."""
+    manifest_path = os.path.join(os.path.dirname(__file__), "..", "agent-manifest.json")
+    try:
+        with open(manifest_path, "r") as f:
+            manifest = json.load(f)
+        return {
+            "status": "verified",
+            "standard": "ERC-8004 Sovereign AI Agent Identity",
+            "agent_address": "0x5698E89Ec2396e02679ddde33c2BA78de88F7fce",
+            "manifest": manifest,
+            "verification_url": "https://obeliskq.app/api/agent/identity"
+        }
+    except Exception as e:
+        logger.error(f"Failed to read agent manifest: {e}")
+        return {"status": "error", "message": "Manifest not found"}
+
+
 @app.get("/health")
 async def health():
     """Deep Health check for monitoring systems (UptimeRobot, etc)."""
+
     rpc_ok = False
     try:
         w3 = get_w3(timeout=2, max_attempts=2)

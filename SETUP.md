@@ -92,6 +92,7 @@ All endpoints are **public** (no authentication required):
 | Endpoint | Description |
 |---|---|
 | `GET /api/agent/health` | Live cycle count, uptime, rebalance count |
+| `GET /api/agent/identity` | ERC-8004 Agent Identity Manifest |
 | `GET /api/stats` | AUM, active users, live vault balance (on-chain) |
 | `GET /api/cycles/history` | Full audit trail — every cycle with regime + score |
 | `GET /api/agent/transactions` | On-chain tx hashes (verify on Mantle Explorer) |
