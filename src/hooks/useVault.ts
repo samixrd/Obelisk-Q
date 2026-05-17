@@ -312,6 +312,20 @@ export function useVault(): VaultState {
 
       let userBalance = "0.0000";
       if (address) {
+        let rawBalanceOfUser = 0n;
+        try {
+          // Fetch raw getBalance first
+          const rawBalOfUserRaw = await rpcCall("eth_call", [
+            { to: VAULT_ADDRESS, data: encodeGetBalance(address) },
+            "latest",
+          ]);
+          if (rawBalOfUserRaw && rawBalOfUserRaw !== "0x") {
+            rawBalanceOfUser = BigInt(rawBalOfUserRaw);
+          }
+        } catch (e) {
+          console.warn("Failed to fetch getBalance", e);
+        }
+
         try {
           // Use getWithdrawableBalance — yield-inclusive, agent buffer already subtracted
           const balRaw = await rpcCall("eth_call", [
@@ -319,21 +333,15 @@ export function useVault(): VaultState {
             "latest",
           ]);
           if (balRaw && balRaw !== "0x") {
-            userBalance = formatMnt(BigInt(balRaw));
+            const withdrawableBig = BigInt(balRaw);
+            // Floor with raw deposit minus 0.01 ether agent buffer (since totalValue direct sum understates token value)
+            const rawWithBuffer = rawBalanceOfUser > parseMntToWei("0.01") ? rawBalanceOfUser - parseMntToWei("0.01") : 0n;
+            const finalUserBal = withdrawableBig > rawWithBuffer ? withdrawableBig : rawWithBuffer;
+            userBalance = formatMnt(finalUserBal);
           }
         } catch (e) {
-          // Fallback to legacy getBalance if new function not available
-          try {
-            const balRaw = await rpcCall("eth_call", [
-              { to: VAULT_ADDRESS, data: encodeGetBalance(address) },
-              "latest",
-            ]);
-            if (balRaw && balRaw !== "0x") {
-              userBalance = formatMnt(BigInt(balRaw));
-            }
-          } catch (e2) {
-            console.warn("Vault user balance call failed", e2);
-          }
+          // Fallback to legacy getBalance
+          userBalance = formatMnt(rawBalanceOfUser);
         }
       }
 
