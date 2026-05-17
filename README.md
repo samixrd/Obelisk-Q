@@ -188,7 +188,30 @@ With the RWA sector projected to reach $16T by 2030, Obelisk Q positions Mantle 
 
 ---
 
-## 🎯 Innovation & Ecosystem Value
+## 💰 Business Model
+
+### Fee Structure ("2 & 20" — Institutional Standard)
+
+| Fee | Rate | Trigger |
+|---|---|---|
+| Management Fee | **2% AUM / year** | Continuously accrued on vault TVL |
+| Performance Fee | **20% of profits** | Charged only on positive P&L per cycle |
+| Entry/Exit Fee | **0%** | No lock-in — full liquidity always |
+| Gas Costs | Borne by Agent | Paid from management fee revenue pool |
+
+### Revenue Projections (Conservative)
+
+| TVL | Annual Management Revenue | At 20% Perf (assuming 8% avg yield) |
+|---|---|---|
+| $100K | $2,000 | +$1,600 |
+| $1M | $20,000 | +$16,000 |
+| $10M | $200,000 | +$160,000 |
+
+### GTM Strategy (3 Phases)
+1. **Ecosystem Phase** (Now): Hackathon → early adopters → Mantle community DeFi users.
+2. **Institutional Phase** (Q3 2025): Onboard institutional LPs via Ondo Finance and Merchant Moe partnerships. Target: $1M TVL.
+3. **Governance Phase** (Q1 2026): Launch `$OBELISK` governance token. Transition fee revenue to DAO treasury. Target: $10M TVL.
+
 Obelisk Q proposes a new **AI × Web3 paradigm**: where the agent is not just a chatbot, but a **Sovereign Financial Actor**.
 
 1.  **Technical Depth**: High-precision integration between LangGraph's multi-agent coordination and Mantle's high-throughput execution environment.
@@ -213,6 +236,20 @@ Retail DeFi users lack the tools and data pipelines that institutional traders u
 - Publishing every AI decision with **full reasoning transparency** via the on-chain audit trail (`/api/cycles/history`) and the in-app **AI Decision Transparency** feed.
 - Ensuring users can always verify *why* capital was moved — not just *that* it was moved.
 
+### 🌍 Real-World Financial Inclusion Impact
+
+Obelisk Q is not just a product — it is a **financial inclusion engine**:
+
+| Metric | Value | Source |
+|---|---|---|
+| Min. deposit to access US Treasury yield | **0.01 MNT** | ObeliskVault contract |
+| USDY backing | **100% US T-Bills** | Ondo Finance audit |
+| Time to first yield | **< 10 minutes** (next cycle) | Agent cycle cadence |
+| Human intervention required | **Zero** | Autonomous 7-node swarm |
+| Information advantage vs. retail | **Closed** | AI Transparency Feed |
+
+> **The underserved user profile**: A Southeast Asian freelancer with $50 MNT savings — previously excluded from US Treasury instruments by geography, minimum investment thresholds, and lack of brokerage access — can now earn the same institutional yield rate by interacting with a single smart contract on Mantle.
+
 ### 🛡️ Non-Extractive Design
 Obelisk Q is designed to protect users, not exploit them:
 - **Circuit Breaker**: The AI can autonomously `pause()` the vault if a critical Q-Score drop is detected — protecting users even if the agent makes a wrong call.
@@ -222,9 +259,10 @@ Obelisk Q is designed to protect users, not exploit them:
 ---
 
 ## 🛠️ Getting Started
-*   **Official Website**: [www.obeliskq.app](https://www.obeliskq.app/)
-*   **Setup Instructions**: See [INTEGRATION_GUIDE.md](./INTEGRATION_GUIDE.md)
-*   **Architecture Deep Dive**: See [src/pages/Docs.tsx](./src/pages/Docs.tsx)
+*   **Live Demo**: [www.obeliskq.app](https://www.obeliskq.app/)
+*   **Local Setup Guide**: See [SETUP.md](./SETUP.md) ← Start here for judges
+*   **Algorithm Deep Dive**: See [ALGORITHM.md](./ALGORITHM.md)
+*   **Security Policy**: See [SECURITY.md](./SECURITY.md)
 
 ---
 
