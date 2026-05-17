@@ -37,7 +37,8 @@ module.exports = {
       merge_logs: true,
       autorestart: true,
       max_restarts: 10,
-      restart_delay: 4000
+      restart_delay: 4000,
+      max_memory_restart: "300M"
     },
     {
       name: "obelisk-shadow-1",
@@ -54,7 +55,8 @@ module.exports = {
       out_file: "./logs/shadow1_out.log",
       merge_logs: true,
       autorestart: true,
-      restart_delay: 10000
+      restart_delay: 10000,
+      max_memory_restart: "300M"
     }
   ]
 };
