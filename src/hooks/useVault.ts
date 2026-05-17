@@ -315,6 +315,7 @@ export function useVault(): VaultState {
       }
 
       let userBalance = "0.0000";
+      let userRawBalance = "0.0000";
       if (address) {
         let rawBalanceOfUser = 0n;
         try {
@@ -347,10 +348,6 @@ export function useVault(): VaultState {
           // Fallback to legacy getBalance
           userBalance = formatMnt(rawBalanceOfUser);
         }
-      }
-
-      let userRawBalance = "0.0000";
-      if (address) {
         userRawBalance = formatMnt(rawBalanceOfUser);
       }
 
