@@ -882,16 +882,23 @@ async def supervisory_controller_node(state: AgentState):
     except Exception as e:
         logger.warning(f"supervisory: failed to check vault balance: {e}. proceeding with caution.")
 
-    # ── POSITION TRACKING: skip if already in target ──
-    if action == "mETH" and CURRENT_POSITION == "mETH":
-        logger.info("executor: already in mETH position. skipping swap.")
-        return {"messages": [AIMessage(content="executor: position already optimized (mETH). skipping transaction.")], "data": state["data"]}
-    elif action == "USDY" and CURRENT_POSITION == "USDY":
-        logger.info("executor: already in USDY position. skipping swap.")
-        return {"messages": [AIMessage(content="executor: position already optimized (USDY). skipping transaction.")], "data": state["data"]}
-    elif action == "WMNT" and CURRENT_POSITION == "WMNT":
-        logger.info("executor: already in WMNT position. skipping swap.")
-        return {"messages": [AIMessage(content="executor: position already optimized (WMNT). skipping transaction.")], "data": state["data"]}
+    # ── POSITION TRACKING & NEW FUNDS CHECK ──
+    # If the current target action matches our current tracking position,
+    # we should only execute on-chain if there are new raw MNT deposits in the vault.
+    # Otherwise, if raw MNT balance is extremely low (< 0.05 MNT), there are no new funds to wrap or swap.
+    try:
+        w3 = get_w3()
+        vault_addr = os.getenv("VAULT_ADDRESS")
+        if vault_addr:
+            vault_address = w3.to_checksum_address(vault_addr)
+            raw_balance = w3.eth.get_balance(vault_address)
+            
+            if action == CURRENT_POSITION:
+                if raw_balance < Web3.to_wei(0.05, 'ether'):
+                    logger.info(f"executor: already in {action} position and no new raw MNT deposits detected ({Web3.from_wei(raw_balance, 'ether')} MNT). skipping swap to save gas.")
+                    return {"messages": [AIMessage(content=f"executor: position already optimized ({action}) and no new deposits. skipping transaction.")], "data": state["data"]}
+    except Exception as e:
+        logger.warning(f"supervisory: position pre-flight check failed: {e}. proceeding with caution.")
 
     # ── Q-SCORE FINAL AUTHORITY: executor cannot override the scoring engine ──
     regime = state["data"].get("regime", "N/A")
@@ -994,18 +1001,19 @@ async def supervisory_controller_node(state: AgentState):
                         return "aborting|executor: vault balance is 0. aborting execution."
                     
                     # ── PRE-FLIGHT BALANCE CHECKS ──
-                    if action == "mETH" and balance < w3.to_wei(0.01, 'ether'):
-                        return "aborting|executor: insufficient MNT for mETH swap. skipping."
-                    
-                    if action == "USDY":
-                        # Check mETH balance before swapping to USDY
-                        m_contract = w3.eth.contract(address=w3.to_checksum_address(METH_ADDRESS), abi=ERC20_ABI)
-                        m_balance = m_contract.functions.balanceOf(vault_address).call()
-                        if m_balance == 0:
-                            return "aborting|executor: insufficient mETH for USDY swap. skipping."
-                            
-                    if action == "WMNT" and balance < w3.to_wei(0.01, 'ether'):
-                        return "aborting|executor: insufficient MNT for WMNT swap. skipping."
+                    # Instead of buggy token-specific balance checks, we query the vault's total value (raw MNT + allowed ERC20 assets).
+                    # Since any swap first unwinds non-target assets to raw MNT, we only require that the total vault value is positive.
+                    try:
+                        vault_contract_view = w3.eth.contract(address=vault_address, abi=[
+                            {"inputs":[],"name":"getTotalVaultValue","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}
+                        ])
+                        total_vault_value = vault_contract_view.functions.getTotalVaultValue().call()
+                    except Exception as e:
+                        logger.warning(f"executor: failed to fetch total vault value view: {e}. using raw balance as fallback.")
+                        total_vault_value = balance
+
+                    if total_vault_value < w3.to_wei(0.01, 'ether'):
+                        return f"aborting|executor: insufficient total vault value ({w3.from_wei(total_vault_value, 'ether')} MNT) to execute {action} swap. skipping."
                         
                     if action == "UNWIND":
                         logger.info("executor: EMERGENCY UNWIND in progress...")
