@@ -1559,9 +1559,53 @@ async def get_stats():
     components = last_known_state.get("components", {"yield_score": 0, "volatility_score": 0, "liquidity_score": 0})
     history = last_known_state.get("score_history", [])
 
+    # ── REAL ON-CHAIN VAULT AUM ──
+    # Fetch the actual MNT balance held in the vault contract from Mantle RPC.
+    vault_aum_mnt = 0.0
+    vault_aum_display = "N/A"
+    try:
+        vault_addr = os.getenv("VAULT_ADDRESS")
+        if vault_addr:
+            loop = asyncio.get_event_loop()
+            def _fetch_balance():
+                w3 = rpc_manager.get_connection()
+                balance_wei = w3.eth.get_balance(w3.to_checksum_address(vault_addr))
+                return float(w3.from_wei(balance_wei, "ether"))
+            vault_aum_mnt = await loop.run_in_executor(None, _fetch_balance)
+            # Format with commas for display, rounded to 4 decimals
+            vault_aum_display = f"{vault_aum_mnt:,.4f} MNT"
+            logger.info(f"api/stats: live vault AUM = {vault_aum_display}")
+    except Exception as e:
+        logger.warning(f"api/stats: vault AUM fetch failed, using fallback: {e}")
+        vault_aum_display = "N/A"
+
+    # ── REAL SESSION COUNT ──
+    # Count only sessions active within the last SESSION_TIMEOUT window.
+    now_ts = time.time()
+    live_users = sum(
+        1 for s in SESSIONS.values()
+        if now_ts - s.get("last_seen", 0) < SESSION_TIMEOUT
+    )
+
+    # ── REAL CYCLE STATS FROM DB ──
+    total_cycles = 0
+    total_rebalances = 0
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        total_cycles = conn.execute("SELECT COUNT(*) FROM agent_memory").fetchone()[0]
+        total_rebalances = conn.execute(
+            "SELECT COUNT(*) FROM agent_transactions WHERE status='success'"
+        ).fetchone()[0]
+        conn.close()
+    except Exception as e:
+        logger.warning(f"api/stats: DB stats fetch failed: {e}")
+
     return {
-        "total_aum": "1,240,500",
-        "active_users": 142,
+        "total_aum": vault_aum_display,
+        "total_aum_mnt": round(vault_aum_mnt, 6),
+        "active_users": live_users,
+        "total_cycles": total_cycles,
+        "total_rebalances": total_rebalances,
         "vault_health": resiliency,
         "active_nodes": active_nodes,
         "score": score,

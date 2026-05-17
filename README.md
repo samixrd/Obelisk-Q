@@ -40,7 +40,7 @@ This architecture ensures 100% uptime and deterministic rebalancing even during 
 *   **Network**: Mantle Mainnet (Chain ID 5000)
 *   **Primary Assets**: mETH (Staking), USDY (RWA), WMNT (Liquidity)
 
-*   **USDY (Ondo RWA)**: `0x8D6857216076fb05316B3C068694086E6689799c`
+*   **USDY (Ondo RWA)**: `0x5bE26527e817998A7206475496fDE1e68957c5A6`
 *   **mETH (Mantle LSP)**: `0xcDA86A272531e8640cD7F1a92c01839911B90bb0`
 *   **WMNT (Wrapped MNT)**: `0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8`
 *   **Network**: Mantle Mainnet (Chain ID: 5000)
@@ -99,7 +99,7 @@ The system defines three market regimes:
 
 #### 2.2 Observation Model (Emission)
 Volatility is generated via a bounded random walk, serving as the observable "emission":
-*   **Step size**: `±0.4` per cycle
+*   **Step size**: `±0.3` per cycle
 *   **Bounds**: `[0.5, 3.5]`
 *   **Initial value**: `1.5`
 
