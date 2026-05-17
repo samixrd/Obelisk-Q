@@ -4,11 +4,12 @@ export function RegimeMatrix() {
   const regimes = ["Expansion", "Consolidation", "Contraction"];
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full overflow-hidden">
       <p className="text-[10px] uppercase text-zinc-500 font-mono tracking-[0.2em]">
         HMM Regime Transition Matrix
       </p>
-      <div className="grid grid-cols-3 gap-[1px] bg-slate-200 border border-slate-200">
+      <div className="w-full overflow-x-auto scrollbar-hidden">
+        <div className="grid grid-cols-3 gap-[1px] bg-slate-200 border border-slate-200 min-w-[280px]">
         {regimes.map((row, i) => (
           regimes.map((col, j) => {
             const isDiagonal = i === j;
@@ -28,6 +29,7 @@ export function RegimeMatrix() {
             );
           })
         ))}
+        </div>
       </div>
       <p className="text-[10px] text-zinc-500 font-mono italic leading-relaxed text-center mt-4">
         "Current transition probability indicates 92% state-retention in {regimes[0]} regime."

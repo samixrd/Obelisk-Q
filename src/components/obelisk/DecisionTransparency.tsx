@@ -36,7 +36,7 @@ export function DecisionTransparency() {
   const statusOk = score >= adaptive.confidenceThreshold;
 
   return (
-    <motion.div {...fadeUp} className="col-span-12 border border-slate-200 bg-white rounded-sm p-6 md:p-12 space-y-12 md:space-y-16 mb-12 transition-all shadow-sm">
+    <motion.div {...fadeUp} className="col-span-12 border border-slate-200 bg-white rounded-sm p-5 sm:p-6 md:p-12 space-y-12 md:space-y-16 mb-12 transition-all shadow-sm w-full max-w-full overflow-hidden min-w-0">
       {/* ── Section Title ────────────────────────────────────────────────── */}
       <div className="space-y-2 border-b border-slate-200 pb-6">
         <p
@@ -52,7 +52,7 @@ export function DecisionTransparency() {
         </h2>
       </div>
 
-      <div className="grid grid-cols-12 gap-12 md:gap-20">
+      <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12 md:gap-20 w-full">
         {/* ── Left Column: Decision & Breakdown ────────────────────────────── */}
         <div className="col-span-12 lg:col-span-7 space-y-16">
           {/* 1. LAST DECISION CARD */}
@@ -180,7 +180,7 @@ function ScoreBar({ label, weight, score, contribution, note }: { label: string;
             initial={{ opacity: 0 }}
             animate={{ opacity: i < (score / 3.33) ? 1 : 0.08 }}
             transition={{ duration: 0.5, delay: i * 0.01 }}
-            className="h-full flex-1 bg-zinc-800"
+            className="h-full flex-1 min-w-0 bg-zinc-800"
           />
         ))}
       </div>
