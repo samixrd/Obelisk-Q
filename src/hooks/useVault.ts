@@ -150,6 +150,7 @@ export function useVault(): VaultState {
 
   const CHAIN_ID = "5000";
   const lastFetchRef = useRef<number>(0);
+  const lastAddressRef = useRef<string | null>(null);
 
   const getExplorerUrl = useCallback((hash: string) => {
     return `${EXPLORER_URL}/tx/${hash}`;
@@ -257,9 +258,10 @@ export function useVault(): VaultState {
   const refreshStats = useCallback(async (force = false) => {
     if (!VAULT_ADDRESS) return;
 
-    // Cache: only fetch if > 30s since last successful fetch
+    // Cache: only fetch if > 30s since last successful fetch, and address hasn't changed
     const now = Date.now();
-    if (!force && now - lastFetchRef.current < 30000 && vaultStats) {
+    const addressChanged = address !== lastAddressRef.current;
+    if (!force && !addressChanged && now - lastFetchRef.current < 30000 && vaultStats) {
       return;
     }
 
@@ -379,6 +381,7 @@ export function useVault(): VaultState {
       });
 
       lastFetchRef.current = Date.now();
+      lastAddressRef.current = address;
 
     } catch (err) {
       console.error("Stats fetch failed:", err);
