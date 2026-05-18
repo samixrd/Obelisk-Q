@@ -89,14 +89,13 @@ export function useAgentFeed() {
     let interval: ReturnType<typeof setInterval> | null = null;
 
     const fetchFromBackend = async () => {
-      if (!sessionToken) return false;
       try {
-        const res = await fetch('/api/agent/logs', {
-          headers: {
-            'x-session-token': sessionToken
-          }
-        });
-        if (res.status === 401) {
+        const headers: Record<string, string> = {};
+        if (sessionToken) {
+          headers['x-session-token'] = sessionToken;
+        }
+        const res = await fetch('/api/agent/logs', { headers });
+        if (res.status === 401 && sessionToken) {
           logout();
           return false;
         }
