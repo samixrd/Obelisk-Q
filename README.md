@@ -188,7 +188,7 @@ Obelisk Q utilizes an institutional-grade "2 & 20" model, fully automated on-cha
 
 ### 🚀 Go-To-Market (GTM)
 1.  **Phase 1: Ecosystem Alignment**: Partnership with Mantle LSP and Ondo Finance to offer Obelisk as a "Smart Vault" option for USDY/mETH holders.
-2.  **Phase 2: Institutional LPs**: Targeting family offices and DeFi funds that require automated, risk-managed RWA exposure without active management.
+2.  **Phase 2: Institutional LPs**: Targeting DeFi funds and DAOs that require automated, risk-managed RWA exposure without active management.
 3.  **Phase 3: Governance Token**: Launch of $OBELISK to decentralize the agent's risk parameters and regime thresholds.
 
 ### 🌍 Market Opportunity
