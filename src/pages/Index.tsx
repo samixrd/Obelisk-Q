@@ -19,7 +19,12 @@ function AppInner() {
   const { walletAddress, setWalletAddress, setAuthMethod, sessionToken, logout } = useAuth();
 
   const [stage, setStage] = useState<AppStage>(() => {
-    // Check both session and persistent storage for initial state
+    // Check if stage was explicitly saved (e.g. from a reload or guest navigation)
+    const savedStage = localStorage.getItem("obelisk_stage") as AppStage | null;
+    if (savedStage === "dashboard" || savedStage === "auth" || savedStage === "landing") {
+      return savedStage;
+    }
+    // Check both session and persistent storage for initial state fallback
     const savedToken = sessionStorage.getItem("obelisk_session") || localStorage.getItem("obelisk_session");
     const savedAddr = localStorage.getItem("obelisk_address");
     return (savedToken && savedAddr) ? "dashboard" : "landing";
@@ -36,6 +41,11 @@ function AppInner() {
   useEffect(() => {
     localStorage.setItem("obelisk_tab", activeTab);
   }, [activeTab]);
+
+  // Persist stage to prevent redirecting to landing page on page refresh
+  useEffect(() => {
+    localStorage.setItem("obelisk_stage", stage);
+  }, [stage]);
 
   // Handle logout transition
   // NOTE: Guest mode enabled. We no longer force landing if session/wallet is missing.

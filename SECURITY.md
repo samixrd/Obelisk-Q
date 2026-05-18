@@ -27,17 +27,8 @@ We maintain a transparent posture regarding systemic risks that are currently pa
 ## 3. Security Roadmap & Audit Timeline
 1.  **V1 Internal Review**: Completed May 12, 2026.
 2.  **Static Analysis (Slither/Mythril)**: Completed May 14, 2026.
-3.  **Community Bug Bounty**: Scheduled for June 2026.
-4.  **External Audit (Tier 1 Firm)**: Q3 2026.
-
----
-
-## 4. Reporting Vulnerabilities
-We take security seriously. If you discover a vulnerability, please do not disclose it publicly.
-
-*   **Contact**: Security@ObeliskQ.io
-*   **Process**: We aim to acknowledge all reports within 24 hours and provide a fix within 72 hours for critical issues.
-*   **Bounty**: We offer rewards for responsible disclosure that prevents capital loss.
+3.  **Community Bug Bounty**: Scheduled for August 2026.
+4.  **External Audit (Tier 1 Firm)**: Q4 2026.
 
 ---
 

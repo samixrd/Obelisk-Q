@@ -3,7 +3,7 @@
 
 ---
 
-## ⚡ Quick Wins (Judge's Summary)
+## ⚡ Summary
 *   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet** ([0x7924ce8e072c84D4028B04754207146e3aC6429A](https://explorer.mantle.xyz/address/0x7924ce8e072c84D4028B04754207146e3aC6429A)).
 *   ✅ **Continuous Execution**: Agent swarm running 24/7 — cycle count and uptime verifiable live at [`/api/agent/health`](https://obeliskq.app/api/agent/health).
 *   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.5%–2.5% based on regime and volatility).
@@ -13,7 +13,7 @@
 
 ---
 
-## 🏆 Hackathon Submission: AI & RWA Track
+## 🏆 Hackathon Submission: AI & RWA Track And AI · Trading & Strategy Track
 Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is competing for the **Grand Champion** title.
 
 ### 📝 The Pitch: Bringing Intelligence to RWAs
@@ -21,9 +21,18 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **The AI Role**: A 7-node autonomous pipeline (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital between stable RWA yield, stable Mantle yield (WMNT), and aggressive staking growth without human intervention.
 *   **The Strategy (RWA Safe Harbor)**: Captures "Growth Alpha" with mETH during expansions, and autonomously rotates into **USDY (US Treasury backed)** as a safe harbor during DeFi volatility events to protect user capital while retaining institutional-grade yield.
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
-*   **UI/UX Focus**: Competing for the **Best UI/UX Award** with a bespoke glassmorphic design, 30-second guided onboarding, an **EIP-4337 Account Abstraction** gasless wallet stub for retail accessibility, and a first-of-its-kind **AI Transparency Feed** for human-readable auditability.
 *   **Verifiability Roadmap (ZK-ML)**: Immediate next steps involve generating Zero-Knowledge Machine Learning (ZK-ML) proofs for all AI decisions, transforming "Trust our AI" into mathematically verifiable "Verify our Math" execution on-chain.
 
+### 📊 Mantle Hackathon Judging Criteria Alignment
+
+Obelisk Q is designed to fully address and maximize the Mantle general judging criteria, fully backed by production implementation in the `backend`:
+
+| Dimension | Points | Key Metrics & Backend Evidence | Description & Proof Points |
+|---|---|---|---|
+| **Technical** | **15** | • **Robust Swarm Architecture**: Multi-agent graph in [main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L510-L796) coordinating 7 dedicated nodes (Regime, Risk, Analyst, Consensus, Q-Score, Telemetry, Supervisor).<br>• **SLA-Grade Resiliency**: [rpc_manager.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/rpc_manager.py) implements automated multi-RPC failover with exponential backoff.<br>• **Distributed High-Availability**: Heartbeat monitoring via Redis ([main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L242-L272)) with shadow standby leader election.<br>• **Auditable Telemetry**: Thread-safe WAL-enabled [DatabaseManager](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L135-L209) prevents race conditions during parallel node executions. | **Production-Ready & Fully Deployed**:<br>Core smart contracts are deployed and verified on Mantle Mainnet. The autonomous backend runs 24/7 with zero human intervention, real-time logging, and Prometheus monitoring for complete system visibility. |
+| **Ecosystem fit** | **10** | • **Mantle Primitives Core**: Deeply integrates Ondo's **USDY** (US Treasury RWA) and Mantle LSP's **mETH** (Liquid Staking) as the core yield drivers.<br>• **DeFi Ecosystem Complement**: Directly routes capital through **Merchant Moe DEX** for on-chain rebalancing swaps.<br>• **Live Data Feeds**: Connects directly to Ondo APY API, DeFiLlama yields, and Bybit Spot tickers ([main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L346-L433)) to sense ecosystem conditions. | **Strategic Contribution**:<br>Maximizes Mantle TVL and ecosystem velocity by dynamically balancing capital between growth (mETH) and defensive RWA (USDY) yield assets based on real-time market regimes. |
+| **Business potential** | **10** | • **Automated Fee Accrual**: Implements standard institutional "2 & 20" logic (2% AUM/year + 20% Performance Fee) designed to run autonomously.<br>• **Structured GTM Gating**: Clear 3-Phase progression (Ecosystem Phase $\rightarrow$ Institutional LPs with Ondo/Moe $\rightarrow$ Governance Phase).<br>• **Inactivity & Custody Guard**: Integrated `obelisk_last_activity` check and secure session handling in [AuthContext.tsx](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/src/context/AuthContext.tsx#L56-L85) for institutional compliance. | **Genuine Market PMF**:<br>Solves active capital rotation complexity for retail and DeFi users. Capitalizes on the trillion-dollar RWA tailwind by providing the first "All-Weather" autonomous navigator on Mantle. |
+| **Innovation** | **10** | • **HMM-Inspired Regime Decoder**: Replaces simple random walk with a mathematical classifier using Fear & Greed and MNT price change inputs ([main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L556-L587)) smoothed via EMA.<br>• **Hybrid AI Consensus**: Leverages GPT-4o-mini Azure OpenAI ([main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L324-L335)) as a risk consensus arbitrator, verified by deterministic mathematical sanity filters.<br>• **Trend-Locked Hysteresis**: 3-cycle lock mechanism to mathematically avoid whipsaw losses and gas burn. | **True Technical Breakthrough**:<br>Moves beyond static auto-compounders. Obelisk Q introduces the **Sovereign Financial Actor** concept—a self-healing, multi-node AI agent swarm that autonomously signs transaction payloads under deterministic safety guardrails. |
 
 ### 🛠️ Technical Excellence & Deployment
 ### 🛡️ High Availability & Resiliency
@@ -211,8 +220,8 @@ With the RWA sector projected to reach $16T by 2030, Obelisk Q positions Mantle 
 
 ### GTM Strategy (3 Phases)
 1. **Ecosystem Phase** (Now): Hackathon → early adopters → Mantle community DeFi users.
-2. **Institutional Phase** (Q3 2025): Onboard institutional LPs via Ondo Finance and Merchant Moe partnerships. Target: $1M TVL.
-3. **Governance Phase** (Q1 2026): Launch `$OBELISK` governance token. Transition fee revenue to DAO treasury. Target: $10M TVL.
+2. **Institutional Phase** (Q1 2027): Onboard institutional LPs via Ondo Finance and Merchant Moe partnerships. Target: $1M TVL.
+3. **Governance Phase** (Q3 2027): Launch `$OBELISK` governance token. Transition fee revenue to DAO treasury. Target: $10M TVL.
 
 Obelisk Q proposes a new **AI × Web3 paradigm**: where the agent is not just a chatbot, but a **Sovereign Financial Actor**.
 
@@ -249,8 +258,6 @@ Obelisk Q is not just a product — it is a **financial inclusion engine**:
 | Time to first yield | **< 10 minutes** (next cycle) | Agent cycle cadence |
 | Human intervention required | **Zero** | Autonomous 7-node swarm |
 | Information advantage vs. retail | **Closed** | AI Transparency Feed |
-
-> **The underserved user profile**: A Southeast Asian freelancer with $50 MNT savings — previously excluded from US Treasury instruments by geography, minimum investment thresholds, and lack of brokerage access — can now earn the same institutional yield rate by interacting with a single smart contract on Mantle.
 
 ### 🛡️ Non-Extractive Design
 Obelisk Q is designed to protect users, not exploit them:

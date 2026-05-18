@@ -93,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("obelisk_address");
     localStorage.removeItem("obelisk_method");
     localStorage.removeItem("obelisk_tab");
+    localStorage.removeItem("obelisk_stage");
     localStorage.removeItem("obelisk_last_activity");
   };
 
