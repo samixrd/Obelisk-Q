@@ -768,7 +768,7 @@ async def q_score_engine_node(state: AgentState):
         h_s = "H(s)_growth"
         damping = "0.4 (Underdamped)"
         action = "mETH"
-    elif regime == "Contraction" and risk_score <= 45:
+    elif regime == "Contraction" and risk_score <= 60:
         h_s = "H(s)_hedge"
         damping = "1.0 (Critically Damped)"
         action = "USDY"
