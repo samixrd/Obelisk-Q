@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAgentData } from "@/hooks/useAgentData";
 import { useVault } from "@/hooks/useVault";
 import { useEffect, useRef, useState } from "react";
-import { useAgentFeed } from "@/hooks/useAgentFeed";
 import { DecisionTransparency } from "./DecisionTransparency";
 import { MagneticText } from "./MagneticText";
 import { AgentAttestation } from "./AgentAttestation";
@@ -34,7 +33,6 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export function AgentLogsView() {
-  const { logs } = useAgentFeed();
   const { agentLogs, score, countdown, nodes } = useAgentData();
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -118,41 +116,6 @@ export function AgentLogsView() {
         <DecisionTransparency />
       </div>
       
-      {/* ── Agent Signals ────────────────────────────────────────────────── */}
-      <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">
-        <div className="flex items-center justify-between mb-6">
-          <div className="text-[22px] text-[#0a0a0a] flex flex-wrap gap-x-[0.25em] font-bold tracking-tight">
-            <MagneticText disabled text="Agent" />
-            <div className="text-[#9CA3AF]"><MagneticText disabled text="Signals" /></div>
-          </div>
-        </div>
-        <div className="h-[320px] overflow-y-auto pr-2 scrollbar-hidden">
-          {logs.slice(0, 10).map((log, i) => (
-            <div key={i} className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 py-3.5 border-t border-black/[0.03]">
-              <div className="flex items-center justify-between sm:justify-start gap-4">
-                <span className="text-[11px] text-black/50 w-20 tabular-nums font-mono">
-                  {log.timestamp.toLocaleTimeString('en-GB', { hour12: false })}
-                </span>
-                <div className={`px-3 py-1 rounded-full text-[9px] w-20 text-center tracking-wider font-light ${log.action === 'rebalance' ? 'bg-emerald-400/10 text-emerald-700' : 'bg-black/5 text-black/50'}`}>
-                  {log.action.toUpperCase()}
-                </div>
-              </div>
-              <span className="flex-1 text-[13px] text-[#0a0a0a]/80 truncate font-light">
-                {log.message}
-              </span>
-              <span className="text-[11px] text-[#0a0a0a]/60 w-8 text-right font-mono-num hidden sm:block">
-                {log.score}
-              </span>
-            </div>
-          ))}
-          {logs.length === 0 && (
-            <p className="text-center py-8 text-[10px] uppercase text-[#9CA3AF] tracking-[0.25em] font-light">
-              Awaiting signal feed...
-            </p>
-          )}
-        </div>
-      </div>
-
       {/* ── Log Stream ───────────────────────────────────────────────────── */}
       <div className="col-span-12 glass-card rounded-[32px] md:rounded-[40px] p-6 md:p-10 flex flex-col h-[700px] transition-all">
 
