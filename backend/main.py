@@ -103,10 +103,6 @@ ch = logging.StreamHandler()
 ch.setFormatter(logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s'))
 logger.addHandler(ch)
 
-fh = RotatingFileHandler("logs/agent_audit.log", maxBytes=10*1024*1024, backupCount=5)
-fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - [%(node_id)s] %(message)s'))
-logger.addHandler(fh)
-
 class SecurityFilter(logging.Filter):
     def filter(self, record):
         msg = str(record.msg)
@@ -118,7 +114,13 @@ class SecurityFilter(logging.Filter):
             record.node_id = "local"
         return True
 
-logger.addFilter(SecurityFilter())
+security_filter = SecurityFilter()
+logger.addFilter(security_filter)
+
+fh = RotatingFileHandler("logs/agent_audit.log", maxBytes=10*1024*1024, backupCount=5)
+fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - [%(node_id)s] %(message)s'))
+fh.addFilter(security_filter)
+logger.addHandler(fh)
 
 RPC_TIMEOUT = int(os.getenv("AGENT_RPC_TIMEOUT", "20"))      # Increased from 15
 CYCLE_TIMEOUT = int(os.getenv("AGENT_CYCLE_TIMEOUT", "90"))  # Increased from 45 to allow for LLM + Multi-RPC
