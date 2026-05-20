@@ -297,10 +297,10 @@ export function useVault(): VaultState {
   const refreshStats = useCallback(async (force = false) => {
     if (!VAULT_ADDRESS) return;
 
-    // Cache: only fetch if > 30s since last successful fetch, and address hasn't changed
+    // Cache: only fetch if > 8s since last successful fetch, and address hasn't changed
     const now = Date.now();
     const addressChanged = address !== lastAddressRef.current;
-    if (!force && !addressChanged && now - lastFetchRef.current < 30000 && vaultStats) {
+    if (!force && !addressChanged && now - lastFetchRef.current < 8000 && vaultStats) {
       return;
     }
 
@@ -595,7 +595,7 @@ export function useVault(): VaultState {
                 const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
                 localStorage.setItem(`obelisk_cost_basis_${address}`, (currentCostBasis + parseFloat(finalDepositMnt)).toString());
 
-                await refreshStats();
+                await refreshStats(true);
                 clearInterval(interval);
               }
             }
@@ -741,7 +741,7 @@ export function useVault(): VaultState {
                 simBalanceRef.current[address || "null"] = 0;
                 // Clear Cost Basis
                 localStorage.removeItem(`obelisk_cost_basis_${address}`);
-                await refreshStats();
+                await refreshStats(true);
                 clearInterval(interval);
               }
             }
@@ -894,7 +894,7 @@ export function useVault(): VaultState {
                 const newCostBasis = Math.max(0, currentCostBasis * (1 - ratio));
                 localStorage.setItem(`obelisk_cost_basis_${address}`, newCostBasis.toString());
 
-                await refreshStats();
+                await refreshStats(true);
                 clearInterval(interval);
               }
             }
@@ -920,8 +920,8 @@ export function useVault(): VaultState {
   }, [address, refreshStats, saveTx, getExplorerUrl, activeWallet, vaultStats?.userBalance]);
 
   useEffect(() => {
-    refreshStats();
-    const id = setInterval(refreshStats, 15_000);
+    refreshStats(true); // force first load when hook mounts or address updates
+    const id = setInterval(refreshStats, 8000);
     return () => clearInterval(id);
   }, [refreshStats]);
 
@@ -1219,7 +1219,7 @@ export function useVault(): VaultState {
                                 hash: forwardHash,
                               });
 
-                              await refreshStats();
+                              await refreshStats(true);
                               clearInterval(forwardInterval);
                             }
                           }
@@ -1464,7 +1464,7 @@ export function useVault(): VaultState {
                                 hash: forwardHash,
                               });
 
-                              await refreshStats();
+                              await refreshStats(true);
                               clearInterval(forwardInterval);
                             }
                           }

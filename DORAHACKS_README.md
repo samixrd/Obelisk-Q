@@ -97,10 +97,11 @@ Retail DeFi users lack the tools and data pipelines that institutional traders u
 ---
 
 ## 🚀 Roadmap (Future Implementations)
-1. **Omnichain RWAs via LayerZero**: Future versions will integrate LayerZero to execute cross-chain rebalances.
-2. **On-Chain Revenue Flow & Tokenomics**: We plan to launch the `$OBELISK` governance token and deploy automated fee-splitter smart contracts.
-3. **ZK-ML (Zero-Knowledge Machine Learning)**: We will implement ZK-ML to generate on-chain proofs for every AI decision, moving from "Trust our AI" to "Verify our Math".
+1. **Custom Multi-Asset Vault Builder [Next Major Milestone]**: We will allow users to deploy their own custom AI-managed swarms on Mantle Network. Users can select any combination of Mantle-native assets (such as mETH, USDY, WMNT, FBTC, and more) and define customized weight percentages (e.g., 50% mETH, 30% WMNT, 20% USDY) summing up to 100%. The autonomous AI swarm will then actively balance, hedge, and manage these assets according to the user's custom weight limits and risk tolerance.
+2. **Omnichain RWAs via LayerZero**: Future versions will integrate LayerZero to execute cross-chain rebalances.
+3. **On-Chain Revenue Flow & Tokenomics**: We plan to launch the `$OBELISK` governance token and deploy automated fee-splitter smart contracts to stream fees directly to DAO stakers.
 4. **Multi-Asset Auto-Compounding**: Expanding the Gasless UX to automatically swap and compound secondary gas assets and yield distributions into the vault without requiring user signatures.
+5. **ZK-ML On-Chain Verification [COMPLETED]**: Successfully implemented! Cryptographic ZK-ML proofs are generated for all regime decisions and verified on-chain on Mantle Network via the `ZKRegimeVerifier` smart contract.
 
 ---
 

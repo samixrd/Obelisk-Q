@@ -60,10 +60,15 @@ This is not just a technical project — it is a **financial inclusion product**
 
 ---
 
-### 6. Roadmap: ZK-ML for Trustless Verifiability
-While the current AI Transparency Feed provides human-readable auditability, our immediate next milestone is integrating **Zero-Knowledge Machine Learning (ZK-ML)** via Mantle's verification ecosystem. 
-- **The Goal**: Generate cryptographic proofs that the autonomous agent's Q-Score and regime decisions exactly followed the stated model weights and LLM logic without hallucination or tampering.
-- **The Impact**: Users will verify on-chain that the agent acted faithfully, transforming "Trust our AI" into "Verify our Math" — a critical leap for institutional RWA adoption.
+### 6. ZK-ML On-Chain Verifiability [COMPLETED]
+Obelisk Q has successfully integrated **Zero-Knowledge Machine Learning (ZK-ML)** via Mantle's verification ecosystem.
+- **The Accomplishment**: Cryptographic ZK-ML proofs are generated for all regime decisions and verified on-chain via the `ZKRegimeVerifier` smart contract. Users can cryptographically verify that the agent acted faithfully, transforming "Trust our AI" into "Verify our Math".
+
+---
+
+### 7. Next Milestone: Custom Multi-Asset Vault Builder
+- **The Goal**: Empower users to deploy their own custom AI-managed swarms on Mantle Network. Users will be able to select any combination of Mantle-native assets (such as mETH, USDY, WMNT, FBTC, etc.) and define customized weight percentages (e.g., 50% mETH, 30% WMNT, 20% USDY) summing up to 100%.
+- **The Impact**: The autonomous AI swarm will actively balance, hedge, and manage these assets according to the user's custom weight limits and risk tolerance, bringing tailored asset allocation to all users on Mantle.
 
 ---
 **Obelisk Q is not just a demo; it is the blueprint for the next generation of autonomous, inclusive, and transparent DeFi finance.**

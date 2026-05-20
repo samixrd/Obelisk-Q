@@ -23,14 +23,14 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **The AI Role**: A 7-node autonomous pipeline (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital between stable RWA yield, stable Mantle yield (WMNT), and aggressive staking growth without human intervention.
 *   **The Strategy (RWA Safe Harbor)**: Captures "Growth Alpha" with mETH during expansions, and autonomously rotates into **USDY (US Treasury backed)** as a safe harbor during DeFi volatility events to protect user capital while retaining institutional-grade yield.
 *   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
-*   **Verifiability Roadmap (ZK-ML)**: Immediate next steps involve generating Zero-Knowledge Machine Learning (ZK-ML) proofs for all AI decisions, transforming "Trust our AI" into mathematically verifiable "Verify our Math" execution on-chain.
+*   **ZK-ML On-Chain Verification**: Successfully implemented! Cryptographic ZK-ML proofs are generated for all regime decisions and verified on-chain on Mantle, transforming "Trust our AI" into mathematically verifiable "Verify our Math" execution.
 
 ### 📈 The Pitch: Bringing Intelligence to Trading & Strategy
 *   **Asset Category**: Dynamic yield optimization assets across Liquid Staking (mETH), Stable RWA (USDY), and baseline liquidity (WMNT).
 *   **The AI Role**: A 7-node autonomous swarm [main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L510-L796) coordinating HMM-inspired regime classifiers, risk score generators, and GPT-4o Azure OpenAI consensus logic to perform automated, zero-human-intervention rebalancing.
 *   **The Strategy (Regime Damping)**: Implements mathematical regime decoding ([main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L625-L722)) that detects Expansion, Consolidation, and Contraction states using smoothed Fear & Greed and price signals. Executes rebalancing trades under optimized control theory damping models (Underdamped, Optimal, Critically Damped) to maximize returns while mathematically mitigating whipsaw losses.
 *   **Mantle Integration**: Executes high-throughput swaps on-chain via the **Merchant Moe DEX**, fully protected by a prioritized Web3 [rpc_manager.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/rpc_manager.py) failover system, reentrancy guards, and an autonomous, 10-point delta circuit breaker.
-*   **Verifiability Roadmap (ZK-ML)**: Integrating on-chain ZK-proofs of the mathematical HMM regime-detection model, transforming execution from trust-based off-chain agent processing to cryptographically verifiable math on the Mantle Network.
+*   **ZK-ML On-Chain Verification**: Fully integrated with on-chain ZK-proofs verifying the mathematical HMM regime-detection model directly on the Mantle Network, ensuring cryptographically verifiable agent execution.
 
 
 ### 🛠️ Technical Excellence & Deployment
@@ -268,11 +268,11 @@ Obelisk Q is designed to protect users, not exploit them:
 ---
 
 ## 🚀 Roadmap (Future Implementations)
-While Obelisk Q is fully functional on Mantle Mainnet today, the following features are planned for our next major protocol upgrades. These address complex institutional and retail needs beyond the scope of this hackathon:
+While Obelisk Q is fully functional on Mantle Mainnet today, the following features are planned for our next major protocol upgrades. These address complex institutional and retail needs:
 
-1. **Omnichain RWAs via LayerZero**: Currently, Obelisk Q operates strictly on Mantle Mainnet. Future versions will integrate LayerZero to execute cross-chain rebalances (e.g., pulling yield from Ethereum mainnet RWAs while maintaining the vault on Mantle).
-2. **On-Chain Revenue Flow & Tokenomics**: The "2 & 20" business model is currently a conceptual framework. We plan to launch the `$OBELISK` governance token and deploy automated fee-splitter smart contracts to distribute protocol revenue directly to token stakers.
-3. **ZK-ML (Zero-Knowledge Machine Learning)**: While our LLM responses are currently logged in the backend and UI, they are not yet cryptographically signed on-chain. We will implement ZK-ML to generate on-chain proofs for every AI decision, moving from "Trust our AI" to "Verify our Math".
+1. **Custom Multi-Asset Vault Builder [Next Major Milestone]**: We will allow users to deploy their own custom AI-managed swarms on Mantle Network. Users can select any combination of Mantle-native assets (such as mETH, USDY, WMNT, FBTC, and more) and define customized weight percentages (e.g., 50% mETH, 30% WMNT, 20% USDY) summing up to 100%. The autonomous AI swarm will then actively balance, hedge, and manage these assets according to the user's custom weight limits and risk tolerance.
+2. **Omnichain RWAs via LayerZero**: Currently, Obelisk Q operates strictly on Mantle Mainnet. Future versions will integrate LayerZero to execute cross-chain rebalances (e.g., pulling yield from Ethereum mainnet RWAs while maintaining the vault on Mantle).
+3. **On-Chain Revenue Flow & Tokenomics**: Deploy automated fee-splitter smart contracts to stream the accrued management and performance fees to the Obelisk DAO and distribute protocol revenue directly to `$OBELISK` token stakers.
 4. **Dynamic Swarm Scaling**: Expanding the LangGraph agent architecture to dynamically spin up new micro-agents for emerging L2 yield opportunities.
 
 ---
