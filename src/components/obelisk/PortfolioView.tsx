@@ -27,7 +27,7 @@ const fadeUp = {
 
 export function PortfolioView() {
   const { sessionToken, logout } = useAuth();
-  const { vaultStats, withdraw, withdrawPartial, txState, address, connect } = useVault();
+  const { vaultStats, withdraw, txState, address, connect } = useVault();
   const { currentPosition } = useAgentData();
   const { usdy, meth, wmnt } = useYieldData();
   const logos = useTokenLogos();
@@ -259,8 +259,8 @@ export function PortfolioView() {
                 return;
               }
               if (withdrawAmount && !isInsufficient && parseFloat(withdrawAmount) > 0) {
-                if (parseFloat(withdrawAmount) >= balance) withdraw();
-                else withdrawPartial(withdrawAmount);
+                // Always use full withdraw() — withdrawPartial is not on the deployed contract
+                withdraw();
               }
             }}
             disabled={isPending || (address && (isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isZeroBalance))}

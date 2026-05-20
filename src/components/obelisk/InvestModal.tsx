@@ -17,7 +17,7 @@ interface InvestModalProps {
 
 export function InvestModal({ open, onClose }: InvestModalProps) {
   const {
-    deposit, withdraw, withdrawPartial,
+    deposit, withdraw,
     vaultStats, txState, setTxState, txHash, txError,
     isConnected, address, connect,
     confirmations, explorerUrl,
