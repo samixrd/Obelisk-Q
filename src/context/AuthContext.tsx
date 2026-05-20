@@ -95,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSessionToken(null);
     setIsEmbeddedWallet(false);
     sessionStorage.removeItem("obelisk_session");
+    sessionStorage.removeItem("obelisk_stage");
     localStorage.removeItem("obelisk_session"); // Legacy
     localStorage.removeItem("obelisk_address");
     localStorage.removeItem("obelisk_method");

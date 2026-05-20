@@ -18,12 +18,12 @@ import type { DashboardTab } from "@/components/obelisk/Dashboard";
 type AppStage = "landing" | "auth" | "dashboard";
 
 function AppInner() {
-  const { walletAddress, setWalletAddress, setAuthMethod, sessionToken, logout, isEmbeddedWallet, setIsEmbeddedWallet } = useAuth();
+  const { walletAddress, setWalletAddress, setAuthMethod, sessionToken, setSessionToken, logout, isEmbeddedWallet, setIsEmbeddedWallet } = useAuth();
   const { toast } = useToast();
 
   const [stage, setStage] = useState<AppStage>(() => {
     // Check if stage was explicitly saved (e.g. from a reload or guest navigation)
-    const savedStage = localStorage.getItem("obelisk_stage") as AppStage | null;
+    const savedStage = sessionStorage.getItem("obelisk_stage") as AppStage | null;
     if (savedStage === "dashboard" || savedStage === "auth" || savedStage === "landing") {
       return savedStage;
     }
@@ -92,7 +92,7 @@ function AppInner() {
 
   // Persist stage to prevent redirecting to landing page on page refresh
   useEffect(() => {
-    localStorage.setItem("obelisk_stage", stage);
+    sessionStorage.setItem("obelisk_stage", stage);
   }, [stage]);
 
   // Handle logout transition
