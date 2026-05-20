@@ -33,7 +33,7 @@ const mantleChain = {
   },
 };
 
-const PRIVY_APP_ID = "clph98v1n0019la089w28m3g4"; // default demo App ID
+const PRIVY_APP_ID = "cmpdv1pk3003a0di6qq5aqcyy"; // User's Privy App ID
 const appId = import.meta.env.VITE_PRIVY_APP_ID || PRIVY_APP_ID;
 
 const App = () => (
