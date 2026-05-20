@@ -13,7 +13,7 @@ interface AuthScreenProps {
   onAuthenticated: () => void;
 }
 export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
-  const { setAuthMethod, setWalletAddress, setSessionToken, setIsEmbeddedWallet } = useAuth();
+  const { setAuthMethod, setWalletAddress, sessionToken, setSessionToken, setIsEmbeddedWallet } = useAuth();
   const { toast } = useToast();
   const [step,          setStep]           = useState<1 | 2>(1);
   const [walletLoading,  setWalletLoading]  = useState(false);
@@ -73,8 +73,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
   // 3. Sync Privy login back to our signature auth challenge
   useEffect(() => {
-    const currentToken = localStorage.getItem("obelisk_session_token");
-    if (authenticated && user?.wallet?.address && !currentToken && !walletLoading) {
+    if (authenticated && user?.wallet?.address && !sessionToken && !walletLoading) {
       // Find the specific wallet matching the authenticated address
       const matchingWallet = wallets.find(w => w.address.toLowerCase() === user.wallet.address.toLowerCase()) || wallets[0];
       if (matchingWallet) {
@@ -83,7 +82,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
         setAuthStatus("Initializing secure wallet provider...");
       }
     }
-  }, [authenticated, user, wallets, walletLoading]);
+  }, [authenticated, user, wallets, walletLoading, sessionToken]);
 
   const handleGasless = async () => {
     if (!ready) {
@@ -148,7 +147,6 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
         const token = `privy_${btoa(address).replace(/=/g, "")}_${Date.now()}`;
         setWalletAddress(address);
         setSessionToken(token);
-        localStorage.setItem("obelisk_session_token", token);
         setIsEmbeddedWallet(true);
         setAuthMethod("wallet");
         setAuthStatus(null);
@@ -193,7 +191,6 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
       setWalletAddress(address);
       setSessionToken(token);
-      localStorage.setItem("obelisk_session_token", token);
       setIsEmbeddedWallet(false);
       setAuthMethod("wallet");
       setAuthStatus(null);

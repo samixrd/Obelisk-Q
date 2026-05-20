@@ -72,7 +72,6 @@ function AppInner() {
     const token = `privy_${btoa(address).replace(/=/g, "")}_${Date.now()}`;
     setWalletAddress(address);
     setSessionToken(token);
-    localStorage.setItem("obelisk_session_token", token);
     setIsEmbeddedWallet(true);
     setAuthMethod("wallet");
     setStage("dashboard");

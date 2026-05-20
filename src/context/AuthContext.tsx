@@ -97,6 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     sessionStorage.removeItem("obelisk_session");
     sessionStorage.removeItem("obelisk_stage");
     localStorage.removeItem("obelisk_session"); // Legacy
+    localStorage.removeItem("obelisk_session_token"); // Clean up legacy token
     localStorage.removeItem("obelisk_address");
     localStorage.removeItem("obelisk_method");
     localStorage.removeItem("obelisk_tab");
