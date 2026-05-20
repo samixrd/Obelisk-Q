@@ -56,8 +56,8 @@ curl http://localhost:8000/api/stats
 ```bash
 # In a new terminal:
 cd obelisk-q-wealth-navigator-main  # repo root
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 Frontend starts on **`http://localhost:5173`**
@@ -122,7 +122,7 @@ cd backend
 pytest test_api.py test_main.py -v
 
 # Frontend unit tests:
-npm run test
+pnpm run test
 ```
 
 ---

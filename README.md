@@ -11,6 +11,7 @@
 *   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 *   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report at [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) — regime, allocation, live USDY/mETH APY, last rotation tx.
+*   ✅ **AA / Gasless & Social Logins**: Full EIP-4337 Account Abstraction, gasless sponsorship, and email/social onboarding powered by Privy.
 
 ---
 
@@ -272,7 +273,7 @@ While Obelisk Q is fully functional on Mantle Mainnet today, the following featu
 1. **Omnichain RWAs via LayerZero**: Currently, Obelisk Q operates strictly on Mantle Mainnet. Future versions will integrate LayerZero to execute cross-chain rebalances (e.g., pulling yield from Ethereum mainnet RWAs while maintaining the vault on Mantle).
 2. **On-Chain Revenue Flow & Tokenomics**: The "2 & 20" business model is currently a conceptual framework. We plan to launch the `$OBELISK` governance token and deploy automated fee-splitter smart contracts to distribute protocol revenue directly to token stakers.
 3. **ZK-ML (Zero-Knowledge Machine Learning)**: While our LLM responses are currently logged in the backend and UI, they are not yet cryptographically signed on-chain. We will implement ZK-ML to generate on-chain proofs for every AI decision, moving from "Trust our AI" to "Verify our Math".
-4. **Full EIP-4337 Account Abstraction**: To maximize our BGA financial inclusion goals, we will implement full gasless (sponsored) transaction flows via Web3Auth/Biconomy, removing the need for retail users to hold MNT for gas.
+4. **Dynamic Swarm Scaling**: Expanding the LangGraph agent architecture to dynamically spin up new micro-agents for emerging L2 yield opportunities.
 
 ---
 

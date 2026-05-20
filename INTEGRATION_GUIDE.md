@@ -49,8 +49,8 @@ Ensure your `.env.local` has the correct `VITE_VAULT_ADDRESS` and `VITE_RPC_URL`
 
 ```bash
 # In the root directory
-npm install
-npm run dev
+pnpm install
+pnpm run dev
 ```
 
 ## 3. Deployment Configuration (Mantle Mainnet)
