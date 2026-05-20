@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Logo } from "./Logo";
 import { useAuth } from "@/context/AuthContext";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { usePrivy, useWallets, useCreateWallet } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
 import { useToast } from "@/hooks/use-toast";
 
@@ -13,7 +13,7 @@ interface AuthScreenProps {
   onAuthenticated: () => void;
 }
 export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
-  const { setAuthMethod, setWalletAddress, setSessionToken } = useAuth();
+  const { setAuthMethod, setWalletAddress, setSessionToken, setIsEmbeddedWallet } = useAuth();
   const { toast } = useToast();
   const [step,          setStep]           = useState<1 | 2>(1);
   const [walletLoading,  setWalletLoading]  = useState(false);
@@ -28,14 +28,41 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
   const { login, logout, authenticated, user, ready } = usePrivy();
   const { wallets } = useWallets();
+  const { createWallet } = useCreateWallet();
+  const [authStatus, setAuthStatus] = useState<string | null>(null);
 
-  // Sync Privy login back to our auth challenge
+  // 1. Programmatically trigger embedded wallet creation if authenticated via social/email and no wallet exists
   useEffect(() => {
-    if (authenticated && user?.wallet?.address && wallets.length > 0 && !walletLoading) {
-      // Only authenticate if we don't have a session token yet
-      const currentToken = localStorage.getItem("obelisk_session_token");
-      if (!currentToken) {
-        handleWalletConnected(user.wallet.address);
+    if (authenticated && ready && !user?.wallet?.address && !walletLoading) {
+      const initWallet = async () => {
+        setWalletLoading(true);
+        setAuthStatus("Generating unique secure wallet...");
+        try {
+          console.log("Programmatically creating embedded wallet for authenticated user...");
+          await createWallet();
+        } catch (err) {
+          console.error("Wallet creation failed:", err);
+          setError("Failed to create secure embedded wallet. Please try again.");
+          await logout();
+        } finally {
+          setWalletLoading(false);
+          setAuthStatus(null);
+        }
+      };
+      initWallet();
+    }
+  }, [authenticated, ready, user?.wallet?.address, createWallet]);
+
+  // 2. Sync Privy login back to our signature auth challenge
+  useEffect(() => {
+    const currentToken = localStorage.getItem("obelisk_session_token");
+    if (authenticated && user?.wallet?.address && !currentToken && !walletLoading) {
+      // Find the specific wallet matching the authenticated address
+      const matchingWallet = wallets.find(w => w.address.toLowerCase() === user.wallet.address.toLowerCase()) || wallets[0];
+      if (matchingWallet) {
+        handleWalletConnected(user.wallet.address, matchingWallet);
+      } else {
+        setAuthStatus("Initializing secure wallet provider...");
       }
     }
   }, [authenticated, user, wallets, walletLoading]);
@@ -50,7 +77,12 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
       return;
     }
     if (authenticated && user?.wallet?.address) {
-      handleWalletConnected(user.wallet.address);
+      const matchingWallet = wallets.find(w => w.address.toLowerCase() === user.wallet.address.toLowerCase()) || wallets[0];
+      if (matchingWallet) {
+        handleWalletConnected(user.wallet.address, matchingWallet);
+      } else {
+        setAuthStatus("Initializing secure wallet provider...");
+      }
     } else {
       login();
     }
@@ -67,25 +99,36 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
       return;
     }
     if (authenticated && user?.wallet?.address) {
-      handleWalletConnected(user.wallet.address);
+      const matchingWallet = wallets.find(w => w.address.toLowerCase() === user.wallet.address.toLowerCase()) || wallets[0];
+      if (matchingWallet) {
+        handleWalletConnected(user.wallet.address, matchingWallet);
+      } else {
+        setAuthStatus("Initializing secure wallet provider...");
+      }
     } else {
       login();
     }
   };
 
-  const handleWalletConnected = async (address: string) => {
-    if (wallets.length === 0) return;
+  const handleWalletConnected = async (address: string, customWallet?: any) => {
+    const activeWallet = customWallet || wallets.find(w => w.address.toLowerCase() === address.toLowerCase()) || wallets[0];
+    if (!activeWallet) {
+      setError("No active wallet provider found.");
+      return;
+    }
     
     setWalletLoading(true);
     setError(null);
+    setAuthStatus("Awaiting secure signature challenge...");
     try {
-      const activeWallet = wallets[0];
       const message = `Antigravity Protocol Login\n\nSession Duration: 5 Minutes\nWallet: ${address}\nTimestamp: ${Date.now()}`;
       
       const ethProvider = await activeWallet.getEthereumProvider();
       const browserProvider = new BrowserProvider(ethProvider);
       const signer = await browserProvider.getSigner();
       const signature = await signer.signMessage(message);
+
+      setAuthStatus("Issuing temporal session token...");
 
       // Submit to backend for temporal token issuance
       const API_URL = import.meta.env.VITE_API_URL || "";
@@ -105,11 +148,19 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
       setWalletAddress(address);
       setSessionToken(token);
       localStorage.setItem("obelisk_session_token", token);
+      const isEmbedded = activeWallet?.walletClientType === "privy";
+      setIsEmbeddedWallet(isEmbedded);
       setAuthMethod("wallet");
+      setAuthStatus(null);
       onAuthenticated();
     } catch (err: unknown) {
       const msg = (err as Error).message ?? "Auth failed.";
-      if (!msg.includes("rejected")) setError(msg);
+      if (!msg.includes("rejected")) {
+        setError(msg);
+      } else {
+        setError("Signature request rejected by user.");
+      }
+      setAuthStatus(null);
       // Log out of Privy on failure so user can try again
       await logout();
     } finally {
@@ -267,65 +318,102 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                   </motion.div>
                 )}
 
-                {/* Auth buttons */}
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                  {/* Web3 Wallet */}
-                  <AuthButton
-                    onClick={handleWallet}
-                    loading={walletLoading}
-                    icon={
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                        <rect x="2" y="6" width="20" height="14" rx="2" stroke="#555" strokeWidth="1.4"/>
-                        <path d="M2 10h20" stroke="#555" strokeWidth="1.4"/>
-                        <circle cx="17" cy="15" r="1.5" fill="#555"/>
-                        <path d="M16 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" stroke="#555" strokeWidth="1.4"/>
-                      </svg>
-                    }
-                    label={walletLoading ? "Connecting..." : "Web3 Wallet"}
-                    sublabel="MetaMask · WalletConnect · Mobile"
-                    accent
-                  />
+                {/* Loading Status or Auth Buttons */}
+                {authenticated || authStatus ? (
+                  <div className="flex-1 flex flex-col items-center justify-center py-10 gap-6">
+                    <div className="relative w-16 h-16 flex items-center justify-center">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "linear" }}
+                        className="w-16 h-16 rounded-full border-[3px] border-black/5 border-t-black border-r-black"
+                      />
+                      <motion.div
+                        animate={{ rotate: -360 }}
+                        transition={{ duration: 2.5, repeat: Infinity, ease: "linear" }}
+                        className="absolute w-10 h-10 rounded-full border-[2px] border-black/5 border-b-[#2563eb] border-l-[#2563eb]"
+                      />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[14px] font-bold text-[#0a0a0a] font-display">
+                        {authStatus || "Securing connection..."}
+                      </p>
+                      <p className="text-[11px] text-[#888] mt-1.5 font-display">
+                        Please check your browser prompts or wallet for verification
+                      </p>
+                    </div>
 
-                  {/* AA / Gasless (EIP-4337) */}
-                  <AuthButton
-                    onClick={handleGasless}
-                    loading={walletLoading}
-                    icon={
-                      <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    }
-                    label={walletLoading ? "Connecting..." : "Gasless Wallet (EIP-4337)"}
-                    sublabel="Email / Social login · Powered by Smart Accounts"
-                  />
-
-                  {/* AA Info badge */}
-                  <div style={{
-                    display: "flex", alignItems: "flex-start", gap: 10,
-                    padding: "10px 14px", borderRadius: 10,
-                    background: "rgba(99,102,241,0.05)",
-                    border: "1px solid rgba(99,102,241,0.12)",
-                  }}>
-                    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-                      <circle cx="8" cy="8" r="7" stroke="#6366f1" strokeWidth="1.2"/>
-                      <path d="M8 7v5M8 5v.5" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round"/>
-                    </svg>
-                    <p style={{
-                      fontSize: 11, color: "#6366f1", lineHeight: 1.5,
-                      fontFamily: "'Inter', sans-serif", margin: 0,
-                    }}>
-                      <strong>EIP-4337 Account Abstraction</strong> will enable gasless transactions on Mantle — users pay zero gas fees via sponsored bundlers, lowering the barrier for retail onboarding.
-                    </p>
+                    <button 
+                      onClick={async () => {
+                        await logout();
+                        setAuthStatus(null);
+                        setError(null);
+                      }}
+                      className="mt-4 px-4 py-2 text-[11px] text-red-500 hover:bg-red-50 transition-colors uppercase tracking-widest font-bold rounded-lg border border-red-100"
+                      style={{ fontFamily: "'Inter', sans-serif" }}
+                    >
+                      Cancel & Reset
+                    </button>
                   </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                    {/* Web3 Wallet */}
+                    <AuthButton
+                      onClick={handleWallet}
+                      loading={walletLoading}
+                      icon={
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                          <rect x="2" y="6" width="20" height="14" rx="2" stroke="#555" strokeWidth="1.4"/>
+                          <path d="M2 10h20" stroke="#555" strokeWidth="1.4"/>
+                          <circle cx="17" cy="15" r="1.5" fill="#555"/>
+                          <path d="M16 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" stroke="#555" strokeWidth="1.4"/>
+                        </svg>
+                      }
+                      label={walletLoading ? "Connecting..." : "Web3 Wallet"}
+                      sublabel="MetaMask · WalletConnect · Mobile"
+                      accent
+                    />
 
-                  <button 
-                    onClick={() => setStep(1)}
-                    className="mt-4 text-[11px] text-muted-foreground hover:text-black transition-colors uppercase tracking-widest font-bold"
-                    style={{ fontFamily: "'Inter', sans-serif" }}
-                  >
-                    ← Back to Terms
-                  </button>
-                </div>
+                    {/* AA / Gasless (EIP-4337) */}
+                    <AuthButton
+                      onClick={handleGasless}
+                      loading={walletLoading}
+                      icon={
+                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                      }
+                      label={walletLoading ? "Connecting..." : "Gasless Wallet (EIP-4337)"}
+                      sublabel="Email / Social login · Powered by Smart Accounts"
+                    />
+
+                    {/* AA Info badge */}
+                    <div style={{
+                      display: "flex", alignItems: "flex-start", gap: 10,
+                      padding: "10px 14px", borderRadius: 10,
+                      background: "rgba(99,102,241,0.05)",
+                      border: "1px solid rgba(99,102,241,0.12)",
+                    }}>
+                      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
+                        <circle cx="8" cy="8" r="7" stroke="#6366f1" strokeWidth="1.2"/>
+                        <path d="M8 7v5M8 5v.5" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round"/>
+                      </svg>
+                      <p style={{
+                        fontSize: 11, color: "#6366f1", lineHeight: 1.5,
+                        fontFamily: "'Inter', sans-serif", margin: 0,
+                      }}>
+                        <strong>EIP-4337 Account Abstraction</strong> will enable gasless transactions on Mantle — users pay zero gas fees via sponsored bundlers, lowering the barrier for retail onboarding.
+                      </p>
+                    </div>
+
+                    <button 
+                      onClick={() => setStep(1)}
+                      className="mt-4 text-[11px] text-muted-foreground hover:text-black transition-colors uppercase tracking-widest font-bold"
+                      style={{ fontFamily: "'Inter', sans-serif" }}
+                    >
+                      ← Back to Terms
+                    </button>
+                  </div>
+                )}
               </motion.div>
             )}
           </AnimatePresence>

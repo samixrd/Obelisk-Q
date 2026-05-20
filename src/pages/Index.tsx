@@ -18,7 +18,7 @@ import type { DashboardTab } from "@/components/obelisk/Dashboard";
 type AppStage = "landing" | "auth" | "dashboard";
 
 function AppInner() {
-  const { walletAddress, setWalletAddress, setAuthMethod, sessionToken, logout } = useAuth();
+  const { walletAddress, setWalletAddress, setAuthMethod, sessionToken, logout, isEmbeddedWallet, setIsEmbeddedWallet } = useAuth();
   const { toast } = useToast();
 
   const [stage, setStage] = useState<AppStage>(() => {
@@ -37,45 +37,23 @@ function AppInner() {
   const { wallets } = useWallets();
   const [signing, setSigning] = useState(false);
 
+  // Sync isEmbeddedWallet based on Privy user and wallets
+  useEffect(() => {
+    if (ready && authenticated && user?.wallet?.address) {
+      const activeWallet = wallets.find(w => w.address.toLowerCase() === user.wallet.address.toLowerCase()) || wallets[0];
+      const isEmbedded = activeWallet?.walletClientType === "privy";
+      if (isEmbedded !== isEmbeddedWallet) {
+        setIsEmbeddedWallet(isEmbedded);
+      }
+    }
+  }, [ready, authenticated, user, wallets, isEmbeddedWallet, setIsEmbeddedWallet]);
+
   // Sync Privy login back to session validation if sessionToken is missing but user is authenticated
   useEffect(() => {
-    if (authenticated && user?.wallet?.address && wallets.length > 0 && !sessionToken && !signing) {
-      const runSign = async () => {
-        setSigning(true);
-        try {
-          const activeWallet = wallets[0];
-          const address = user.wallet.address;
-          const message = `Antigravity Protocol Login\n\nSession Duration: 5 Minutes\nWallet: ${address}\nTimestamp: ${Date.now()}`;
-          const ethProvider = await activeWallet.getEthereumProvider();
-          const browserProvider = new BrowserProvider(ethProvider);
-          const signer = await browserProvider.getSigner();
-          const signature = await signer.signMessage(message);
-
-          const API_URL = import.meta.env.VITE_API_URL || "";
-          const resp = await fetch(`${API_URL}/api/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ address, signature, message }),
-          });
-
-          if (!resp.ok) throw new Error("Cloud validation failed.");
-          const { token } = await resp.json();
-          setWalletAddress(address);
-          setSessionToken(token);
-          localStorage.setItem("obelisk_session_token", token);
-          setAuthMethod("wallet");
-          setStage("dashboard");
-        } catch (e) {
-          console.error("Auto-auth signing failed", e);
-          await privyLogout();
-          await logout();
-        } finally {
-          setSigning(false);
-        }
-      };
-      runSign();
+    if (authenticated && !sessionToken && stage !== "auth") {
+      setStage("auth");
     }
-  }, [authenticated, user, wallets, sessionToken, signing]);
+  }, [authenticated, sessionToken, stage]);
 
   const [sidebarOpen,    setSidebarOpen]     = useState(false);
   const [tourOpen,       setTourOpen]        = useState(false);

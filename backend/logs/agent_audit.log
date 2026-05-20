@@ -1,0 +1,8 @@
+2026-05-19 07:03:53,006 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-19 07:03:54,328 - INFO - [local] redis: connected to redis://localhost:6379
+2026-05-19 07:03:58,094 - INFO - [local] sync_current_position: CURRENT_POSITION=WMNT
+2026-05-19 07:03:58,095 - INFO - [local] startup: swarm logic (analysis + reaper + heartbeats) initialized.
+2026-05-19 07:03:58,137 - INFO - [local] run_analysis_cycle: initialization successful. node=local-1 role=primary
+2026-05-19 07:04:02,837 - WARNING - [local] heartbeat: update failed: Error 22 connecting to localhost:6379. The remote computer refused the network connection.
+2026-05-19 07:04:02,841 - WARNING - [local] heartbeat: update failed: Error 22 connecting to localhost:6379. The remote computer refused the network connection.
+2026-05-20 03:12:27,549 - INFO - [local] db_manager: schema verified and WAL mode enabled

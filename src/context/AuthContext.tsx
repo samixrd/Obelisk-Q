@@ -18,10 +18,12 @@ interface AuthState {
   walletAddress: string | null;
   sessionToken:  string | null;
   loading:       boolean;
+  isEmbeddedWallet: boolean;
 
   setAuthMethod:    (m: AuthMethod) => void;
   setWalletAddress: (a: string | null) => void;
   setSessionToken:  (t: string | null) => void;
+  setIsEmbeddedWallet: (v: boolean) => void;
   logout:           () => Promise<void>;
 
   // Display name — shortened wallet address or Guest
@@ -35,6 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [walletAddress, setWalletAddress] = useState<string | null>(localStorage.getItem("obelisk_address"));
   const [sessionToken,  setSessionToken]  = useState<string | null>(sessionStorage.getItem("obelisk_session"));
   const [loading,       setLoading]       = useState(false);
+  const [isEmbeddedWallet, setIsEmbeddedWallet] = useState(localStorage.getItem("obelisk_embedded") === "true");
 
   const TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -44,14 +47,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sessionStorage.setItem("obelisk_session", sessionToken);
       if (walletAddress) localStorage.setItem("obelisk_address", walletAddress);
       if (authMethod) localStorage.setItem("obelisk_method", authMethod);
+      localStorage.setItem("obelisk_embedded", isEmbeddedWallet ? "true" : "false");
       localStorage.setItem("obelisk_last_activity", Date.now().toString());
     } else {
       sessionStorage.removeItem("obelisk_session");
       localStorage.removeItem("obelisk_address");
       localStorage.removeItem("obelisk_method");
       localStorage.removeItem("obelisk_last_activity");
+      localStorage.removeItem("obelisk_embedded");
     }
-  }, [sessionToken, walletAddress, authMethod]);
+  }, [sessionToken, walletAddress, authMethod, isEmbeddedWallet]);
 
   // Inactivity detection
   useEffect(() => {
@@ -88,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAuthMethod(null);
     setWalletAddress(null);
     setSessionToken(null);
+    setIsEmbeddedWallet(false);
     sessionStorage.removeItem("obelisk_session");
     localStorage.removeItem("obelisk_session"); // Legacy
     localStorage.removeItem("obelisk_address");
@@ -95,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("obelisk_tab");
     localStorage.removeItem("obelisk_stage");
     localStorage.removeItem("obelisk_last_activity");
+    localStorage.removeItem("obelisk_embedded");
   };
 
   const displayName = walletAddress
@@ -107,9 +114,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       walletAddress,
       sessionToken,
       loading,
+      isEmbeddedWallet,
       setAuthMethod,
       setWalletAddress,
       setSessionToken,
+      setIsEmbeddedWallet,
       logout,
       displayName,
     }}>

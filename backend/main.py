@@ -201,6 +201,11 @@ class DatabaseManager:
                     last_pulse DATETIME DEFAULT CURRENT_TIMESTAMP,
                     status TEXT
                 );
+                CREATE TABLE IF NOT EXISTS user_wallets (
+                    embedded_address TEXT PRIMARY KEY,
+                    external_wallet TEXT NOT NULL,
+                    updated_at TEXT DEFAULT CURRENT_TIMESTAMP
+                );
             """)
             conn.commit()
             conn.close()
@@ -1422,6 +1427,10 @@ class AuthRequest(BaseModel):
     signature: str
     message: str
 
+class WithdrawWalletRequest(BaseModel):
+    address: str           # Embedded wallet address (Privy)
+    external_wallet: str   # User's personal withdrawal wallet
+
 app = FastAPI(title="Obelisk Q Engine")
 
 # ─── API Security: CORS & Rate Limiting ──────────────────────────────────────
@@ -1510,6 +1519,63 @@ async def login(auth: AuthRequest):
     except Exception as e:
         logger.error(f"CRITICAL AUTH FAILURE: {str(e)}")
         raise HTTPException(status_code=401, detail=f"Authentication_Failed: {str(e)}")
+
+# ─── External Wallet Registration (Gasless UX) ───────────────────────────────
+
+import re
+ETH_ADDR_RE = re.compile(r"^0x[0-9a-fA-F]{40}$")
+
+@app.post("/api/user/withdraw-wallet")
+async def set_withdraw_wallet(req: WithdrawWalletRequest, session=Depends(verify_session)):
+    """
+    Register or update the user's personal external wallet address.
+    Withdrawals from the vault will be auto-forwarded to this address.
+    """
+    if not ETH_ADDR_RE.match(req.address):
+        raise HTTPException(status_code=400, detail="Invalid embedded wallet address")
+    if not ETH_ADDR_RE.match(req.external_wallet):
+        raise HTTPException(status_code=400, detail="Invalid external wallet address")
+    # Ensure the session owner matches the embedded address
+    if session["address"].lower() != req.address.lower():
+        raise HTTPException(status_code=403, detail="Address mismatch with session")
+
+    try:
+        conn = db_manager.get_connection()
+        conn.execute(
+            "INSERT OR REPLACE INTO user_wallets (embedded_address, external_wallet, updated_at) VALUES (?, ?, ?)",
+            (req.address.lower(), req.external_wallet, datetime.now().isoformat())
+        )
+        conn.commit()
+        conn.close()
+        logger.info(f"withdraw_wallet: set external wallet for {req.address[:10]}...")
+        return {"status": "ok", "external_wallet": req.external_wallet}
+    except Exception as e:
+        logger.error(f"withdraw_wallet: failed to save: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save external wallet")
+
+@app.get("/api/user/withdraw-wallet")
+async def get_withdraw_wallet(address: str, session=Depends(verify_session)):
+    """
+    Retrieve the user's registered external withdrawal wallet.
+    """
+    if not ETH_ADDR_RE.match(address):
+        raise HTTPException(status_code=400, detail="Invalid address format")
+    if session["address"].lower() != address.lower():
+        raise HTTPException(status_code=403, detail="Address mismatch with session")
+
+    try:
+        conn = db_manager.get_connection()
+        row = conn.execute(
+            "SELECT external_wallet FROM user_wallets WHERE embedded_address = ?",
+            (address.lower(),)
+        ).fetchone()
+        conn.close()
+        if row:
+            return {"external_wallet": row[0]}
+        return {"external_wallet": None}
+    except Exception as e:
+        logger.error(f"withdraw_wallet: failed to fetch: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch external wallet")
 
 @app.get("/api/agent/health")
 async def get_agent_health():

@@ -26,8 +26,19 @@ const fadeUp = {
 };
 
 export function PortfolioView() {
-  const { sessionToken, logout } = useAuth();
-  const { vaultStats, withdraw, withdrawPartial, txState, address, connect } = useVault();
+  const { sessionToken, logout, isEmbeddedWallet } = useAuth();
+  const { 
+    vaultStats, 
+    withdraw, 
+    withdrawPartial, 
+    txState, 
+    address, 
+    connect,
+    externalWallet,
+    registerExternalWallet,
+    withdrawToExternal,
+    withdrawPartialToExternal
+  } = useVault();
   const { currentPosition } = useAgentData();
   const { usdy, meth, wmnt } = useYieldData();
   const logos = useTokenLogos();
@@ -110,6 +121,16 @@ export function PortfolioView() {
 
   const [withdrawAmount, setWithdrawAmount] = useState("");
   const [metrics, setMetrics] = useState({ ytd_return: "—", sharpe_ratio: 2.41 });
+  const [extWalletInput, setExtWalletInput] = useState("");
+  const [isSavingWallet, setIsSavingWallet] = useState(false);
+
+  useEffect(() => {
+    if (externalWallet) {
+      setExtWalletInput(externalWallet);
+    }
+  }, [externalWallet]);
+
+  const isValidAddress = /^0x[0-9a-fA-F]{40}$/.test(extWalletInput);
 
   const balance = parseFloat(vaultStats?.userBalance ?? "0");
   const isPending = txState === "waiting" || txState === "pending";
@@ -201,78 +222,182 @@ export function PortfolioView() {
         </div>
       </div>
 
-      {/* ── Withdrawal Card Interface ── */}
-      <div className="col-span-12 lg:col-span-6 glass-card rounded-[32px] md:rounded-[40px] overflow-hidden flex flex-col shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
-        <div className="p-6 md:p-10 pb-0">
-          <div className="flex items-center gap-4 mb-10">
-            <div className="flex items-center -space-x-3">
-              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm flex items-center justify-center" style={{ zIndex: 2 }}>
-                {logos.mETH ? <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" /> : <span className="text-[10px] text-[#00D395] font-bold">M</span>}
-              </div>
-              <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-[#2775CA] shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
-                {logos.USDY ? <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" /> : <span className="text-[10px] text-white font-bold">U</span>}
-              </div>
-            </div>
+      {/* ── Left Column: Destination & Withdrawal Stack ── */}
+      <div className="col-span-12 lg:col-span-6 flex flex-col gap-6">
+        
+        {/* ── External Wallet Registration Card (Privy Social Users) ── */}
+        {isEmbeddedWallet && (
+          <div className="glass-card rounded-[32px] md:rounded-[40px] p-6 md:p-10 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)] flex flex-col gap-6">
             <div>
-              <div className="text-[18px] font-bold text-[#0a0a0a] tracking-tight">Portfolio Withdrawal</div>
-              <p className="text-[12px] text-[#6B7280]">Withdraw to Mantle Network</p>
+              <div className="text-[18px] font-bold text-[#0a0a0a] tracking-tight">Withdrawal Destination</div>
+              <p className="text-[12px] text-[#6B7280]">Register your personal external wallet to auto-forward vault withdrawals.</p>
             </div>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-5 md:px-7 py-5 md:py-6 bg-[#F9FAFB] rounded-[24px] border border-black/[0.04] gap-4 sm:gap-0">
-            <input
-              type="number" placeholder="0" value={withdrawAmount}
-              onChange={(e) => setWithdrawAmount(e.target.value)}
-              className="bg-transparent outline-none text-[34px] font-bold text-[#0a0a0a] w-full tabular-nums tracking-tight"
-            />
-            <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/[0.1] rounded-full shadow-sm">
-              <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center border border-black/5">
-                {logos.MNT ? <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" /> : <span className="text-[8px] text-black font-bold">M</span>}
+            
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-5 py-4 bg-[#F9FAFB] rounded-[24px] border border-black/[0.04] gap-4 sm:gap-2">
+                <input
+                  type="text"
+                  placeholder="0x..."
+                  value={extWalletInput}
+                  onChange={(e) => setExtWalletInput(e.target.value)}
+                  className="bg-transparent outline-none text-[14px] font-mono text-[#0a0a0a] w-full"
+                />
+                {externalWallet && extWalletInput.toLowerCase() === externalWallet.toLowerCase() && (
+                  <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-100 rounded-full shrink-0">
+                    <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] font-bold text-emerald-600 uppercase">Active</span>
+                  </div>
+                )}
               </div>
-              <span className="text-[14px] font-bold text-[#0a0a0a]">MNT</span>
+
+              <motion.button
+                onClick={async () => {
+                  if (!isValidAddress) return;
+                  setIsSavingWallet(true);
+                  await registerExternalWallet(extWalletInput);
+                  setIsSavingWallet(false);
+                }}
+                disabled={isSavingWallet || !isValidAddress || (externalWallet && extWalletInput.toLowerCase() === externalWallet.toLowerCase())}
+                whileHover={isValidAddress && extWalletInput !== externalWallet ? { y: -1 } : {}}
+                whileTap={isValidAddress && extWalletInput !== externalWallet ? { scale: 0.98 } : {}}
+                className={`py-3.5 rounded-full text-[13px] font-bold transition-all duration-300 ${
+                  !isValidAddress || (externalWallet && extWalletInput.toLowerCase() === externalWallet.toLowerCase()) || isSavingWallet
+                    ? 'bg-black/5 text-[#9CA3AF] cursor-not-allowed'
+                    : 'bg-[#0a0a0a] text-white shadow-lg shadow-black/5'
+                }`}
+              >
+                {isSavingWallet ? "Saving..." : externalWallet && extWalletInput.toLowerCase() === externalWallet.toLowerCase() ? "Address Registered" : "Save Withdrawal Address"}
+              </motion.button>
+            </div>
+          </div>
+        )}
+
+        {/* ── Withdrawal Card Interface ── */}
+        <div className="glass-card rounded-[32px] md:rounded-[40px] overflow-hidden flex flex-col shadow-[0_8px_32px_-12px_rgba(0,0,0,0.04)]">
+          <div className="p-6 md:p-10 pb-0">
+            <div className="flex items-center gap-4 mb-10">
+              <div className="flex items-center -space-x-3">
+                <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-white shadow-sm flex items-center justify-center" style={{ zIndex: 2 }}>
+                  {logos.mETH ? <img src={logos.mETH} alt="mETH" className="w-full h-full object-cover" /> : <span className="text-[10px] text-[#00D395] font-bold">M</span>}
+                </div>
+                <div className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-[#2775CA] shadow-sm flex items-center justify-center" style={{ zIndex: 1 }}>
+                  {logos.USDY ? <img src={logos.USDY} alt="USDY" className="w-full h-full object-cover" /> : <span className="text-[10px] text-white font-bold">U</span>}
+                </div>
+              </div>
+              <div>
+                <div className="text-[18px] font-bold text-[#0a0a0a] tracking-tight">Portfolio Withdrawal</div>
+                <p className="text-[12px] text-[#6B7280]">Withdraw to Mantle Network</p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between px-5 md:px-7 py-5 md:py-6 bg-[#F9FAFB] rounded-[24px] border border-black/[0.04] gap-4 sm:gap-0">
+              <input
+                type="number" placeholder="0" value={withdrawAmount}
+                onChange={(e) => setWithdrawAmount(e.target.value)}
+                className="bg-transparent outline-none text-[34px] font-bold text-[#0a0a0a] w-full tabular-nums tracking-tight"
+              />
+              <div className="flex items-center gap-2.5 px-4 py-2.5 bg-white border border-black/[0.1] rounded-full shadow-sm">
+                <div className="h-6 w-6 rounded-full overflow-hidden bg-white flex items-center justify-center border border-black/5">
+                  {logos.MNT ? <img src={logos.MNT} alt="MNT" className="w-4 h-4 object-contain" /> : <span className="text-[8px] text-black font-bold">M</span>}
+                </div>
+                <span className="text-[14px] font-bold text-[#0a0a0a]">MNT</span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-5">
+              {["25%", "50%", "Max"].map((label) => (
+                <button
+                  key={label}
+                  onClick={() => {
+                    if (label === "Max") setWithdrawAmount(balance.toString());
+                    else if (label === "50%") setWithdrawAmount((balance * 0.5).toFixed(4));
+                    else if (label === "25%") setWithdrawAmount((balance * 0.25).toFixed(4));
+                  }}
+                  className="text-[12px] px-5 py-2.5 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] border border-black/[0.06] rounded-full transition-all font-bold"
+                >
+                  {label}
+                </button>
+              ))}
+              {isInsufficient && <span className="text-[12px] text-red-500/70 ml-auto font-normal">Insufficient balance</span>}
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-5">
-            {["25%", "50%", "Max"].map((label) => (
-              <button
-                key={label}
-                onClick={() => {
-                  if (label === "Max") setWithdrawAmount(balance.toString());
-                  else if (label === "50%") setWithdrawAmount((balance * 0.5).toFixed(4));
-                  else if (label === "25%") setWithdrawAmount((balance * 0.25).toFixed(4));
-                }}
-                className="text-[12px] px-5 py-2.5 text-[#6B7280] hover:text-[#0a0a0a] hover:bg-[#F3F4F6] border border-black/[0.06] rounded-full transition-all font-bold"
-              >
-                {label}
-              </button>
-            ))}
-            {isInsufficient && <span className="text-[12px] text-red-500/70 ml-auto font-normal">Insufficient balance</span>}
-          </div>
-        </div>
-
-        <div className="p-6 md:p-10 pt-6 md:pt-10">
-          <motion.button
-            onClick={() => {
-              if (!address) {
-                connect();
-                return;
-              }
-              if (withdrawAmount && !isInsufficient && parseFloat(withdrawAmount) > 0) {
-                if (parseFloat(withdrawAmount) === balance) {
-                  withdraw();
-                } else {
-                  withdrawPartial(withdrawAmount);
+          <div className="p-6 md:p-10 pt-6 md:pt-10">
+            <motion.button
+              onClick={() => {
+                if (!address) {
+                  connect();
+                  return;
                 }
+                if (withdrawAmount && !isInsufficient && parseFloat(withdrawAmount) > 0) {
+                  if (isEmbeddedWallet) {
+                    if (parseFloat(withdrawAmount) === balance) {
+                      withdrawToExternal();
+                    } else {
+                      withdrawPartialToExternal(withdrawAmount);
+                    }
+                  } else {
+                    if (parseFloat(withdrawAmount) === balance) {
+                      withdraw();
+                    } else {
+                      withdrawPartial(withdrawAmount);
+                    }
+                  }
+                }
+              }}
+              disabled={isPending || (address && (isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isZeroBalance || (isEmbeddedWallet && !externalWallet)))}
+              whileHover={!(isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance || (isEmbeddedWallet && !externalWallet)))) ? { y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" } : {}}
+              whileTap={!(isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance || (isEmbeddedWallet && !externalWallet)))) ? { scale: 0.98 } : {}}
+              className={`w-full py-5 rounded-full text-[15px] font-bold transition-all duration-300 ${isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance || (isEmbeddedWallet && !externalWallet))) ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
+            >
+              {isPending 
+                ? "Processing..." 
+                : !address 
+                  ? "Connect Wallet" 
+                  : isEmbeddedWallet && !externalWallet 
+                    ? "Set Withdrawal Address First" 
+                    : isZeroBalance 
+                      ? "Insufficient Funds" 
+                      : isEmbeddedWallet 
+                        ? parseFloat(withdrawAmount) === balance 
+                          ? "Withdraw & Forward All" 
+                          : "Withdraw & Forward Partial"
+                        : parseFloat(withdrawAmount) === balance 
+                          ? "Withdraw Full Funds" 
+                          : "Withdraw Partial Funds"
               }
-            }}
-            disabled={isPending || (address && (isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isZeroBalance))}
-            whileHover={!(isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance))) ? { y: -2, boxShadow: "0 10px 20px rgba(0,0,0,0.1)" } : {}}
-            whileTap={!(isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance))) ? { scale: 0.98 } : {}}
-            className={`w-full py-5 rounded-full text-[15px] font-bold transition-all duration-300 ${isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance)) ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
-          >
-            {isPending ? "Processing..." : !address ? "Connect Wallet" : isZeroBalance ? "Insufficient Funds" : parseFloat(withdrawAmount) === balance ? "Withdraw Full Funds" : "Withdraw Partial Funds"}
-          </motion.button>
+            </motion.button>
+
+            {isPending && isEmbeddedWallet && (
+              <div className="mt-6 p-5 rounded-[24px] bg-[#F9FAFB] border border-black/[0.04] flex flex-col gap-3.5">
+                <div className="text-[11px] font-bold text-black/60 uppercase tracking-widest">Withdrawal Sequence</div>
+                <div className="flex flex-col gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center">
+                      {txState === "pending" && !txHash?.startsWith("0x") ? (
+                        <div className="h-4 w-4 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
+                      ) : (
+                        <div className="h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[9px] font-bold">✓</div>
+                      )}
+                    </div>
+                    <span className="text-[13px] font-semibold text-[#374151]">Step 1: Vault Withdrawal</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center">
+                      {txState === "pending" && txHash?.startsWith("0x") ? (
+                        <div className="h-4 w-4 rounded-full border-2 border-indigo-600 border-t-transparent animate-spin" />
+                      ) : txState === "success" ? (
+                        <div className="h-4 w-4 rounded-full bg-emerald-500 flex items-center justify-center text-white text-[9px] font-bold">✓</div>
+                      ) : (
+                        <div className="h-4 w-4 rounded-full bg-black/10" />
+                      )}
+                    </div>
+                    <span className="text-[13px] font-semibold text-[#374151]">Step 2: Auto-Forward to Registered Wallet</span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -11,8 +11,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useWallets } from "@privy-io/react-auth";
+import { useWallets, usePrivy } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
+import { useAuth } from "@/context/AuthContext";
 
 // ── Replace with your deployed contract address after running deploy script ──
 const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS ?? "";
@@ -68,7 +69,7 @@ export interface VaultState {
   txState:         TxStatus;
   setTxState:      (s: TxStatus) => void;
   txHash:          string | null;
-  txError:         string | null;
+  txError: string | null;
   isConnected:     boolean;
   isWrongNetwork:  boolean;
   address:         string | null;
@@ -77,6 +78,10 @@ export interface VaultState {
   confirmations: number;
   explorerUrl: (hash: string) => string;
   txHistory: TransactionRecord[];
+  externalWallet: string | null;
+  registerExternalWallet: (addr: string) => Promise<boolean>;
+  withdrawToExternal: () => Promise<void>;
+  withdrawPartialToExternal: (amountMnt: string) => Promise<void>;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -141,8 +146,10 @@ async function rpcCall(method: string, params: any[]): Promise<any> {
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useVault(): VaultState {
+  const { user } = usePrivy();
   const { wallets } = useWallets();
-  const activeWallet = wallets[0];
+  const { sessionToken, isEmbeddedWallet } = useAuth();
+  const activeWallet = wallets.find(w => w.address.toLowerCase() === user?.wallet?.address?.toLowerCase()) || wallets[0];
   const [address,    setAddress]    = useState<string | null>(null);
 
   // Sync address with Privy
@@ -440,7 +447,36 @@ export function useVault(): VaultState {
 
     try {
       const amountWei = parseMntToWei(amountMnt);
-      const valueHex = "0x" + amountWei.toString(16);
+      let finalAmountWei = amountWei;
+      let gasReserved = 0n;
+
+      if (isEmbeddedWallet) {
+        try {
+          const balRaw = await rpcCall("eth_getBalance", [address, "latest"]);
+          const currentBalanceWei = BigInt(balRaw);
+          const GAS_RESERVE_WEI = 5000000000000000n; // 0.005 MNT
+
+          if (currentBalanceWei - finalAmountWei < GAS_RESERVE_WEI) {
+            if (currentBalanceWei > GAS_RESERVE_WEI) {
+              finalAmountWei = currentBalanceWei - GAS_RESERVE_WEI;
+              gasReserved = GAS_RESERVE_WEI;
+            } else {
+              const MIN_GAS_WEI = 2000000000000000n; // 0.002 MNT
+              if (currentBalanceWei > MIN_GAS_WEI) {
+                finalAmountWei = currentBalanceWei - MIN_GAS_WEI;
+                gasReserved = MIN_GAS_WEI;
+              } else {
+                throw new Error("Insufficient balance to cover gas fees. Please deposit more MNT.");
+              }
+            }
+          }
+        } catch (err: any) {
+          console.warn("Gas reserve check failed, continuing with full amount:", err);
+        }
+      }
+
+      const finalAmountMnt = formatMnt(finalAmountWei);
+      const valueHex = "0x" + finalAmountWei.toString(16);
 
       let hash;
       const walletProvider = activeWallet ? await activeWallet.getEthereumProvider() : null;
@@ -449,7 +485,7 @@ export function useVault(): VaultState {
         const signer = await browserProvider.getSigner();
         const txResp = await signer.sendTransaction({
           to: VAULT_ADDRESS,
-          value: amountWei,
+          value: finalAmountWei,
           data: "0xd0e30db0" // deposit()
         });
         hash = txResp.hash;
@@ -473,13 +509,15 @@ export function useVault(): VaultState {
 
       toast({
         title: "Transaction submitted",
-        description: `${hash.slice(0, 10)}...${hash.slice(-8)} ↗`,
+        description: gasReserved > 0n
+          ? `Deposited ${finalAmountMnt} MNT (${formatMnt(gasReserved)} MNT reserved for gas)`
+          : `${hash.slice(0, 10)}...${hash.slice(-8)} ↗`,
       });
 
       saveTx({
         id: hash,
         type: "Deposit",
-        amount: `${amountMnt} MNT`,
+        amount: `${finalAmountMnt} MNT`,
         status: "Pending",
         timestamp: new Date(),
         hash,
@@ -532,7 +570,7 @@ export function useVault(): VaultState {
                 saveTx({
                   id: hash,
                   type: "Deposit",
-                  amount: `${amountMnt} MNT`,
+                  amount: `${finalAmountMnt} MNT`,
                   status: "Confirmed",
                   timestamp: new Date(),
                   hash,
@@ -540,11 +578,11 @@ export function useVault(): VaultState {
 
                 // Update simulated balance (memory-only)
                 const currentSim = simBalanceRef.current[address || "null"] || 0;
-                simBalanceRef.current[address || "null"] = currentSim + parseFloat(amountMnt);
+                simBalanceRef.current[address || "null"] = currentSim + parseFloat(finalAmountMnt);
                 
                 // Update Cost Basis in localStorage for YTD calculation
                 const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
-                localStorage.setItem(`obelisk_cost_basis_${address}`, (currentCostBasis + parseFloat(amountMnt)).toString());
+                localStorage.setItem(`obelisk_cost_basis_${address}`, (currentCostBasis + parseFloat(finalAmountMnt)).toString());
 
                 await refreshStats();
                 clearInterval(interval);
@@ -886,25 +924,561 @@ export function useVault(): VaultState {
       .then((accounts: string[]) => {
         if (accounts.length > 0) setAddress(accounts[0]);
       })
-      .catch(console.error);
+  // ── External Wallet Management ─────────────────────────────────────────
+  const [externalWallet, setExternalWalletState] = useState<string | null>(null);
 
-    const handler = (accounts: string[]) => setAddress(accounts[0] ?? null);
-    const chainHandler = () => checkAndSwitchNetwork();
+  const fetchExternalWallet = useCallback(async () => {
+    if (!address || !sessionToken) return;
+    try {
+      const headers: Record<string, string> = {
+        'x-session-token': sessionToken
+      };
+      const res = await fetch(`/api/user/withdraw-wallet?address=${encodeURIComponent(address)}`, { headers });
+      if (res.ok) {
+        const data = await res.json();
+        setExternalWalletState(data.external_wallet);
+      }
+    } catch (e) {
+      console.error("Failed to fetch external wallet:", e);
+    }
+  }, [address, sessionToken]);
 
-    (eth as Record<string, Function>).on?.("accountsChanged", handler);
-    (eth as Record<string, Function>).on?.("chainChanged", chainHandler);
+  useEffect(() => {
+    fetchExternalWallet();
+  }, [fetchExternalWallet]);
 
-    return () => {
-      (eth as Record<string, Function>).removeListener?.("accountsChanged", handler);
-      (eth as Record<string, Function>).removeListener?.("chainChanged", chainHandler);
-    };
-  }, [checkAndSwitchNetwork]);
+  const registerExternalWallet = useCallback(async (extWallet: string): Promise<boolean> => {
+    if (!address || !sessionToken) return false;
+    try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+        'x-session-token': sessionToken
+      };
+      const res = await fetch('/api/user/withdraw-wallet', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          address,
+          external_wallet: extWallet
+        })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setExternalWalletState(data.external_wallet);
+        toast({
+          title: "Wallet Registered",
+          description: "Your withdrawal address was successfully registered.",
+        });
+        return true;
+      } else {
+        const errData = await res.json();
+        throw new Error(errData.detail || "Failed to save wallet");
+      }
+    } catch (e: any) {
+      console.error("Failed to register external wallet:", e);
+      toast({
+        title: "Registration Failed",
+        description: e.message || "Failed to register withdrawal wallet.",
+        variant: "destructive"
+      });
+      return false;
+    }
+  }, [address, sessionToken]);
 
-  return { 
-    deposit, withdraw, withdrawPartial, 
-    vaultStats, txState, setTxState, txHash, txError, 
-    isConnected, isWrongNetwork, address, connect, refreshStats,
-    confirmations, explorerUrl: getExplorerUrl,
-    txHistory
+  // ── Two-step Withdraw to External Wallet ─────────────────────────────────
+  const withdrawToExternal = useCallback(async () => {
+    const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
+    if (!address) { await connect(); return; }
+    if (!externalWallet) {
+      toast({
+        title: "Registration Required",
+        description: "Please register your external withdrawal wallet first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const onCorrectNetwork = await checkAndSwitchNetwork();
+    if (!onCorrectNetwork) {
+      toast({
+        title: "Wrong Network",
+        description: "Please switch to Mantle Mainnet to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTxState("waiting");
+    setTxError(null);
+    setTxHash(null);
+
+    try {
+      // Step 1: Withdraw from vault
+      let hash;
+      const walletProvider = activeWallet ? await activeWallet.getEthereumProvider() : null;
+      if (walletProvider) {
+        const browserProvider = new BrowserProvider(walletProvider as any);
+        const signer = await browserProvider.getSigner();
+        const txResp = await signer.sendTransaction({
+          to: VAULT_ADDRESS,
+          data: "0x3ccfd60b" // withdraw()
+        });
+        hash = txResp.hash;
+      } else if (eth) {
+        let gasLimit = "0x493E0";
+        try {
+          const estimated = await (eth.request as Function)({
+            method: "eth_estimateGas",
+            params: [{ from: address, to: VAULT_ADDRESS, data: "0x3ccfd60b" }],
+          }) as string;
+          gasLimit = "0x" + Math.floor(parseInt(estimated, 16) * 1.2).toString(16);
+        } catch (e) { console.warn(e); }
+
+        hash = await (eth.request as Function)({
+          method: "eth_sendTransaction",
+          params: [{ from: address, to: VAULT_ADDRESS, data: "0x3ccfd60b", gas: gasLimit }],
+        }) as string;
+      } else {
+        throw new Error("No provider found to send transaction.");
+      }
+
+      setTxHash(hash);
+      setTxState("pending");
+      setConfirmations(0);
+
+      toast({
+        title: "Step 1/2: Vault Withdrawal",
+        description: `Submitted vault withdrawal... ${hash.slice(0, 8)}`,
+      });
+
+      saveTx({
+        id: hash,
+        type: "Withdraw",
+        amount: `${vaultStats?.userBalance ?? "0"} MNT`,
+        status: "Pending",
+        timestamp: new Date(),
+        hash,
+      });
+
+      // Poll for vault withdrawal receipt
+      const interval = setInterval(async () => {
+        try {
+          const receipt = await rpcCall("eth_getTransactionReceipt", [hash]);
+          if (receipt) {
+            if (receipt.status === "0x0" || receipt.status === 0 || receipt.status === "0") {
+              setTxState("error");
+              setTxError("Vault withdrawal reverted");
+              toast({
+                title: "Withdrawal failed ✕",
+                description: "Vault withdrawal was reverted.",
+                variant: "destructive"
+              });
+              clearInterval(interval);
+              return;
+            }
+
+            const currentBlockRaw = await rpcCall("eth_blockNumber", []);
+            if (currentBlockRaw) {
+              const currentBlock = BigInt(currentBlockRaw);
+              const receiptBlock = BigInt(receipt.blockNumber);
+              const confs = Number(currentBlock - receiptBlock + 1n);
+              setConfirmations(confs);
+
+              if (confs >= 1) {
+                clearInterval(interval);
+                
+                toast({
+                  title: "Step 1 Confirmed ✓",
+                  description: "Initiating step 2: Auto-forwarding to external wallet...",
+                });
+
+                // Clear memory-only simulated balance and cost basis
+                simBalanceRef.current[address || "null"] = 0;
+                localStorage.removeItem(`obelisk_cost_basis_${address}`);
+
+                // Step 2: Auto-forward to external wallet
+                setTimeout(async () => {
+                  try {
+                    // Fetch current wallet balance
+                    const balRaw = await rpcCall("eth_getBalance", [address, "latest"]);
+                    const balanceWei = BigInt(balRaw);
+
+                    // Fetch gas price for native transfer
+                    const gasPriceRaw = await rpcCall("eth_gasPrice", []);
+                    const gasPrice = BigInt(gasPriceRaw);
+
+                    // Gas for native transfer is exactly 21,000
+                    const transferGasWei = 21000n * gasPrice;
+
+                    if (balanceWei <= transferGasWei) {
+                      throw new Error(`Insufficient wallet balance (${formatMnt(balanceWei)} MNT) to pay for transfer gas.`);
+                    }
+
+                    const forwardAmountWei = balanceWei - transferGasWei;
+
+                    let forwardHash;
+                    if (walletProvider) {
+                      const browserProvider = new BrowserProvider(walletProvider as any);
+                      const signer = await browserProvider.getSigner();
+                      const txResp = await signer.sendTransaction({
+                        to: externalWallet,
+                        value: forwardAmountWei,
+                      });
+                      forwardHash = txResp.hash;
+                    } else if (eth) {
+                      forwardHash = await (eth.request as Function)({
+                        method: "eth_sendTransaction",
+                        params: [{
+                          from: address,
+                          to: externalWallet,
+                          value: "0x" + forwardAmountWei.toString(16),
+                        }],
+                      }) as string;
+                    } else {
+                      throw new Error("No provider found for forward transaction.");
+                    }
+
+                    setTxHash(forwardHash);
+                    toast({
+                      title: "Step 2/2: Forwarding Funds",
+                      description: `Auto-forward transaction submitted... ${forwardHash.slice(0, 8)}`,
+                    });
+
+                    // Poll for forward transaction confirmation
+                    const forwardInterval = setInterval(async () => {
+                      try {
+                        const forwardReceipt = await rpcCall("eth_getTransactionReceipt", [forwardHash]);
+                        if (forwardReceipt) {
+                          if (forwardReceipt.status === "0x0" || forwardReceipt.status === 0 || forwardReceipt.status === "0") {
+                            setTxState("error");
+                            setTxError("Auto-forward transaction reverted");
+                            toast({
+                              title: "Forwarding failed ✕",
+                              description: "Auto-forward transfer was reverted.",
+                              variant: "destructive"
+                            });
+                            clearInterval(forwardInterval);
+                            return;
+                          }
+
+                          const curBlockRaw = await rpcCall("eth_blockNumber", []);
+                          if (curBlockRaw) {
+                            const curBlock = BigInt(curBlockRaw);
+                            const recBlock = BigInt(forwardReceipt.blockNumber);
+                            const forwardConfs = Number(curBlock - recBlock + 1n);
+
+                            if (forwardConfs >= 1) {
+                              setTxState("success");
+                              toast({
+                                title: "Withdrawal Complete ✓",
+                                description: `Successfully withdrew and forwarded ${formatMnt(forwardAmountWei)} MNT to your registered wallet!`,
+                              });
+
+                              saveTx({
+                                id: forwardHash,
+                                type: "Withdraw",
+                                amount: `${formatMnt(forwardAmountWei)} MNT`,
+                                status: "Confirmed",
+                                timestamp: new Date(),
+                                hash: forwardHash,
+                              });
+
+                              await refreshStats();
+                              clearInterval(forwardInterval);
+                            }
+                          }
+                        }
+                      } catch (e) { console.error("Forward poll error", e); }
+                    }, 3000);
+
+                  } catch (forwardErr: any) {
+                    setTxState("error");
+                    setTxError(forwardErr.message || "Failed to forward funds");
+                    toast({
+                      title: "Step 2 Failed",
+                      description: forwardErr.message || "Failed to auto-forward funds to external wallet.",
+                      variant: "destructive"
+                    });
+                  }
+                }, 1000);
+              }
+            }
+          }
+        } catch (e) { console.error("Vault withdraw poll error", e); }
+      }, 3000);
+
+    } catch (err: any) {
+      setTxState("error");
+      setTxError(err.message || "Withdrawal failed");
+      toast({
+        title: "Withdrawal Failed",
+        description: err.message || "Vault withdrawal failed.",
+        variant: "destructive"
+      });
+    }
+  }, [address, connect, checkAndSwitchNetwork, externalWallet, activeWallet, refreshStats, saveTx, vaultStats?.userBalance]);
+
+  // ── Two-step Partial Withdraw to External Wallet ─────────────────────────
+  const withdrawPartialToExternal = useCallback(async (amountMnt: string) => {
+    const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
+    if (!address) { await connect(); return; }
+    if (!externalWallet) {
+      toast({
+        title: "Registration Required",
+        description: "Please register your external withdrawal wallet first.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const onCorrectNetwork = await checkAndSwitchNetwork();
+    if (!onCorrectNetwork) {
+      toast({
+        title: "Wrong Network",
+        description: "Please switch to Mantle Mainnet to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTxState("waiting");
+    setTxError(null);
+    setTxHash(null);
+
+    try {
+      // Step 1: Withdraw partial from vault
+      const amountWei = parseMntToWei(amountMnt);
+      const selector = "2e1a7d4d"; // keccak256("withdraw(uint256)")
+      const paddedAmount = amountWei.toString(16).padStart(64, "0");
+      const data = "0x" + selector + paddedAmount;
+
+      let hash;
+      const walletProvider = activeWallet ? await activeWallet.getEthereumProvider() : null;
+      if (walletProvider) {
+        const browserProvider = new BrowserProvider(walletProvider as any);
+        const signer = await browserProvider.getSigner();
+        const txResp = await signer.sendTransaction({
+          to: VAULT_ADDRESS,
+          data
+        });
+        hash = txResp.hash;
+      } else if (eth) {
+        let gasLimit = "0x493E0";
+        try {
+          const estimated = await (eth.request as Function)({
+            method: "eth_estimateGas",
+            params: [{ from: address, to: VAULT_ADDRESS, data }],
+          }) as string;
+          gasLimit = "0x" + Math.floor(parseInt(estimated, 16) * 1.2).toString(16);
+        } catch (e) { console.warn(e); }
+
+        hash = await (eth.request as Function)({
+          method: "eth_sendTransaction",
+          params: [{ from: address, to: VAULT_ADDRESS, data, gas: gasLimit }],
+        }) as string;
+      } else {
+        throw new Error("No provider found to send transaction.");
+      }
+
+      setTxHash(hash);
+      setTxState("pending");
+      setConfirmations(0);
+
+      toast({
+        title: "Step 1/2: Vault Withdrawal",
+        description: `Submitted partial vault withdrawal... ${hash.slice(0, 8)}`,
+      });
+
+      saveTx({
+        id: hash,
+        type: "Withdraw",
+        amount: `${amountMnt} MNT`,
+        status: "Pending",
+        timestamp: new Date(),
+        hash,
+      });
+
+      // Poll for vault withdrawal receipt
+      const interval = setInterval(async () => {
+        try {
+          const receipt = await rpcCall("eth_getTransactionReceipt", [hash]);
+          if (receipt) {
+            if (receipt.status === "0x0" || receipt.status === 0 || receipt.status === "0") {
+              setTxState("error");
+              setTxError("Vault withdrawal reverted");
+              toast({
+                title: "Withdrawal failed ✕",
+                description: "Vault withdrawal was reverted.",
+                variant: "destructive"
+              });
+              clearInterval(interval);
+              return;
+            }
+
+            const currentBlockRaw = await rpcCall("eth_blockNumber", []);
+            if (currentBlockRaw) {
+              const currentBlock = BigInt(currentBlockRaw);
+              const receiptBlock = BigInt(receipt.blockNumber);
+              const confs = Number(currentBlock - receiptBlock + 1n);
+              setConfirmations(confs);
+
+              if (confs >= 1) {
+                clearInterval(interval);
+                
+                toast({
+                  title: "Step 1 Confirmed ✓",
+                  description: "Initiating step 2: Auto-forwarding partial withdrawal to external wallet...",
+                });
+
+                // Update simulated balance and cost basis proportionally
+                const currentSim = simBalanceRef.current[address || "null"] || 0;
+                const newSim = Math.max(0, currentSim - parseFloat(amountMnt));
+                simBalanceRef.current[address || "null"] = newSim;
+
+                const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
+                const ratio = parseFloat(amountMnt) / parseFloat(vaultStats?.userBalance || "1");
+                const newCostBasis = Math.max(0, currentCostBasis * (1 - ratio));
+                localStorage.setItem(`obelisk_cost_basis_${address}`, newCostBasis.toString());
+
+                // Step 2: Auto-forward withdrawn amount to external wallet
+                setTimeout(async () => {
+                  try {
+                    // Fetch gas price for native transfer
+                    const gasPriceRaw = await rpcCall("eth_gasPrice", []);
+                    const gasPrice = BigInt(gasPriceRaw);
+
+                    // Gas for native transfer is exactly 21,000
+                    const transferGasWei = 21000n * gasPrice;
+
+                    if (amountWei <= transferGasWei) {
+                      throw new Error(`Insufficient withdrawal amount (${formatMnt(amountWei)} MNT) to pay for transfer gas.`);
+                    }
+
+                    const forwardAmountWei = amountWei - transferGasWei;
+
+                    let forwardHash;
+                    if (walletProvider) {
+                      const browserProvider = new BrowserProvider(walletProvider as any);
+                      const signer = await browserProvider.getSigner();
+                      const txResp = await signer.sendTransaction({
+                        to: externalWallet,
+                        value: forwardAmountWei,
+                      });
+                      forwardHash = txResp.hash;
+                    } else if (eth) {
+                      forwardHash = await (eth.request as Function)({
+                        method: "eth_sendTransaction",
+                        params: [{
+                          from: address,
+                          to: externalWallet,
+                          value: "0x" + forwardAmountWei.toString(16),
+                        }],
+                      }) as string;
+                    } else {
+                      throw new Error("No provider found for forward transaction.");
+                    }
+
+                    setTxHash(forwardHash);
+                    toast({
+                      title: "Step 2/2: Forwarding Funds",
+                      description: `Auto-forward transaction submitted... ${forwardHash.slice(0, 8)}`,
+                    });
+
+                    // Poll for forward transaction confirmation
+                    const forwardInterval = setInterval(async () => {
+                      try {
+                        const forwardReceipt = await rpcCall("eth_getTransactionReceipt", [forwardHash]);
+                        if (forwardReceipt) {
+                          if (forwardReceipt.status === "0x0" || forwardReceipt.status === 0 || forwardReceipt.status === "0") {
+                            setTxState("error");
+                            setTxError("Auto-forward transaction reverted");
+                            toast({
+                              title: "Forwarding failed ✕",
+                              description: "Auto-forward transfer was reverted.",
+                              variant: "destructive"
+                            });
+                            clearInterval(forwardInterval);
+                            return;
+                          }
+
+                          const curBlockRaw = await rpcCall("eth_blockNumber", []);
+                          if (curBlockRaw) {
+                            const curBlock = BigInt(curBlockRaw);
+                            const recBlock = BigInt(forwardReceipt.blockNumber);
+                            const forwardConfs = Number(curBlock - recBlock + 1n);
+
+                            if (forwardConfs >= 1) {
+                              setTxState("success");
+                              toast({
+                                title: "Withdrawal Complete ✓",
+                                description: `Successfully withdrew and forwarded ${formatMnt(forwardAmountWei)} MNT to your registered wallet!`,
+                              });
+
+                              saveTx({
+                                id: forwardHash,
+                                type: "Withdraw",
+                                amount: `${amountMnt} MNT`,
+                                status: "Confirmed",
+                                timestamp: new Date(),
+                                hash: forwardHash,
+                              });
+
+                              await refreshStats();
+                              clearInterval(forwardInterval);
+                            }
+                          }
+                        }
+                      } catch (e) { console.error("Forward poll error", e); }
+                    }, 3000);
+
+                  } catch (forwardErr: any) {
+                    setTxState("error");
+                    setTxError(forwardErr.message || "Failed to forward funds");
+                    toast({
+                      title: "Step 2 Failed",
+                      description: forwardErr.message || "Failed to auto-forward funds to external wallet.",
+                      variant: "destructive"
+                    });
+                  }
+                }, 1000);
+              }
+            }
+          }
+        } catch (e) { console.error("Vault withdraw poll error", e); }
+      }, 3000);
+
+    } catch (err: any) {
+      setTxState("error");
+      setTxError(err.message || "Withdrawal failed");
+      toast({
+        title: "Withdrawal Failed",
+        description: err.message || "Vault withdrawal failed.",
+        variant: "destructive"
+      });
+    }
+  }, [address, connect, checkAndSwitchNetwork, externalWallet, activeWallet, refreshStats, saveTx, vaultStats?.userBalance]);
+
+  const handler = (accounts: string[]) => setAddress(accounts[0] ?? null);
+  const chainHandler = () => checkAndSwitchNetwork();
+
+  (eth as Record<string, Function>).on?.("accountsChanged", handler);
+  (eth as Record<string, Function>).on?.("chainChanged", chainHandler);
+
+  return () => {
+    (eth as Record<string, Function>).removeListener?.("accountsChanged", handler);
+    (eth as Record<string, Function>).removeListener?.("chainChanged", chainHandler);
   };
+}, [checkAndSwitchNetwork]);
+
+return { 
+  deposit, withdraw, withdrawPartial, 
+  vaultStats, txState, setTxState, txHash, txError, 
+  isConnected, isWrongNetwork, address, connect, refreshStats,
+  confirmations, explorerUrl: getExplorerUrl,
+  txHistory,
+  externalWallet,
+  registerExternalWallet,
+  withdrawToExternal,
+  withdrawPartialToExternal
+};
 }
