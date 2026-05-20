@@ -2,10 +2,12 @@
  * AuthScreen — Light-themed auth matching Agent Layer landing style
  */
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Logo } from "./Logo";
 import { useAuth } from "@/context/AuthContext";
 import { WalletConnectModal } from "./WalletConnectModal";
+import { useAppKit, useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
+import { BrowserProvider } from "ethers";
 
 interface AuthScreenProps {
   onAuthenticated: () => void;
@@ -23,6 +25,24 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   });
 
   const allChecked = Object.values(compliance).every(v => v);
+
+  const { open: openAppKit } = useAppKit();
+  const { address: appKitAddress, isConnected: isAppKitConnected } = useAppKitAccount();
+  const { walletProvider } = useAppKitProvider("eip155");
+  const [isGaslessAuthPending, setIsGaslessAuthPending] = useState(false);
+
+  // Sync AppKit login back to our auth challenge
+  useEffect(() => {
+    if (isAppKitConnected && appKitAddress && isGaslessAuthPending) {
+      setIsGaslessAuthPending(false);
+      handleWalletConnected(appKitAddress);
+    }
+  }, [isAppKitConnected, appKitAddress, isGaslessAuthPending]);
+
+  const handleGasless = async () => {
+    setIsGaslessAuthPending(true);
+    await openAppKit();
+  };
 
   // ── Antigravity Login Flow (Signature Required) ────────────────────────
   const handleWallet = () => {
@@ -42,9 +62,11 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
       const message = `Antigravity Protocol Login\n\nSession Duration: 5 Minutes\nWallet: ${address}\nTimestamp: ${Date.now()}`;
       
       let signature;
-      // If we're using WalletConnect, we should use the provider from the modal/appkit
-      // but to keep it simple, we check if window.ethereum is available
-      if (eth) {
+      if (walletProvider) {
+        const browserProvider = new BrowserProvider(walletProvider);
+        const signer = await browserProvider.getSigner();
+        signature = await signer.signMessage(message);
+      } else if (eth) {
         signature = await eth.request({
           method: "personal_sign",
           params: [message, address],
@@ -249,18 +271,17 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                     accent
                   />
 
-                  {/* AA / Gasless stub (EIP-4337) */}
+                  {/* AA / Gasless (EIP-4337) */}
                   <AuthButton
-                    onClick={() => {}}
-                    loading={false}
-                    disabled={true}
+                    onClick={handleGasless}
+                    loading={isGaslessAuthPending}
                     icon={
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#888" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     }
-                    label="Gasless Wallet (EIP-4337)"
-                    sublabel="Account Abstraction · No ETH for gas · Coming soon"
+                    label={isGaslessAuthPending ? "Connecting..." : "Gasless Wallet (EIP-4337)"}
+                    sublabel="Email / Social login · Powered by Smart Accounts"
                   />
 
                   {/* AA Info badge */}

@@ -11,6 +11,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { useAppKitProvider, useAppKitAccount } from "@reown/appkit/react";
+import { BrowserProvider } from "ethers";
 
 // ── Replace with your deployed contract address after running deploy script ──
 const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS ?? "";
@@ -139,7 +141,16 @@ async function rpcCall(method: string, params: any[]): Promise<any> {
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useVault(): VaultState {
+  const { walletProvider } = useAppKitProvider("eip155");
+  const { address: appKitAddress, isConnected: isAppKitConnected } = useAppKitAccount();
   const [address,    setAddress]    = useState<string | null>(null);
+
+  // Sync address with AppKit
+  useEffect(() => {
+    if (isAppKitConnected && appKitAddress) {
+      setAddress(appKitAddress);
+    }
+  }, [isAppKitConnected, appKitAddress]);
   const [txState,    setTxState]    = useState<TxStatus>("idle");
   const [txHash,     setTxHash]     = useState<string | null>(null);
   const [txError,    setTxError]    = useState<string | null>(null);
@@ -184,8 +195,24 @@ export function useVault(): VaultState {
 
   // ── Network Guard Helper ────────────────────────────────────────────────
   const checkAndSwitchNetwork = useCallback(async (): Promise<boolean> => {
+    if (walletProvider) {
+      try {
+        const browserProvider = new BrowserProvider(walletProvider);
+        const network = await browserProvider.getNetwork();
+        if (network.chainId === BigInt(CHAIN_ID)) {
+          setIsWrongNetwork(false);
+          return true;
+        }
+      } catch (err) {
+        console.error("AppKit network check failed:", err);
+      }
+    }
+
     const eth = (window as Window & { ethereum?: any }).ethereum;
-    if (!eth) return false;
+    if (!eth) {
+      if (walletProvider) return true;
+      return false;
+    }
 
     try {
       const currentChainId = await eth.request({ method: "eth_chainId" });
@@ -231,7 +258,7 @@ export function useVault(): VaultState {
       console.error("Network check failed:", err);
       return false;
     }
-  }, []);
+  }, [walletProvider]);
 
   // ── Connect wallet ──────────────────────────────────────────────────────
   const connect = useCallback(async () => {
@@ -389,7 +416,7 @@ export function useVault(): VaultState {
   // ── Deposit ─────────────────────────────────────────────────────────────
   const deposit = useCallback(async (amountMnt: string) => {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
-    if (!eth || !address) { await connect(); return; }
+    if (!address) { await connect(); return; }
     
     // Safety check before processing
     const onCorrectNetwork = await checkAndSwitchNetwork();
@@ -412,15 +439,29 @@ export function useVault(): VaultState {
       const amountWei = parseMntToWei(amountMnt);
       const valueHex = "0x" + amountWei.toString(16);
 
-      const hash = await (eth.request as Function)({
-        method: "eth_sendTransaction",
-        params: [{
-          from:  address,
-          to:    VAULT_ADDRESS,
-          value: valueHex,
-          data:  "0xd0e30db0",
-        }],
-      }) as string;
+      let hash;
+      if (walletProvider) {
+        const browserProvider = new BrowserProvider(walletProvider);
+        const signer = await browserProvider.getSigner();
+        const txResp = await signer.sendTransaction({
+          to: VAULT_ADDRESS,
+          value: amountWei,
+          data: "0xd0e30db0" // deposit()
+        });
+        hash = txResp.hash;
+      } else if (eth) {
+        hash = await (eth.request as Function)({
+          method: "eth_sendTransaction",
+          params: [{
+            from:  address,
+            to:    VAULT_ADDRESS,
+            value: valueHex,
+            data:  "0xd0e30db0",
+          }],
+        }) as string;
+      } else {
+        throw new Error("No provider found to send transaction.");
+      }
 
       setTxHash(hash);
       setTxState("pending");
@@ -449,14 +490,11 @@ export function useVault(): VaultState {
         }
 
         try {
-          const receipt = await (eth.request as Function)({
-            method: "eth_getTransactionReceipt",
-            params: [hash],
-          });
+          const receipt = await rpcCall("eth_getTransactionReceipt", [hash]);
 
           if (receipt) {
             // Check if tx failed at contract level
-            if (receipt.status === "0x0") {
+            if (receipt.status === "0x0" || receipt.status === 0 || receipt.status === "0") {
               isFinalized = true;
               setTxState("error");
               setTxError("Transaction reverted on-chain");
@@ -470,43 +508,43 @@ export function useVault(): VaultState {
               return;
             }
 
-            const currentBlockRaw = await (eth.request as Function)({
-              method: "eth_blockNumber",
-            }) as string;
+            const currentBlockRaw = await rpcCall("eth_blockNumber", []);
             
-            const currentBlock = BigInt(currentBlockRaw);
-            const receiptBlock = BigInt(receipt.blockNumber);
-            const confs = Number(currentBlock - receiptBlock + 1n);
-            setConfirmations(confs);
+            if (currentBlockRaw) {
+              const currentBlock = BigInt(currentBlockRaw);
+              const receiptBlock = BigInt(receipt.blockNumber);
+              const confs = Number(currentBlock - receiptBlock + 1n);
+              setConfirmations(confs);
 
-            if (confs >= 1 && !isFinalized) {
-              isFinalized = true;
-              setTxState("success");
-              toast({
-                title: "Transaction confirmed ✓",
-                description: "View on Mantlescan ↗",
-                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
-              } as any);
-              
-              saveTx({
-                id: hash,
-                type: "Deposit",
-                amount: `${amountMnt} MNT`,
-                status: "Confirmed",
-                timestamp: new Date(),
-                hash,
-              });
+              if (confs >= 1 && !isFinalized) {
+                isFinalized = true;
+                setTxState("success");
+                toast({
+                  title: "Transaction confirmed ✓",
+                  description: "View on Mantlescan ↗",
+                  onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+                } as any);
+                
+                saveTx({
+                  id: hash,
+                  type: "Deposit",
+                  amount: `${amountMnt} MNT`,
+                  status: "Confirmed",
+                  timestamp: new Date(),
+                  hash,
+                });
 
-              // Update simulated balance (memory-only)
-              const currentSim = simBalanceRef.current[address || "null"] || 0;
-              simBalanceRef.current[address || "null"] = currentSim + parseFloat(amountMnt);
-              
-              // Update Cost Basis in localStorage for YTD calculation
-              const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
-              localStorage.setItem(`obelisk_cost_basis_${address}`, (currentCostBasis + parseFloat(amountMnt)).toString());
+                // Update simulated balance (memory-only)
+                const currentSim = simBalanceRef.current[address || "null"] || 0;
+                simBalanceRef.current[address || "null"] = currentSim + parseFloat(amountMnt);
+                
+                // Update Cost Basis in localStorage for YTD calculation
+                const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
+                localStorage.setItem(`obelisk_cost_basis_${address}`, (currentCostBasis + parseFloat(amountMnt)).toString());
 
-              await refreshStats();
-              clearInterval(interval);
+                await refreshStats();
+                clearInterval(interval);
+              }
             }
           }
         } catch (e) { console.error("Polling error", e); }
@@ -521,18 +559,18 @@ export function useVault(): VaultState {
       toast({
         title: isCancelled ? "Transaction Cancelled" : "Transaction failed",
         description: isCancelled 
-          ? "Request was rejected in MetaMask." 
+          ? "Request was rejected." 
           : "View details on Explorer ↗",
         variant: isCancelled ? "default" : "destructive",
         onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
       } as any);
     }
-  }, [address, connect, refreshStats, saveTx, getExplorerUrl]);
+  }, [address, connect, refreshStats, saveTx, getExplorerUrl, walletProvider]);
 
   // ── Withdraw ────────────────────────────────────────────────────────────
   const withdraw = useCallback(async () => {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
-    if (!eth || !address) { await connect(); return; }
+    if (!address) { await connect(); return; }
 
     // Safety check
     const onCorrectNetwork = await checkAndSwitchNetwork();
@@ -549,28 +587,41 @@ export function useVault(): VaultState {
     setTxError(null);
 
     try {
-      // Estimate gas to catch reverts early
-      let gasLimit = "0x493E0"; // 300k safer fallback for Mantle
-      try {
-        const estimated = await (eth.request as Function)({
-          method: "eth_estimateGas",
-          params: [{ from: address, to: VAULT_ADDRESS, data: "0x3ccfd60b" }],
-        }) as string;
-        // Add 20% buffer
-        gasLimit = "0x" + Math.floor(parseInt(estimated, 16) * 1.2).toString(16);
-      } catch (e) {
-        console.warn("Gas estimation failed, using fallback", e);
-      }
+      let hash;
+      if (walletProvider) {
+        const browserProvider = new BrowserProvider(walletProvider);
+        const signer = await browserProvider.getSigner();
+        const txResp = await signer.sendTransaction({
+          to: VAULT_ADDRESS,
+          data: "0x3ccfd60b" // withdraw()
+        });
+        hash = txResp.hash;
+      } else if (eth) {
+        // Estimate gas to catch reverts early
+        let gasLimit = "0x493E0"; // 300k safer fallback for Mantle
+        try {
+          const estimated = await (eth.request as Function)({
+            method: "eth_estimateGas",
+            params: [{ from: address, to: VAULT_ADDRESS, data: "0x3ccfd60b" }],
+          }) as string;
+          // Add 20% buffer
+          gasLimit = "0x" + Math.floor(parseInt(estimated, 16) * 1.2).toString(16);
+        } catch (e) {
+          console.warn("Gas estimation failed, using fallback", e);
+        }
 
-      const hash = await (eth.request as Function)({
-        method: "eth_sendTransaction",
-        params: [{
-          from: address,
-          to:   VAULT_ADDRESS,
-          data: "0x3ccfd60b", // keccak256("withdraw()")
-          gas:  gasLimit,
-        }],
-      }) as string;
+        hash = await (eth.request as Function)({
+          method: "eth_sendTransaction",
+          params: [{
+            from: address,
+            to:   VAULT_ADDRESS,
+            data: "0x3ccfd60b", // keccak256("withdraw()")
+            gas:  gasLimit,
+          }],
+        }) as string;
+      } else {
+        throw new Error("No provider found to send transaction.");
+      }
 
       setTxHash(hash);
       setTxState("pending");
@@ -592,13 +643,10 @@ export function useVault(): VaultState {
 
       const interval = setInterval(async () => {
         try {
-          const receipt = await (eth.request as Function)({
-            method: "eth_getTransactionReceipt",
-            params: [hash],
-          });
+          const receipt = await rpcCall("eth_getTransactionReceipt", [hash]);
           if (receipt) {
             // Check failure
-            if (receipt.status === "0x0") {
+            if (receipt.status === "0x0" || receipt.status === 0 || receipt.status === "0") {
               setTxState("error");
               setTxError("Withdrawal reverted on-chain");
               toast({
@@ -611,38 +659,37 @@ export function useVault(): VaultState {
               return;
             }
 
-            const currentBlockRaw = await (eth.request as Function)({
-              method: "eth_blockNumber",
-            }) as string;
-            
-            const currentBlock = BigInt(currentBlockRaw);
-            const receiptBlock = BigInt(receipt.blockNumber);
-            const confs = Number(currentBlock - receiptBlock + 1n);
-            setConfirmations(confs);
+            const currentBlockRaw = await rpcCall("eth_blockNumber", []);
+            if (currentBlockRaw) {
+              const currentBlock = BigInt(currentBlockRaw);
+              const receiptBlock = BigInt(receipt.blockNumber);
+              const confs = Number(currentBlock - receiptBlock + 1n);
+              setConfirmations(confs);
 
-            if (confs >= 1) {
-              setTxState("success");
-              toast({
-                title: "Withdrawal confirmed ✓",
-                description: "Funds returned to wallet. View on Explorer ↗",
-                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
-              } as any);
-              
-              saveTx({
-                id: hash,
-                type: "Withdraw",
-                amount: `${vaultStats?.userBalance ?? "0"} MNT`,
-                status: "Confirmed",
-                timestamp: new Date(),
-                hash,
-              });
+              if (confs >= 1) {
+                setTxState("success");
+                toast({
+                  title: "Withdrawal confirmed ✓",
+                  description: "Funds returned to wallet. View on Explorer ↗",
+                  onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+                } as any);
+                
+                saveTx({
+                  id: hash,
+                  type: "Withdraw",
+                  amount: `${vaultStats?.userBalance ?? "0"} MNT`,
+                  status: "Confirmed",
+                  timestamp: new Date(),
+                  hash,
+                });
 
-              // Clear simulated balance (memory-only)
-              simBalanceRef.current[address || "null"] = 0;
-              // Clear Cost Basis
-              localStorage.removeItem(`obelisk_cost_basis_${address}`);
-              await refreshStats();
-              clearInterval(interval);
+                // Clear simulated balance (memory-only)
+                simBalanceRef.current[address || "null"] = 0;
+                // Clear Cost Basis
+                localStorage.removeItem(`obelisk_cost_basis_${address}`);
+                await refreshStats();
+                clearInterval(interval);
+              }
             }
           }
         } catch (e) { console.error("Polling error", e); }
@@ -657,18 +704,18 @@ export function useVault(): VaultState {
       toast({
         title: isCancelled ? "Withdrawal Cancelled" : "Withdrawal failed",
         description: isCancelled 
-          ? "Request was rejected in MetaMask." 
+          ? "Request was rejected." 
           : "View details on Explorer ↗",
         variant: isCancelled ? "default" : "destructive",
         onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
       } as any);
     }
-  }, [address, refreshStats, saveTx, getExplorerUrl, vaultStats?.userBalance]);
+  }, [address, refreshStats, saveTx, getExplorerUrl, vaultStats?.userBalance, walletProvider]);
 
   // ── Withdraw Partial ───────────────────────────────────────────────────
   const withdrawPartial = useCallback(async (amountMnt: string) => {
     const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
-    if (!eth || !address) { await connect(); return; }
+    if (!address) { await connect(); return; }
 
     // Safety check
     const onCorrectNetwork = await checkAndSwitchNetwork();
@@ -690,23 +737,36 @@ export function useVault(): VaultState {
       const paddedAmount = amountWei.toString(16).padStart(64, "0");
       const data = "0x" + selector + paddedAmount;
 
-      // Estimate gas
-      let gasLimit = "0x493E0"; // 300k safer fallback for Mantle
-      try {
-        const estimated = await (eth.request as Function)({
-          method: "eth_estimateGas",
-          params: [{ from: address, to: VAULT_ADDRESS, data }],
-        }) as string;
-        // Add 20% buffer
-        gasLimit = "0x" + Math.floor(parseInt(estimated, 16) * 1.2).toString(16);
-      } catch (e) {
-        console.warn("Gas estimation failed", e);
-      }
+      let hash;
+      if (walletProvider) {
+        const browserProvider = new BrowserProvider(walletProvider);
+        const signer = await browserProvider.getSigner();
+        const txResp = await signer.sendTransaction({
+          to: VAULT_ADDRESS,
+          data
+        });
+        hash = txResp.hash;
+      } else if (eth) {
+        // Estimate gas
+        let gasLimit = "0x493E0"; // 300k safer fallback for Mantle
+        try {
+          const estimated = await (eth.request as Function)({
+            method: "eth_estimateGas",
+            params: [{ from: address, to: VAULT_ADDRESS, data }],
+          }) as string;
+          // Add 20% buffer
+          gasLimit = "0x" + Math.floor(parseInt(estimated, 16) * 1.2).toString(16);
+        } catch (e) {
+          console.warn("Gas estimation failed", e);
+        }
 
-      const hash = await (eth.request as Function)({
-        method: "eth_sendTransaction",
-        params: [{ from: address, to: VAULT_ADDRESS, data, gas: gasLimit }],
-      }) as string;
+        hash = await (eth.request as Function)({
+          method: "eth_sendTransaction",
+          params: [{ from: address, to: VAULT_ADDRESS, data, gas: gasLimit }],
+        }) as string;
+      } else {
+        throw new Error("No provider found to send transaction.");
+      }
 
       setTxHash(hash);
       setTxState("pending");
@@ -728,13 +788,10 @@ export function useVault(): VaultState {
 
       const interval = setInterval(async () => {
         try {
-          const receipt = await (eth.request as Function)({
-            method: "eth_getTransactionReceipt",
-            params: [hash],
-          });
+          const receipt = await rpcCall("eth_getTransactionReceipt", [hash]);
           if (receipt) {
             // Check failure
-            if (receipt.status === "0x0") {
+            if (receipt.status === "0x0" || receipt.status === 0 || receipt.status === "0") {
               setTxState("error");
               setTxError("Partial withdrawal reverted");
               toast({
@@ -747,45 +804,44 @@ export function useVault(): VaultState {
               return;
             }
 
-            const currentBlockRaw = await (eth.request as Function)({
-              method: "eth_blockNumber",
-            }) as string;
-            
-            const currentBlock = BigInt(currentBlockRaw);
-            const receiptBlock = BigInt(receipt.blockNumber);
-            const confs = Number(currentBlock - receiptBlock + 1n);
-            setConfirmations(confs);
+            const currentBlockRaw = await rpcCall("eth_blockNumber", []);
+            if (currentBlockRaw) {
+              const currentBlock = BigInt(currentBlockRaw);
+              const receiptBlock = BigInt(receipt.blockNumber);
+              const confs = Number(currentBlock - receiptBlock + 1n);
+              setConfirmations(confs);
 
-            if (confs >= 1) {
-              setTxState("success");
-              toast({
-                title: "Withdrawal confirmed ✓",
-                description: `Withdrew ${amountMnt} MNT. View on Explorer ↗`,
-                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
-              } as any);
-              
-              saveTx({
-                id: hash,
-                type: "Withdraw",
-                amount: `${amountMnt} MNT`,
-                status: "Confirmed",
-                timestamp: new Date(),
-                hash,
-              });
+              if (confs >= 1) {
+                setTxState("success");
+                toast({
+                  title: "Withdrawal confirmed ✓",
+                  description: `Withdrew ${amountMnt} MNT. View on Explorer ↗`,
+                  onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+                } as any);
+                
+                saveTx({
+                  id: hash,
+                  type: "Withdraw",
+                  amount: `${amountMnt} MNT`,
+                  status: "Confirmed",
+                  timestamp: new Date(),
+                  hash,
+                });
 
-              // Update simulated balance (memory-only)
-              const currentSim = simBalanceRef.current[address || "null"] || 0;
-              const newSim = Math.max(0, currentSim - parseFloat(amountMnt));
-              simBalanceRef.current[address || "null"] = newSim;
-              
-              // Update Cost Basis proportionally
-              const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
-              const ratio = parseFloat(amountMnt) / parseFloat(vaultStats?.userBalance || "1");
-              const newCostBasis = Math.max(0, currentCostBasis * (1 - ratio));
-              localStorage.setItem(`obelisk_cost_basis_${address}`, newCostBasis.toString());
+                // Update simulated balance (memory-only)
+                const currentSim = simBalanceRef.current[address || "null"] || 0;
+                const newSim = Math.max(0, currentSim - parseFloat(amountMnt));
+                simBalanceRef.current[address || "null"] = newSim;
+                
+                // Update Cost Basis proportionally
+                const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
+                const ratio = parseFloat(amountMnt) / parseFloat(vaultStats?.userBalance || "1");
+                const newCostBasis = Math.max(0, currentCostBasis * (1 - ratio));
+                localStorage.setItem(`obelisk_cost_basis_${address}`, newCostBasis.toString());
 
-              await refreshStats();
-              clearInterval(interval);
+                await refreshStats();
+                clearInterval(interval);
+              }
             }
           }
         } catch (e) { console.error("Polling error", e); }
@@ -800,13 +856,14 @@ export function useVault(): VaultState {
       toast({
         title: isCancelled ? "Withdrawal Cancelled" : "Withdrawal failed",
         description: isCancelled 
-          ? "Request was rejected in MetaMask." 
+          ? "Request was rejected." 
           : "View details on Explorer ↗",
         variant: isCancelled ? "default" : "destructive",
         onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
       } as any);
     }
-  }, [address, refreshStats, saveTx, getExplorerUrl]);
+  }, [address, refreshStats, saveTx, getExplorerUrl, walletProvider, vaultStats?.userBalance]);
+
   useEffect(() => {
     refreshStats();
     const id = setInterval(refreshStats, 15_000);

@@ -21,7 +21,13 @@ export const modal = createAppKit({
   metadata,
   projectId,
   features: {
-    analytics: true // Optional - defaults to your Cloud configuration
+    analytics: true,
+    email: true,
+    socials: ['google', 'apple', 'x', 'discord'],
+    showWallets: true,
+  },
+  defaultAccountTypes: {
+    eip155: 'smartAccount'
   },
   themeMode: 'light',
   themeVariables: {

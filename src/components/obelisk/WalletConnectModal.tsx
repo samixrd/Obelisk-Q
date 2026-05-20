@@ -12,6 +12,11 @@ import { toast } from "@/hooks/use-toast";
 
 const WALLETS = [
   {
+    id: "walletconnect",
+    name: "Email & Social Logins (Gasless)",
+    desc: "Google · Apple · X · Discord · Email",
+  },
+  {
     id: "metamask",
     name: "MetaMask",
     desc: "Browser extension · EVM compatible",
