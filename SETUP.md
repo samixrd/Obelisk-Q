@@ -26,6 +26,10 @@ cd Obelisk-Q
 # Configure backend environment
 cp backend/.env.example backend/.env
 # Edit backend/.env — fill in AZURE_OPENAI_API_KEY and AGENT_PRIVATE_KEY
+
+# Configure frontend environment
+cp .env.example .env.local   # or create .env.local manually
+# Edit .env.local — set VITE_PRIVY_APP_ID (get from https://dashboard.privy.io)
 ```
 
 ### Step 2 — Install Backend Dependencies
@@ -139,6 +143,17 @@ See `backend/.env.example` for the full annotated template.
 | `MANTLE_RPC_URL` | ✅ Yes | Mantle RPC endpoint |
 | `COINGECKO_API_KEY` | ⚠️ Optional | Improves MNT price data reliability |
 | `REDIS_URL` | ⚠️ Optional | Required for multi-node HA mode only |
+
+**Frontend** (`.env.local` in project root):
+
+| Variable | Required | Description |
+|---|---|---|
+| `VITE_PRIVY_APP_ID` | ✅ Yes | Privy App ID for wallet connection (get from [dashboard.privy.io](https://dashboard.privy.io)) |
+| `VITE_VAULT_ADDRESS` | ✅ Yes | ObeliskVault contract address |
+| `VITE_RPC_URL` | ✅ Yes | Mantle RPC endpoint |
+| `VITE_CHAIN_ID` | ✅ Yes | Chain ID (`5000` for Mantle mainnet) |
+| `VITE_API_URL` | ⚠️ Optional | Backend API URL (defaults to same origin) |
+| `VITE_WS_URL` | ⚠️ Optional | WebSocket URL (defaults to same origin) |
 
 ---
 
