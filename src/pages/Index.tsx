@@ -6,7 +6,8 @@ import { Header } from "@/components/obelisk/Header";
 import { Sidebar } from "@/components/obelisk/Sidebar";
 import { Dashboard } from "@/components/obelisk/Dashboard";
 import { GuidedTour, shouldShowTour } from "@/components/obelisk/GuidedTour";
-import { WalletConnectModal } from "@/components/obelisk/WalletConnectModal";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import { BrowserProvider } from "ethers";
 import { StatePlot } from "@/components/obelisk/StatePlot";
 import { StabilityProvider } from "@/components/obelisk/StabilityContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
@@ -30,7 +31,50 @@ function AppInner() {
     return (savedToken && savedAddr) ? "dashboard" : "landing";
   });
   
-  const [walletModal,    setWalletModal]     = useState(false);
+  const { login, authenticated, user, logout: privyLogout } = usePrivy();
+  const { wallets } = useWallets();
+  const [signing, setSigning] = useState(false);
+
+  // Sync Privy login back to session validation if sessionToken is missing but user is authenticated
+  useEffect(() => {
+    if (authenticated && user?.wallet?.address && wallets.length > 0 && !sessionToken && !signing) {
+      const runSign = async () => {
+        setSigning(true);
+        try {
+          const activeWallet = wallets[0];
+          const address = user.wallet.address;
+          const message = `Antigravity Protocol Login\n\nSession Duration: 5 Minutes\nWallet: ${address}\nTimestamp: ${Date.now()}`;
+          const ethProvider = await activeWallet.getEthereumProvider();
+          const browserProvider = new BrowserProvider(ethProvider);
+          const signer = await browserProvider.getSigner();
+          const signature = await signer.signMessage(message);
+
+          const API_URL = import.meta.env.VITE_API_URL || "";
+          const resp = await fetch(`${API_URL}/api/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ address, signature, message }),
+          });
+
+          if (!resp.ok) throw new Error("Cloud validation failed.");
+          const { token } = await resp.json();
+          setWalletAddress(address);
+          setSessionToken(token);
+          localStorage.setItem("obelisk_session_token", token);
+          setAuthMethod("wallet");
+          setStage("dashboard");
+        } catch (e) {
+          console.error("Auto-auth signing failed", e);
+          await privyLogout();
+          await logout();
+        } finally {
+          setSigning(false);
+        }
+      };
+      runSign();
+    }
+  }, [authenticated, user, wallets, sessionToken, signing]);
+
   const [sidebarOpen,    setSidebarOpen]     = useState(false);
   const [tourOpen,       setTourOpen]        = useState(false);
   const [activeTab,      setActiveTab]       = useState<DashboardTab>(() => {
@@ -131,8 +175,9 @@ function AppInner() {
               onTabChange={setActiveTab}
               needsWallet={needsWallet}
               walletAddress={walletAddress}
-              onConnectWallet={() => setWalletModal(true)}
+              onConnectWallet={login}
               onSignOut={async () => {
+                await privyLogout();
                 await logout();
                 setStage("landing");
               }}
@@ -153,19 +198,10 @@ function AppInner() {
               activeTab={activeTab}
               onTabChange={setActiveTab}
               walletAddress={walletAddress}
-              onConnectWallet={() => setWalletModal(true)}
+              onConnectWallet={login}
             />
 
             <GuidedTour open={tourOpen} onClose={() => setTourOpen(false)} />
-
-            <WalletConnectModal
-              open={walletModal}
-              onClose={() => setWalletModal(false)}
-              onConnected={(addr) => {
-                setWalletAddress(addr);
-                setWalletModal(false);
-              }}
-            />
           </motion.div>
         )}
       </AnimatePresence>

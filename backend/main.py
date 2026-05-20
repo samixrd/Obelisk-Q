@@ -1719,7 +1719,7 @@ async def get_agent_identity():
         return {
             "status": "verified",
             "standard": "ERC-8004 Sovereign AI Agent Identity",
-            "agent_address": "0x5698E89Ec2396e02679ddde33c2BA78de88F7fce",
+            "agent_address": "0x430cd09f8Ab6C1Ab50aa7f47FbAC94218cA65374",
             "manifest": manifest,
             "verification_url": "https://obeliskq.app/api/agent/identity"
         }

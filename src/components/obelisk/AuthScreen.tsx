@@ -5,8 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Logo } from "./Logo";
 import { useAuth } from "@/context/AuthContext";
-import { WalletConnectModal } from "./WalletConnectModal";
-import { useAppKit, useAppKitAccount, useAppKitProvider } from "@reown/appkit/react";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
 
 interface AuthScreenProps {
@@ -17,7 +16,6 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   const [step,          setStep]           = useState<1 | 2>(1);
   const [walletLoading,  setWalletLoading]  = useState(false);
   const [error,          setError]          = useState<string | null>(null);
-  const [walletModalOpen, setWalletModalOpen] = useState(false);
   const [compliance, setCompliance] = useState({
     "non-us": false,
     "regulated": false,
@@ -26,54 +24,50 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
   const allChecked = Object.values(compliance).every(v => v);
 
-  const { open: openAppKit } = useAppKit();
-  const { address: appKitAddress, isConnected: isAppKitConnected } = useAppKitAccount();
-  const { walletProvider } = useAppKitProvider("eip155");
-  const [isGaslessAuthPending, setIsGaslessAuthPending] = useState(false);
+  const { login, logout, authenticated, user } = usePrivy();
+  const { wallets } = useWallets();
 
-  // Sync AppKit login back to our auth challenge
+  // Sync Privy login back to our auth challenge
   useEffect(() => {
-    if (isAppKitConnected && appKitAddress && isGaslessAuthPending) {
-      setIsGaslessAuthPending(false);
-      handleWalletConnected(appKitAddress);
+    if (authenticated && user?.wallet?.address && wallets.length > 0 && !walletLoading) {
+      // Only authenticate if we don't have a session token yet
+      const currentToken = localStorage.getItem("obelisk_session_token");
+      if (!currentToken) {
+        handleWalletConnected(user.wallet.address);
+      }
     }
-  }, [isAppKitConnected, appKitAddress, isGaslessAuthPending]);
+  }, [authenticated, user, wallets, walletLoading]);
 
   const handleGasless = async () => {
-    setIsGaslessAuthPending(true);
-    await openAppKit();
+    if (authenticated && user?.wallet?.address) {
+      handleWalletConnected(user.wallet.address);
+    } else {
+      login();
+    }
   };
 
   // ── Antigravity Login Flow (Signature Required) ────────────────────────
   const handleWallet = () => {
-    setWalletModalOpen(true);
+    if (authenticated && user?.wallet?.address) {
+      handleWalletConnected(user.wallet.address);
+    } else {
+      login();
+    }
   };
 
   const handleWalletConnected = async (address: string) => {
-    const eth = (window as any).ethereum;
-    // Note: If using WalletConnect via AppKit, window.ethereum might not be the right provider
-    // but our current backend login logic relies on personal_sign.
-    // For now, we assume the provider is injected or handled by AppKit's EthersAdapter.
+    if (wallets.length === 0) return;
     
     setWalletLoading(true);
     setError(null);
     try {
-      // Request signature for session validation
+      const activeWallet = wallets[0];
       const message = `Antigravity Protocol Login\n\nSession Duration: 5 Minutes\nWallet: ${address}\nTimestamp: ${Date.now()}`;
       
-      let signature;
-      if (walletProvider) {
-        const browserProvider = new BrowserProvider(walletProvider);
-        const signer = await browserProvider.getSigner();
-        signature = await signer.signMessage(message);
-      } else if (eth) {
-        signature = await eth.request({
-          method: "personal_sign",
-          params: [message, address],
-        });
-      } else {
-        throw new Error("No provider found for signing.");
-      }
+      const ethProvider = await activeWallet.getEthereumProvider();
+      const browserProvider = new BrowserProvider(ethProvider);
+      const signer = await browserProvider.getSigner();
+      const signature = await signer.signMessage(message);
 
       // Submit to backend for temporal token issuance
       const API_URL = import.meta.env.VITE_API_URL || "";
@@ -92,11 +86,14 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
       setWalletAddress(address);
       setSessionToken(token);
+      localStorage.setItem("obelisk_session_token", token);
       setAuthMethod("wallet");
       onAuthenticated();
     } catch (err: unknown) {
       const msg = (err as Error).message ?? "Auth failed.";
       if (!msg.includes("rejected")) setError(msg);
+      // Log out of Privy on failure so user can try again
+      await logout();
     } finally {
       setWalletLoading(false);
     }
@@ -274,13 +271,13 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                   {/* AA / Gasless (EIP-4337) */}
                   <AuthButton
                     onClick={handleGasless}
-                    loading={isGaslessAuthPending}
+                    loading={walletLoading}
                     icon={
                       <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
                         <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                       </svg>
                     }
-                    label={isGaslessAuthPending ? "Connecting..." : "Gasless Wallet (EIP-4337)"}
+                    label={walletLoading ? "Connecting..." : "Gasless Wallet (EIP-4337)"}
                     sublabel="Email / Social login · Powered by Smart Accounts"
                   />
 
@@ -302,12 +299,6 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                       <strong>EIP-4337 Account Abstraction</strong> will enable gasless transactions on Mantle — users pay zero gas fees via sponsored bundlers, lowering the barrier for retail onboarding.
                     </p>
                   </div>
-
-                  <WalletConnectModal 
-                    open={walletModalOpen}
-                    onClose={() => setWalletModalOpen(false)}
-                    onConnected={handleWalletConnected}
-                  />
 
                   <button 
                     onClick={() => setStep(1)}

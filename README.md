@@ -47,7 +47,7 @@ This architecture ensures 100% uptime and deterministic rebalancing even during 
 ### 🏦 Core Protocol Details (Mantle Mainnet)
 *   **ObeliskVault**: `0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD`
 *   **ZKRegimeVerifier**: `0x2319ae743dF01506eAd1Fbc9398780885cCeF60d`
-*   **ERC-8004 Agent ID**: `0x5698E89Ec2396e02679ddde33c2BA78de88F7fce`
+*   **ERC-8004 Agent ID**: `0x430cd09f8Ab6C1Ab50aa7f47FbAC94218cA65374`
     * *Verify on-chain manifest*: [`/api/agent/identity`](https://obeliskq.app/api/agent/identity)
 *   **Network**: Mantle Mainnet (Chain ID 5000)
 *   **Primary Assets**: mETH (Staking), USDY (RWA), WMNT (Liquidity)

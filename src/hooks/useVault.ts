@@ -11,7 +11,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "@/hooks/use-toast";
-import { useAppKitProvider, useAppKitAccount } from "@reown/appkit/react";
+import { useWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
 
 // ── Replace with your deployed contract address after running deploy script ──
@@ -141,16 +141,18 @@ async function rpcCall(method: string, params: any[]): Promise<any> {
 // ── Hook ──────────────────────────────────────────────────────────────────────
 
 export function useVault(): VaultState {
-  const { walletProvider } = useAppKitProvider("eip155");
-  const { address: appKitAddress, isConnected: isAppKitConnected } = useAppKitAccount();
+  const { wallets } = useWallets();
+  const activeWallet = wallets[0];
   const [address,    setAddress]    = useState<string | null>(null);
 
-  // Sync address with AppKit
+  // Sync address with Privy
   useEffect(() => {
-    if (isAppKitConnected && appKitAddress) {
-      setAddress(appKitAddress);
+    if (activeWallet?.address) {
+      setAddress(activeWallet.address);
+    } else {
+      setAddress(null);
     }
-  }, [isAppKitConnected, appKitAddress]);
+  }, [activeWallet]);
   const [txState,    setTxState]    = useState<TxStatus>("idle");
   const [txHash,     setTxHash]     = useState<string | null>(null);
   const [txError,    setTxError]    = useState<string | null>(null);
@@ -195,22 +197,23 @@ export function useVault(): VaultState {
 
   // ── Network Guard Helper ────────────────────────────────────────────────
   const checkAndSwitchNetwork = useCallback(async (): Promise<boolean> => {
-    if (walletProvider) {
+    if (activeWallet) {
       try {
-        const browserProvider = new BrowserProvider(walletProvider);
-        const network = await browserProvider.getNetwork();
-        if (network.chainId === BigInt(CHAIN_ID)) {
+        if (Number(activeWallet.chainId) === 5000) {
           setIsWrongNetwork(false);
           return true;
         }
+        await activeWallet.switchChain(5000);
+        setIsWrongNetwork(false);
+        return true;
       } catch (err) {
-        console.error("AppKit network check failed:", err);
+        console.error("Privy network switch failed:", err);
       }
     }
 
     const eth = (window as Window & { ethereum?: any }).ethereum;
     if (!eth) {
-      if (walletProvider) return true;
+      if (activeWallet) return true;
       return false;
     }
 
@@ -258,7 +261,7 @@ export function useVault(): VaultState {
       console.error("Network check failed:", err);
       return false;
     }
-  }, [walletProvider]);
+  }, [activeWallet]);
 
   // ── Connect wallet ──────────────────────────────────────────────────────
   const connect = useCallback(async () => {
@@ -440,8 +443,9 @@ export function useVault(): VaultState {
       const valueHex = "0x" + amountWei.toString(16);
 
       let hash;
+      const walletProvider = activeWallet ? await activeWallet.getEthereumProvider() : null;
       if (walletProvider) {
-        const browserProvider = new BrowserProvider(walletProvider);
+        const browserProvider = new BrowserProvider(walletProvider as any);
         const signer = await browserProvider.getSigner();
         const txResp = await signer.sendTransaction({
           to: VAULT_ADDRESS,
@@ -565,7 +569,7 @@ export function useVault(): VaultState {
         onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
       } as any);
     }
-  }, [address, connect, refreshStats, saveTx, getExplorerUrl, walletProvider]);
+  }, [address, connect, refreshStats, saveTx, getExplorerUrl, activeWallet]);
 
   // ── Withdraw ────────────────────────────────────────────────────────────
   const withdraw = useCallback(async () => {
@@ -588,8 +592,9 @@ export function useVault(): VaultState {
 
     try {
       let hash;
+      const walletProvider = activeWallet ? await activeWallet.getEthereumProvider() : null;
       if (walletProvider) {
-        const browserProvider = new BrowserProvider(walletProvider);
+        const browserProvider = new BrowserProvider(walletProvider as any);
         const signer = await browserProvider.getSigner();
         const txResp = await signer.sendTransaction({
           to: VAULT_ADDRESS,
@@ -710,7 +715,7 @@ export function useVault(): VaultState {
         onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
       } as any);
     }
-  }, [address, refreshStats, saveTx, getExplorerUrl, vaultStats?.userBalance, walletProvider]);
+  }, [address, refreshStats, saveTx, getExplorerUrl, vaultStats?.userBalance, activeWallet]);
 
   // ── Withdraw Partial ───────────────────────────────────────────────────
   const withdrawPartial = useCallback(async (amountMnt: string) => {
@@ -738,8 +743,9 @@ export function useVault(): VaultState {
       const data = "0x" + selector + paddedAmount;
 
       let hash;
+      const walletProvider = activeWallet ? await activeWallet.getEthereumProvider() : null;
       if (walletProvider) {
-        const browserProvider = new BrowserProvider(walletProvider);
+        const browserProvider = new BrowserProvider(walletProvider as any);
         const signer = await browserProvider.getSigner();
         const txResp = await signer.sendTransaction({
           to: VAULT_ADDRESS,
@@ -862,7 +868,7 @@ export function useVault(): VaultState {
         onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
       } as any);
     }
-  }, [address, refreshStats, saveTx, getExplorerUrl, walletProvider, vaultStats?.userBalance]);
+  }, [address, refreshStats, saveTx, getExplorerUrl, activeWallet, vaultStats?.userBalance]);
 
   useEffect(() => {
     refreshStats();
