@@ -48,12 +48,36 @@ function AppInner() {
     }
   }, [ready, authenticated, user, wallets, isEmbeddedWallet, setIsEmbeddedWallet]);
 
-  // Sync Privy login back to session validation if sessionToken is missing but user is authenticated
+  // Fast-path for embedded wallet (social/email) users:
+  // Privy already authenticated them via OAuth — skip AuthScreen entirely,
+  // generate a local session token and go straight to dashboard.
   useEffect(() => {
-    if (authenticated && !sessionToken && stage !== "auth") {
-      setStage("auth");
+    if (!ready || !authenticated || !user?.wallet?.address || sessionToken) return;
+
+    const activeWallet = wallets.find(
+      w => w.address.toLowerCase() === user.wallet.address.toLowerCase()
+    ) || wallets[0];
+
+    if (!activeWallet) return;
+
+    const isEmbedded = activeWallet?.walletClientType === "privy";
+    if (!isEmbedded) {
+      // External wallet — show AuthScreen for signature challenge
+      if (stage !== "auth") setStage("auth");
+      return;
     }
-  }, [authenticated, sessionToken, stage]);
+
+    // Embedded wallet — auto-authenticate without signature
+    const address = user.wallet.address;
+    const token = `privy_${btoa(address).replace(/=/g, "")}_${Date.now()}`;
+    setWalletAddress(address);
+    setSessionToken(token);
+    localStorage.setItem("obelisk_session_token", token);
+    setIsEmbeddedWallet(true);
+    setAuthMethod("wallet");
+    setStage("dashboard");
+  }, [ready, authenticated, user, wallets, sessionToken]);
+
 
   const [sidebarOpen,    setSidebarOpen]     = useState(false);
   const [tourOpen,       setTourOpen]        = useState(false);

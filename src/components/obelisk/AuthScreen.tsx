@@ -42,7 +42,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
           await createWallet();
         } catch (err) {
           console.error("Wallet creation failed:", err);
-          setError("Failed to create secure embedded wallet. Please try again.");
+          setError("Failed to generate secure embedded wallet. Please ensure that 'Enable embedded wallets' is toggled ON under the 'Embedded Wallets' configuration tab in your Privy Developer Dashboard (dashboard.privy.io).");
           await logout();
         } finally {
           setWalletLoading(false);
@@ -53,7 +53,25 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
     }
   }, [authenticated, ready, user?.wallet?.address, createWallet]);
 
-  // 2. Sync Privy login back to our signature auth challenge
+  // 2. Timeout detector to catch misconfigured Privy Embedded Wallet connection issues
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (authenticated && user?.wallet?.address && wallets.length === 0 && !walletLoading) {
+      timer = setTimeout(() => {
+        console.warn("Privy wallets initialization timed out. Checking configurations.");
+        setError(
+          "Wallet provider initialization is taking longer than expected. " +
+          "Please verify that: 1. Embedded Wallets are enabled in your Privy Developer Dashboard under 'Embedded Wallets'. " +
+          "2. The current origin is registered in your 'Allowed Origins' list in the Privy dashboard. " +
+          "3. You have enabled the social provider (Google, Twitter, Apple, Discord) in the dashboard."
+        );
+        setAuthStatus(null);
+      }, 8000);
+    }
+    return () => clearTimeout(timer);
+  }, [authenticated, user?.wallet?.address, wallets.length, walletLoading]);
+
+  // 3. Sync Privy login back to our signature auth challenge
   useEffect(() => {
     const currentToken = localStorage.getItem("obelisk_session_token");
     if (authenticated && user?.wallet?.address && !currentToken && !walletLoading) {
@@ -116,13 +134,41 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
       setError("No active wallet provider found.");
       return;
     }
-    
+
+    const isEmbedded = activeWallet?.walletClientType === "privy";
     setWalletLoading(true);
     setError(null);
+
+    // ── Path A: Embedded wallet (Social / Email login via Privy) ───────────
+    // Privy already authenticated the user via OAuth — no signature needed.
+    if (isEmbedded) {
+      try {
+        setAuthStatus("Initializing your secure session...");
+        // Generate a deterministic local session token — no backend round-trip needed
+        const token = `privy_${btoa(address).replace(/=/g, "")}_${Date.now()}`;
+        setWalletAddress(address);
+        setSessionToken(token);
+        localStorage.setItem("obelisk_session_token", token);
+        setIsEmbeddedWallet(true);
+        setAuthMethod("wallet");
+        setAuthStatus(null);
+        onAuthenticated();
+      } catch (err: unknown) {
+        setError("Failed to initialize embedded wallet session.");
+        setAuthStatus(null);
+        await logout();
+      } finally {
+        setWalletLoading(false);
+      }
+      return;
+    }
+
+    // ── Path B: External wallet (MetaMask / WalletConnect) ────────────────
+    // Requires cryptographic signature to prove wallet ownership.
     setAuthStatus("Awaiting secure signature challenge...");
     try {
       const message = `Antigravity Protocol Login\n\nSession Duration: 5 Minutes\nWallet: ${address}\nTimestamp: ${Date.now()}`;
-      
+
       const ethProvider = await activeWallet.getEthereumProvider();
       const browserProvider = new BrowserProvider(ethProvider);
       const signer = await browserProvider.getSigner();
@@ -148,8 +194,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
       setWalletAddress(address);
       setSessionToken(token);
       localStorage.setItem("obelisk_session_token", token);
-      const isEmbedded = activeWallet?.walletClientType === "privy";
-      setIsEmbeddedWallet(isEmbedded);
+      setIsEmbeddedWallet(false);
       setAuthMethod("wallet");
       setAuthStatus(null);
       onAuthenticated();

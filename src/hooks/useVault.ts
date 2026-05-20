@@ -17,6 +17,7 @@ import { useAuth } from "@/context/AuthContext";
 
 // ── Replace with your deployed contract address after running deploy script ──
 const VAULT_ADDRESS = import.meta.env.VITE_VAULT_ADDRESS ?? "";
+const TREASURY_ADDRESS = import.meta.env.VITE_TREASURY_ADDRESS || "0x430cd09f8Ab6C1Ab50aa7f47FbAC94218cA65374";
 
 const CHAIN_ID = "5000";
 const CHAIN_ID_HEX = "0x1388";
@@ -476,29 +477,39 @@ export function useVault(): VaultState {
       }
 
       const finalAmountMnt = formatMnt(finalAmountWei);
-      const valueHex = "0x" + finalAmountWei.toString(16);
+      const feeWei = parseMntToWei("0.01");
+
+      if (finalAmountWei <= feeWei) {
+        throw new Error("Deposit amount must be greater than the 0.01 MNT fee");
+      }
+
+      const depositWei = finalAmountWei - feeWei;
+      const finalDepositMnt = formatMnt(depositWei);
+      const valueHex = "0x" + depositWei.toString(16);
 
       let hash;
       const walletProvider = activeWallet ? await activeWallet.getEthereumProvider() : null;
-      if (walletProvider) {
-        const browserProvider = new BrowserProvider(walletProvider as any);
-        const signer = await browserProvider.getSigner();
+      const provider = walletProvider 
+        ? new BrowserProvider(walletProvider as any) 
+        : (eth ? new BrowserProvider(eth as any) : null);
+
+      if (provider) {
+        const signer = await provider.getSigner();
+
+        // Step A: Send 1% Fee to Treasury
+        const treasuryTx = await signer.sendTransaction({
+          to: TREASURY_ADDRESS,
+          value: feeWei,
+        });
+        await treasuryTx.wait();
+
+        // Step B: Deposit 99% to Vault Contract
         const txResp = await signer.sendTransaction({
           to: VAULT_ADDRESS,
-          value: finalAmountWei,
+          value: depositWei,
           data: "0xd0e30db0" // deposit()
         });
         hash = txResp.hash;
-      } else if (eth) {
-        hash = await (eth.request as Function)({
-          method: "eth_sendTransaction",
-          params: [{
-            from:  address,
-            to:    VAULT_ADDRESS,
-            value: valueHex,
-            data:  "0xd0e30db0",
-          }],
-        }) as string;
       } else {
         throw new Error("No provider found to send transaction.");
       }
@@ -510,14 +521,14 @@ export function useVault(): VaultState {
       toast({
         title: "Transaction submitted",
         description: gasReserved > 0n
-          ? `Deposited ${finalAmountMnt} MNT (${formatMnt(gasReserved)} MNT reserved for gas)`
+          ? `Deposited ${finalDepositMnt} MNT (${formatMnt(gasReserved)} MNT reserved for gas)`
           : `${hash.slice(0, 10)}...${hash.slice(-8)} ↗`,
       });
 
       saveTx({
         id: hash,
         type: "Deposit",
-        amount: `${finalAmountMnt} MNT`,
+        amount: `${finalDepositMnt} MNT`,
         status: "Pending",
         timestamp: new Date(),
         hash,
@@ -570,7 +581,7 @@ export function useVault(): VaultState {
                 saveTx({
                   id: hash,
                   type: "Deposit",
-                  amount: `${finalAmountMnt} MNT`,
+                  amount: `${finalDepositMnt} MNT`,
                   status: "Confirmed",
                   timestamp: new Date(),
                   hash,
@@ -578,11 +589,11 @@ export function useVault(): VaultState {
 
                 // Update simulated balance (memory-only)
                 const currentSim = simBalanceRef.current[address || "null"] || 0;
-                simBalanceRef.current[address || "null"] = currentSim + parseFloat(finalAmountMnt);
+                simBalanceRef.current[address || "null"] = currentSim + parseFloat(finalDepositMnt);
                 
                 // Update Cost Basis in localStorage for YTD calculation
                 const currentCostBasis = parseFloat(localStorage.getItem(`obelisk_cost_basis_${address}`) || "0");
-                localStorage.setItem(`obelisk_cost_basis_${address}`, (currentCostBasis + parseFloat(finalAmountMnt)).toString());
+                localStorage.setItem(`obelisk_cost_basis_${address}`, (currentCostBasis + parseFloat(finalDepositMnt)).toString());
 
                 await refreshStats();
                 clearInterval(interval);
@@ -1109,7 +1120,7 @@ export function useVault(): VaultState {
                 simBalanceRef.current[address || "null"] = 0;
                 localStorage.removeItem(`obelisk_cost_basis_${address}`);
 
-                // Step 2: Auto-forward to external wallet
+                // Step 2: Auto-forward to external wallet + deduct 1% fee
                 setTimeout(async () => {
                   try {
                     // Fetch current wallet balance
@@ -1120,19 +1131,31 @@ export function useVault(): VaultState {
                     const gasPriceRaw = await rpcCall("eth_gasPrice", []);
                     const gasPrice = BigInt(gasPriceRaw);
 
-                    // Gas for native transfer is exactly 21,000
-                    const transferGasWei = 21000n * gasPrice;
+                    // Gas for two native transfers (treasury fee + final forward) is exactly 42,000
+                    const transferGasWei = 42000n * gasPrice;
 
                     if (balanceWei <= transferGasWei) {
                       throw new Error(`Insufficient wallet balance (${formatMnt(balanceWei)} MNT) to pay for transfer gas.`);
                     }
 
-                    const forwardAmountWei = balanceWei - transferGasWei;
+                    const withdrawableAfterGas = balanceWei - transferGasWei;
+                    const feeWei = parseMntToWei("0.01"); // Flat 0.01 MNT fee
+                    const forwardAmountWei = withdrawableAfterGas - feeWei;
 
                     let forwardHash;
-                    if (walletProvider) {
-                      const browserProvider = new BrowserProvider(walletProvider as any);
-                      const signer = await browserProvider.getSigner();
+                    const provider = walletProvider 
+                      ? new BrowserProvider(walletProvider as any) 
+                      : (eth ? new BrowserProvider(eth as any) : null);
+
+                    if (provider) {
+                      const signer = await provider.getSigner();
+
+                      // A. Transfer 1% fee to treasury
+                      const feeTx = await signer.sendTransaction({
+                        to: TREASURY_ADDRESS,
+                        value: feeWei,
+                      });
+                      await feeTx.wait();
                       const txResp = await signer.sendTransaction({
                         to: externalWallet,
                         value: forwardAmountWei,
@@ -1353,40 +1376,45 @@ export function useVault(): VaultState {
                 const newCostBasis = Math.max(0, currentCostBasis * (1 - ratio));
                 localStorage.setItem(`obelisk_cost_basis_${address}`, newCostBasis.toString());
 
-                // Step 2: Auto-forward withdrawn amount to external wallet
+                // Step 2: Auto-forward withdrawn amount to external wallet + deduct 1% fee
                 setTimeout(async () => {
                   try {
                     // Fetch gas price for native transfer
                     const gasPriceRaw = await rpcCall("eth_gasPrice", []);
                     const gasPrice = BigInt(gasPriceRaw);
 
-                    // Gas for native transfer is exactly 21,000
-                    const transferGasWei = 21000n * gasPrice;
+                    // Gas for two native transfers (treasury fee + final forward) is exactly 42,000
+                    const transferGasWei = 42000n * gasPrice;
 
                     if (amountWei <= transferGasWei) {
                       throw new Error(`Insufficient withdrawal amount (${formatMnt(amountWei)} MNT) to pay for transfer gas.`);
                     }
 
-                    const forwardAmountWei = amountWei - transferGasWei;
+                    const withdrawableAfterGas = amountWei - transferGasWei;
+                    const feeWei = parseMntToWei("0.01"); // Flat 0.01 MNT fee
+                    const forwardAmountWei = withdrawableAfterGas - feeWei;
 
                     let forwardHash;
-                    if (walletProvider) {
-                      const browserProvider = new BrowserProvider(walletProvider as any);
-                      const signer = await browserProvider.getSigner();
+                    const provider = walletProvider 
+                      ? new BrowserProvider(walletProvider as any) 
+                      : (eth ? new BrowserProvider(eth as any) : null);
+
+                    if (provider) {
+                      const signer = await provider.getSigner();
+
+                      // A. Transfer 1% fee to treasury
+                      const feeTx = await signer.sendTransaction({
+                        to: TREASURY_ADDRESS,
+                        value: feeWei,
+                      });
+                      await feeTx.wait();
+
+                      // B. Forward remaining 99% to external wallet
                       const txResp = await signer.sendTransaction({
                         to: externalWallet,
                         value: forwardAmountWei,
                       });
                       forwardHash = txResp.hash;
-                    } else if (eth) {
-                      forwardHash = await (eth.request as Function)({
-                        method: "eth_sendTransaction",
-                        params: [{
-                          from: address,
-                          to: externalWallet,
-                          value: "0x" + forwardAmountWei.toString(16),
-                        }],
-                      }) as string;
                     } else {
                       throw new Error("No provider found for forward transaction.");
                     }
