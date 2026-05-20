@@ -923,7 +923,20 @@ export function useVault(): VaultState {
     (eth as Record<string, Function>).request?.({ method: "eth_accounts" })
       .then((accounts: string[]) => {
         if (accounts.length > 0) setAddress(accounts[0]);
-      })
+      });
+
+    const handler = (accounts: string[]) => setAddress(accounts[0] ?? null);
+    const chainHandler = () => checkAndSwitchNetwork();
+
+    (eth as Record<string, Function>).on?.("accountsChanged", handler);
+    (eth as Record<string, Function>).on?.("chainChanged", chainHandler);
+
+    return () => {
+      (eth as Record<string, Function>).removeListener?.("accountsChanged", handler);
+      (eth as Record<string, Function>).removeListener?.("chainChanged", chainHandler);
+    };
+  }, [checkAndSwitchNetwork]);
+
   // ── External Wallet Management ─────────────────────────────────────────
   const [externalWallet, setExternalWalletState] = useState<string | null>(null);
 
@@ -1458,17 +1471,6 @@ export function useVault(): VaultState {
     }
   }, [address, connect, checkAndSwitchNetwork, externalWallet, activeWallet, refreshStats, saveTx, vaultStats?.userBalance]);
 
-  const handler = (accounts: string[]) => setAddress(accounts[0] ?? null);
-  const chainHandler = () => checkAndSwitchNetwork();
-
-  (eth as Record<string, Function>).on?.("accountsChanged", handler);
-  (eth as Record<string, Function>).on?.("chainChanged", chainHandler);
-
-  return () => {
-    (eth as Record<string, Function>).removeListener?.("accountsChanged", handler);
-    (eth as Record<string, Function>).removeListener?.("chainChanged", chainHandler);
-  };
-}, [checkAndSwitchNetwork]);
 
 return { 
   deposit, withdraw, withdrawPartial, 
