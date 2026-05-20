@@ -49,7 +49,9 @@ const App = () => (
       supportedChains: [mantleChain],
       defaultChain: mantleChain,
       embeddedWallets: {
-        createOnLogin: 'users-without-wallets',
+        ethereum: {
+          createOnLogin: 'users-without-wallets',
+        },
       },
     }}
   >

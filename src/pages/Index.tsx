@@ -8,6 +8,7 @@ import { Dashboard } from "@/components/obelisk/Dashboard";
 import { GuidedTour, shouldShowTour } from "@/components/obelisk/GuidedTour";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
+import { useToast } from "@/hooks/use-toast";
 import { StatePlot } from "@/components/obelisk/StatePlot";
 import { StabilityProvider } from "@/components/obelisk/StabilityContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
@@ -18,6 +19,7 @@ type AppStage = "landing" | "auth" | "dashboard";
 
 function AppInner() {
   const { walletAddress, setWalletAddress, setAuthMethod, sessionToken, logout } = useAuth();
+  const { toast } = useToast();
 
   const [stage, setStage] = useState<AppStage>(() => {
     // Check if stage was explicitly saved (e.g. from a reload or guest navigation)
@@ -31,7 +33,7 @@ function AppInner() {
     return (savedToken && savedAddr) ? "dashboard" : "landing";
   });
   
-  const { login, authenticated, user, logout: privyLogout } = usePrivy();
+  const { login, authenticated, user, logout: privyLogout, ready } = usePrivy();
   const { wallets } = useWallets();
   const [signing, setSigning] = useState(false);
 
@@ -112,6 +114,18 @@ function AppInner() {
     setStage("dashboard");
   };
 
+  const handleConnectWallet = () => {
+    if (!ready) {
+      toast({
+        title: "Privy SDK is not ready",
+        description: "Please check your browser console. Ensure that you have set VITE_PRIVY_APP_ID in your .env.local file and configured allowed origins in your Privy developer dashboard.",
+        variant: "destructive"
+      });
+      return;
+    }
+    login();
+  };
+
   const needsWallet = !walletAddress;
 
   return (
@@ -175,7 +189,7 @@ function AppInner() {
               onTabChange={setActiveTab}
               needsWallet={needsWallet}
               walletAddress={walletAddress}
-              onConnectWallet={login}
+              onConnectWallet={handleConnectWallet}
               onSignOut={async () => {
                 await privyLogout();
                 await logout();
@@ -198,7 +212,7 @@ function AppInner() {
               activeTab={activeTab}
               onTabChange={setActiveTab}
               walletAddress={walletAddress}
-              onConnectWallet={login}
+              onConnectWallet={handleConnectWallet}
             />
 
             <GuidedTour open={tourOpen} onClose={() => setTourOpen(false)} />

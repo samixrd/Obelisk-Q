@@ -7,12 +7,14 @@ import { Logo } from "./Logo";
 import { useAuth } from "@/context/AuthContext";
 import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { BrowserProvider } from "ethers";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthScreenProps {
   onAuthenticated: () => void;
 }
 export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   const { setAuthMethod, setWalletAddress, setSessionToken } = useAuth();
+  const { toast } = useToast();
   const [step,          setStep]           = useState<1 | 2>(1);
   const [walletLoading,  setWalletLoading]  = useState(false);
   const [error,          setError]          = useState<string | null>(null);
@@ -24,7 +26,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
   const allChecked = Object.values(compliance).every(v => v);
 
-  const { login, logout, authenticated, user } = usePrivy();
+  const { login, logout, authenticated, user, ready } = usePrivy();
   const { wallets } = useWallets();
 
   // Sync Privy login back to our auth challenge
@@ -39,6 +41,14 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   }, [authenticated, user, wallets, walletLoading]);
 
   const handleGasless = async () => {
+    if (!ready) {
+      toast({
+        title: "Privy SDK is not ready",
+        description: "Please check your browser console. Ensure that you have set VITE_PRIVY_APP_ID in your .env.local file and configured allowed origins in your Privy developer dashboard.",
+        variant: "destructive"
+      });
+      return;
+    }
     if (authenticated && user?.wallet?.address) {
       handleWalletConnected(user.wallet.address);
     } else {
@@ -48,6 +58,14 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
 
   // ── Antigravity Login Flow (Signature Required) ────────────────────────
   const handleWallet = () => {
+    if (!ready) {
+      toast({
+        title: "Privy SDK is not ready",
+        description: "Please check your browser console. Ensure that you have set VITE_PRIVY_APP_ID in your .env.local file and configured allowed origins in your Privy developer dashboard.",
+        variant: "destructive"
+      });
+      return;
+    }
     if (authenticated && user?.wallet?.address) {
       handleWalletConnected(user.wallet.address);
     } else {
