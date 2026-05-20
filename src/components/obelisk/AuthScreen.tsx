@@ -401,7 +401,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                         fontSize: 11, color: "#6366f1", lineHeight: 1.5,
                         fontFamily: "'Inter', sans-serif", margin: 0,
                       }}>
-                        <strong>EIP-4337 Account Abstraction</strong> will enable gasless transactions on Mantle — users pay zero gas fees via sponsored bundlers, lowering the barrier for retail onboarding.
+                        <strong>EIP-4337 Gasless UX & Smart Accounts</strong> are now live! Social logins enjoy a fully managed embedded wallet experience with automatic gas reserve sponsorship and auto-forwarding withdrawals to personal external wallets.
                       </p>
                     </div>
 

@@ -10,6 +10,7 @@
 *   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 *   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report available via our API.
+*   ✅ **EIP-4337 Gasless UX & Auto-Forwarding**: Full zero-friction onboarding for social users, automatic transaction gas reserves, and two-step auto-forward withdrawals to personal external wallets.
 
 ---
 
@@ -99,7 +100,7 @@ Retail DeFi users lack the tools and data pipelines that institutional traders u
 1. **Omnichain RWAs via LayerZero**: Future versions will integrate LayerZero to execute cross-chain rebalances.
 2. **On-Chain Revenue Flow & Tokenomics**: We plan to launch the `$OBELISK` governance token and deploy automated fee-splitter smart contracts.
 3. **ZK-ML (Zero-Knowledge Machine Learning)**: We will implement ZK-ML to generate on-chain proofs for every AI decision, moving from "Trust our AI" to "Verify our Math".
-4. **Full EIP-4337 Account Abstraction**: We will implement full gasless (sponsored) transaction flows via Web3Auth/Biconomy, removing the need for retail users to hold MNT for gas.
+4. **Multi-Asset Auto-Compounding**: Expanding the Gasless UX to automatically swap and compound secondary gas assets and yield distributions into the vault without requiring user signatures.
 
 ---
 

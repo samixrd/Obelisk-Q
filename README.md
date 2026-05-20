@@ -11,7 +11,7 @@
 *   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 *   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report at [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) — regime, allocation, live USDY/mETH APY, last rotation tx.
-*   ✅ **AA / Gasless & Social Logins**: Full EIP-4337 Account Abstraction, gasless sponsorship, and email/social onboarding powered by Privy.
+*   ✅ **EIP-4337 Gasless UX & Auto-Forwarding**: Full zero-friction onboarding via Privy social logins, embedded smart wallets with automatic transaction gas reserves, and secure two-step auto-forward withdrawals to personal external wallets.
 
 ---
 
