@@ -27,7 +27,7 @@ const fadeUp = {
 
 export function PortfolioView() {
   const { sessionToken, logout } = useAuth();
-  const { vaultStats, withdraw, txState, address, connect } = useVault();
+  const { vaultStats, withdraw, withdrawPartial, txState, address, connect } = useVault();
   const { currentPosition } = useAgentData();
   const { usdy, meth, wmnt } = useYieldData();
   const logos = useTokenLogos();
@@ -259,8 +259,11 @@ export function PortfolioView() {
                 return;
               }
               if (withdrawAmount && !isInsufficient && parseFloat(withdrawAmount) > 0) {
-                // Always use full withdraw() — withdrawPartial is not on the deployed contract
-                withdraw();
+                if (parseFloat(withdrawAmount) === balance) {
+                  withdraw();
+                } else {
+                  withdrawPartial(withdrawAmount);
+                }
               }
             }}
             disabled={isPending || (address && (isInsufficient || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || isZeroBalance))}
@@ -268,7 +271,7 @@ export function PortfolioView() {
             whileTap={!(isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance))) ? { scale: 0.98 } : {}}
             className={`w-full py-5 rounded-full text-[15px] font-bold transition-all duration-300 ${isPending || (address && (isInsufficient || !withdrawAmount || isZeroBalance)) ? 'bg-black/10 text-[#9CA3AF] cursor-not-allowed' : 'bg-[#0a0a0a] text-white shadow-xl shadow-black/10'}`}
           >
-            {isPending ? "Processing..." : !address ? "Connect Wallet" : isZeroBalance ? "Insufficient Funds" : "Withdraw Funds"}
+            {isPending ? "Processing..." : !address ? "Connect Wallet" : isZeroBalance ? "Insufficient Funds" : parseFloat(withdrawAmount) === balance ? "Withdraw Full Funds" : "Withdraw Partial Funds"}
           </motion.button>
         </div>
       </div>

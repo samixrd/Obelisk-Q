@@ -148,8 +148,9 @@ Every regime rotation is recorded on Mantle Mainnet:
                                           │   → Calls ObeliskVault.setRegime()   │
                                           └──────────────────┬──────────────────┘
                                                              │
-                                                    Mantle Mainnet
-                                         ObeliskVault: 0x7924ce8e072c84D4028B04754207146e3aC6429A
+                                                     Mantle Mainnet
+                                         ObeliskVault: 0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD
+                                         ZKRegimeVerifier: 0x2319ae743dF01506eAd1Fbc9398780885cCeF60d
 ```
 
 ---

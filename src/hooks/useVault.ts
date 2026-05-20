@@ -27,6 +27,7 @@ const RPC_URL = import.meta.env.VITE_RPC_URL || "https://rpc.mantle.xyz";
 const VAULT_ABI = [
   "function deposit() payable",
   "function withdraw()",
+  "function withdraw(uint256)",
   "function getBalance(address user) view returns (uint256)",
   "function getWithdrawableBalance(address user) view returns (uint256)",
   "function getTotalVaultValue() view returns (uint256)",
@@ -685,7 +686,7 @@ export function useVault(): VaultState {
 
     try {
       const amountWei = parseMntToWei(amountMnt);
-      const selector = "8e19899e"; // keccak256("withdrawPartial(uint256)")
+      const selector = "2e1a7d4d"; // keccak256("withdraw(uint256)")
       const paddedAmount = amountWei.toString(16).padStart(64, "0");
       const data = "0x" + selector + paddedAmount;
 

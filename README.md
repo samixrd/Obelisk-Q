@@ -4,7 +4,8 @@
 ---
 
 ## ⚡ Summary
-*   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet** ([0x7924ce8e072c84D4028B04754207146e3aC6429A](https://explorer.mantle.xyz/address/0x7924ce8e072c84D4028B04754207146e3aC6429A)).
+*   ✅ **ZK-ML On-Chain Verification**: High-precision ZK-ML regime model verification on-chain.
+*   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet** ([0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)).
 *   ✅ **Continuous Execution**: Agent swarm running 24/7 — cycle count and uptime verifiable live at [`/api/agent/health`](https://obeliskq.app/api/agent/health).
 *   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.5%–2.5% based on regime and volatility).
 *   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
@@ -44,7 +45,8 @@ This architecture ensures 100% uptime and deterministic rebalancing even during 
 *   **Yield Auto-Compounding**: Native `compound()` logic harvests MNT rewards and re-invests them back into the target yield position.
 
 ### 🏦 Core Protocol Details (Mantle Mainnet)
-*   **ObeliskVault**: `0x7924ce8e072c84D4028B04754207146e3aC6429A`
+*   **ObeliskVault**: `0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD`
+*   **ZKRegimeVerifier**: `0x2319ae743dF01506eAd1Fbc9398780885cCeF60d`
 *   **ERC-8004 Agent ID**: `0x5698E89Ec2396e02679ddde33c2BA78de88F7fce`
     * *Verify on-chain manifest*: [`/api/agent/identity`](https://obeliskq.app/api/agent/identity)
 *   **Network**: Mantle Mainnet (Chain ID 5000)

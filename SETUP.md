@@ -107,7 +107,8 @@ All endpoints are **public** (no authentication required):
 
 | Contract | Address | Link |
 |---|---|---|
-| ObeliskVault | `0x7924ce8e072c84D4028B04754207146e3aC6429A` | [Mantle Explorer](https://explorer.mantle.xyz/address/0x7924ce8e072c84D4028B04754207146e3aC6429A) |
+| ObeliskVault | `0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD` | [Mantle Explorer](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD) |
+| ZKRegimeVerifier | `0x2319ae743dF01506eAd1Fbc9398780885cCeF60d` | [Mantle Explorer](https://explorer.mantle.xyz/address/0x2319ae743dF01506eAd1Fbc9398780885cCeF60d) |
 | USDY (Ondo) | `0x5bE26527e817998A7206475496fDE1e68957c5A6` | [Mantle Explorer](https://explorer.mantle.xyz/address/0x5bE26527e817998A7206475496fDE1e68957c5A6) |
 | mETH | `0xcDA86A272531e8640cD7F1a92c01839911B90bb0` | [Mantle Explorer](https://explorer.mantle.xyz/address/0xcDA86A272531e8640cD7F1a92c01839911B90bb0) |
 

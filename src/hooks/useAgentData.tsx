@@ -40,6 +40,11 @@ interface AgentData {
     liquidity_score: number;
   };
   scoreHistory: number[];
+  zkMl: {
+    enabled: boolean;
+    verifier_address: string;
+    last_zk_proof: any;
+  };
 }
 
 const AgentDataContext = createContext<AgentData | null>(null);

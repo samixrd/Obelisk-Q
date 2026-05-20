@@ -46,6 +46,15 @@ export function useAgentWebSocket() {
   const [currentPosition, setCurrentPosition] = useState<string>("MNT");
   const [components, setComponents] = useState({ yield_score: 75, volatility_score: 70, liquidity_score: 85 });
   const [scoreHistory, setScoreHistory] = useState<number[]>([90, 89, 91, 90, 92, 90, 88, 87, 89, 90, 91, 90, 89, 90, 92, 91, 90, 89, 88, 90]);
+  const [zkMl, setZkMl] = useState<{
+    enabled: boolean;
+    verifier_address: string;
+    last_zk_proof: any;
+  }>({
+    enabled: true,
+    verifier_address: "0xNotSet",
+    last_zk_proof: "N/A"
+  });
   const [nodes, setNodes] = useState<LangGraphNode[]>([
     { id: 'regime-detection',      label: 'Regime Detection',      status: 'active',      sub: 'Market State Analysis',    lastPulse: Date.now() },
     { id: 'risk-assessment',       label: 'Risk Assessment',       status: 'active',      sub: 'Exposure Calculation',     lastPulse: Date.now() },
@@ -77,6 +86,18 @@ export function useAgentWebSocket() {
         if (data.current_position) setCurrentPosition(data.current_position);
         if (data.components) setComponents(data.components);
         if (data.score_history) setScoreHistory(data.score_history);
+      }
+      
+      try {
+        const healthRes = await fetch('/api/agent/health');
+        if (healthRes.ok) {
+          const healthData = await healthRes.json();
+          if (healthData.zk_ml) {
+            setZkMl(healthData.zk_ml);
+          }
+        }
+      } catch (e) {
+        console.warn("Could not fetch zk_ml status from agent health:", e);
       }
     } catch (err) {
       console.warn("Polling /api/stats failed:", err);
@@ -162,6 +183,7 @@ export function useAgentWebSocket() {
               if (data.prices) setLivePrices(data.prices);
               if (data.components) setComponents(data.components);
               if (data.score_history) setScoreHistory(data.score_history);
+              if (data.zk_ml) setZkMl(data.zk_ml);
               if (data.logs) {
                 const mapped = data.logs.map((l: any) => ({
                   ...l,
@@ -206,5 +228,5 @@ export function useAgentWebSocket() {
     };
   }, [sessionToken, logout]);
 
-  return { score, regime, circuitBreakerActive, currentPosition, countdown, lastMessage, liveYields, livePrices, agentLogs, nodes, components, scoreHistory };
+  return { score, regime, circuitBreakerActive, currentPosition, countdown, lastMessage, liveYields, livePrices, agentLogs, nodes, components, scoreHistory, zkMl };
 }

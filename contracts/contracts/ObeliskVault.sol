@@ -18,6 +18,20 @@ interface IRouter {
     function WETH() external pure returns (address);
 }
 
+interface IZKRegimeVerifier {
+    function verifyRegimeProof(
+        uint256 fearGreed,
+        int256 mntChange,
+        uint256 prevVol,
+        uint256 outVol,
+        uint256 outRiskScore,
+        uint8 outRegime,
+        bytes calldata proof
+    ) external view returns (bool);
+
+    function updateVolatility(uint256 newVol) external;
+}
+
 /**
  * ObeliskVault — Mantle Mainnet Autonomous Vault
  *
@@ -36,6 +50,7 @@ contract ObeliskVault {
     // ── State ─────────────────────────────────────────────────────────────
     address public owner;
     address public agent;
+    address public zkVerifier;
 
     uint256 public totalDeposited;
     bool    public vaultPaused;
@@ -96,19 +111,28 @@ contract ObeliskVault {
     }
 
     function withdraw() external nonReentrant {
+        _withdraw(balances[msg.sender]);
+    }
+
+    function withdraw(uint256 amount) external nonReentrant {
+        _withdraw(amount);
+    }
+
+    function _withdraw(uint256 amount) internal {
         uint256 depositAmount = balances[msg.sender];
-        require(depositAmount > 0, "No balance");
+        require(depositAmount >= amount, "Insufficient balance");
+        require(amount > 0, "No balance");
 
         // 1. Calculate user's share of each token and unwind ONLY that share
         for (uint i = 0; i < allowedAssets.length; i++) {
             address token = allowedAssets[i];
-            uint256 share = (IERC20(token).balanceOf(address(this)) * depositAmount) / totalDeposited;
+            uint256 share = (IERC20(token).balanceOf(address(this)) * amount) / totalDeposited;
             if (share > 0) _unwindToken(token, share, 0);
         }
 
         // 2. Calculate user's share of the raw MNT in the vault
         uint256 vaultMnt = address(this).balance;
-        uint256 mntShare = (vaultMnt * depositAmount) / totalDeposited;
+        uint256 mntShare = (vaultMnt * amount) / totalDeposited;
 
         // 3. Final payout (share of unwound assets + share of MNT)
         uint256 toPay = mntShare;
@@ -119,8 +143,8 @@ contract ObeliskVault {
         }
 
         // Clear user state
-        totalDeposited -= depositAmount;
-        balances[msg.sender] = 0;
+        totalDeposited -= amount;
+        balances[msg.sender] -= amount;
 
         (bool ok, ) = payable(msg.sender).call{value: toPay}("");
         require(ok, "Transfer failed");
@@ -200,6 +224,54 @@ contract ObeliskVault {
     function setRegime(string calldata _regime) external onlyAgent {
         currentRegime = _regime;
         emit RegimeUpdated(_regime, block.timestamp);
+    }
+
+    function setZKVerifier(address _zkVerifier) external onlyOwner {
+        zkVerifier = _zkVerifier;
+    }
+
+    /**
+     * @notice Allows verified on-chain execution of regime detection updates without a trusted supervisor.
+     * @dev Anyone can call this function if they provide a valid ZK-proof of the HMM regime-detection calculation.
+     */
+    function setRegimeWithZKProof(
+        uint256 fearGreed,
+        int256 mntChange,
+        uint256 prevVol,
+        uint256 outVol,
+        uint256 outRiskScore,
+        uint8 outRegime,
+        bytes calldata proof
+    ) external {
+        require(zkVerifier != address(0), "ZK verifier not set");
+        
+        bool isValid = IZKRegimeVerifier(zkVerifier).verifyRegimeProof(
+            fearGreed,
+            mntChange,
+            prevVol,
+            outVol,
+            outRiskScore,
+            outRegime,
+            proof
+        );
+        require(isValid, "Invalid ZK proof");
+
+        // Update volatility tracking on verifier
+        IZKRegimeVerifier(zkVerifier).updateVolatility(outVol);
+
+        string memory newRegime;
+        if (outRegime == 0) {
+            newRegime = "Expansion";
+        } else if (outRegime == 1) {
+            newRegime = "Consolidation";
+        } else if (outRegime == 2) {
+            newRegime = "Contraction";
+        } else {
+            revert("Invalid output regime");
+        }
+
+        currentRegime = newRegime;
+        emit RegimeUpdated(newRegime, block.timestamp);
     }
 
     // ── Internal ──────────────────────────────────────────────────────────
