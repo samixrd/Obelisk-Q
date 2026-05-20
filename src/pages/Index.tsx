@@ -63,6 +63,9 @@ function AppInner() {
     const isEmbedded = activeWallet?.walletClientType === "privy";
     if (!isEmbedded) {
       // External wallet — show AuthScreen for signature challenge
+      if (stage === "landing" || stage === "dashboard") {
+        return;
+      }
       if (stage !== "auth") setStage("auth");
       return;
     }
@@ -75,7 +78,7 @@ function AppInner() {
     setIsEmbeddedWallet(true);
     setAuthMethod("wallet");
     setStage("dashboard");
-  }, [ready, authenticated, user, wallets, sessionToken]);
+  }, [ready, authenticated, user, wallets, sessionToken, stage]);
 
 
   const [sidebarOpen,    setSidebarOpen]     = useState(false);
@@ -124,6 +127,7 @@ function AppInner() {
       });
       return;
     }
+    setStage("auth");
     login();
   };
 
@@ -146,7 +150,7 @@ function AppInner() {
               if (hasSession && hasWallet) {
                 setStage("dashboard");
               } else {
-                setStage("dashboard");
+                setStage("auth");
               }
             }} />
           </motion.div>
