@@ -21,7 +21,7 @@ def test_health_check():
 
 def test_unauthorized_access():
     """Verify that protected endpoints return 401 without a token."""
-    response = client.get("/api/user/withdraw-wallet/0xTest")
+    response = client.get("/api/user/withdraw-wallet?address=0x1234567890123456789012345678901234567890")
     assert response.status_code == 401
     assert response.json()["detail"] == "Session_Expired"
 

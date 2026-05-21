@@ -500,7 +500,7 @@ ERC20_ABI = [
 ]
 
 METH_ADDRESS = "0xcDA86A272531e8640cD7F1a92c01839911B90bb0"
-USDY_ADDRESS = "0x5bE26527e817998A7206475496fDE1e68957c5A6"
+USDY_ADDRESS = "0x5bE26527e817998A7206475496fDE1E68957c5A6"
 WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
 
 # ─── Multi-RPC Failover Strategy (Antigravity Protocol) ───────────────────
@@ -1166,7 +1166,10 @@ async def supervisory_controller_node(state: AgentState):
                                 logger.warning(f"executor: quote failed, using 0 as fallback (risky): {e}")
                                 min_amount_out = 0
 
-                    tx = contract.functions.rebalance(target_token, min_amount_out).build_transaction({
+                    tx = contract.functions.rebalance(
+                        w3.to_checksum_address(target_token) if target_token != ZERO_ADDR else ZERO_ADDR, 
+                        min_amount_out
+                    ).build_transaction({
                         'from': account.address,
                         'value': 0,
                         'chainId': 5000,
