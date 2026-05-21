@@ -21,13 +21,13 @@ def test_health_check():
 
 def test_unauthorized_access():
     """Verify that protected endpoints return 401 without a token."""
-    response = client.get("/api/agent/transactions")
+    response = client.get("/api/user/withdraw-wallet/0xTest")
     assert response.status_code == 401
     assert response.json()["detail"] == "Session_Expired"
 
 def test_authorized_telemetry(auth_token):
-    """Verify that protected endpoints work with a valid token."""
-    response = client.get("/api/agent/transactions", headers={"x-session-token": auth_token})
+    """Verify that agent transactions endpoint returns data."""
+    response = client.get("/api/agent/transactions")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
 

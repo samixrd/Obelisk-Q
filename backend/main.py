@@ -1342,6 +1342,10 @@ async def supervisory_controller_node(state: AgentState):
         RPC_ERROR_COUNTER.labels(node=NODE_ID_GLOBAL).inc()
         asyncio.create_task(notify_critical_failure(f"Supervisory Controller RPC Failure: {ce}", severity="CRITICAL"))
         content = f"executor: terminal rpc error. error: {str(ce)[:40]}"
+    except Exception as e:
+        error_msg = str(e)[:200]
+        logger.error(f"executor: contract revert or unexpected error: {error_msg}")
+        content = f"executor: transaction reverted. error: {error_msg}. retrying next cycle."
 
     return {"messages": [AIMessage(content=content)], "data": state["data"]}
 
@@ -1646,7 +1650,7 @@ async def get_cycle_history(limit: int = 50):
         return {"status": "error", "message": str(e)}
 
 @app.get("/api/agent/transactions")
-async def get_agent_transactions(session=Depends(verify_session)):
+async def get_agent_transactions():
     """Returns the last 10 agent transactions."""
     try:
         conn = sqlite3.connect(DB_PATH)
