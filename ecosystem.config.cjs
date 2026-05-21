@@ -38,25 +38,7 @@ module.exports = {
       autorestart: true,
       max_restarts: 10,
       restart_delay: 4000,
-      max_memory_restart: "300M"
-    },
-    {
-      name: "obelisk-shadow-1",
-      script: "python3",
-      args: "main.py",
-      cwd: "./backend",
-      env: {
-        NODE_ROLE: "shadow",
-        NODE_ID: "vm-shadow-1",
-        PYTHONUNBUFFERED: "1"
-      },
-      log_date_format: "YYYY-MM-DD HH:mm:ss",
-      error_file: "./logs/shadow1_error.log",
-      out_file: "./logs/shadow1_out.log",
-      merge_logs: true,
-      autorestart: true,
-      restart_delay: 10000,
-      max_memory_restart: "300M"
+      max_memory_restart: "450M"
     }
   ]
 };

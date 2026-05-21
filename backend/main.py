@@ -1646,7 +1646,7 @@ async def get_cycle_history(limit: int = 50):
         return {"status": "error", "message": str(e)}
 
 @app.get("/api/agent/transactions")
-async def get_agent_transactions():
+async def get_agent_transactions(session=Depends(verify_session)):
     """Returns the last 10 agent transactions."""
     try:
         conn = sqlite3.connect(DB_PATH)
@@ -1889,6 +1889,14 @@ async def get_memory():
     rows = get_recent_memory(20)
     return {"memory": [{"timestamp": r[0], "cycle": r[1], "regime": r[2], "score": r[3], "action": r[4], "position": r[5], "tx_hash": r[6]} for r in rows]}
 
+# Global cache for Vault AUM to avoid overloading RPC and reducing API response latency
+AUM_CACHE = {
+    "mnt": 0.0,
+    "display": "N/A",
+    "last_updated": 0.0
+}
+AUM_CACHE_TTL = 15.0  # 15 seconds cache
+
 @app.get("/api/stats")
 async def get_stats():
     # ── NODE HEALTH CALCULATION ──
@@ -1921,23 +1929,40 @@ async def get_stats():
 
     # ── REAL ON-CHAIN VAULT AUM ──
     # Fetch the actual MNT balance held in the vault contract from Mantle RPC.
-    vault_aum_mnt = 0.0
-    vault_aum_display = "N/A"
-    try:
-        vault_addr = os.getenv("VAULT_ADDRESS")
-        if vault_addr:
-            loop = asyncio.get_event_loop()
-            def _fetch_balance():
-                w3 = rpc_manager.get_connection()
-                balance_wei = w3.eth.get_balance(w3.to_checksum_address(vault_addr))
-                return float(w3.from_wei(balance_wei, "ether"))
-            vault_aum_mnt = await loop.run_in_executor(None, _fetch_balance)
-            # Format with commas for display, rounded to 4 decimals
-            vault_aum_display = f"{vault_aum_mnt:,.4f} MNT"
-            logger.info(f"api/stats: live vault AUM = {vault_aum_display}")
-    except Exception as e:
-        logger.warning(f"api/stats: vault AUM fetch failed, using fallback: {e}")
+    global AUM_CACHE
+    now_time = time.time()
+    if now_time - AUM_CACHE["last_updated"] < AUM_CACHE_TTL:
+        vault_aum_mnt = AUM_CACHE["mnt"]
+        vault_aum_display = AUM_CACHE["display"]
+    else:
+        vault_aum_mnt = 0.0
         vault_aum_display = "N/A"
+        try:
+            vault_addr = os.getenv("VAULT_ADDRESS")
+            if vault_addr:
+                loop = asyncio.get_event_loop()
+                def _fetch_balance():
+                    w3 = rpc_manager.get_connection()
+                    balance_wei = w3.eth.get_balance(w3.to_checksum_address(vault_addr))
+                    return float(w3.from_wei(balance_wei, "ether"))
+                vault_aum_mnt = await loop.run_in_executor(None, _fetch_balance)
+                # Format with commas for display, rounded to 4 decimals
+                vault_aum_display = f"{vault_aum_mnt:,.4f} MNT"
+                logger.info(f"api/stats: live vault AUM = {vault_aum_display}")
+                
+                # Update Cache
+                AUM_CACHE["mnt"] = vault_aum_mnt
+                AUM_CACHE["display"] = vault_aum_display
+                AUM_CACHE["last_updated"] = now_time
+            else:
+                # Use previous cache if vault_addr is not set
+                vault_aum_mnt = AUM_CACHE["mnt"]
+                vault_aum_display = AUM_CACHE["display"]
+        except Exception as e:
+            logger.warning(f"api/stats: vault AUM fetch failed, using fallback: {e}")
+            # Fall back to previous cached values if available
+            vault_aum_mnt = AUM_CACHE["mnt"]
+            vault_aum_display = AUM_CACHE["display"]
 
     # ── REAL SESSION COUNT ──
     # Count only sessions active within the last SESSION_TIMEOUT window.

@@ -46,7 +46,7 @@ def test_health_check():
 def test_metrics_endpoint():
     response = client.get("/metrics")
     assert response.status_code == 200
-    assert b"q_score_value" in response.content
+    assert b"obelisk_q_score" in response.content
 
 def test_get_agent_transactions():
     # Insert mock data
@@ -56,7 +56,13 @@ def test_get_agent_transactions():
     conn.commit()
     conn.close()
 
-    response = client.get("/api/agent/transactions")
+    # Create a mock session to pass authentication
+    from main import SESSIONS
+    import time
+    mock_token = "mock_api_test_token"
+    SESSIONS[mock_token] = {"address": "0x1234567890123456789012345678901234567890", "last_seen": time.time()}
+
+    response = client.get("/api/agent/transactions", headers={"x-session-token": mock_token})
     assert response.status_code == 200
     data = response.json()
     assert len(data) > 0
