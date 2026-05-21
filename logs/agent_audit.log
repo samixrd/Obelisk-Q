@@ -1,0 +1,18 @@
+2026-05-21 05:12:19,876 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-21 05:13:08,733 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-21 05:13:14,267 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT
+2026-05-21 05:14:24,395 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-21 05:14:29,751 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT
+2026-05-21 05:14:29,753 - WARNING - [local] api/stats: DB stats fetch failed: no such table: agent_memory
+2026-05-21 05:15:04,141 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-21 05:15:06,331 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT
+2026-05-21 05:15:06,332 - WARNING - [local] api/stats: DB stats fetch failed: no such table: agent_memory
+2026-05-21 05:15:06,687 - INFO - [local] telemetry: fetching fresh market context from external APIs
+2026-05-21 05:15:12,426 - WARNING - [local] telemetry: external API fetch failed, using fallbacks: 
+2026-05-21 05:15:12,427 - INFO - [local] volatility_model: fng=50 fng_vol=1.00 mnt_change=0.0% price_vol=0.00 raw=1.50 ema_vol=1.50
+2026-05-21 06:12:38,517 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-21 06:12:44,432 - INFO - [local] api/stats: live vault AUM = 1.1228 MNT
+2026-05-21 06:13:15,751 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-21 06:13:17,999 - INFO - [local] api/stats: live vault AUM = 1.1228 MNT
+2026-05-21 06:25:44,089 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-21 06:25:46,750 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT

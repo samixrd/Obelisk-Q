@@ -15,7 +15,15 @@ interface AuthScreenProps {
 export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
   const { setAuthMethod, setWalletAddress, sessionToken, setSessionToken, setIsEmbeddedWallet } = useAuth();
   const { toast } = useToast();
-  const [step,          setStep]           = useState<1 | 2>(1);
+  const [step,          setStep]           = useState<1 | 2>(() => {
+    if (typeof window !== "undefined") {
+      const approved = localStorage.getItem("obelisk_compliance_approved");
+      if (approved === "true") {
+        return 2;
+      }
+    }
+    return 1;
+  });
   const [walletLoading,  setWalletLoading]  = useState(false);
   const [error,          setError]          = useState<string | null>(null);
   const [compliance, setCompliance] = useState({
@@ -315,7 +323,12 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                 <motion.button
                   whileHover={allChecked ? { scale: 1.01 } : {}}
                   whileTap={allChecked ? { scale: 0.99 } : {}}
-                  onClick={() => setStep(2)}
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      localStorage.setItem("obelisk_compliance_approved", "true");
+                    }
+                    setStep(2);
+                  }}
                   disabled={!allChecked}
                   className={`mt-auto w-full py-4 rounded-xl text-[14px] font-bold transition-all duration-300 ${allChecked ? 'bg-black text-white shadow-xl shadow-black/10' : 'bg-black/5 text-black/20 cursor-not-allowed'}`}
                   style={{ fontFamily: "'Inter', sans-serif" }}
@@ -398,24 +411,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                   </div>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    {/* Web3 Wallet */}
-                    <AuthButton
-                      onClick={handleWallet}
-                      loading={walletLoading}
-                      icon={
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                          <rect x="2" y="6" width="20" height="14" rx="2" stroke="#555" strokeWidth="1.4"/>
-                          <path d="M2 10h20" stroke="#555" strokeWidth="1.4"/>
-                          <circle cx="17" cy="15" r="1.5" fill="#555"/>
-                          <path d="M16 6V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v1" stroke="#555" strokeWidth="1.4"/>
-                        </svg>
-                      }
-                      label={walletLoading ? "Connecting..." : "Web3 Wallet"}
-                      sublabel="MetaMask · WalletConnect · Mobile"
-                      accent
-                    />
-
-                    {/* AA / Gasless (EIP-4337) */}
+                    {/* Web3 & Social Login */}
                     <AuthButton
                       onClick={handleGasless}
                       loading={walletLoading}
@@ -424,9 +420,23 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                           <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                         </svg>
                       }
-                      label={walletLoading ? "Connecting..." : "Gasless Wallet (EIP-4337)"}
-                      sublabel="Email / Social login · Powered by Smart Accounts"
+                      label={walletLoading ? "Connecting..." : "Web3 & Social Login"}
+                      sublabel="Email, Google, Twitter, Discord & External Wallets"
                     />
+
+                    {/* Apple login unavailable notice */}
+                    <p style={{
+                      fontSize: 11,
+                      color: "#ef4444",
+                      fontFamily: "'Inter', sans-serif",
+                      marginTop: 2,
+                      marginBottom: 2,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6
+                    }}>
+                      <span style={{ fontSize: 14 }}>⚠️</span> Apple login is currently unavailable.
+                    </p>
 
                     {/* AA Info badge */}
                     <div style={{
@@ -443,7 +453,7 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                         fontSize: 11, color: "#6366f1", lineHeight: 1.5,
                         fontFamily: "'Inter', sans-serif", margin: 0,
                       }}>
-                        <strong>EIP-4337 Gasless UX & Smart Accounts</strong> are now live! Social logins enjoy a fully managed embedded wallet experience with automatic gas reserve sponsorship and auto-forwarding withdrawals to personal external wallets.
+                        <strong>Smart Accounts & Embedded Wallets</strong> are now live! Social logins enjoy a fully managed embedded wallet experience with automatic gas reserve sponsorship and auto-forwarding withdrawals to personal external wallets.
                       </p>
                     </div>
 
