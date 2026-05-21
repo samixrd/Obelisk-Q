@@ -35,12 +35,14 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 
 ### 🛠️ Technical Excellence & Deployment
 ### 🛡️ High Availability & Resiliency
-Obelisk Q operates on the **Antigravity Protocol**, featuring a distributed 3-node agent swarm:
-- **Primary Node:** Active executor running the LangGraph pipeline.
-- **Shadow Nodes (x2):** Hot standbys that monitor primary health via shared SQLite heartbeats and trigger autonomous failover if the primary node goes offline.
+Obelisk Q operates on the **Antigravity Protocol**, featuring a memory-optimized single-node architecture with PM2 process management:
+- **Primary Node:** Active executor running the full LangGraph pipeline, FastAPI server, and on-chain supervision.
+- **PM2 Auto-Recovery:** Automatic crash detection and restart with configurable memory limits (450MB) and exponential backoff (4s delay, max 10 restarts).
+- **RPC Connection Caching:** Persistent Web3 client connections with 60-second health-check cooldowns to eliminate memory spikes from socket churn.
+- **AUM Response Caching:** 15-second TTL cache on `/api/stats` to protect the Mantle RPC node from polling storms.
 
-This architecture ensures 100% uptime and deterministic rebalancing even during individual node failures or network instability on the Mantle Mainnet.
-*   **Autonomous Leader Election**: Shadow nodes poll the primary's heartbeat in Redis every 15 seconds. If no primary pulse is detected for 45 seconds, a shadow promotes itself to primary and resumes vault supervision.
+This architecture ensures stable 24/7 operation on resource-constrained environments (1GB RAM VMs) while maintaining deterministic rebalancing and full API availability on the Mantle Mainnet.
+*   **Autonomous State Recovery**: On restart, the agent recovers its full state (regime, Q-Score, cycle count) from the SQLite database, resuming supervision seamlessly with zero data loss.
 *   **Hybrid Consensus Voting**: Every rebalance is validated by both a GPT-4o reasoning engine and a deterministic mathematical analyst.
 *   **Trend-Locked Rebalancing (Anti-Whipsaw)**: Enforces a 3-cycle stability window to minimize gas burn and slippage during market noise.
 *   **Yield Auto-Compounding**: Native `compound()` logic harvests MNT rewards and re-invests them back into the target yield position.
@@ -168,9 +170,8 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 ---
 
 ### ⚠️ Technical Roadmap
-*   **Distributed Consensus (V3)**: Moving from Redis-based election to a Raft-based distributed consensus for sub-millisecond precision.
-*   **ZK-ML Integration**: Implementation of ZK-proofs for the AI regime detection model to allow verified on-chain execution without a trusted supervisor.
-*   **Multi-RPC Failover Strategy**: The agent is configured with a prioritized list of Mantle RPC providers (`MANTLE_RPC_URLS`). On any connection error or timeout (SLA: 15s), the executor automatically rotates to the next provider in the pool.
+*   **Distributed Consensus (V3)**: Moving from PM2-based single-node recovery to a Raft-based distributed consensus for multi-VM high availability with sub-millisecond precision.
+*   **Multi-RPC Failover Strategy** ✅ *(Implemented)*: The agent is configured with a prioritized list of Mantle RPC providers (`MANTLE_RPC_URLS`) with cached Web3 connections. On any connection error or timeout (SLA: 15s), the executor automatically rotates to the next provider in the pool.
 *   **Cross-Chain Expansion**: Expanding the navigator to bridge capital to other L2s via LayerZero based on global yield opportunities.
 
 ---
