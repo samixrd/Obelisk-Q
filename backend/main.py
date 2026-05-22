@@ -31,7 +31,7 @@ def init_db():
     conn = sqlite3.connect(DB_PATH)
     conn.execute('''CREATE TABLE IF NOT EXISTS agent_memory (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        cycle INTEGER,
+        cycle INTEGER UNIQUE,
         timestamp TEXT,
         score INTEGER,
         regime TEXT,
@@ -61,6 +61,44 @@ def init_db():
         vault_value_after REAL,
         pnl REAL,
         tx_hash TEXT
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS rpc_audit_log (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+        rpc_url TEXT,
+        status TEXT,
+        latency_ms REAL,
+        error TEXT
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS cycle_execution_lock (
+        cycle INTEGER PRIMARY KEY,
+        node_id TEXT,
+        start_time TEXT,
+        end_time TEXT,
+        status TEXT
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS regime_decisions (
+        cycle INTEGER PRIMARY KEY,
+        timestamp TEXT,
+        regime TEXT,
+        volatility REAL,
+        fear_greed INTEGER,
+        mnt_change REAL,
+        btc_price TEXT,
+        macro_sentiment TEXT,
+        ai_reasoning TEXT,
+        deterministic_suggestion TEXT,
+        consensus_final TEXT,
+        q_score REAL,
+        circuit_breaker_active INTEGER,
+        action TEXT,
+        tx_hash TEXT
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS heartbeats (
+        node_id TEXT PRIMARY KEY,
+        role TEXT,
+        last_pulse DATETIME DEFAULT CURRENT_TIMESTAMP,
+        status TEXT
     )''')
     conn.commit()
     
@@ -206,6 +244,38 @@ class DatabaseManager:
                     external_wallet TEXT NOT NULL,
                     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
                 );
+                CREATE TABLE IF NOT EXISTS rpc_audit_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+                    rpc_url TEXT,
+                    status TEXT,
+                    latency_ms REAL,
+                    error TEXT
+                );
+                CREATE TABLE IF NOT EXISTS cycle_execution_lock (
+                    cycle INTEGER PRIMARY KEY,
+                    node_id TEXT,
+                    start_time TEXT,
+                    end_time TEXT,
+                    status TEXT
+                );
+                CREATE TABLE IF NOT EXISTS regime_decisions (
+                    cycle INTEGER PRIMARY KEY,
+                    timestamp TEXT,
+                    regime TEXT,
+                    volatility REAL,
+                    fear_greed INTEGER,
+                    mnt_change REAL,
+                    btc_price TEXT,
+                    macro_sentiment TEXT,
+                    ai_reasoning TEXT,
+                    deterministic_suggestion TEXT,
+                    consensus_final TEXT,
+                    q_score REAL,
+                    circuit_breaker_active INTEGER,
+                    action TEXT,
+                    tx_hash TEXT
+                );
             """)
             conn.commit()
             conn.close()
@@ -247,17 +317,44 @@ NODE_ID_GLOBAL = os.getenv("NODE_ID", "local-1")
 NODE_ROLE_GLOBAL = os.getenv("NODE_ROLE", "primary")
 
 async def update_heartbeat(node_id=None, role=None, rpc_status="OK"):
-    """Write a heartbeat pulse to Redis."""
+    """Write a heartbeat pulse to both Redis (primary) and SQLite (fallback).
+    
+    Dual-write strategy ensures heartbeat visibility even if Redis is down.
+    Redis: Used for fast leader election in multi-node deployments.
+    SQLite: Used as fallback coordination when Redis is unreachable.
+    """
     _id = node_id or NODE_ID_GLOBAL
     _role = role or NODE_ROLE_GLOBAL
+    pulse_time = datetime.now().isoformat()
+    
+    # Primary: Redis (fast, volatile)
     try:
-        await redis.set(f"heartbeat:{_id}", json.dumps({
-            "last_pulse": datetime.now().isoformat(),
-            "role": _role,
-            "status": rpc_status
-        }), ex=60)
+        if redis is not None:
+            await redis.set(f"heartbeat:{_id}", json.dumps({
+                "last_pulse": pulse_time,
+                "role": _role,
+                "status": rpc_status
+            }), ex=60)
     except Exception as e:
-        logger.warning(f"heartbeat: update failed: {e}")
+        logger.warning(f"heartbeat: Redis update failed (falling back to SQLite): {e}")
+    
+    # Fallback: SQLite (durable, slower)
+    try:
+        conn = sqlite3.connect(DB_PATH, timeout=5.0)
+        conn.execute("PRAGMA synchronous=FULL")
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("""
+            INSERT INTO heartbeats (node_id, role, last_pulse, status)
+            VALUES (?, ?, ?, ?)
+            ON CONFLICT(node_id) DO UPDATE SET
+                role = excluded.role,
+                last_pulse = excluded.last_pulse,
+                status = excluded.status
+        """, (_id, _role, pulse_time, rpc_status))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        logger.warning(f"heartbeat: SQLite fallback update failed: {e}")
 
 async def get_primary_health():
     """Check if any primary node is healthy and connected to RPC."""
@@ -279,14 +376,132 @@ async def get_primary_health():
         return False
 
 
+def acquire_cycle_lock(cycle: int, node_id: str) -> bool:
+    """Attempts to acquire a lock for a cycle in a thread-safe, process-safe manner using SQLite."""
+    conn = None
+    try:
+        conn = sqlite3.connect(DB_PATH, timeout=5.0)
+        conn.execute("PRAGMA synchronous=FULL")
+        conn.execute("PRAGMA journal_mode=WAL")
+        
+        # Check if cycle already executed or locked
+        cursor = conn.cursor()
+        cursor.execute("SELECT status FROM cycle_execution_lock WHERE cycle = ?", (cycle,))
+        row = cursor.fetchone()
+        
+        if row is not None:
+            # Already locked or executed
+            logger.warning(f"acquire_cycle_lock: cycle {cycle} already locked or executed (status={row[0]}).")
+            return False
+            
+        # Try to insert lock
+        cursor.execute("""
+            INSERT INTO cycle_execution_lock (cycle, node_id, start_time, status)
+            VALUES (?, ?, datetime('now'), 'running')
+        """, (cycle, node_id))
+        conn.commit()
+        logger.info(f"acquire_cycle_lock: Successfully locked cycle {cycle} for node {node_id}")
+        return True
+    except sqlite3.IntegrityError:
+        logger.warning(f"acquire_cycle_lock: IntegrityError, cycle {cycle} already locked by another node.")
+        return False
+    except Exception as e:
+        logger.error(f"acquire_cycle_lock: Error locking cycle {cycle}: {e}")
+        return False
+    finally:
+        if conn:
+            conn.close()
+
+def release_cycle_lock(cycle: int, status: str = "completed"):
+    """Updates the cycle lock status and logs end time."""
+    conn = None
+    try:
+        conn = sqlite3.connect(DB_PATH, timeout=5.0)
+        conn.execute("PRAGMA synchronous=FULL")
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("""
+            UPDATE cycle_execution_lock
+            SET end_time = datetime('now'), status = ?
+            WHERE cycle = ?
+        """, (status, cycle))
+        conn.commit()
+    except Exception as e:
+        logger.error(f"release_cycle_lock: Error updating lock for cycle {cycle}: {e}")
+    finally:
+        if conn:
+            conn.close()
+
+def log_regime_decision(cycle, regime, volatility, fear_greed, mnt_change, btc_price, macro_sentiment, ai_reasoning, deterministic_suggestion, consensus_final, q_score, circuit_breaker_active, action, tx_hash="N/A"):
+    try:
+        conn = sqlite3.connect(DB_PATH, timeout=5.0)
+        conn.execute("PRAGMA synchronous=FULL")
+        conn.execute("PRAGMA journal_mode=WAL")
+        conn.execute("""
+            INSERT INTO regime_decisions 
+            (cycle, timestamp, regime, volatility, fear_greed, mnt_change, btc_price, macro_sentiment, ai_reasoning, deterministic_suggestion, consensus_final, q_score, circuit_breaker_active, action, tx_hash)
+            VALUES (?, datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(cycle) DO UPDATE SET
+                timestamp=excluded.timestamp,
+                regime=excluded.regime,
+                volatility=excluded.volatility,
+                fear_greed=excluded.fear_greed,
+                mnt_change=excluded.mnt_change,
+                btc_price=excluded.btc_price,
+                macro_sentiment=excluded.macro_sentiment,
+                ai_reasoning=excluded.ai_reasoning,
+                deterministic_suggestion=excluded.deterministic_suggestion,
+                consensus_final=excluded.consensus_final,
+                q_score=excluded.q_score,
+                circuit_breaker_active=excluded.circuit_breaker_active,
+                action=excluded.action,
+                tx_hash=excluded.tx_hash
+        """, (cycle, regime, volatility, fear_greed, mnt_change, btc_price, macro_sentiment, ai_reasoning, deterministic_suggestion, consensus_final, q_score, circuit_breaker_active, action, tx_hash))
+        conn.commit()
+        conn.close()
+        logger.info(f"log_regime_decision: successfully logged decision for cycle {cycle}")
+    except Exception as e:
+        logger.error(f"Failed to log regime decision: {e}")
+
+def update_regime_decision_tx(cycle, tx_hash, action=None, q_score=None):
+    try:
+        conn = sqlite3.connect(DB_PATH, timeout=5.0)
+        conn.execute("PRAGMA synchronous=FULL")
+        conn.execute("PRAGMA journal_mode=WAL")
+        if action and q_score is not None:
+            conn.execute("""
+                UPDATE regime_decisions
+                SET tx_hash = ?, action = ?, q_score = ?
+                WHERE cycle = ?
+            """, (tx_hash, action, q_score, cycle))
+        elif action:
+            conn.execute("""
+                UPDATE regime_decisions
+                SET tx_hash = ?, action = ?
+                WHERE cycle = ?
+            """, (tx_hash, action, cycle))
+        else:
+            conn.execute("""
+                UPDATE regime_decisions
+                SET tx_hash = ?
+                WHERE cycle = ?
+            """, (tx_hash, cycle))
+        conn.commit()
+        conn.close()
+        logger.info(f"update_regime_decision_tx: updated cycle {cycle} with tx_hash={tx_hash}")
+    except Exception as e:
+        logger.error(f"Failed to update regime decision tx_hash: {e}")
+
 def save_cycle_memory(cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash="N/A", analyst_insight="", volatility=0.0):
     """Saves cycle state with duplicate prevention for HA clusters."""
     try:
-        conn = db_manager.get_connection()
-        # Atomic check-and-insert to prevent multiple nodes from saving the same cycle
+        conn = sqlite3.connect(DB_PATH, timeout=5.0)
+        conn.execute("PRAGMA synchronous=FULL")
+        conn.execute("PRAGMA journal_mode=WAL")
+        
+        # Check UNIQUE constraint again
         existing = conn.execute("SELECT id FROM agent_memory WHERE cycle = ?", (cycle,)).fetchone()
         if existing:
-            logger.info(f"cycle_memory: cycle {cycle} already recorded by another node. skipping.")
+            logger.info(f"cycle_memory: cycle {cycle} already recorded in agent_memory by another node. skipping.")
             conn.close()
             return False
             
@@ -297,9 +512,13 @@ def save_cycle_memory(cycle, regime, score, action, position, meth_apy, usdy_apy
         """, (cycle, regime, score, action, position, meth_apy, usdy_apy, tx_hash, analyst_insight, volatility))
         conn.commit()
         conn.close()
+        logger.info(f"cycle_memory: saved cycle {cycle} to DB.")
         return True
+    except sqlite3.IntegrityError:
+        logger.warning(f"cycle_memory: IntegrityError, cycle {cycle} already exists in agent_memory.")
+        return False
     except Exception as e:
-        logger.error(f"cycle_memory: failed to save cycle {cycle}: {e}")
+        logger.error(f"Failed to save cycle memory to DB: {e}")
         return False
 
 def get_recent_memory(limit=5):
@@ -504,12 +723,138 @@ USDY_ADDRESS = "0x5bE26527e817998A7206475496fDE1E68957c5A6"
 WMNT_ADDRESS = "0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8"
 
 # ─── Multi-RPC Failover Strategy (Antigravity Protocol) ───────────────────
+class RPCHealthChecker:
+    def __init__(self, rpc_urls: list):
+        self.rpc_urls = rpc_urls
+        self.connections = {}  # rpc_url -> Web3 instance
+        self.last_health_check = {}  # rpc_url -> float (timestamp)
+        self.dead_until = {}  # rpc_url -> float (timestamp)
+        self.health_status = {}  # rpc_url -> bool
+        
+        # Pre-initialize connections (pooling)
+        for url in self.rpc_urls:
+            try:
+                # 500ms timeout SLA
+                self.connections[url] = Web3(Web3.HTTPProvider(url, request_kwargs={'timeout': 0.5}))
+                self.health_status[url] = True
+            except Exception as e:
+                logger.error(f"Failed to initialize RPC connection for {url}: {e}")
+                self.health_status[url] = False
+
+    def is_rpc_healthy(self, url: str) -> bool:
+        now = time.time()
+        
+        # Skip if marked dead (5 minutes cooldown)
+        if url in self.dead_until and now < self.dead_until[url]:
+            return False
+            
+        # Check every 60 seconds
+        last_check = self.last_health_check.get(url, 0)
+        if now - last_check < 60:
+            return self.health_status.get(url, False)
+            
+        # Perform health check
+        self.last_health_check[url] = now
+        w3 = self.connections.get(url)
+        if not w3:
+            try:
+                w3 = Web3(Web3.HTTPProvider(url, request_kwargs={'timeout': 0.5}))
+                self.connections[url] = w3
+            except:
+                self.health_status[url] = False
+                self.dead_until[url] = now + 300 # 5 minutes cooldown
+                return False
+                
+        try:
+            start_time = time.time()
+            w3.eth.block_number
+            latency = (time.time() - start_time) * 1000
+            self.health_status[url] = True
+            self._log_audit(url, "HEALTH_CHECK_OK", latency)
+            return True
+        except Exception as e:
+            logger.warning(f"RPC health check failed for {url}: {e}")
+            self.health_status[url] = False
+            self.dead_until[url] = now + 300 # 5 minutes
+            self._log_audit(url, "HEALTH_CHECK_FAIL", 0.0, str(e))
+            return False
+
+    def _log_audit(self, url: str, status: str, latency_ms: float, error: str = ""):
+        try:
+            conn = sqlite3.connect(DB_PATH)
+            conn.execute("""
+                INSERT INTO rpc_audit_log (timestamp, rpc_url, status, latency_ms, error)
+                VALUES (datetime('now'), ?, ?, ?, ?)
+            """, (url, status, latency_ms, error))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            logger.error(f"Failed to log RPC audit to SQLite: {e}")
+
+rpc_health_checker = None
+
+def init_rpc_failover():
+    global rpc_health_checker
+    # Use environment configured list if available
+    urls = os.getenv("MANTLE_RPC_URLS")
+    if urls:
+        rpc_list = [url.strip() for url in urls.split(",") if url.strip()]
+    else:
+        # Fallbacks as requested
+        rpc_list = [
+            "https://rpc.mantle.xyz",
+            "https://mantle.publicnode.com",
+            "https://rpc.ankr.com/mantle"
+        ]
+    rpc_health_checker = RPCHealthChecker(rpc_list)
+
+def get_w3_with_failover():
+    global rpc_health_checker
+    if rpc_health_checker is None:
+        init_rpc_failover()
+        
+    backoff_delays = [0, 1, 2, 4, 8]
+    
+    for attempt, delay in enumerate(backoff_delays):
+        if delay > 0:
+            logger.info(f"get_w3_with_failover: waiting {delay}s for retry attempt {attempt + 1}")
+            time.sleep(delay)
+            
+        urls_to_try = []
+        for url in rpc_health_checker.rpc_urls:
+            if rpc_health_checker.is_rpc_healthy(url):
+                urls_to_try.append(url)
+                
+        if not urls_to_try:
+            logger.warning("get_w3_with_failover: All RPCs marked dead, attempting fallback to all configured RPCs.")
+            urls_to_try = rpc_health_checker.rpc_urls
+            
+        for url in urls_to_try:
+            w3 = rpc_health_checker.connections.get(url)
+            if not w3:
+                continue
+            try:
+                start_time = time.time()
+                w3.eth.block_number
+                latency = (time.time() - start_time) * 1000
+                
+                rpc_health_checker._log_audit(url, "SUCCESS", latency)
+                logger.info(f"get_w3_with_failover: Connected to {url} on attempt {attempt + 1}")
+                return w3
+            except Exception as e:
+                logger.warning(f"get_w3_with_failover: Failed connection check for {url}: {e}")
+                rpc_health_checker.dead_until[url] = time.time() + 300
+                rpc_health_checker.health_status[url] = False
+                rpc_health_checker._log_audit(url, "FAILURE", 0.0, str(e))
+                
+    raise ConnectionError("get_w3_with_failover: All RPC endpoints failed after retries and backoff.")
+
 def get_w3(timeout=RPC_TIMEOUT, max_attempts=MAX_RPC_ATTEMPTS):
     """
-    Returns a connected Web3 instance using the RPCManager for automated failover.
+    Returns a connected Web3 instance using the failover logic.
     """
     try:
-        return rpc_manager.get_connection()
+        return get_w3_with_failover()
     except Exception as e:
         RPC_ERROR_COUNTER.labels(node=NODE_ID_GLOBAL).inc()
         raise ConnectionError(f"rpc_failover: terminal failure. {e}")
@@ -628,6 +973,32 @@ async def regime_detection_node(state: AgentState):
         state["data"]["vol"] = vol
         last_known_state["risk"]["vol"] = vol
         
+        # ── BYBIT INSTITUTIONAL BTC SENTIMENT ──
+        # Fetches BTC spot price from Bybit to derive macro regime bias
+        bybit_data = await ExternalDataService.get_bybit_data()
+        btc_price = bybit_data.get("btc_price", "N/A")
+        btc_change_24h = bybit_data.get("btc_change_24h", "N/A")
+        
+        # Classify macro bias based on BTC price thresholds
+        try:
+            btc_price_float = float(btc_price)
+            if btc_price_float > 70000:
+                macro_bias = "bullish"
+            elif btc_price_float < 50000:
+                macro_bias = "bearish"
+            else:
+                macro_bias = "neutral"
+        except (ValueError, TypeError):
+            btc_price_float = 0.0
+            macro_bias = "neutral"
+        
+        macro_regime = f"BTC ${btc_price} ({macro_bias})"
+        state["data"]["btc_price"] = btc_price
+        state["data"]["macro_sentiment"] = macro_bias
+        state["data"]["macro_regime"] = macro_regime
+        
+        logger.info(f"bybit_sentiment: btc_price={btc_price} 24h_ref={btc_change_24h} macro_bias={macro_bias}")
+        
         # ── LLM Market Analysis (GPT-4o-mini) ──
         try:
             recent = get_recent_memory(5)
@@ -641,17 +1012,19 @@ async def regime_detection_node(state: AgentState):
 You manage rebalancing between mETH (staking yield) and USDY (RWA yield).
 Recent agent history:
 {memory_context}
+BTC Macro Context: {macro_regime} (Bybit institutional reference)
+Macro Bias: {macro_bias}
 Be concise. 1-2 sentences max."""},
-                {"role": "user", "content": f"Current data: mETH APY={meth_apy}%, USDY APY={usdy_apy}%, MNT 24h={mnt_change}%, ETH vol={vol:.2f}, Fear/Greed={fear_greed}. What is your market outlook?"}
+                {"role": "user", "content": f"Current data: mETH APY={meth_apy}%, USDY APY={usdy_apy}%, MNT 24h={mnt_change}%, ETH vol={vol:.2f}, Fear/Greed={fear_greed}, BTC=${btc_price} ({macro_bias}). What is your market outlook?"}
             ])
             logger.info(f"🧠 AI ANALYST: {analysis}")
             state["data"]["analyst_insight"] = analysis
         except Exception as e:
             logger.warning(f"⚠️ LLM rate limit — fallback to deterministic analyst: {e}")
-            analysis = f"Rule-based: vol={vol:.2f}, mETH={meth_apy}%, USDY={usdy_apy}%, MNT 24h={mnt_change}%"
+            analysis = f"Rule-based: vol={vol:.2f}, mETH={meth_apy}%, USDY={usdy_apy}%, MNT 24h={mnt_change}%, BTC={btc_price}"
             state["data"]["analyst_insight"] = analysis
         
-        content = f"regime: liquidity markers scanned. usdy {usdy_apy}%. meth {meth_apy}%. vol {vol:.2f}. LLM insight: {analysis[:80]}"
+        content = f"regime: liquidity markers scanned. usdy {usdy_apy}%. meth {meth_apy}%. vol {vol:.2f}. btc {btc_price} ({macro_bias}). LLM insight: {analysis[:80]}"
     except (asyncio.TimeoutError, Exception) as e:
         logger.error(f"node_failure: regime_detection crashed: {e}")
         state["data"]["yields"] = last_known_state.get("yields", {"usdy": 5.0, "meth": 3.5})
@@ -914,6 +1287,27 @@ async def consensus_node(state: AgentState):
             
     state["data"]["regime"] = final_regime
     last_known_state["regime"] = final_regime
+    
+    # ── ANTIGRAVITY: Log regime decision for audit trail ──
+    try:
+        cycle = state.get("cycle_count", 0)
+        log_regime_decision(
+            cycle=cycle,
+            regime=final_regime,
+            volatility=state["data"].get("vol", 0.0),
+            fear_greed=state["data"].get("fear_greed", 50),
+            mnt_change=state["data"].get("mnt_change", 0.0),
+            btc_price=str(state["data"].get("btc_price", "N/A")),
+            macro_sentiment=state["data"].get("macro_sentiment", "neutral"),
+            ai_reasoning=str(state["data"].get("analyst_insight", "N/A"))[:500],
+            deterministic_suggestion=math_regime,
+            consensus_final=final_regime,
+            q_score=0.0,  # Will be filled by q_score_engine_node later
+            circuit_breaker_active=1 if CIRCUIT_BREAKER_ACTIVE else 0,
+            action="PENDING"  # Will be updated by supervisory_controller_node
+        )
+    except Exception as e:
+        logger.warning(f"consensus: failed to log regime decision: {e}")
     
     return {"messages": [AIMessage(content=f"consensus: stabilized on {final_regime}.")], "data": state["data"]}
 
@@ -1326,6 +1720,15 @@ async def supervisory_controller_node(state: AgentState):
                     LAST_REBALANCE_TIME = time.time()
                     CURRENT_POSITION = "MNT" if action == "UNWIND" else action # Update current position state
                     logger.info(f"executor: position updated: {old_pos} → {CURRENT_POSITION}")
+                
+                # ── ANTIGRAVITY: Update regime decision audit trail with tx hash ──
+                try:
+                    cycle = state.get("cycle_count", 0)
+                    q_score = state["data"].get("risk", {}).get("score", None)
+                    update_regime_decision_tx(cycle, h, action=action, q_score=q_score)
+                except Exception as ue:
+                    logger.warning(f"executor: failed to update regime_decision tx_hash: {ue}")
+                
                 return msg
             except Exception as e:
                 if attempt == 2:
@@ -2098,6 +2501,13 @@ async def run_analysis_cycle():
             
             cycle_num += 1
             CYCLE_COUNTER.inc()
+            
+            # ── ANTIGRAVITY: Cycle Deduplication Lock ──
+            # Prevents duplicate execution across HA cluster nodes
+            if not acquire_cycle_lock(cycle_num, NODE_ID_GLOBAL):
+                logger.warning(f"cycle {cycle_num}: lock acquisition failed (already running on another node). skipping.")
+                continue
+            
             initial_state = {
                 "messages": [HumanMessage(content="init")],
                 "data": {},
@@ -2225,17 +2635,22 @@ async def run_analysis_cycle():
             
             logger.info(f"📊 CYCLE #{cycle_num}: Score={score}, Regime={regime}, Action={action}")
             
+            # ── ANTIGRAVITY: Release cycle lock on success ──
+            release_cycle_lock(cycle_num, "completed")
+            
         except sqlite3.OperationalError as e:
+            release_cycle_lock(cycle_num, "failed")
             if "database is locked" in str(e).lower():
                 # Backoff and retry
                 time.sleep(1)
                 continue
-            logger.error(f"leader_election: DB error. node={NODE_ID_GLOBAL} role={NODE_ROLE_GLOBAL}. Error: {e}")
+            logger.error(f"run_analysis_cycle: DB error. node={NODE_ID_GLOBAL} role={NODE_ROLE_GLOBAL}. Error: {e}")
             # Stateless Fallback: If DB is down, use staggered delays to avoid collisions
             if NODE_ROLE_GLOBAL == "primary":
                 return True # Assume leadership if explicitly told to be primary
             time.sleep(20) # Passive wait
         except Exception as e:
+            release_cycle_lock(cycle_num, "failed")
             logger.error(f"cycle {cycle_num}: unhandled error: {e}")
             time.sleep(5)  # back off before retrying
 
@@ -2320,56 +2735,97 @@ async def leader_election():
     
     Leader Election Protocol:
       1. Only shadow nodes participate in elections.
-      2. Shadow queries the heartbeats table for the latest primary pulse.
-      3. If no primary exists OR primary's last pulse > 45s ago,
+      2. Shadow checks Redis first for latest primary heartbeat.
+      3. If Redis is unavailable, falls back to SQLite heartbeats table.
+      4. If no primary exists OR primary's last pulse > 45s ago,
          the shadow promotes itself by setting NODE_ROLE_GLOBAL = 'primary'.
-      4. The promoted node's next heartbeat write updates the DB,
+      5. The promoted node's next heartbeat write updates both stores,
          and run_analysis_cycle() will begin executing the full pipeline.
     
     Limitations:
-      - No distributed consensus (Raft/Paxos) - relies on shared SQLite.
+      - No distributed consensus (Raft/Paxos) - relies on shared state.
       - If multiple shadows detect primary failure simultaneously,
          both may promote themselves (split-brain). Mitigated by the
-         on-chain vault's idempotent rebalance logic.
-      - SQLite file is a single point of failure for coordination.
+         on-chain vault's idempotent rebalance logic and cycle locking.
+      - Staggered wakeup delays in node_heartbeat_loop() reduce split-brain risk.
     """
     global NODE_ROLE_GLOBAL
     if NODE_ROLE_GLOBAL == "primary":
         return  # Already primary, no election needed
 
+    now = datetime.now()
+    primary = None  # tuple: (node_id, last_pulse_iso_str)
+    redis_available = False
+
+    # ── Strategy 1: Redis (fast path) ──
     try:
-        keys = await redis.keys("heartbeat:*")
-        primary = None
-        now = datetime.now()
-        
-        for key in keys:
-            data_str = await redis.get(key)
-            if data_str:
-                data = json.loads(data_str)
-                if data.get("role") == "primary":
-                    # Get the most recent primary pulse
-                    last_pulse = datetime.fromisoformat(data.get("last_pulse", now.isoformat()))
-                    node_id = key.split(":")[1]
-                    if not primary or last_pulse > datetime.fromisoformat(primary[1]):
-                        primary = (node_id, data.get("last_pulse", now.isoformat()))
+        if redis is not None:
+            keys = await redis.keys("heartbeat:*")
+            redis_available = True
+            for key in keys:
+                data_str = await redis.get(key)
+                if data_str:
+                    data = json.loads(data_str)
+                    if data.get("role") == "primary":
+                        last_pulse = datetime.fromisoformat(data.get("last_pulse", now.isoformat()))
+                        node_id = key.split(":")[1] if ":" in key else key
+                        if not primary or last_pulse > datetime.fromisoformat(primary[1]):
+                            primary = (node_id, data.get("last_pulse", now.isoformat()))
+    except Exception as e:
+        logger.warning(f"leader_election: Redis check failed, falling back to SQLite: {e}")
+        redis_available = False
 
-        if not primary:
-            logger.warning("leader_election: NO PRIMARY DETECTED. promoting self.")
-            NODE_ROLE_GLOBAL = "primary"
-            return
+    # ── Strategy 2: SQLite fallback ──
+    if not redis_available:
+        try:
+            conn = sqlite3.connect(DB_PATH, timeout=5.0)
+            conn.execute("PRAGMA journal_mode=WAL")
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT node_id, last_pulse FROM heartbeats
+                WHERE role = 'primary'
+                ORDER BY last_pulse DESC LIMIT 1
+            """)
+            row = cursor.fetchone()
+            conn.close()
+            if row:
+                primary = (row[0], row[1])
+        except Exception as e:
+            logger.error(f"leader_election: SQLite fallback also failed: {e}")
+            return  # Cannot determine state, do not promote
 
+    # ── Evaluate primary health ──
+    if not primary:
+        logger.warning("leader_election: NO PRIMARY DETECTED in any store. promoting self.")
+        NODE_ROLE_GLOBAL = "primary"
+        return
+
+    try:
         last_pulse = datetime.fromisoformat(primary[1])
         if (now - last_pulse).total_seconds() > 45:
             logger.warning(f"leader_election: primary {primary[0]} DEAD (last pulse {primary[1]}). PROMOTING SELF.")
             NODE_ROLE_GLOBAL = "primary"
     except Exception as e:
-        logger.error(f"leader_election: failover check failed: {e}")
+        logger.error(f"leader_election: pulse comparison failed: {e}")
 
 async def node_heartbeat_loop():
     """Background loop: pulse heartbeat every 15s and run leader election.
     
     Performs 'Deep Health' checks by verifying RPC reachability before pulsing.
+    Shadow nodes use a staggered wakeup delay (25 + node_number * 5 seconds)
+    to prevent simultaneous elections when primary fails.
     """
+    # ── Staggered startup delay for shadow nodes ──
+    if NODE_ROLE_GLOBAL == "shadow":
+        try:
+            # Extract numeric suffix from NODE_ID (e.g., 'shadow-2' -> 2)
+            node_number = int(''.join(filter(str.isdigit, NODE_ID_GLOBAL)) or '1')
+        except (ValueError, TypeError):
+            node_number = 1
+        stagger_delay = 25 + (node_number * 5)
+        logger.info(f"heartbeat_loop: shadow node {NODE_ID_GLOBAL} staggering startup by {stagger_delay}s")
+        await asyncio.sleep(stagger_delay)
+
     while True:
         rpc_status = "OK"
         try:
@@ -2383,6 +2839,128 @@ async def node_heartbeat_loop():
         await update_heartbeat(rpc_status=rpc_status)
         await leader_election()
         await asyncio.sleep(15)
+
+# ─── ANTIGRAVITY PROTOCOL: Transparency Endpoints ────────────────────────────
+
+@app.get("/api/transparency/regime-decisions")
+async def get_regime_decisions():
+    """Returns the last 100 regime arbitration decisions with full audit trail.
+    
+    Each record contains: regime, volatility, fear/greed, MNT change, BTC price,
+    macro sentiment, AI reasoning, deterministic suggestion, consensus final,
+    Q-score, circuit breaker status, action taken, and transaction hash.
+    """
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        c = conn.cursor()
+        c.execute("""
+            SELECT cycle, timestamp, regime, volatility, fear_greed, mnt_change,
+                   btc_price, macro_sentiment, ai_reasoning, deterministic_suggestion,
+                   consensus_final, q_score, circuit_breaker_active, action, tx_hash
+            FROM regime_decisions
+            ORDER BY cycle DESC LIMIT 100
+        """)
+        rows = c.fetchall()
+        conn.close()
+        
+        return {
+            "status": "success",
+            "count": len(rows),
+            "data": [dict(r) for r in rows]
+        }
+    except Exception as e:
+        logger.error(f"transparency/regime-decisions: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/transparency/benchmark")
+async def get_benchmark():
+    """Returns system performance benchmarks and health metrics.
+    
+    Includes: uptime, total cycles, current regime, node identity,
+    RPC health status, circuit breaker state, and active sessions.
+    """
+    try:
+        uptime_seconds = time.time() - START_TIME
+        hours, remainder = divmod(int(uptime_seconds), 3600)
+        minutes, secs = divmod(remainder, 60)
+        
+        # Fetch cycle stats from DB
+        conn = sqlite3.connect(DB_PATH)
+        total_cycles = conn.execute("SELECT COUNT(*) FROM agent_memory").fetchone()[0]
+        last_cycle = conn.execute("SELECT MAX(cycle) FROM agent_memory").fetchone()[0] or 0
+        
+        # RPC health summary
+        rpc_health = {}
+        if rpc_health_checker:
+            for url in rpc_health_checker.rpc_urls:
+                rpc_health[url] = {
+                    "healthy": rpc_health_checker.health_status.get(url, False),
+                    "blacklisted_until": rpc_health_checker.dead_until.get(url, 0)
+                }
+        
+        # Recent RPC audit entries
+        rpc_audits = conn.execute("""
+            SELECT timestamp, rpc_url, status, latency_ms 
+            FROM rpc_audit_log ORDER BY id DESC LIMIT 10
+        """).fetchall()
+        conn.close()
+        
+        return {
+            "status": "success",
+            "data": {
+                "uptime": f"{hours}h {minutes}m {secs}s",
+                "uptime_seconds": round(uptime_seconds, 1),
+                "total_cycles_recorded": total_cycles,
+                "last_cycle_number": last_cycle,
+                "current_regime": last_known_state.get("regime", "Unknown"),
+                "current_score": last_known_state["risk"].get("score", 0),
+                "circuit_breaker_active": CIRCUIT_BREAKER_ACTIVE,
+                "node_id": NODE_ID_GLOBAL,
+                "node_role": NODE_ROLE_GLOBAL,
+                "rpc_endpoints": rpc_health,
+                "recent_rpc_audits": [
+                    {"timestamp": r[0], "rpc_url": r[1], "status": r[2], "latency_ms": r[3]}
+                    for r in rpc_audits
+                ]
+            }
+        }
+    except Exception as e:
+        logger.error(f"transparency/benchmark: {e}")
+        return {"status": "error", "message": str(e)}
+
+@app.get("/api/transparency/zk-ml")
+async def get_zk_ml_status():
+    """Returns ZK-ML proof verification status and latest proof details.
+    
+    Shows the verifier contract address, whether ZK proofs are enabled,
+    and the parameters of the last successfully generated proof.
+    """
+    try:
+        zk_verifier = os.getenv("ZK_VERIFIER_ADDRESS", "0xNotSet")
+        last_proof = last_known_state.get("last_zk_proof", None)
+        
+        return {
+            "status": "success",
+            "data": {
+                "zk_ml_enabled": zk_verifier != "0xNotSet",
+                "verifier_contract": zk_verifier,
+                "chain_id": 5000,
+                "network": "Mantle Mainnet",
+                "last_proof": last_proof if last_proof else {
+                    "message": "No ZK-ML proof generated yet in this session."
+                },
+                "proof_parameters": {
+                    "inputs": ["fear_greed (uint256)", "mnt_change (int256)", "prev_vol (uint256)"],
+                    "outputs": ["out_vol (uint256)", "out_risk_score (uint256)", "out_regime (uint8)"],
+                    "signature_scheme": "EIP-191 (eth_sign)",
+                    "hash_function": "keccak256(abi.encodePacked(...))"
+                }
+            }
+        }
+    except Exception as e:
+        logger.error(f"transparency/zk-ml: {e}")
+        return {"status": "error", "message": str(e)}
 
 @app.get("/api/transactions")
 async def get_transactions():
