@@ -92,6 +92,17 @@ import { MagneticText } from "./MagneticText";
 function HeroSection({ onLaunch }: { onLaunch: () => void }) {
   return (
     <section className="landing-hero" id="dashboard">
+      <div className="hero-video-wrapper">
+        <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="hero-video"
+          src="https://res.cloudinary.com/dfjpgpatf/video/upload/copy_D920F866-46B1-4EE7-B4AE-A3265C9980CE_m6gtkf.mp4"
+        />
+        <div className="hero-video-overlay" />
+      </div>
       <motion.div
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}
