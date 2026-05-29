@@ -1,9 +1,8 @@
 import { motion } from "framer-motion";
 import { StabilityGraph } from "./StabilityGraph";
 import { useAgentData } from "@/hooks/useAgentData";
-import { useState, useEffect } from "react";
 import { MagneticText } from "./MagneticText";
-import { useAuth } from "@/context/AuthContext";
+import { DecisionTransparency } from "./DecisionTransparency";
 
 const fadeUp = {
   initial: { opacity: 0, y: 8 },
@@ -12,57 +11,14 @@ const fadeUp = {
 };
 
 export function SafeguardsView() {
-  const { score, regime, circuitBreakerActive, lastMessage, agentLogs, scoreHistory } = useAgentData();
-  const { sessionToken } = useAuth();
-  const [auditLogs, setAuditLogs] = useState<any[]>([]);
+  const { regime, circuitBreakerActive, lastMessage, scoreHistory } = useAgentData();
 
-  // Fetch audit logs directly from backend
-  useEffect(() => {
-    if (!sessionToken) return;
-    const fetchAuditLogs = async () => {
-      try {
-        const res = await fetch('/api/agent/logs', {
-          headers: { 'x-session-token': sessionToken }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const logsData = data.logs || data;
-          if (Array.isArray(logsData) && logsData.length > 0) {
-            setAuditLogs(logsData);
-          }
-        }
-      } catch (err) {
-        console.warn("Audit feed fetch failed:", err);
-      }
-    };
-    fetchAuditLogs();
-    const interval = setInterval(fetchAuditLogs, 15000);
-    return () => clearInterval(interval);
-  }, [sessionToken]);
-  
   const isHighVol = regime === "Contraction";
   const circuitBreakerArmed = lastMessage.includes("CIRCUIT BREAKER");
 
-  // Use fetched audit logs, fall back to agentLogs from WebSocket, then show loading
-  const logsSource = auditLogs.length > 0 ? auditLogs : agentLogs;
-  const AUDIT_EVENTS = logsSource.slice(0, 8).map((l: any, i: number) => ({
-    time: new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    event: l.message || `Cycle ${l.cycle}: ${l.regime || 'Consolidation'} regime — Score ${l.score} — ${l.action || 'HOLD'}`,
-    category: l.node || l.regime || "System",
-    ok: !(l.action === "CIRCUIT_BREAKER" || (l.message && l.message.includes("ERROR"))),
-  }));
-
-  if (AUDIT_EVENTS.length === 0) {
-    AUDIT_EVENTS.push({ 
-      time: "Initializing", 
-      event: "Establishing Antigravity Protocol connection...", 
-      category: "Network", 
-      ok: true 
-    });
-  }
-
   // Derive last Contraction cycle timestamp from real logs for VolatilityDampener
-  const lastContractionLog = logsSource.find((l: any) => l.regime === "Contraction");
+  const { agentLogs } = useAgentData();
+  const lastContractionLog = agentLogs.find((l: any) => l.regime === "Contraction");
   const lastVolTrigger = (() => {
     if (isHighVol) return "Engaged now";
     if (!lastContractionLog) return "Never triggered";
@@ -181,30 +137,12 @@ export function SafeguardsView() {
         </div>
       </div>
 
-      {/* Audit log */}
-      <div className="col-span-12 glass-card rounded-[32px] p-6 md:p-10">
-        <p className="text-[10px] uppercase text-muted-foreground mb-6 font-bold tracking-widest">Agent Audit Feed</p>
-        <div className="space-y-0">
-          {AUDIT_EVENTS.map((ev, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: -6 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.04, duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-              className="flex items-start gap-4 py-4 border-b border-black/5"
-            >
-              <span className={`mt-1.5 h-1.5 w-1.5 rounded-full flex-shrink-0 ${ev.ok ? "bg-emerald-500" : "bg-red-500"}`} />
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] text-black font-medium leading-snug">{ev.event}</p>
-                <div className="flex items-center gap-2 mt-2">
-                  <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest">{ev.time}</span>
-                  <span className="text-[9px] text-muted-foreground/30">·</span>
-                  <span className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-widest">{ev.category}</span>
-                </div>
-              </div>
-            </motion.div>
-          ))}
+      {/* Decision Transparency (Supervisory Logic) moved from Agent Logs */}
+      <div className="col-span-12 mt-6">
+        <div className="mb-4">
+          <p className="text-[10px] uppercase text-muted-foreground font-bold tracking-widest">Agent Audit Feed</p>
         </div>
+        <DecisionTransparency />
       </div>
     </motion.div>
   );

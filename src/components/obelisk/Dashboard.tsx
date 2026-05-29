@@ -26,6 +26,69 @@ interface DashboardProps {
   walletAddress?: string | null;
   onConnectWallet?: () => void;
 }
+
+export function LiveAgentStats() {
+  const [health, setHealth] = useState<any>(null);
+  
+  useEffect(() => {
+    const fetchHealth = async () => {
+      try {
+        const res = await fetch('https://obeliskq.app/api/agent/health');
+        const data = await res.json();
+        setHealth(data);
+      } catch (err) {
+        console.error('Failed to fetch health:', err);
+      }
+    };
+    
+    fetchHealth();
+    const interval = setInterval(fetchHealth, 30000); // Update every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  if (!health) {
+    return (
+      <div className="mb-8 glass-card rounded-3xl p-6 border border-blue-200/20 shadow-[0_4px_20px_rgba(100,150,255,0.04)] animate-pulse flex items-center justify-center text-muted-foreground/60 text-[13px] font-medium" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(245,250,255,0.85) 100%)" }}>
+        Connecting to sovereign agent swarm...
+      </div>
+    );
+  }
+
+  const uptime = health.uptime_hours ?? 0;
+  const cycles = health.cycles_executed ?? health.cycles_total ?? health.last_cycle?.number ?? 0;
+  const qScore = health.q_score ?? health.last_cycle?.score ?? 50;
+  const isHealthy = health.status === 'healthy' || health.status === 'operational';
+
+  return (
+    <div 
+      className="mb-8 glass-card rounded-3xl p-6 border border-blue-200/20 shadow-[0_10px_30px_rgba(100,150,255,0.06)] grid grid-cols-2 md:grid-cols-4 gap-6 relative overflow-hidden"
+      style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(248,252,255,0.9) 100%)" }}
+    >
+      <div className="text-center md:border-r border-black/[0.03] py-2">
+        <p className="text-[#00D395] text-3xl font-extrabold tracking-tight">{uptime}h</p>
+        <p className="text-muted-foreground/80 text-[10px] font-bold uppercase tracking-[0.2em] mt-1" style={{ letterSpacing: "0.2em" }}>Swarm Uptime</p>
+      </div>
+      <div className="text-center md:border-r border-black/[0.03] py-2">
+        <p className="text-black text-3xl font-extrabold tracking-tight">{cycles}</p>
+        <p className="text-muted-foreground/80 text-[10px] font-bold uppercase tracking-[0.2em] mt-1" style={{ letterSpacing: "0.2em" }}>Cycles Completed</p>
+      </div>
+      <div className="text-center md:border-r border-black/[0.03] py-2">
+        <p className="text-[#0052FF] text-3xl font-extrabold tracking-tight">{qScore}</p>
+        <p className="text-muted-foreground/80 text-[10px] font-bold uppercase tracking-[0.2em] mt-1" style={{ letterSpacing: "0.2em" }}>Consensus Q-Score</p>
+      </div>
+      <div className="text-center flex flex-col items-center justify-center py-2">
+        <div className="flex items-center gap-2">
+          <span className={`h-2.5 w-2.5 rounded-full ${isHealthy ? 'bg-[#00D395] animate-pulse' : 'bg-rose-500'}`} />
+          <p className={`text-[17px] font-bold tracking-tight ${isHealthy ? 'text-[#00D395]' : 'text-rose-500'}`}>
+            {isHealthy ? 'Operational' : 'Degraded'}
+          </p>
+        </div>
+        <p className="text-muted-foreground/80 text-[10px] font-bold uppercase tracking-[0.2em] mt-1" style={{ letterSpacing: "0.2em" }}>Agent Status</p>
+      </div>
+    </div>
+  );
+}
+
 export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, onConnectWallet }: DashboardProps) {
   const [internalTab, setInternalTab] = useState<DashboardTab>("earn");
   const tab = externalTab ?? internalTab;
@@ -98,6 +161,8 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
 
       {/* Tab Content Area */}
       <div className="mx-auto max-w-[1400px] px-4 md:px-14 mt-8 md:mt-14 relative z-10 flex-grow w-full" style={{ flexGrow: 1 }}>
+        <LiveAgentStats />
+        
         {!walletAddress && (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}

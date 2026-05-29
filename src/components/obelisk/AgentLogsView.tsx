@@ -2,7 +2,6 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useAgentData } from "@/hooks/useAgentData";
 import { useVault } from "@/hooks/useVault";
 import { useEffect, useRef, useState } from "react";
-import { DecisionTransparency } from "./DecisionTransparency";
 import { MagneticText } from "./MagneticText";
 import { AgentAttestation } from "./AgentAttestation";
 
@@ -111,10 +110,7 @@ export function AgentLogsView() {
         ))}
       </div>
 
-      {/* ── Decision Transparency ─────────────────────────────────────────── */}
-      <div className="col-span-12">
-        <DecisionTransparency />
-      </div>
+
       
       {/* ── Log Stream ───────────────────────────────────────────────────── */}
       <div className="col-span-12 glass-card rounded-[32px] md:rounded-[40px] p-6 md:p-10 flex flex-col h-[700px] transition-all">

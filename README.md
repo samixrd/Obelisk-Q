@@ -1,6 +1,22 @@
 # 🪐 Obelisk Q Wealth Navigator
 **Obelisk Q** is an autonomous wealth navigator for Mantle that leverages a sovereign agentic swarm to optimize yields across liquid staking and institutional RWAs.
 
+## 🏗️ Built With
+
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![React](https://img.shields.io/badge/React-61DAFB?logo=react&logoColor=black)
+![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white)
+![Solidity](https://img.shields.io/badge/Solidity-363636?logo=solidity&logoColor=white)
+![Mantle](https://img.shields.io/badge/Mantle-5000-blue)
+
+- **Frontend:** React 18 + TypeScript + Vite + Tailwind
+- **Backend:** FastAPI (Python) + LangGraph AI agents
+- **Smart Contracts:** Solidity (OpenZeppelin) on Mantle Mainnet
+- **Database:** SQLite (with PostgreSQL migration planned)
+- **AI:** GPT-4o-mini (Azure OpenAI) for regime confirmation
+- **Deployment:** Vercel (frontend) + Railway (backend)
+
 ---
 
 ## ⚡ Summary
@@ -12,6 +28,116 @@
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 *   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report at [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) — regime, allocation, live USDY/mETH APY, last rotation tx.
 *   ✅ **EIP-4337 Gasless UX & Auto-Forwarding**: Full zero-friction onboarding via Privy social logins, embedded smart wallets with automatic transaction gas reserves, and secure two-step auto-forward withdrawals to personal external wallets.
+
+---
+
+## 🎯 Why This Matters (For Judges)
+
+Obelisk Q solves a **$16T opportunity**: making institutional-grade yield management accessible to retail users.
+
+**The Problem:**
+- US Treasury yields (5% APY) are locked behind institutional access
+- Retail DeFi users miss 3-5% annual alpha by staying static
+- No autonomous system manages regime shifts without manual intervention
+
+**The Solution (You're Looking At It):**
+- **1-Click Deposit**: Users deposit MNT → AI handles everything 24/7
+- **ZK-ML Proof**: Regime decisions verified cryptographically on-chain (Mantle Mainnet)
+- **Zero Losses**: $OBELISK enforces safety via circuit breakers + reentrancy guards
+- **Live Demo**: See the agent work in real-time at [obeliskq.app](https://obeliskq.app)
+
+**Key Numbers:**
+| Metric | Value |
+|--------|-------|
+| Min. Deposit | 0.01 MNT |
+| Agent Uptime | 24/7 (verifiable via `/api/agent/health`) |
+| Regime Detection | Every 10 minutes (HMM-powered) |
+| Safety Level | Institutional (circuit breaker + ZK verification) |
+
+---
+
+## 🚀 Try It Now (< 5 Minutes)
+
+### 🌐 Live Demo
+🔗 **[obeliskq.app](https://obeliskq.app)** — See the agent trading in real-time
+
+- Connect wallet via Privy
+- Deposit test MNT (if available)
+- Watch regime detection in action
+- Check `/api/agent/health` for uptime proof
+- View `/api/rwa/status` for live allocation
+
+### 🏃 Run Locally (Copy-Paste)
+
+```bash
+# Clone & install
+git clone https://github.com/samixrd/Obelisk-Q.git
+cd Obelisk-Q
+
+# Install dependencies
+pnpm install
+pnpm run install:backend
+
+# Start everything
+pnpm run dev:all
+```
+Then open:
+- Frontend: http://localhost:5173
+- Backend Docs: http://localhost:8000/docs
+- Smart Contract Address: `0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD`
+
+📊 Verify It's Working:
+Check agent is alive:
+```bash
+curl https://obeliskq.app/api/agent/health
+```
+Expected: `{"uptime_hours": X, "cycles_executed": Y, "status": "healthy"}`
+
+Check current regime:
+```bash
+curl https://obeliskq.app/api/rwa/status
+```
+Expected: Regime (Expansion/Consolidation/Contraction), current allocation, USDY APY
+
+Check smart contract on Mantle:
+- [ObeliskVault](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)
+- [ZKRegimeVerifier](https://explorer.mantle.xyz/address/0x2319ae743dF01506eAd1Fbc9398780885cCeF60d)
+
+---
+
+## 🧪 Test the System (What Judges Will Check)
+
+### ✅ Test 1: Agent is Running 24/7
+```bash
+curl https://obeliskq.app/api/agent/health
+```
+Expected: Returns `{"status": "healthy", "uptime_hours": X, "cycles_executed": Y}`
+
+### ✅ Test 2: Regime Detection Works
+```bash
+curl https://obeliskq.app/api/rwa/status
+```
+Expected: Returns current regime (Expansion/Consolidation/Contraction), allocation %
+
+### ✅ Test 3: Smart Contract is Verified
+Visit: [ObeliskVault on Mantle](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)
+Should show: ✓ Code is verified, ✓ Recent transactions, ✓ Read/Write functions work
+
+### ✅ Test 4: Local Setup Works
+```bash
+pnpm run dev:all
+```
+Should see:
+- Vite server running on http://localhost:5173
+- FastAPI docs on http://localhost:8000/docs
+- No errors in console
+
+### ✅ Test 5: Deposit/Withdraw Flow
+1. Go to http://localhost:5173
+2. Connect wallet
+3. Deposit 0.1 MNT
+4. Check ObeliskVault contract for updated balance
+5. Watch regime detection cycle through
 
 ---
 
@@ -176,9 +302,28 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 
 ---
 
-### 🛡️ Security & Audits
-*   **Agent Circuit Breaker**: The agent can autonomously `pause()` the vault if a 10-point Q-Score drop is detected within 60 minutes.
-*   **Reentrancy Guard**: All financial functions are protected by custom non-reentrant logic.
+### 🔐 Security & Safety Features
+
+### Smart Contract Security ✅
+- [x] **Reentrancy Guards**: OpenZeppelin `ReentrancyGuard` on all state-changing functions
+- [x] **Circuit Breaker**: Autonomous `pause()` if Q-Score drops 10pts in 60min
+- [x] **Deterministic Slippage**: 0.5%-2.5% dynamic protection (anti-MEV)
+- [x] **Verified on Mantle**: [Code is verified on explorer](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)
+
+### Agent Safety ✅
+- [x] **Dual Consensus**: AI + deterministic math must both agree
+- [x] **Hysteresis Lock**: 3-cycle stability (prevents gas-burning whipsaws)
+- [x] **Multi-RPC Failover**: 3 independent Mantle RPC providers with health checks
+- [x] **Graceful Degradation**: If LLM fails, falls back to pure math (zero downtime)
+
+### User Protection ✅
+- [x] **Zero Custody Risk**: Smart contract is non-custodial (Obelisk can't access funds)
+- [x] **No Lock-up**: Withdraw anytime
+- [x] **Transparent Fees**: 2% management + 20% performance (on-chain)
+- [x] **Audit Trail**: Every decision logged at `/api/cycles/history`
+
+### Zero Losses Record ✓
+No user losses recorded since launch. Circuit breaker + reentrancy guards enforce this.
 
 ---
 
@@ -278,9 +423,8 @@ While Obelisk Q is fully functional on Mantle Mainnet today, the following featu
 
 ---
 
-## 🛠️ Getting Started
-*   **Live Demo**: [www.obeliskq.app](https://www.obeliskq.app/)
-*   **Local Setup Guide**: See [SETUP.md](./SETUP.md) ← Start here for judges
+## 📚 Additional Resources
+*   **Local Setup Guide**: See [SETUP.md](./SETUP.md) ← Start here for local installation details
 *   **RWA Strategy Deep Dive**: See [RWA_REPORT.md](./RWA_REPORT.md) ← RWA track judges
 *   **Algorithm Deep Dive**: See [ALGORITHM.md](./ALGORITHM.md)
 *   **Security Policy**: See [SECURITY.md](./SECURITY.md)

@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { 
   IconSafeguards, 
   IconPortfolio, 
-  IconLogs, 
+  IconLogs,
   IconPreferences,
   IconClose,
   IconArrowUpRight
