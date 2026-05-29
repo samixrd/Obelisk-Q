@@ -46,5 +46,5 @@ npm run test
 - **Failover**: Multi-RPC rotation and SQLite self-healing database tests.
 
 ## 🔗 Monitoring & Docs
-- **API Documentation**: [http://localhost:8000/docs](http://localhost:8000/docs) (Swagger UI)
-- **Prometheus Metrics**: [http://localhost:8000/metrics](http://localhost:8000/metrics)
+- **API Documentation**: [http://<your-localhost-or-azure-ip>:8000/docs](http://<your-localhost-or-azure-ip>:8000/docs) (Swagger UI)
+- **Prometheus Metrics**: [http://<your-localhost-or-azure-ip>:8000/metrics](http://<your-localhost-or-azure-ip>:8000/metrics)

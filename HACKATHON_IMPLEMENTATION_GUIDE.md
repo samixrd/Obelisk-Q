@@ -70,8 +70,8 @@ pnpm run dev:all
 ```
 Then open:
 
-Frontend: http://localhost:5173
-Backend Docs: http://localhost:8000/docs
+Frontend: http://<your-localhost-or-azure-ip>:5173
+Backend Docs: http://<your-localhost-or-azure-ip>:8000/docs
 Smart Contract Address: 0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD
 📊 Verify It's Working
 Check agent is alive:
@@ -212,12 +212,12 @@ Should show: ✓ Code is verified, ✓ Recent transactions, ✓ Read/Write funct
 pnpm run dev:all
 ```
 # Should see:
-# - Vite server running on http://localhost:5173
-# - FastAPI docs on http://localhost:8000/docs
+# - Vite server running on http://<your-localhost-or-azure-ip>:5173
+# - FastAPI docs on http://<your-localhost-or-azure-ip>:8000/docs
 # - No errors in console
 
 ✅ Test 5: Deposit/Withdraw Flow
-Go to http://localhost:5173
+Go to http://<your-localhost-or-azure-ip>:5173
 Connect wallet
 Deposit 0.1 MNT
 Check ObeliskVault contract for updated balance
@@ -278,11 +278,11 @@ pnpm run dev:all
 ```
 
 This runs:
-- Frontend on http://localhost:5173
-- Backend on http://localhost:8000
+- Frontend on http://<your-localhost-or-azure-ip>:5173
+- Backend on http://<your-localhost-or-azure-ip>:8000
 
 ### 5. Open Swagger Docs
-http://localhost:8000/docs — test API endpoints here
+http://<your-localhost-or-azure-ip>:8000/docs — test API endpoints here
 
 ### Troubleshooting
 | Issue | Solution |

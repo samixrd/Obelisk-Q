@@ -43,11 +43,11 @@ pnpm run dev:all
 ```
 
 This runs:
-- Frontend on http://localhost:5173
-- Backend on http://localhost:8000
+- Frontend on http://<your-localhost-or-azure-ip>:5173
+- Backend on http://<your-localhost-or-azure-ip>:8000
 
 ### 5. Open Swagger Docs
-http://localhost:8000/docs — test API endpoints here
+http://<your-localhost-or-azure-ip>:8000/docs — test API endpoints here
 
 ### Troubleshooting
 | Issue | Solution |
