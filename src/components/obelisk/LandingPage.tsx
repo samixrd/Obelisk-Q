@@ -392,10 +392,7 @@ function Footer() {
             </div>
           ))}
         </div>
-        <div className="landing-footer-right">
-          <span className="landing-footer-legal">About Obelisk Q</span>
-          <span className="landing-footer-legal">Terms</span>
-        </div>
+
       </div>
 
       <div className="landing-footer-bottom">
