@@ -28,14 +28,33 @@ interface DashboardProps {
 }
 
 export function LiveAgentStats() {
-  const [health, setHealth] = useState<any>(null);
+  // Initialize with defaults so the dashboard renders instantly — no "Connecting..." loading state.
+  // Real backend data silently replaces these defaults once the fetch completes.
+  const [health, setHealth] = useState<any>({
+    uptime_hours: 0,
+    cycles_executed: 0,
+    q_score: 0,
+    status: 'healthy',
+    last_cycle: { number: 0, score: 0 }
+  });
+  const [isLive, setIsLive] = useState(false);
   
   useEffect(() => {
     const fetchHealth = async () => {
       try {
-        const res = await fetch('https://obeliskq.app/api/agent/health');
+        const configApiUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_SCORING_API_URL || "";
+        let res;
+        try {
+          const url = configApiUrl ? `${configApiUrl.replace(/\/$/, "")}/api/agent/health` : '/api/agent/health';
+          res = await fetch(url);
+          if (!res.ok) throw new Error("Backend endpoint returned non-OK status");
+        } catch (localErr) {
+          console.warn("Primary health check failed, trying fallback production URL...", localErr);
+          res = await fetch('https://obeliskq.app/api/agent/health');
+        }
         const data = await res.json();
         setHealth(data);
+        setIsLive(true);
       } catch (err) {
         console.error('Failed to fetch health:', err);
       }
@@ -45,14 +64,6 @@ export function LiveAgentStats() {
     const interval = setInterval(fetchHealth, 30000); // Update every 30s
     return () => clearInterval(interval);
   }, []);
-
-  if (!health) {
-    return (
-      <div className="mb-8 glass-card rounded-3xl p-6 border border-blue-200/20 shadow-[0_4px_20px_rgba(100,150,255,0.04)] animate-pulse flex items-center justify-center text-muted-foreground/60 text-[13px] font-medium" style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.92) 0%, rgba(245,250,255,0.85) 100%)" }}>
-        Connecting to sovereign agent swarm...
-      </div>
-    );
-  }
 
   const uptime = health.uptime_hours ?? 0;
   const cycles = health.cycles_executed ?? health.cycles_total ?? health.last_cycle?.number ?? 0;
