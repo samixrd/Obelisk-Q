@@ -415,11 +415,6 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                     <AuthButton
                       onClick={handleGasless}
                       loading={walletLoading}
-                      icon={
-                        <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                      }
                       label={walletLoading ? "Connecting..." : "Web3 & Social Login"}
                       sublabel="Email, Google, Twitter, Discord & External Wallets"
                     />
@@ -437,25 +432,6 @@ export function AuthScreen({ onAuthenticated }: AuthScreenProps) {
                     }}>
                       <span style={{ fontSize: 14 }}>⚠️</span> Apple login is currently unavailable.
                     </p>
-
-                    {/* AA Info badge */}
-                    <div style={{
-                      display: "flex", alignItems: "flex-start", gap: 10,
-                      padding: "10px 14px", borderRadius: 10,
-                      background: "rgba(99,102,241,0.05)",
-                      border: "1px solid rgba(99,102,241,0.12)",
-                    }}>
-                      <svg viewBox="0 0 16 16" width="14" height="14" fill="none" style={{ flexShrink: 0, marginTop: 1 }}>
-                        <circle cx="8" cy="8" r="7" stroke="#6366f1" strokeWidth="1.2"/>
-                        <path d="M8 7v5M8 5v.5" stroke="#6366f1" strokeWidth="1.4" strokeLinecap="round"/>
-                      </svg>
-                      <p style={{
-                        fontSize: 11, color: "#6366f1", lineHeight: 1.5,
-                        fontFamily: "'Inter', sans-serif", margin: 0,
-                      }}>
-                        <strong>Smart Accounts & Embedded Wallets</strong> are now live! Social logins enjoy a fully managed embedded wallet experience with automatic gas reserve sponsorship and auto-forwarding withdrawals to personal external wallets.
-                      </p>
-                    </div>
 
                     <button 
                       onClick={() => setStep(1)}
@@ -541,7 +517,7 @@ function AuthButton({ onClick, loading, icon, label, sublabel, accent, disabled 
         (e.currentTarget as HTMLElement).style.boxShadow = "none";
       }}
     >
-      <span style={{ flexShrink: 0, opacity: 0.8 }}>{icon}</span>
+      {icon && <span style={{ flexShrink: 0, opacity: 0.8 }}>{icon}</span>}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{
           fontSize: 14, fontWeight: 500, color: "#0a0a0a",

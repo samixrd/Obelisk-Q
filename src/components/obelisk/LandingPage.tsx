@@ -16,11 +16,12 @@ import "./LandingPage.css";
 
 import { FloatingSymbols } from "./FloatingSymbols";
 
-const Reveal = ({ children, delay = 0 }: { children: React.ReactNode, delay?: number }) => (
+const Reveal = ({ children, delay = 0, triggerOnMount = false }: { children: React.ReactNode, delay?: number, triggerOnMount?: boolean }) => (
   <motion.div
     initial={{ clipPath: "inset(0 100% 0 0)" }}
-    whileInView={{ clipPath: "inset(0 0% 0 0)" }}
-    viewport={{ once: true, margin: "-100px" }}
+    animate={triggerOnMount ? { clipPath: "inset(0 0% 0 0)" } : undefined}
+    whileInView={!triggerOnMount ? { clipPath: "inset(0 0% 0 0)" } : undefined}
+    viewport={!triggerOnMount ? { once: true, margin: "-20px" } : undefined}
     transition={{ duration: 1.2, delay, ease: [0.22, 1, 0.36, 1] }}
     style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}
   >
@@ -98,10 +99,10 @@ function HeroSection({ onLaunch }: { onLaunch: () => void }) {
         className="landing-hero-content"
       >
         <div className="landing-hero-heading">
-          <Reveal>
+          <Reveal triggerOnMount={true}>
             <MagneticText text="Autonomous Investment" />
           </Reveal>
-          <Reveal delay={0.1}>
+          <Reveal delay={0.1} triggerOnMount={true}>
             <MagneticText text="Intelligence on Mantle." />
           </Reveal>
         </div>

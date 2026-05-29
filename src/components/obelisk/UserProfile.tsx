@@ -105,6 +105,19 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
                   )}
                 </button>
               </div>
+              <p style={{
+                fontSize: "9px",
+                color: "#ef4444",
+                fontWeight: 650,
+                marginTop: "4px",
+                lineHeight: 1.3,
+                fontFamily: "'Inter', sans-serif",
+                display: "flex",
+                alignItems: "center",
+                gap: "4px"
+              }}>
+                ⚠️ Only deposit MNT on Mantle L2 Network
+              </p>
             </div>
 
             <div className="h-px bg-black/[0.04]" />
