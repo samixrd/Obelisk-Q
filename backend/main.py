@@ -160,8 +160,8 @@ fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - [%(node_id)s] %
 fh.addFilter(security_filter)
 logger.addHandler(fh)
 
-RPC_TIMEOUT = int(os.getenv("AGENT_RPC_TIMEOUT", "20"))      # Increased from 15
-CYCLE_TIMEOUT = int(os.getenv("AGENT_CYCLE_TIMEOUT", "90"))  # Increased from 45 to allow for LLM + Multi-RPC
+RPC_TIMEOUT = int(os.getenv("AGENT_RPC_TIMEOUT", "30"))      # Increased to 30 for stability
+CYCLE_TIMEOUT = int(os.getenv("AGENT_CYCLE_TIMEOUT", "180"))  # Increased to 180 to prevent terminal timeout during API lag
 MAX_RPC_ATTEMPTS = int(os.getenv("MAX_RPC_ATTEMPTS", "5"))   # Increased retries
 BACKOFF_FACTOR = float(os.getenv("BACKOFF_FACTOR", "1.0"))   # Slower backoff for stability
 
