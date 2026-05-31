@@ -40,7 +40,7 @@ function NavBar({ onLaunch }: { onLaunch: () => void }) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const navItems = ["Dashboard", "Protocol", "Features", "Archetypes"];
+  const navItems = ["Home", "Protocol", "Features", "Archetypes"];
 
   return (
     <motion.nav
@@ -186,7 +186,7 @@ function FeaturesSection() {
     {
       num: "03",
       title: "Circuit Breaker",
-      desc: "Instant safety halt if market confidence (Q-Score) drops 5+ points in 60 min. Protects capital during rapid regime shifts.",
+      desc: "Instant safety halt if market confidence (Q-Score) drops 10+ points in 60 min. Protects capital during rapid regime shifts.",
       tags: ["Safety", "Volatility", "Verified"],
     },
     {
@@ -339,11 +339,6 @@ function BuiltForSection() {
 
 function Footer() {
   const linkGroups = [
-    { title: "", links: [
-      { name: "Dashboard", href: "#dashboard" },
-      { name: "Protocol", href: "#protocol" },
-      { name: "Features", href: "#features" }
-    ]},
     { title: "", links: [
       { name: "Docs", href: "/docs", external: false },
       { name: "GitHub", href: "https://github.com/samixrd/Obelisk-Q", external: true },

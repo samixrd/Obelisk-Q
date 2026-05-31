@@ -139,7 +139,7 @@ export function AssetsView() {
             { range: "≥ 80", target: "mETH", color: "bg-purple-400", desc: "Aggressive Growth" },
             { range: "60 - 80", target: "HOLD", color: "bg-black/10", desc: "Maintain Neutral" },
             { range: "< 60", target: "USDY", color: "bg-blue-400", desc: "Defensive Hedge" },
-            { range: "Δ5/60m", target: "PAUSE", color: "bg-red-400", desc: "Circuit Breaker" }
+            { range: "Δ10/60m", target: "PAUSE", color: "bg-red-400", desc: "Circuit Breaker" }
           ].map(rule => (
             <div key={rule.range} className="p-8 border border-black/5 rounded-[32px] hover:bg-black/[0.01] transition-colors group" role="listitem">
               <div className="flex items-center justify-between mb-6">
