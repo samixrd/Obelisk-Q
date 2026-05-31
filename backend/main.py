@@ -1837,7 +1837,29 @@ async def verify_session(x_session_token: str = Header(None)):
     Heartbeat & Validation Mechanism
     Enforces the 300s inactivity window.
     """
-    if not x_session_token or x_session_token not in SESSIONS:
+    if not x_session_token:
+        raise HTTPException(status_code=401, detail="Session_Expired")
+
+    # Dynamic registration for Privy embedded wallets (social logins)
+    if x_session_token not in SESSIONS and x_session_token.startswith("privy_"):
+        try:
+            import base64
+            parts = x_session_token.split("_")
+            if len(parts) >= 3:
+                b64_addr = parts[1]
+                # Pad base64 string
+                b64_addr += "=" * ((4 - len(b64_addr) % 4) % 4)
+                address = base64.b64decode(b64_addr).decode("utf-8")
+                if address.startswith("0x") and len(address) == 42:
+                    SESSIONS[x_session_token] = {
+                        "address": address,
+                        "last_seen": time.time()
+                    }
+                    logger.info(f"verify_session: auto-registered privy session for {address}")
+        except Exception as e:
+            logger.warning(f"verify_session: failed to decode privy token: {e}")
+
+    if x_session_token not in SESSIONS:
         raise HTTPException(status_code=401, detail="Session_Expired")
     
     session = SESSIONS[x_session_token]
