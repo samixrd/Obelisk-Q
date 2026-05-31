@@ -1518,14 +1518,10 @@ async def supervisory_controller_node(state: AgentState):
                     
                     nonce = w3.eth.get_transaction_count(account.address)
                     gas_price = w3.eth.gas_price
-                    logger.info(f"executor: rpc check - nonce={nonce}, gas_price={w3.from_wei(gas_price, 'gwei')} gwei")
+                    agent_balance = w3.eth.get_balance(account.address)
                     
                     # ── Optional: Update regime on-chain if changed ──
                     current_regime = state["data"].get("regime", "Consolidation")
-                    
-                    # ── Build transaction with explicit parameters ──
-                    # We can bundle multiple calls if needed, but for now we'll just rebalance
-                    # To land regime on-chain, we can call setRegime first if it's a new regime
                     
                     # ── SLIPPAGE PROTECTION: Calculate minAmountOut ──
                     min_amount_out = 0
@@ -1560,14 +1556,38 @@ async def supervisory_controller_node(state: AgentState):
                                 logger.warning(f"executor: quote failed, using 0 as fallback (risky): {e}")
                                 min_amount_out = 0
 
+                    # ── DYNAMIC GAS ESTIMATION ──
+                    target_token_checksum = w3.to_checksum_address(target_token) if target_token != ZERO_ADDR else ZERO_ADDR
+                    try:
+                        gas_estimate = contract.functions.rebalance(
+                            target_token_checksum, 
+                            min_amount_out
+                        ).estimate_gas({
+                            'from': account.address,
+                            'value': 0
+                        })
+                        estimated_gas_limit = int(gas_estimate * 1.25) # Add 25% safety buffer
+                        logger.info(f"executor: dynamic gas estimation successful. limit={estimated_gas_limit}")
+                    except Exception as ge:
+                        logger.warning(f"executor: gas estimation failed ({ge}). falling back to conservative limit.")
+                        # Emergency unwind and swap usually require more gas
+                        estimated_gas_limit = 500000 if action != "WMNT" else 150000
+
+                    required_gas_fee = estimated_gas_limit * gas_price
+                    logger.info(f"executor: rpc check - nonce={nonce}, gas_price={w3.from_wei(gas_price, 'gwei')} gwei, agent_balance={w3.from_wei(agent_balance, 'ether')} MNT, gas_limit={estimated_gas_limit}")
+                    
+                    if agent_balance < required_gas_fee:
+                        logger.error(f"executor: CRITICAL - Agent wallet {account.address} has insufficient funds for gas. Balance: {w3.from_wei(agent_balance, 'ether')} MNT. Estimated fee limit required: {w3.from_wei(required_gas_fee, 'ether')} MNT. Please top up the agent wallet.")
+                        return f"aborting|executor: insufficient gas in agent wallet {account.address} ({w3.from_wei(agent_balance, 'ether')} MNT). Please fund this address."
+
                     tx = contract.functions.rebalance(
-                        w3.to_checksum_address(target_token) if target_token != ZERO_ADDR else ZERO_ADDR, 
+                        target_token_checksum, 
                         min_amount_out
                     ).build_transaction({
                         'from': account.address,
                         'value': 0,
                         'chainId': 5000,
-                        'gas': 600000, # Increased for complex swaps
+                        'gas': estimated_gas_limit,
                         'gasPrice': gas_price,
                         'nonce': nonce,
                     })
