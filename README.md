@@ -24,6 +24,7 @@
 *   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet** ([0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)).
 *   ✅ **Continuous Execution**: Agent swarm running 24/7 — cycle count and uptime verifiable live at [`/api/agent/health`](https://obeliskq.app/api/agent/health).
 *   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.5%–2.5% based on regime and volatility).
+*   ✅ **Autonomous Liquidity Guard Rails**: Enforces a real-time Oracle-based price impact check. If AMM pool liquidity is too thin (such as USDY on Merchant Moe), the agent autonomously aborts the trade to protect user capital from slippage.
 *   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 *   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report at [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) — regime, allocation, live USDY/mETH APY, last rotation tx.
