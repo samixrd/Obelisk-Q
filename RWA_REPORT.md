@@ -37,7 +37,9 @@ Dual-Model Consensus: AI + Deterministic Analyst agree: CONTRACTION
     ↓
 Q-Score drops below 45 (Action: ROTATE_TO_USDY)
     ↓  
-On-chain: ObeliskVault.rebalance(USDY, 75%) called on Mantle
+On-chain: ObeliskVault.rebalance(USDY, target, calldata, minAmountOut) called on Mantle
+    ↓
+    Odos V3 DEX Aggregator executes swap at best rate (guarded at >0.5% price impact)
     ↓
 User funds now earning ~5% US Treasury yield — safe from DeFi crash
 ```
@@ -149,8 +151,8 @@ Every regime rotation is recorded on Mantle Mainnet:
                                           └──────────────────┬──────────────────┘
                                                              │
                                                      Mantle Mainnet
-                                         ObeliskVault: 0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD
-                                         ZKRegimeVerifier: 0x2319ae743dF01506eAd1Fbc9398780885cCeF60d
+                                         ObeliskVault: 0x59fdE89B810812846ED167033C6d33fa425835E2
+                                         ZKRegimeVerifier: 0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D
 ```
 
 ---
@@ -161,8 +163,8 @@ Every regime rotation is recorded on Mantle Mainnet:
 // Sets the current regime on-chain (creates immutable audit record)
 function setRegime(uint8 _regime) external onlyAuthorized;
 
-// Rotates capital between USDY / mETH / WMNT via Merchant Moe DEX
-function rebalance(address token, uint256 amount, uint256 slippage) external onlyAuthorized;
+// Rotates capital between USDY / mETH / WMNT via Odos V3 DEX Aggregator
+function rebalance(address targetToken, address swapTarget, bytes calldata swapCallData, uint256 minAmountOut) external payable onlyAuthorized;
 
 // Emergency pause — triggered autonomously by circuit breaker
 function pause() external onlyAuthorized;

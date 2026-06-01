@@ -28,7 +28,7 @@ fi
 
 # Test 4: Smart contract callable
 echo "✓ Checking smart contract on Mantle..."
-curl -s https://explorer.mantle.xyz/api/v1/addresses/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD > /dev/null
+curl -s https://explorer.mantle.xyz/api/v1/addresses/0x59fdE89B810812846ED167033C6d33fa425835E2 > /dev/null
 if [ $? -ne 0 ]; then
   echo "⚠️  Contract not accessible (network issue?)"
 else

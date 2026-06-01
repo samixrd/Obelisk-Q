@@ -72,7 +72,7 @@ Then open:
 
 Frontend: http://<your-localhost-or-azure-ip>:5173
 Backend Docs: http://<your-localhost-or-azure-ip>:8000/docs
-Smart Contract Address: 0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD
+Smart Contract Address: 0x59fdE89B810812846ED167033C6d33fa425835E2
 📊 Verify It's Working
 Check agent is alive:
 
@@ -109,7 +109,7 @@ curl https://obeliskq.app/api/rwa/status
 curl https://obeliskq.app/api/stats
 
 # Verify contract addresses on Mantle explorer
-# https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD
+# https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2
 # Should show:
 # - Code is verified ✓
 # - Recent transactions ✓
@@ -261,7 +261,7 @@ Create .env.local in root:
 ```env
 VITE_PRIVY_APP_ID=<your_privy_id>
 VITE_MANTLE_RPC_URL=https://rpc.mantle.xyz
-VITE_OBELISK_VAULT_ADDRESS=0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD
+VITE_OBELISK_VAULT_ADDRESS=0x59fdE89B810812846ED167033C6d33fa425835E2
 ```
 
 Create backend/.env:
@@ -335,7 +335,7 @@ fi
 
 # Test 4: Smart contract callable
 echo "✓ Checking smart contract on Mantle..."
-curl -s https://explorer.mantle.xyz/api/v1/addresses/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD > /dev/null
+curl -s https://explorer.mantle.xyz/api/v1/addresses/0x59fdE89B810812846ED167033C6d33fa425835E2 > /dev/null
 if [ $? -ne 0 ]; then
   echo "⚠️  Contract not accessible (network issue?)"
 else
@@ -387,7 +387,7 @@ Add section:
 - [x] **Reentrancy Guards**: OpenZeppelin `ReentrancyGuard` on all state-changing functions
 - [x] **Circuit Breaker**: Autonomous `pause()` if Q-Score drops 10pts in 60min
 - [x] **Deterministic Slippage**: 0.5%-2.5% dynamic protection (anti-MEV)
-- [x] **Verified on Mantle**: [Code is verified on explorer](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)
+- [x] **Verified on Mantle**: [Code is verified on explorer](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)
 
 ### Agent Safety ✅
 - [x] **Dual Consensus**: AI + deterministic math must both agree

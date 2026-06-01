@@ -1581,8 +1581,8 @@ async def supervisory_controller_node(state: AgentState):
                                 
                                 logger.info(f"executor: Odos quote - pathId={path_id} amountIn={w3.from_wei(amount_in,'ether')} actualOut={actual_out/1e18:.6f} {action} priceImpact={price_impact_pct:.2f}%")
                                 
-                                # Price impact guard (>8% = abort)
-                                if abs(price_impact_pct) > 8.0:
+                                # Price impact guard (>0.5% = abort)
+                                if abs(price_impact_pct) > 0.5:
                                     logger.error(f"executor: Odos price impact too high ({price_impact_pct:.2f}%). aborting swap to protect funds.")
                                     return f"aborting|executor: price impact too high ({price_impact_pct:.2f}%) via Odos. rebalance to {action} aborted to protect funds."
                                 
@@ -2230,7 +2230,7 @@ async def get_rwa_status():
         ).fetchone()[0]
         conn.close()
 
-        vault_addr = os.getenv("VAULT_ADDRESS", "0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD")
+        vault_addr = os.getenv("VAULT_ADDRESS", "0x59fdE89B810812846ED167033C6d33fa425835E2")
         explorer   = f"https://explorer.mantle.xyz/address/{vault_addr}"
 
         return {
@@ -3114,7 +3114,7 @@ async def get_live_metrics():
     
     try:
         w3 = rpc_manager.get_connection()
-        vault_addr = w3.to_checksum_address(os.getenv("VAULT_ADDRESS", "0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD"))
+        vault_addr = w3.to_checksum_address(os.getenv("VAULT_ADDRESS", "0x59fdE89B810812846ED167033C6d33fa425835E2"))
         
         # 1. Fetch live native MNT balance from blockchain
         mnt_bal_raw = w3.eth.get_balance(vault_addr)
@@ -3217,7 +3217,7 @@ async def get_live_metrics():
         "status": "success",
         "rpc_status": rpc_status,
         "timestamp": datetime.now().isoformat(),
-        "vault_address": os.getenv("VAULT_ADDRESS", "0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD"),
+        "vault_address": os.getenv("VAULT_ADDRESS", "0x59fdE89B810812846ED167033C6d33fa425835E2"),
         "metrics": {
             "total_users": total_users,
             "total_aum_usd": round(total_aum_usd, 2),
@@ -3350,7 +3350,7 @@ async def get_supported_assets():
     """
     try:
         w3 = rpc_manager.get_connection()
-        vault_addr = w3.to_checksum_address(os.getenv("VAULT_ADDRESS", "0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD"))
+        vault_addr = w3.to_checksum_address(os.getenv("VAULT_ADDRESS", "0x59fdE89B810812846ED167033C6d33fa425835E2"))
         
         # Minimum ABI to call allowedAssets array getter
         vault_abi = [

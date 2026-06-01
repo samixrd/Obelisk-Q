@@ -13,8 +13,8 @@ The Obelisk Q Vault and its associated contracts are live on the Mantle Mainnet.
 
 | Contract | Purpose | Address | Link |
 |---|---|---|---|
-| **ObeliskVault** | Core Capital Vault & Swap Execution Engine | `0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD` | [Mantle Explorer](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD) |
-| **ZKRegimeVerifier** | Validates Zero-Knowledge Regime Proofs On-Chain | `0x2319ae743dF01506eAd1Fbc9398780885cCeF60d` | [Mantle Explorer](https://explorer.mantle.xyz/address/0x2319ae743dF01506eAd1Fbc9398780885cCeF60d) |
+| **ObeliskVault** | Core Capital Vault & Swap Execution Engine | `0x59fdE89B810812846ED167033C6d33fa425835E2` | [Mantle Explorer](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2) |
+| **ZKRegimeVerifier** | Validates Zero-Knowledge Regime Proofs On-Chain | `0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D` | [Mantle Explorer](https://explorer.mantle.xyz/address/0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D) |
 | **mETH (Mantle LSP)** | Growth/Expansion Asset (Liquid Staking) | `0xcDA86A272531e8640cD7F1a92c01839911B90bb0` | [Mantle Explorer](https://explorer.mantle.xyz/address/0xcDA86A272531e8640cD7F1a92c01839911B90bb0) |
 | **USDY (Ondo RWA)** | Defensive/Contraction Asset (US Treasuries) | `0x5bE26527e817998A7206475496fDE1e68957c5A6` | [Mantle Explorer](https://explorer.mantle.xyz/address/0x5bE26527e817998A7206475496fDE1e68957c5A6) |
 | **WMNT (Wrapped MNT)**| Neutral/Consolidation Asset | `0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8` | [Mantle Explorer](https://explorer.mantle.xyz/address/0x78c1b0C915c4FAA5FffA6CAbf0219DA63d7f4cb8) |
@@ -153,7 +153,7 @@ To ensure maximum security, the backend separates public parameters from cryptog
 | `AZURE_OPENAI_DEPLOYMENT` | 🌐 Public | Yes | The target deployment name (e.g. `gpt-4o-mini`). |
 | `MANTLE_RPC_URL` | 🌐 Public | Yes | The primary RPC url used to query balances (defaults to `https://rpc.mantle.xyz`). |
 | `MANTLE_FALLBACK_RPC_URL`| 🌐 Public | Yes | Backup RPC endpoint used for transparent, zero-downtime failover rotation. |
-| `VAULT_ADDRESS` | 🌐 Public | Yes | Contract address of the deployed `ObeliskVault` (`0xE7F15F0FBaF7...`). |
+| `VAULT_ADDRESS` | 🌐 Public | Yes | Contract address of the deployed `ObeliskVault` (`0x59fdE89B8108...`). |
 | `DB_PATH` | 🌐 Public | Yes | The path of the local storage SQLite file (defaults to `obelisk_memory.db`). |
 | `REDIS_URL` | 🔒 Secret | No | Redis connection URI required only for cluster leader-elections and state sharing. |
 

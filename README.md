@@ -21,10 +21,10 @@
 
 ## ⚡ Summary
 *   ✅ **ZK-ML On-Chain Verification**: High-precision ZK-ML regime model verification on-chain.
-*   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet** ([0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)).
+*   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet** ([0x59fdE89B810812846ED167033C6d33fa425835E2](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)).
 *   ✅ **Continuous Execution**: Agent swarm running 24/7 — cycle count and uptime verifiable live at [`/api/agent/health`](https://obeliskq.app/api/agent/health).
 *   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.5%–2.5% based on regime and volatility).
-*   ✅ **Autonomous Liquidity Guard Rails**: Enforces a real-time Oracle-based price impact check. If AMM pool liquidity is too thin (such as USDY on Merchant Moe), the agent autonomously aborts the trade to protect user capital from slippage.
+*   ✅ **Autonomous Liquidity Guard Rails**: Enforces a real-time Oracle-based price impact check. If liquidity is too thin or price impact is high (using Odos V3 Aggregator), the agent autonomously aborts the trade to protect user capital (guarded at >0.5% price impact).
 *   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 *   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report at [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) — regime, allocation, live USDY/mETH APY, last rotation tx.
@@ -85,7 +85,7 @@ pnpm run dev:all
 Then open:
 - Frontend: http://<your-localhost-or-azure-ip>:5173
 - Backend Docs: http://<your-localhost-or-azure-ip>:8000/docs
-- Smart Contract Address: `0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD`
+- Smart Contract Address: `0x59fdE89B810812846ED167033C6d33fa425835E2`
 
 📊 Verify It's Working:
 Check agent is alive:
@@ -101,8 +101,8 @@ curl https://obeliskq.app/api/rwa/status
 Expected: Regime (Expansion/Consolidation/Contraction), current allocation, USDY APY
 
 Check smart contract on Mantle:
-- [ObeliskVault](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)
-- [ZKRegimeVerifier](https://explorer.mantle.xyz/address/0x2319ae743dF01506eAd1Fbc9398780885cCeF60d)
+- [ObeliskVault](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)
+- [ZKRegimeVerifier](https://explorer.mantle.xyz/address/0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D)
 
 ---
 
@@ -121,7 +121,7 @@ curl https://obeliskq.app/api/rwa/status
 Expected: Returns current regime (Expansion/Consolidation/Contraction), allocation %
 
 ### ✅ Test 3: Smart Contract is Verified
-Visit: [ObeliskVault on Mantle](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)
+Visit: [ObeliskVault on Mantle](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)
 Should show: ✓ Code is verified, ✓ Recent transactions, ✓ Read/Write functions work
 
 ### ✅ Test 4: Local Setup Works
@@ -156,7 +156,7 @@ Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is compe
 *   **Asset Category**: Dynamic yield optimization assets across Liquid Staking (mETH), Stable RWA (USDY), and baseline liquidity (WMNT).
 *   **The AI Role**: A 7-node autonomous swarm [main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L510-L796) coordinating HMM-inspired regime classifiers, risk score generators, and GPT-4o Azure OpenAI consensus logic to perform automated, zero-human-intervention rebalancing.
 *   **The Strategy (Regime Damping)**: Implements mathematical regime decoding ([main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L625-L722)) that detects Expansion, Consolidation, and Contraction states using smoothed Fear & Greed and price signals. Executes rebalancing trades under optimized control theory damping models (Underdamped, Optimal, Critically Damped) to maximize returns while mathematically mitigating whipsaw losses.
-*   **Mantle Integration**: Executes high-throughput swaps on-chain via the **Merchant Moe DEX**, fully protected by a prioritized Web3 [rpc_manager.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/rpc_manager.py) failover system, reentrancy guards, and an autonomous, 10-point delta circuit breaker.
+*   **Mantle Integration**: Executes high-throughput, optimized swaps on-chain via the **Odos V3 DEX Aggregator** (getting the best routing across Agni, FusionX, Merchant Moe, etc.), fully protected by a prioritized Web3 [rpc_manager.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/rpc_manager.py) failover system, reentrancy guards, and an autonomous, 10-point delta circuit breaker.
 *   **ZK-ML On-Chain Verification**: Fully integrated with on-chain ZK-proofs verifying the mathematical HMM regime-detection model directly on the Mantle Network, ensuring cryptographically verifiable agent execution.
 
 
@@ -175,8 +175,8 @@ This architecture ensures stable 24/7 operation on resource-constrained environm
 *   **Yield Auto-Compounding**: Native `compound()` logic harvests MNT rewards and re-invests them back into the target yield position.
 
 ### 🏦 Core Protocol Details (Mantle Mainnet)
-*   **ObeliskVault**: `0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD`
-*   **ZKRegimeVerifier**: `0x2319ae743dF01506eAd1Fbc9398780885cCeF60d`
+*   **ObeliskVault**: `0x59fdE89B810812846ED167033C6d33fa425835E2`
+*   **ZKRegimeVerifier**: `0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D`
 *   **ERC-8004 Agent ID**: `0x430cd09f8Ab6C1Ab50aa7f47FbAC94218cA65374`
     * *Verify on-chain manifest*: [`/api/agent/identity`](https://obeliskq.app/api/agent/identity)
 *   **Network**: Mantle Mainnet (Chain ID 5000)
@@ -210,7 +210,7 @@ graph TD
     Supervisor -->|setRegime| Vault
     Supervisor -->|rebalance| Vault
     
-    Vault -->|Swap| DEX[Merchant Moe DEX]
+    Vault -->|Swap| DEX[Odos V3 DEX Aggregator]
     DEX -->|Yield Assets| YieldPools[mETH / USDY / WMNT Pools]
     
     YieldPools -->|Real Yield| Vault
@@ -309,7 +309,7 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 - [x] **Reentrancy Guards**: OpenZeppelin `ReentrancyGuard` on all state-changing functions
 - [x] **Circuit Breaker**: Autonomous `pause()` if Q-Score drops 10pts in 60min
 - [x] **Deterministic Slippage**: 0.5%-2.5% dynamic protection (anti-MEV)
-- [x] **Verified on Mantle**: [Code is verified on explorer](https://explorer.mantle.xyz/address/0xE7F15F0FBaF7f928AC42D7352BBF68E9Ab94c6DD)
+- [x] **Verified on Mantle**: [Code is verified on explorer](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)
 
 ### Agent Safety ✅
 - [x] **Dual Consensus**: AI + deterministic math must both agree
