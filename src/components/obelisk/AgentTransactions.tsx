@@ -20,6 +20,30 @@ export function AgentTransactions() {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const getSwapDirection = (currentTx: Transaction, index: number, allTxs: Transaction[]) => {
+    const currentAction = currentTx.action;
+    
+    if (currentAction === 'HOLD' || currentAction === 'SYNC') {
+      return currentAction;
+    }
+    
+    // Find the previous successful/on-chain target asset by scanning older transactions
+    let sourceAsset = 'mETH'; // fallback default
+    for (let j = index + 1; j < allTxs.length; j++) {
+      const prevAction = allTxs[j].action;
+      if (prevAction && prevAction !== 'HOLD' && prevAction !== 'SYNC' && prevAction !== 'N/A') {
+        sourceAsset = prevAction;
+        break;
+      }
+    }
+    
+    if (sourceAsset === currentAction) {
+      return currentAction;
+    }
+    
+    return `${sourceAsset} → ${currentAction}`;
+  };
+
   const fetchTransactions = async () => {
     try {
       const res = await fetch("/api/agent/transactions");
@@ -125,9 +149,7 @@ export function AgentTransactions() {
                   </div>
                   <div className="col-span-1">
                     <span className={`text-[11px] font-bold px-2.5 py-1 rounded-md ${tx.action === 'HOLD' || tx.action === 'SYNC' ? 'bg-black/5 text-black/40' : 'bg-black/10 text-black whitespace-nowrap'}`}>
-                      {tx.action.includes("USDY") || tx.action === "ALLOCATE_USDY" ? "mETH → USDY" : 
-                       tx.action.includes("METH") || tx.action === "ALLOCATE_METH" ? "USDY → mETH" : 
-                       tx.action}
+                      {getSwapDirection(tx, i, transactions)}
                     </span>
                   </div>
                   <div className="col-span-1 text-center text-[14px] font-bold text-black tabular-nums" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
