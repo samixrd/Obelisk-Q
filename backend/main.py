@@ -1426,11 +1426,13 @@ async def supervisory_controller_node(state: AgentState):
         {
             "inputs": [
                 {"internalType": "address", "name": "targetToken", "type": "address"},
+                {"internalType": "address", "name": "swapTarget", "type": "address"},
+                {"internalType": "bytes",   "name": "swapCallData", "type": "bytes"},
                 {"internalType": "uint256", "name": "minAmountOut", "type": "uint256"}
             ],
             "name": "rebalance",
             "outputs": [],
-            "stateMutability": "nonpayable",
+            "stateMutability": "payable",
             "type": "function"
         },
         {
@@ -1523,74 +1525,101 @@ async def supervisory_controller_node(state: AgentState):
                     # ── Optional: Update regime on-chain if changed ──
                     current_regime = state["data"].get("regime", "Consolidation")
                     
-                    # ── SLIPPAGE PROTECTION: Calculate minAmountOut ──
+                    # ── SLIPPAGE PROTECTION & ODOS AGGREGATOR QUOTE ──
                     min_amount_out = 0
+                    odos_router = "0xD9F4e85489aDcd0baF0Cd63b4231c6Af58c26745"  # Odos V3 on Mantle
+                    swap_calldata = b""  # Will be set by Odos assemble
+                    
                     if target_token != ZERO_ADDR:
                         amount_in = balance - w3.to_wei(0.01, 'ether')
                         
-                        # ── WMNT WRAP: Skip router entirely (1:1 wrap, no swap needed) ──
+                        # ── WMNT WRAP: 1:1, no aggregator needed ──
                         if action == "WMNT":
                             min_amount_out = amount_in
+                            swap_calldata = b""  # contract handles wrap internally
                             logger.info(f"executor: WMNT wrap detected. 1:1 ratio. amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out}")
                         else:
+                            # ── ODOS V3 DEX AGGREGATOR QUOTE + ASSEMBLE ──
                             try:
-                                router_abi = [{"inputs":[{"internalType":"uint256","name":"amountIn","type":"uint256"},{"internalType":"address[]","name":"path","type":"address[]"}],"name":"getAmountsOut","outputs":[{"internalType":"uint256[]","name":"amounts","type":"uint256[]"}],"stateMutability":"view","type":"function"}]
-                                router_addr = "0xeaEE7EE68874218c3558b40063c42B82D3E7232a"
-                                router_contract = w3.eth.contract(address=w3.to_checksum_address(router_addr), abi=router_abi)
+                                import urllib.request
+                                import urllib.error
                                 
-                                path = [w3.to_checksum_address(WMNT_ADDRESS), w3.to_checksum_address(target_token)]
-                                
-                                # ── DYNAMIC SLIPPAGE ENGINE ──
+                                # Dynamic slippage based on regime
                                 volatility = state["data"].get("volatility", 1.0)
                                 if current_regime == "Contraction" or volatility > 2.0:
-                                    slippage_buffer = 0.025
+                                    slippage_pct = 2.5
                                 elif current_regime == "Consolidation":
-                                    slippage_buffer = 0.005
+                                    slippage_pct = 0.5
                                 else:
-                                    slippage_buffer = 0.01
+                                    slippage_pct = 1.0
 
-                                amounts_out = router_contract.functions.getAmountsOut(amount_in, path).call()
-                                actual_out = amounts_out[-1]
-                                min_amount_out = int(actual_out * (1 - slippage_buffer))
+                                # Step 1: Odos Quote
+                                quote_payload = json.dumps({
+                                    "chainId": 5000,
+                                    "inputTokens": [{"tokenAddress": "0x0000000000000000000000000000000000000000", "amount": str(amount_in)}],
+                                    "outputTokens": [{"tokenAddress": w3.to_checksum_address(target_token), "proportion": 1}],
+                                    "userAddr": w3.to_checksum_address(vault_address),
+                                    "slippageLimitPercent": slippage_pct,
+                                    "referralCode": 0,
+                                    "disableRFQs": True,
+                                    "compact": True
+                                }).encode()
                                 
-                                # ── PRICE IMPACT ORACLE VERIFICATION ──
-                                mnt_p = 0.65
-                                target_p = 1.0 if action == "USDY" else (3100.0 if action == "mETH" else 0.65)
-                                try:
-                                    import urllib.request
-                                    url_p = "https://api.coingecko.com/api/v3/simple/price?ids=mantle,ethereum,ondo-us-dollar-yield&vs_currencies=usd"
-                                    req_p = urllib.request.Request(url_p, headers={'User-Agent': 'Mozilla/5.0'})
-                                    with urllib.request.urlopen(req_p, timeout=3.0) as resp_p:
-                                        p_data = json.loads(resp_p.read().decode())
-                                        if "mantle" in p_data:
-                                            mnt_p = float(p_data["mantle"].get("usd", 0.65))
-                                        if action == "USDY" and "ondo-us-dollar-yield" in p_data:
-                                            target_p = float(p_data["ondo-us-dollar-yield"].get("usd", 1.0))
-                                        elif action == "mETH" and "ethereum" in p_data:
-                                            target_p = float(p_data["ethereum"].get("usd", 3100.0))
-                                except Exception as pe_err:
-                                    logger.warning(f"executor: price impact check - failed to fetch prices: {pe_err}. using fallback prices.")
-
-                                amount_in_ether = float(w3.from_wei(amount_in, 'ether'))
-                                expected_out_ether = amount_in_ether * (mnt_p / target_p) if target_p > 0 else 0.0
-                                expected_out_wei = int(expected_out_ether * 1e18)
-
-                                price_impact = 1.0 - (actual_out / expected_out_wei) if expected_out_wei > 0 else 0.0
-                                logger.info(f"executor: slippage check - amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out} expectedOut={expected_out_ether} actualOut={actual_out/1e18} priceImpact={price_impact*100:.2f}%")
-
-                                # Max 8% price impact allowed to protect users from illiquid pools
-                                if price_impact > 0.08:
-                                    logger.error(f"executor: price impact too high ({price_impact*100:.2f}%) due to thin liquidity. expected {expected_out_ether} but got {actual_out/1e18}. aborting swap.")
-                                    return f"aborting|executor: price impact too high ({price_impact*100:.2f}%) due to low pool liquidity. rebalance to {action} aborted to protect funds."
-                            except Exception as e:
-                                logger.warning(f"executor: quote failed, using 0 as fallback (risky): {e}")
-                                min_amount_out = 0
+                                quote_req = urllib.request.Request(
+                                    "https://api.odos.xyz/sor/quote/v2",
+                                    data=quote_payload,
+                                    headers={"Content-Type": "application/json", "User-Agent": "ObeliskVault/1.0"},
+                                    method="POST"
+                                )
+                                with urllib.request.urlopen(quote_req, timeout=8.0) as resp_q:
+                                    quote_data = json.loads(resp_q.read().decode())
+                                
+                                path_id = quote_data.get("pathId")
+                                out_amounts = quote_data.get("outAmounts", ["0"])
+                                actual_out = int(out_amounts[0]) if out_amounts else 0
+                                price_impact_pct = float(quote_data.get("priceImpact", 0.0))
+                                
+                                logger.info(f"executor: Odos quote - pathId={path_id} amountIn={w3.from_wei(amount_in,'ether')} actualOut={actual_out/1e18:.6f} {action} priceImpact={price_impact_pct:.2f}%")
+                                
+                                # Price impact guard (>8% = abort)
+                                if abs(price_impact_pct) > 8.0:
+                                    logger.error(f"executor: Odos price impact too high ({price_impact_pct:.2f}%). aborting swap to protect funds.")
+                                    return f"aborting|executor: price impact too high ({price_impact_pct:.2f}%) via Odos. rebalance to {action} aborted to protect funds."
+                                
+                                # Step 2: Odos Assemble — get actual calldata
+                                assemble_payload = json.dumps({
+                                    "userAddr": w3.to_checksum_address(vault_address),
+                                    "pathId": path_id,
+                                    "simulate": False
+                                }).encode()
+                                assemble_req = urllib.request.Request(
+                                    "https://api.odos.xyz/sor/assemble",
+                                    data=assemble_payload,
+                                    headers={"Content-Type": "application/json", "User-Agent": "ObeliskVault/1.0"},
+                                    method="POST"
+                                )
+                                with urllib.request.urlopen(assemble_req, timeout=8.0) as resp_a:
+                                    assemble_data = json.loads(resp_a.read().decode())
+                                
+                                tx_data = assemble_data.get("transaction", {})
+                                calldata_hex = tx_data.get("data", "0x")
+                                swap_calldata = bytes.fromhex(calldata_hex.removeprefix("0x"))
+                                
+                                min_amount_out = int(actual_out * (1 - slippage_pct / 100))
+                                logger.info(f"executor: Odos assemble success. calldata_len={len(swap_calldata)} minAmountOut={min_amount_out/1e18:.6f} {action}")
+                                
+                            except Exception as odos_err:
+                                logger.error(f"executor: Odos API failed: {odos_err}. aborting swap — will NOT fall back to bad pool.")
+                                return f"aborting|executor: Odos aggregator unavailable ({str(odos_err)[:60]}). swap to {action} skipped to protect funds."
 
                     # ── DYNAMIC GAS ESTIMATION ──
                     target_token_checksum = w3.to_checksum_address(target_token) if target_token != ZERO_ADDR else ZERO_ADDR
+                    odos_router_checksum = w3.to_checksum_address(odos_router)
                     try:
                         gas_estimate = contract.functions.rebalance(
-                            target_token_checksum, 
+                            target_token_checksum,
+                            odos_router_checksum,
+                            swap_calldata,
                             min_amount_out
                         ).estimate_gas({
                             'from': account.address,
@@ -1600,8 +1629,8 @@ async def supervisory_controller_node(state: AgentState):
                         logger.info(f"executor: dynamic gas estimation successful. limit={estimated_gas_limit}")
                     except Exception as ge:
                         logger.warning(f"executor: gas estimation failed ({ge}). falling back to conservative limit.")
-                        # Emergency unwind and swap usually require more gas
-                        estimated_gas_limit = 500000 if action != "WMNT" else 150000
+                        # Odos swaps need more gas than simple wraps
+                        estimated_gas_limit = 600000 if action not in ("WMNT", "UNWIND") else 200000
 
                     required_gas_fee = estimated_gas_limit * gas_price
                     logger.info(f"executor: rpc check - nonce={nonce}, gas_price={w3.from_wei(gas_price, 'gwei')} gwei, agent_balance={w3.from_wei(agent_balance, 'ether')} MNT, gas_limit={estimated_gas_limit}")
@@ -1611,7 +1640,9 @@ async def supervisory_controller_node(state: AgentState):
                         return f"aborting|executor: insufficient gas in agent wallet {account.address} ({w3.from_wei(agent_balance, 'ether')} MNT). Please fund this address."
 
                     tx = contract.functions.rebalance(
-                        target_token_checksum, 
+                        target_token_checksum,
+                        odos_router_checksum,
+                        swap_calldata,
                         min_amount_out
                     ).build_transaction({
                         'from': account.address,

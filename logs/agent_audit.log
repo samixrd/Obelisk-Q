@@ -16,3 +16,15 @@
 2026-05-21 06:13:17,999 - INFO - [local] api/stats: live vault AUM = 1.1228 MNT
 2026-05-21 06:25:44,089 - INFO - [local] db_manager: schema verified and WAL mode enabled
 2026-05-21 06:25:46,750 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT
+2026-05-31 03:19:11,532 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-31 03:19:22,391 - WARNING - [local] RPC health check failed for https://rpc.ankr.com/mantle: 403 Client Error: Forbidden for url: https://rpc.ankr.com/mantle
+2026-05-31 03:19:22,773 - INFO - [local] get_w3_with_failover: Connected to https://rpc.mantle.xyz on attempt 1
+2026-05-31 03:19:24,120 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT
+2026-05-31 06:04:10,274 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-05-31 06:04:18,188 - WARNING - [local] RPC health check failed for https://rpc.ankr.com/mantle: 403 Client Error: Forbidden for url: https://rpc.ankr.com/mantle
+2026-05-31 06:04:18,360 - INFO - [local] get_w3_with_failover: Connected to https://rpc.mantle.xyz on attempt 1
+2026-05-31 06:04:22,562 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT
+2026-06-01 00:44:06,143 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-06-01 00:44:15,827 - WARNING - [local] RPC health check failed for https://rpc.ankr.com/mantle: 403 Client Error: Forbidden for url: https://rpc.ankr.com/mantle
+2026-06-01 00:44:16,210 - INFO - [local] get_w3_with_failover: Connected to https://rpc.mantle.xyz on attempt 1
+2026-06-01 00:44:18,532 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT

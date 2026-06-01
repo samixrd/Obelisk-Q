@@ -154,7 +154,12 @@ contract ObeliskVault {
 
     // ── Agent Actions ─────────────────────────────────────────────────────
 
-    function rebalance(address targetToken, uint256 minAmountOut) external payable onlyAgent nonReentrant {
+    function rebalance(
+        address targetToken, 
+        address swapTarget, 
+        bytes calldata swapCallData, 
+        uint256 minAmountOut
+    ) external payable onlyAgent nonReentrant {
         if (targetToken == address(0)) {
             // Unwind everything to MNT
             for (uint i = 0; i < allowedAssets.length; i++) {
@@ -182,18 +187,19 @@ contract ObeliskVault {
                 require(success, "WMNT wrap failed");
                 emit Rebalanced(targetToken, amountToSwap, amountToSwap);
             } else {
-                address[] memory path = new address[](2);
-                path[0] = WMNT;
-                path[1] = targetToken;
+                require(swapTarget != address(0), "Invalid swap target");
                 
-                uint[] memory amounts = ROUTER.swapExactNativeForTokens{value: amountToSwap}(
-                    minAmountOut, 
-                    path, 
-                    address(this), 
-                    block.timestamp + 600
-                );
+                uint256 balanceBefore = IERC20(targetToken).balanceOf(address(this));
+                
+                // Call the aggregator (Odos router) forwarding native MNT as value
+                (bool success, ) = swapTarget.call{value: amountToSwap}(swapCallData);
+                require(success, "Swap execution failed");
+                
+                uint256 balanceAfter = IERC20(targetToken).balanceOf(address(this));
+                uint256 amountReceived = balanceAfter - balanceBefore;
+                require(amountReceived >= minAmountOut, "Slippage: insufficient output");
 
-                emit Rebalanced(targetToken, amountToSwap, amounts[1]);
+                emit Rebalanced(targetToken, amountToSwap, amountReceived);
             }
         }
     }
