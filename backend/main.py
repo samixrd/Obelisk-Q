@@ -1550,8 +1550,38 @@ async def supervisory_controller_node(state: AgentState):
                                     slippage_buffer = 0.01
 
                                 amounts_out = router_contract.functions.getAmountsOut(amount_in, path).call()
-                                min_amount_out = int(amounts_out[-1] * (1 - slippage_buffer))
-                                logger.info(f"executor: slippage check - amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out}")
+                                actual_out = amounts_out[-1]
+                                min_amount_out = int(actual_out * (1 - slippage_buffer))
+                                
+                                # ── PRICE IMPACT ORACLE VERIFICATION ──
+                                mnt_p = 0.65
+                                target_p = 1.0 if action == "USDY" else (3100.0 if action == "mETH" else 0.65)
+                                try:
+                                    import urllib.request
+                                    url_p = "https://api.coingecko.com/api/v3/simple/price?ids=mantle,ethereum,ondo-us-dollar-yield&vs_currencies=usd"
+                                    req_p = urllib.request.Request(url_p, headers={'User-Agent': 'Mozilla/5.0'})
+                                    with urllib.request.urlopen(req_p, timeout=3.0) as resp_p:
+                                        p_data = json.loads(resp_p.read().decode())
+                                        if "mantle" in p_data:
+                                            mnt_p = float(p_data["mantle"].get("usd", 0.65))
+                                        if action == "USDY" and "ondo-us-dollar-yield" in p_data:
+                                            target_p = float(p_data["ondo-us-dollar-yield"].get("usd", 1.0))
+                                        elif action == "mETH" and "ethereum" in p_data:
+                                            target_p = float(p_data["ethereum"].get("usd", 3100.0))
+                                except Exception as pe_err:
+                                    logger.warning(f"executor: price impact check - failed to fetch prices: {pe_err}. using fallback prices.")
+
+                                amount_in_ether = float(w3.from_wei(amount_in, 'ether'))
+                                expected_out_ether = amount_in_ether * (mnt_p / target_p) if target_p > 0 else 0.0
+                                expected_out_wei = int(expected_out_ether * 1e18)
+
+                                price_impact = 1.0 - (actual_out / expected_out_wei) if expected_out_wei > 0 else 0.0
+                                logger.info(f"executor: slippage check - amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out} expectedOut={expected_out_ether} actualOut={actual_out/1e18} priceImpact={price_impact*100:.2f}%")
+
+                                # Max 8% price impact allowed to protect users from illiquid pools
+                                if price_impact > 0.08:
+                                    logger.error(f"executor: price impact too high ({price_impact*100:.2f}%) due to thin liquidity. expected {expected_out_ether} but got {actual_out/1e18}. aborting swap.")
+                                    return f"aborting|executor: price impact too high ({price_impact*100:.2f}%) due to low pool liquidity. rebalance to {action} aborted to protect funds."
                             except Exception as e:
                                 logger.warning(f"executor: quote failed, using 0 as fallback (risky): {e}")
                                 min_amount_out = 0
@@ -2701,30 +2731,36 @@ async def sync_current_position():
     try:
         w3 = rpc_manager.get_connection()
         vault_addr = os.getenv("VAULT_ADDRESS")
+        if not vault_addr:
+            return
+
+        vault_checksum = w3.to_checksum_address(vault_addr)
 
         meth_contract = w3.eth.contract(address=w3.to_checksum_address(METH_ADDRESS), abi=ERC20_ABI)
-        meth_balance = meth_contract.functions.balanceOf(w3.to_checksum_address(vault_addr)).call()
-        if meth_balance > 0:
-            CURRENT_POSITION = "mETH"
-            logger.info(f"sync_current_position: CURRENT_POSITION=mETH")
-            return
+        meth_balance = meth_contract.functions.balanceOf(vault_checksum).call()
+        meth_usd = (meth_balance / 1e18) * 3400.0
 
         usdy_contract = w3.eth.contract(address=w3.to_checksum_address(USDY_ADDRESS), abi=ERC20_ABI)
-        usdy_balance = usdy_contract.functions.balanceOf(w3.to_checksum_address(vault_addr)).call()
-        if usdy_balance > 0:
-            CURRENT_POSITION = "USDY"
-            logger.info(f"sync_current_position: CURRENT_POSITION=USDY")
-            return
+        usdy_balance = usdy_contract.functions.balanceOf(vault_checksum).call()
+        usdy_usd = (usdy_balance / 1e18) * 1.0
 
         wmnt_contract = w3.eth.contract(address=w3.to_checksum_address(WMNT_ADDRESS), abi=ERC20_ABI)
-        wmnt_balance = wmnt_contract.functions.balanceOf(w3.to_checksum_address(vault_addr)).call()
-        if wmnt_balance > 0:
-            CURRENT_POSITION = "WMNT"
-            logger.info(f"sync_current_position: CURRENT_POSITION=WMNT")
-            return
+        wmnt_balance = wmnt_contract.functions.balanceOf(vault_checksum).call()
+        wmnt_usd = (wmnt_balance / 1e18) * 0.65
 
-        CURRENT_POSITION = "MNT"
-        logger.info(f"sync_current_position: CURRENT_POSITION=MNT")
+        # Check if they are all very low (e.g. less than 0.05 USD total value)
+        if meth_usd < 0.05 and usdy_usd < 0.05 and wmnt_usd < 0.05:
+            CURRENT_POSITION = "MNT"
+        else:
+            # Select position with the highest USD value
+            values = {
+                "mETH": meth_usd,
+                "USDY": usdy_usd,
+                "WMNT": wmnt_usd
+            }
+            CURRENT_POSITION = max(values, key=values.get)
+
+        logger.info(f"sync_current_position: CURRENT_POSITION={CURRENT_POSITION} (mETH_usd={meth_usd:.4f}, usdy_usd={usdy_usd:.4f}, wmnt_usd={wmnt_usd:.4f})")
     except Exception as e:
         logger.warning(f"sync_current_position failed: {e}")
 
@@ -3065,7 +3101,7 @@ async def get_live_metrics():
         try:
             usdy_contract = w3.eth.contract(address=w3.to_checksum_address(USDY_ADDRESS), abi=ERC20_ABI)
             usdy_bal_raw = usdy_contract.functions.balanceOf(vault_addr).call()
-            usdy_balance_ether = float(usdy_bal_raw) / 1e6  # USDY has 6 decimals
+            usdy_balance_ether = float(usdy_bal_raw) / 1e18  # USDY has 18 decimals on Mantle
         except Exception as e_usdy:
             logger.warning(f"Failed to fetch live USDY balance: {e_usdy}")
             
