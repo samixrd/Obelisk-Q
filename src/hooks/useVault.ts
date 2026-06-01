@@ -83,6 +83,7 @@ export interface VaultState {
   registerExternalWallet: (addr: string) => Promise<boolean>;
   withdrawToExternal: () => Promise<void>;
   withdrawPartialToExternal: (amountMnt: string) => Promise<void>;
+  sendMnt: (toAddress: string, amountMnt: string) => Promise<void>;
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -919,6 +920,149 @@ export function useVault(): VaultState {
     }
   }, [address, refreshStats, saveTx, getExplorerUrl, activeWallet, vaultStats?.userBalance]);
 
+  // ── Send MNT ─────────────────────────────────────────────────────────────
+  const sendMnt = useCallback(async (toAddress: string, amountMnt: string) => {
+    const eth = (window as Window & { ethereum?: Record<string, unknown> }).ethereum;
+    if (!address) { await connect(); return; }
+
+    const onCorrectNetwork = await checkAndSwitchNetwork();
+    if (!onCorrectNetwork) {
+      toast({
+        title: "Wrong Network",
+        description: "Please switch to Mantle Mainnet to continue.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTxState("waiting");
+    setTxError(null);
+    setTxHash(null);
+
+    try {
+      const amountWei = parseMntToWei(amountMnt);
+      let hash;
+      const walletProvider = activeWallet ? await activeWallet.getEthereumProvider() : null;
+      const provider = walletProvider 
+        ? new BrowserProvider(walletProvider as any) 
+        : (eth ? new BrowserProvider(eth as any) : null);
+
+      if (provider) {
+        const signer = await provider.getSigner();
+        const txResp = await signer.sendTransaction({
+          to: toAddress,
+          value: amountWei,
+        });
+        hash = txResp.hash;
+      } else if (eth) {
+        hash = await (eth.request as Function)({
+          method: "eth_sendTransaction",
+          params: [{
+            from: address,
+            to: toAddress,
+            value: "0x" + amountWei.toString(16),
+          }],
+        }) as string;
+      } else {
+        throw new Error("No provider found to send transaction.");
+      }
+
+      setTxHash(hash);
+      setTxState("pending");
+      setConfirmations(0);
+
+      toast({
+        title: "Transfer submitted",
+        description: `${hash.slice(0, 10)}...${hash.slice(-8)} ↗`,
+      });
+
+      saveTx({
+        id: hash,
+        type: "Withdraw", // Withdraw type matches native out-of-wallet transactions well
+        amount: `${amountMnt} MNT`,
+        status: "Pending",
+        timestamp: new Date(),
+        hash,
+      });
+
+      // poll for receipt and confirmations
+      let isFinalized = false;
+      const interval = setInterval(async () => {
+        if (isFinalized) {
+          clearInterval(interval);
+          return;
+        }
+
+        try {
+          const receipt = await rpcCall("eth_getTransactionReceipt", [hash]);
+
+          if (receipt) {
+            if (receipt.status === "0x0" || receipt.status === 0 || receipt.status === "0") {
+              isFinalized = true;
+              setTxState("error");
+              setTxError("Transaction reverted on-chain");
+              toast({
+                title: "Transaction failed ✕",
+                description: "The transaction was reverted. Click to view on Explorer.",
+                variant: "destructive",
+                onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+              } as any);
+              clearInterval(interval);
+              return;
+            }
+
+            const currentBlockRaw = await rpcCall("eth_blockNumber", []);
+            
+            if (currentBlockRaw) {
+              const currentBlock = BigInt(currentBlockRaw);
+              const receiptBlock = BigInt(receipt.blockNumber);
+              const confs = Number(currentBlock - receiptBlock + 1n);
+              setConfirmations(confs);
+
+              if (confs >= 1 && !isFinalized) {
+                isFinalized = true;
+                setTxState("success");
+                toast({
+                  title: "Transfer confirmed ✓",
+                  description: "View on Mantlescan ↗",
+                  onClick: () => window.open(getExplorerUrl(hash), "_blank"),
+                } as any);
+                
+                saveTx({
+                  id: hash,
+                  type: "Withdraw",
+                  amount: `${amountMnt} MNT`,
+                  status: "Confirmed",
+                  timestamp: new Date(),
+                  hash,
+                });
+
+                await refreshStats(true);
+                clearInterval(interval);
+              }
+            }
+          }
+        } catch (e) { console.error("Polling error", e); }
+      }, 3000);
+
+    } catch (err: any) {
+      setTxState("error");
+      const isCancelled = err?.code === 4001;
+      const msg = err?.message ?? "Transaction failed";
+      setTxError(msg);
+      
+      toast({
+        title: isCancelled ? "Transaction Cancelled" : "Transaction failed",
+        description: isCancelled 
+          ? "Request was rejected." 
+          : "View details on Explorer ↗",
+        variant: isCancelled ? "default" : "destructive",
+        onClick: () => !isCancelled && txHash && window.open(getExplorerUrl(txHash), "_blank"),
+      } as any);
+    }
+  }, [address, connect, checkAndSwitchNetwork, activeWallet, saveTx, getExplorerUrl, refreshStats]);
+
+
   useEffect(() => {
     refreshStats(true); // force first load when hook mounts or address updates
     const id = setInterval(refreshStats, 8000);
@@ -1509,6 +1653,7 @@ return {
   externalWallet,
   registerExternalWallet,
   withdrawToExternal,
-  withdrawPartialToExternal
+  withdrawPartialToExternal,
+  sendMnt
 };
 }

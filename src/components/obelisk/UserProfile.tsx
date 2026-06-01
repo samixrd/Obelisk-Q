@@ -27,9 +27,13 @@ interface UserProfileProps {
 
 export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
   const { walletAddress } = useAuth();
-  const { vaultStats } = useVault();
+  const { vaultStats, sendMnt, txState } = useVault();
   const [isOpen, setIsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showSendForm, setShowSendForm] = useState(false);
+  const [recipientAddress, setRecipientAddress] = useState("");
+  const [sendAmount, setSendAmount] = useState("");
+  const [sendError, setSendError] = useState("");
   const menuRef = useRef<HTMLDivElement>(null);
 
   const isWalletConnected = !!walletAddress;
@@ -137,10 +141,124 @@ export function UserProfile({ onSignOut, onConnectWallet }: UserProfileProps) {
 
             <button
               onClick={() => {
+                setShowSendForm(!showSendForm);
+                setSendError("");
+              }}
+              className="w-full py-2.5 bg-black/5 hover:bg-black/10 text-black/80 text-[11px] uppercase tracking-[0.15em] font-bold rounded-xl transition-all border border-black/5 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/>
+              </svg>
+              {showSendForm ? "Cancel Send" : "Send MNT"}
+            </button>
+
+            {showSendForm && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="flex flex-col gap-3 pt-1"
+              >
+                <div className="flex flex-col gap-1">
+                  <label className="text-[9px] uppercase tracking-[0.12em] text-black/40 font-bold">Recipient Address</label>
+                  <input
+                    type="text"
+                    value={recipientAddress}
+                    onChange={(e) => {
+                      setRecipientAddress(e.target.value);
+                      setSendError("");
+                    }}
+                    placeholder="0x..."
+                    className="w-full px-3 py-2 text-[12px] bg-black/[0.03] border border-black/10 rounded-xl font-mono focus:outline-none focus:border-black/30 placeholder:text-black/30 text-black"
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <div className="flex justify-between items-center">
+                    <label className="text-[9px] uppercase tracking-[0.12em] text-black/40 font-bold">Amount (MNT)</label>
+                    <button
+                      onClick={() => {
+                        const bal = parseFloat(vaultStats?.walletBalance || "0");
+                        // Deduct a tiny buffer (0.005 MNT) for gas
+                        const maxVal = Math.max(0, bal - 0.005);
+                        setSendAmount(maxVal.toFixed(4));
+                        setSendError("");
+                      }}
+                      className="text-[9px] font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-0.5 rounded-md transition-colors cursor-pointer"
+                    >
+                      MAX
+                    </button>
+                  </div>
+                  <input
+                    type="number"
+                    step="any"
+                    value={sendAmount}
+                    onChange={(e) => {
+                      setSendAmount(e.target.value);
+                      setSendError("");
+                    }}
+                    placeholder="0.0"
+                    className="w-full px-3 py-2 text-[12px] bg-black/[0.03] border border-black/10 rounded-xl font-mono focus:outline-none focus:border-black/30 placeholder:text-black/30 text-black"
+                  />
+                </div>
+
+                {sendError && (
+                  <p className="text-[10px] text-red-500 font-semibold leading-snug">{sendError}</p>
+                )}
+
+                <button
+                  disabled={txState === "waiting" || txState === "pending"}
+                  onClick={async () => {
+                    if (!recipientAddress.startsWith("0x") || recipientAddress.length !== 42) {
+                      setSendError("Please enter a valid 42-character hex address.");
+                      return;
+                    }
+                    const amt = parseFloat(sendAmount);
+                    if (isNaN(amt) || amt <= 0) {
+                      setSendError("Please enter a valid amount greater than 0.");
+                      return;
+                    }
+                    const walletBal = parseFloat(vaultStats?.walletBalance || "0");
+                    if (amt > walletBal) {
+                      setSendError(`Amount exceeds wallet balance (${vaultStats?.walletBalance} MNT).`);
+                      return;
+                    }
+
+                    try {
+                      setSendError("");
+                      await sendMnt(recipientAddress, sendAmount);
+                      setRecipientAddress("");
+                      setSendAmount("");
+                      setShowSendForm(false);
+                    } catch (err: any) {
+                      setSendError(err.message || "Transfer failed.");
+                    }
+                  }}
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white text-[11px] uppercase tracking-[0.15em] font-bold rounded-xl transition-all shadow-md shadow-blue-500/10 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {txState === "waiting" || txState === "pending" ? (
+                    <span className="flex items-center gap-1">
+                      <svg className="animate-spin -ml-1 mr-1 h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Sending...
+                    </span>
+                  ) : (
+                    "Confirm Send"
+                  )}
+                </button>
+              </motion.div>
+            )}
+
+            <div className="h-px bg-black/[0.04]" />
+
+            <button
+              onClick={() => {
                 setIsOpen(false);
                 if (onSignOut) onSignOut();
               }}
-              className="w-full py-3 bg-red-50 hover:bg-red-100/80 text-red-600 text-[11px] uppercase tracking-[0.15em] font-bold rounded-xl transition-all border border-red-200/30"
+              className="w-full py-3 bg-red-50 hover:bg-red-100/80 text-red-600 text-[11px] uppercase tracking-[0.15em] font-bold rounded-xl transition-all border border-red-200/30 cursor-pointer"
             >
               Sign Out
             </button>
