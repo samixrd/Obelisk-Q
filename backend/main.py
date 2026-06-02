@@ -1543,6 +1543,8 @@ async def supervisory_controller_node(state: AgentState):
                             try:
                                 import urllib.request
                                 import urllib.error
+                                import time
+                                import random
                                 
                                 # Dynamic slippage based on regime
                                 volatility = state["data"].get("volatility", 1.0)
@@ -1552,8 +1554,13 @@ async def supervisory_controller_node(state: AgentState):
                                     slippage_pct = 0.5
                                 else:
                                     slippage_pct = 1.0
+                                
+                                odos_api_key = os.getenv("ODOS_API_KEY")
+                                headers = {"Content-Type": "application/json", "User-Agent": "ObeliskVault/1.0"}
+                                if odos_api_key:
+                                    headers["x-api-key"] = odos_api_key
 
-                                # Step 1: Odos Quote
+                                # Step 1: Odos Quote with Retry/Backoff
                                 quote_payload = json.dumps({
                                     "chainId": 5000,
                                     "inputTokens": [{"tokenAddress": "0x0000000000000000000000000000000000000000", "amount": str(amount_in)}],
@@ -1564,18 +1571,56 @@ async def supervisory_controller_node(state: AgentState):
                                     "disableRFQs": True,
                                     "compact": True
                                 }).encode()
-                                
-                                quote_req = urllib.request.Request(
-                                    "https://api.odos.xyz/sor/quote/v2",
-                                    data=quote_payload,
-                                    headers={"Content-Type": "application/json", "User-Agent": "ObeliskVault/1.0"},
-                                    method="POST"
-                                )
-                                with urllib.request.urlopen(quote_req, timeout=8.0) as resp_q:
-                                    quote_data = json.loads(resp_q.read().decode())
+
+                                quote_data = None
+                                for attempt in range(5):
+                                    try:
+                                        quote_req = urllib.request.Request(
+                                            "https://api.odos.xyz/sor/quote/v2",
+                                            data=quote_payload,
+                                            headers=headers,
+                                            method="POST"
+                                        )
+                                        with urllib.request.urlopen(quote_req, timeout=10.0) as resp_q:
+                                            quote_data = json.loads(resp_q.read().decode())
+                                        break
+                                    except urllib.error.HTTPError as err:
+                                        if err.code == 429 and attempt < 4:
+                                            sleep_time = (2 ** attempt) + random.uniform(0.5, 1.5)
+                                            logger.warning(f"executor: Odos Quote 429 rate limit hit. Retrying in {sleep_time:.2f}s... (attempt {attempt + 1}/5)")
+                                            time.sleep(sleep_time)
+                                            continue
+                                        raise err
                                 
                                 path_id = quote_data.get("pathId")
                                 out_amounts = quote_data.get("outAmounts", ["0"])
+                                
+                                assemble_payload = json.dumps({
+                                    "userAddr": w3.to_checksum_address(vault_address),
+                                    "pathId": path_id,
+                                    "simulate": False
+                                }).encode()
+
+                                assemble_data = None
+                                for attempt in range(5):
+                                    try:
+                                        assemble_req_retry = urllib.request.Request(
+                                            "https://api.odos.xyz/sor/assemble",
+                                            data=assemble_payload,
+                                            headers=headers,
+                                            method="POST"
+                                        )
+                                        with urllib.request.urlopen(assemble_req_retry, timeout=10.0) as resp_a:
+                                            assemble_data = json.loads(resp_a.read().decode())
+                                        break
+                                    except urllib.error.HTTPError as err:
+                                        if err.code == 429 and attempt < 4:
+                                            sleep_time = (2 ** attempt) + random.uniform(0.5, 1.5)
+                                            logger.warning(f"executor: Odos Assemble 429 rate limit hit. Retrying in {sleep_time:.2f}s... (attempt {attempt + 1}/5)")
+                                            time.sleep(sleep_time)
+                                            continue
+                                        raise err
+
                                 actual_out = int(out_amounts[0]) if out_amounts else 0
                                 price_impact_pct = float(quote_data.get("priceImpact", 0.0))
                                 
@@ -1585,21 +1630,6 @@ async def supervisory_controller_node(state: AgentState):
                                 if abs(price_impact_pct) > 0.5:
                                     logger.error(f"executor: Odos price impact too high ({price_impact_pct:.2f}%). aborting swap to protect funds.")
                                     return f"aborting|executor: price impact too high ({price_impact_pct:.2f}%) via Odos. rebalance to {action} aborted to protect funds."
-                                
-                                # Step 2: Odos Assemble — get actual calldata
-                                assemble_payload = json.dumps({
-                                    "userAddr": w3.to_checksum_address(vault_address),
-                                    "pathId": path_id,
-                                    "simulate": False
-                                }).encode()
-                                assemble_req = urllib.request.Request(
-                                    "https://api.odos.xyz/sor/assemble",
-                                    data=assemble_payload,
-                                    headers={"Content-Type": "application/json", "User-Agent": "ObeliskVault/1.0"},
-                                    method="POST"
-                                )
-                                with urllib.request.urlopen(assemble_req, timeout=8.0) as resp_a:
-                                    assemble_data = json.loads(resp_a.read().decode())
                                 
                                 tx_data = assemble_data.get("transaction", {})
                                 calldata_hex = tx_data.get("data", "0x")
