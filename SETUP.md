@@ -35,6 +35,7 @@ Create `backend/.env`:
 MANTLE_RPC_URL=https://rpc.mantle.xyz
 OPENAI_API_KEY=<your_key>
 DATABASE_URL=sqlite:///./test.db
+ODOS_API_KEY=<your_odos_api_key>  # Required! Get free at https://odos.xyz
 ```
 
 ### 4. Start Everything

@@ -156,6 +156,7 @@ To ensure maximum security, the backend separates public parameters from cryptog
 | `VAULT_ADDRESS` | 🌐 Public | Yes | Contract address of the deployed `ObeliskVault` (`0x59fdE89B8108...`). |
 | `DB_PATH` | 🌐 Public | Yes | The path of the local storage SQLite file (defaults to `obelisk_memory.db`). |
 | `REDIS_URL` | 🔒 Secret | No | Redis connection URI required only for cluster leader-elections and state sharing. |
+| `ODOS_API_KEY` | 🔒 Secret | Yes | API key for the Odos V3 DEX Aggregator used for all rebalance swaps. Register free at [odos.xyz](https://odos.xyz). Without this, swaps will fail with HTTP 429 rate limit errors. |
 
 ### 3.2 Frontend Environment Config (`.env.local`)
 
