@@ -142,22 +142,22 @@ Should see:
 
 ---
 
-## 🏆 Hackathon Submission: AI & RWA Track And AI · Trading & Strategy Track
-Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is competing for the **Grand Champion** title.
+## 🏆 Hackathon Submission Details
+Obelisk Q is submitted to **two tracks** and targeting key awards on the Mantle Network:
+1. **AI & RWA Track** (Application Path)
+2. **AI & Trading & Strategy Track** (DeFi Strategy Path)
+3. 🏅 Targeting: **Grand Champion (Grand Prize)** and **Best UI/UX Design**
 
-### 📝 The Pitch: Bringing Intelligence to RWAs
-*   **Asset Category**: Real World Assets (USDY - US Treasury backed), Liquid Staking Tokens (mETH), and Wrapped MNT (WMNT).
-*   **The AI Role**: A 7-node autonomous pipeline (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital between stable RWA yield, stable Mantle yield (WMNT), and aggressive staking growth without human intervention.
-*   **The Strategy (RWA Safe Harbor)**: Captures "Growth Alpha" with mETH during expansions, and autonomously rotates into **USDY (US Treasury backed)** as a safe harbor during DeFi volatility events to protect user capital while retaining institutional-grade yield.
-*   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
+---
+
+### 📝 The Unified Pitch: Intelligent Sovereignty & Yield Optimization
+*   **Asset Category**: Real World Assets (**USDY** - US Treasury backed by Ondo Finance), Liquid Staking Tokens (**mETH** - Mantle LSP), and baseline liquidity (**WMNT** - Wrapped MNT).
+*   **The AI Role (7-Node Swarm)**: A 7-node autonomous pipeline/swarm (LangGraph + Python [main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L510-L796)) acts as a "Sovereign Navigator," coordinating HMM-inspired regime classifiers, risk score generators, and GPT-4o Azure OpenAI consensus logic to perform automated, zero-human-intervention rebalancing.
+*   **The Strategy (RWA Safe Harbor & Regime Damping)**: Implements mathematical regime decoding ([main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L625-L722)) that detects Expansion, Consolidation, and Contraction states. It captures "Growth Alpha" with mETH during expansions, and autonomously rotates into USDY (US Treasury backed) as a safe harbor during DeFi volatility/contraction events to protect user capital. It executes trades under optimized control theory damping models (Underdamped, Optimal, Critically Damped) to maximize returns while mathematically mitigating whipsaw losses.
+*   **Mantle Integration & High-Throughput Swaps**: Executes high-throughput, optimized swaps on-chain via the **Odos V3 DEX Aggregator** (getting the best routing across Agni, FusionX, Merchant Moe, etc.), fully protected by a prioritized Web3 [rpc_manager.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/rpc_manager.py) failover system, reentrancy guards, and an autonomous, 10-point delta circuit breaker. Deployed and verified on **Mantle Mainnet**.
 *   **ZK-ML On-Chain Verification**: Successfully implemented! Cryptographic ZK-ML proofs are generated for all regime decisions and verified on-chain on Mantle, transforming "Trust our AI" into mathematically verifiable "Verify our Math" execution.
+*   **Best UI/UX Target (Gasless UX & Account Abstraction)**: Designed a premium, glassmorphic frontend featuring Privy social logins, embedded smart wallets (EIP-4337) with automatic transaction gas reserves (fully gasless UX), and a secure two-step auto-forward withdrawal mechanism for a frictionless user experience.
 
-### 📈 The Pitch: Bringing Intelligence to Trading & Strategy
-*   **Asset Category**: Dynamic yield optimization assets across Liquid Staking (mETH), Stable RWA (USDY), and baseline liquidity (WMNT).
-*   **The AI Role**: A 7-node autonomous swarm [main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L510-L796) coordinating HMM-inspired regime classifiers, risk score generators, and GPT-4o Azure OpenAI consensus logic to perform automated, zero-human-intervention rebalancing.
-*   **The Strategy (Regime Damping)**: Implements mathematical regime decoding ([main.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/main.py#L625-L722)) that detects Expansion, Consolidation, and Contraction states using smoothed Fear & Greed and price signals. Executes rebalancing trades under optimized control theory damping models (Underdamped, Optimal, Critically Damped) to maximize returns while mathematically mitigating whipsaw losses.
-*   **Mantle Integration**: Executes high-throughput, optimized swaps on-chain via the **Odos V3 DEX Aggregator** (getting the best routing across Agni, FusionX, Merchant Moe, etc.), fully protected by a prioritized Web3 [rpc_manager.py](file:///c:/Users/Acer/obelisk-q-wealth-navigator-main/backend/rpc_manager.py) failover system, reentrancy guards, and an autonomous, 10-point delta circuit breaker.
-*   **ZK-ML On-Chain Verification**: Fully integrated with on-chain ZK-proofs verifying the mathematical HMM regime-detection model directly on the Mantle Network, ensuring cryptographically verifiable agent execution.
 
 
 ### 🛠️ Technical Excellence & Deployment
