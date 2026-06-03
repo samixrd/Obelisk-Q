@@ -1531,7 +1531,9 @@ async def supervisory_controller_node(state: AgentState):
                     swap_calldata = b""  # Will be set by Odos assemble
                     
                     if target_token != ZERO_ADDR:
-                        amount_in = balance - w3.to_wei(0.01, 'ether')
+                        amount_in = total_vault_value - w3.to_wei(0.01, 'ether')
+                        if amount_in <= 0:
+                            return f"aborting|executor: total vault value ({w3.from_wei(total_vault_value, 'ether')} MNT) is insufficient after reserving gas buffer. swap to {action} skipped."
                         
                         # ── WMNT WRAP: 1:1, no aggregator needed ──
                         if action == "WMNT":
