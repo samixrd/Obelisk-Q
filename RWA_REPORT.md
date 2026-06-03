@@ -188,4 +188,4 @@ function compound() external onlyAuthorized;
 
 ---
 
-*Obelisk Q · Mantle AI & RWA Hackathon 2025 · [github.com/samixrd/Obelisk-Q](https://github.com/samixrd/Obelisk-Q)*
+*Obelisk Q · Mantle AI & RWA Hackathon 2026 · [github.com/samixrd/Obelisk-Q](https://github.com/samixrd/Obelisk-Q)*

@@ -25,7 +25,6 @@
 *   ✅ **Continuous Execution**: Agent swarm running 24/7 — cycle count and uptime verifiable live at [`/api/agent/health`](https://obeliskq.app/api/agent/health).
 *   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.5%–2.5% based on regime and volatility).
 *   ✅ **Autonomous Liquidity Guard Rails**: Enforces a real-time Oracle-based price impact check. If liquidity is too thin or price impact is high (using Odos V3 Aggregator), the agent autonomously aborts the trade to protect user capital (guarded at >0.5% price impact).
-*   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 *   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report at [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) — regime, allocation, live USDY/mETH APY, last rotation tx.
 *   ✅ **Premium Responsive UI/UX**: Seamless onboarding experience, real-time live decision visualizer, glassmorphic analytics charts, and transparent transaction flows.
