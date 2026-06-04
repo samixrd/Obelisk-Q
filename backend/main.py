@@ -1771,13 +1771,39 @@ async def supervisory_controller_node(state: AgentState):
                     logger.info("executor: broadcasting transaction to mantle...")
                     tx_hash = w3.eth.send_raw_transaction(raw_tx)
                     
-                    # If success, also try to set regime in a separate tx or later
-                    # (In production, you'd batch these or use a multicall)
+                    tx_hash_hex = w3.to_hex(tx_hash)
+                    logger.info(f"executor: waiting for receipt for {tx_hash_hex}...")
+                    
+                    rebalance_status = "failed"
+                    try:
+                        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
+                        rebalance_status = "success" if receipt.status == 1 else "failed"
+                        
+                        if rebalance_status == "success":
+                            vault_balance_after = float(w3.from_wei(w3.eth.get_balance(vault_address), 'ether'))
+                            pnl = vault_balance_after - vault_balance_before
+                            target_asset = "MNT" if action == "UNWIND" else action
+                            
+                            conn = sqlite3.connect(DB_PATH)
+                            conn.execute("""
+                                INSERT INTO performance_log
+                                (timestamp, action, from_asset, to_asset, vault_value_before, vault_value_after, pnl, tx_hash)
+                                VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?)
+                            """, (action, CURRENT_POSITION, target_asset, vault_balance_before, vault_balance_after, pnl, tx_hash_hex))
+                            conn.commit()
+                            conn.close()
+                    except Exception as te:
+                        logger.warning(f"executor: receipt timeout or error: {te}")
+                        return f"failed|{tx_hash_hex}|executor: tx sent but receipt check failed: {str(te)[:40]}"
+
+                    # ── ZK-ML REGIME SYNC (runs AFTER rebalance receipt) ──
+                    # Only attempt if rebalance succeeded or we still want to sync regime
                     try:
                         logger.info(f"executor: syncing regime '{current_regime}' on-chain via ZK-ML Proof...")
                         fear_greed = int(state["data"].get("fear_greed", 50))
                         mnt_change = float(state["data"].get("mnt_change", 0.0))
                         
+                        # Re-read lastVol AFTER rebalance to get the latest on-chain state
                         zk_verifier_addr = os.getenv("ZK_VERIFIER_ADDRESS")
                         prev_vol_uint = 1500000000000000000
                         if zk_verifier_addr:
@@ -1832,6 +1858,16 @@ async def supervisory_controller_node(state: AgentState):
                         else:
                             expected_regime = 1
 
+                        # ── DEBUG: Log all intermediate ZK proof values ──
+                        logger.info(
+                            f"executor: ZK proof values - "
+                            f"fearGreed={fear_greed}, mntChange={mnt_change_int}, "
+                            f"prevVol={prev_vol_uint}, fngVol={fng_vol}, priceVol={price_vol}, "
+                            f"rawVol={raw_vol}, computedVol={computed_vol}, "
+                            f"clampedVol={clamped_vol}, clampedScore={clamped_score}, "
+                            f"expectedRegime={expected_regime}"
+                        )
+
                         prover_key = os.getenv("ZK_PROVER_PRIVATE_KEY") or private_key
                         
                         proof = generate_zk_regime_proof_uint(
@@ -1844,6 +1880,25 @@ async def supervisory_controller_node(state: AgentState):
                             prover_private_key=prover_key
                         )
 
+                        # ── DRY-RUN: Simulate the ZK proof tx via eth_call before sending ──
+                        try:
+                            contract.functions.setRegimeWithZKProof(
+                                int(fear_greed),
+                                int(mnt_change_int),
+                                int(prev_vol_uint),
+                                int(clamped_vol),
+                                int(clamped_score),
+                                int(expected_regime),
+                                proof
+                            ).call({'from': account.address})
+                            logger.info("executor: ZK proof dry-run simulation PASSED. Sending real tx...")
+                        except Exception as dry_err:
+                            logger.error(f"executor: ZK proof dry-run FAILED: {dry_err}. Skipping ZK proof to save gas.")
+                            raise dry_err  # fall through to legacy setRegime fallback
+
+                        # Get fresh nonce after rebalance tx was mined
+                        fresh_nonce = w3.eth.get_transaction_count(account.address)
+                        
                         regime_tx = contract.functions.setRegimeWithZKProof(
                             int(fear_greed),
                             int(mnt_change_int),
@@ -1854,7 +1909,7 @@ async def supervisory_controller_node(state: AgentState):
                             proof
                         ).build_transaction({
                             'from': account.address,
-                            'nonce': nonce + 1,
+                            'nonce': fresh_nonce,
                             'gas': 350000,
                             'gasPrice': gas_price,
                             'chainId': 5000
@@ -1877,9 +1932,10 @@ async def supervisory_controller_node(state: AgentState):
                     except Exception as re:
                         logger.warning(f"executor: ZK regime sync failed, attempting legacy setRegime fallback: {re}")
                         try:
+                            fallback_nonce = w3.eth.get_transaction_count(account.address)
                             regime_tx = contract.functions.setRegime(current_regime).build_transaction({
                                 'from': account.address,
-                                'nonce': nonce + 1,
+                                'nonce': fallback_nonce,
                                 'gas': 200000,
                                 'gasPrice': gas_price,
                                 'chainId': 5000
@@ -1890,30 +1946,7 @@ async def supervisory_controller_node(state: AgentState):
                         except Exception as fe:
                             logger.error(f"executor: legacy setRegime fallback also failed: {fe}")
 
-                    tx_hash_hex = w3.to_hex(tx_hash)
-                    logger.info(f"executor: waiting for receipt for {tx_hash_hex}...")
-                    try:
-                        receipt = w3.eth.wait_for_transaction_receipt(tx_hash, timeout=120)
-                        status = "success" if receipt.status == 1 else "failed"
-                        
-                        if status == "success":
-                            vault_balance_after = float(w3.from_wei(w3.eth.get_balance(vault_address), 'ether'))
-                            pnl = vault_balance_after - vault_balance_before
-                            target_asset = "MNT" if action == "UNWIND" else action
-                            
-                            conn = sqlite3.connect(DB_PATH)
-                            conn.execute("""
-                                INSERT INTO performance_log
-                                (timestamp, action, from_asset, to_asset, vault_value_before, vault_value_after, pnl, tx_hash)
-                                VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?)
-                            """, (action, CURRENT_POSITION, target_asset, vault_balance_before, vault_balance_after, pnl, tx_hash_hex))
-                            conn.commit()
-                            conn.close()
-                            
-                        return f"{status}|{tx_hash_hex}|executor: signal synchronized. tx {'confirmed' if status == 'success' else 'reverted'} on mantle mainnet: {tx_hash_hex}"
-                    except Exception as te:
-                        logger.warning(f"executor: receipt timeout or error: {te}")
-                        return f"failed|{tx_hash_hex}|executor: tx sent but receipt check failed: {str(te)[:40]}"
+                    return f"{rebalance_status}|{tx_hash_hex}|executor: signal synchronized. tx {'confirmed' if rebalance_status == 'success' else 'reverted'} on mantle mainnet: {tx_hash_hex}"
 
                 res = await loop.run_in_executor(None, sync_tx)
                 if "aborting" in res:
