@@ -1553,9 +1553,65 @@ async def supervisory_controller_node(state: AgentState):
                     swap_calldata = b""  # Will be set by Odos assemble
                     
                     if target_token != ZERO_ADDR:
-                        amount_in = total_vault_value - w3.to_wei(0.01, 'ether')
+                        # ── DYNAMIC SWAP AMOUNT CALCULATION ──
+                        if action == CURRENT_POSITION:
+                            # Compounding: only swap the raw MNT in the vault (minus 0.01 gas buffer)
+                            amount_in = balance - w3.to_wei(0.01, 'ether')
+                            logger.info(f"executor: Compounding target {action}. Raw MNT balance: {w3.from_wei(balance, 'ether')}. Quoting swap for {w3.from_wei(amount_in, 'ether')} MNT.")
+                        else:
+                            # Switching positions: we will unwind the CURRENT_POSITION token to MNT
+                            unwound_mnt = 0
+                            if CURRENT_POSITION in ("USDY", "mETH", "WMNT"):
+                                from_token = USDY_ADDRESS if CURRENT_POSITION == "USDY" else (METH_ADDRESS if CURRENT_POSITION == "mETH" else WMNT_ADDRESS)
+                                try:
+                                    import urllib.request
+                                    import urllib.error
+                                    # Query the token balance of the vault
+                                    token_contract = w3.eth.contract(address=w3.to_checksum_address(from_token), abi=ERC20_ABI)
+                                    token_balance = token_contract.functions.balanceOf(vault_address).call()
+                                    if token_balance > 0:
+                                        if CURRENT_POSITION == "WMNT":
+                                            unwound_mnt = token_balance
+                                        else:
+                                            # Fetch Odos quote to swap from_token to native MNT
+                                            quote_payload_unwind = json.dumps({
+                                                "chainId": 5000,
+                                                "inputTokens": [{"tokenAddress": w3.to_checksum_address(from_token), "amount": str(token_balance)}],
+                                                "outputTokens": [{"tokenAddress": "0x0000000000000000000000000000000000000000", "proportion": 1}],
+                                                "userAddr": w3.to_checksum_address(vault_address),
+                                                "slippageLimitPercent": 1.0,
+                                                "referralCode": 0,
+                                                "disableRFQs": True,
+                                                "compact": True
+                                            }).encode()
+                                            
+                                            headers = {"Content-Type": "application/json", "User-Agent": "ObeliskVault/1.0"}
+                                            odos_api_key = os.getenv("ODOS_API_KEY")
+                                            if odos_api_key:
+                                                headers["x-api-key"] = odos_api_key
+                                                
+                                            quote_req_unwind = urllib.request.Request(
+                                                "https://api.odos.xyz/sor/quote/v2",
+                                                data=quote_payload_unwind,
+                                                headers=headers,
+                                                method="POST"
+                                            )
+                                            with urllib.request.urlopen(quote_req_unwind, timeout=10.0) as resp_u:
+                                                quote_data_unwind = json.loads(resp_u.read().decode())
+                                                out_amounts_unwind = quote_data_unwind.get("outAmounts", ["0"])
+                                                unwound_mnt = int(out_amounts_unwind[0]) if out_amounts_unwind else 0
+                                                logger.info(f"executor: Unwind quote for {token_balance/1e18:.6f} {CURRENT_POSITION} -> {w3.from_wei(unwound_mnt, 'ether')} MNT")
+                                except Exception as e:
+                                    logger.warning(f"executor: failed to estimate unwind MNT value: {e}. Using direct 1:1 estimate as fallback.")
+                                    # Fallback to direct balance view if quote fails
+                                    unwound_mnt = token_balance
+                                    
+                            # Set amount_in to raw MNT balance + 98% of expected unwound MNT value (2% slippage buffer), minus gas buffer
+                            amount_in = balance + int(unwound_mnt * 0.98) - w3.to_wei(0.01, 'ether')
+                            logger.info(f"executor: Switching position from {CURRENT_POSITION} to {action}. Estimated swap amount: {w3.from_wei(amount_in, 'ether')} MNT (including {w3.from_wei(unwound_mnt, 'ether')} expected MNT from unwind).")
+
                         if amount_in <= 0:
-                            return f"aborting|executor: total vault value ({w3.from_wei(total_vault_value, 'ether')} MNT) is insufficient after reserving gas buffer. swap to {action} skipped."
+                            return f"aborting|executor: estimated swap amount ({w3.from_wei(amount_in, 'ether')} MNT) is insufficient after reserving gas buffer. swap to {action} skipped."
                         
                         # ── WMNT WRAP: 1:1, no aggregator needed ──
                         if action == "WMNT":
