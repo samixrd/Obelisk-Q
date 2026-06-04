@@ -890,6 +890,28 @@ def generate_zk_regime_proof(fear_greed, mnt_change, prev_vol, out_vol, out_risk
     signed_message = Account.sign_message(message, private_key=prover_private_key)
     return signed_message.signature
 
+def generate_zk_regime_proof_uint(fear_greed, mnt_change_uint, prev_vol_uint, out_vol_uint, out_risk_score, out_regime, prover_private_key):
+    """
+    Generates a cryptographic proof signature using raw integer values directly to avoid precision mismatch.
+    """
+    from eth_account import Account
+    from eth_account.messages import encode_defunct
+    
+    message_hash = Web3.solidity_keccak(
+        ['uint256', 'int256', 'uint256', 'uint256', 'uint256', 'uint8'],
+        [
+            int(fear_greed),
+            int(mnt_change_uint),
+            int(prev_vol_uint),
+            int(out_vol_uint),
+            int(out_risk_score),
+            int(out_regime)
+        ]
+    )
+    message = encode_defunct(message_hash)
+    signed_message = Account.sign_message(message, private_key=prover_private_key)
+    return signed_message.signature
+
 # ─── Agent Node Implementations ────────────────────────────────────────────────
 
 async def regime_detection_node(state: AgentState):
@@ -1701,43 +1723,78 @@ async def supervisory_controller_node(state: AgentState):
                         mnt_change = float(state["data"].get("mnt_change", 0.0))
                         
                         zk_verifier_addr = os.getenv("ZK_VERIFIER_ADDRESS")
-                        prev_vol_val = 1.5
+                        prev_vol_uint = 1500000000000000000
                         if zk_verifier_addr:
                             try:
                                 v_abi = [{"inputs":[],"name":"lastVol","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
                                 v_contract = w3.eth.contract(address=w3.to_checksum_address(zk_verifier_addr), abi=v_abi)
-                                prev_vol_val = v_contract.functions.lastVol().call() / 1e18
+                                prev_vol_uint = v_contract.functions.lastVol().call()
                             except Exception as ex:
                                 logger.warning(f"executor: could not fetch lastVol from verifier contract: {ex}")
-                                prev_vol_val = state["data"].get("prev_vol", 1.5)
+                                prev_vol_uint = int(state["data"].get("prev_vol", 1.5) * 1e18)
                         else:
-                            prev_vol_val = state["data"].get("prev_vol", 1.5)
+                            prev_vol_uint = int(state["data"].get("prev_vol", 1.5) * 1e18)
+
+                        # Replicate the exact Solidity contract math here to avoid ZKVerifier volatility mismatch
+                        # constraint 1: fngVol = ((100 - fearGreed) * 1e18) / 50
+                        fng_vol = ((100 - fear_greed) * 10**18) // 50
                         
-                        out_vol = state["data"].get("vol", 1.5)
-                        out_risk_score = state["data"].get("risk", {}).get("score", 50)
+                        # constraint 2: priceVol = min(1.5e18, abs(mntChange) / 5)
+                        mnt_change_int = int(round(mnt_change * 10**18))
+                        abs_mnt_change = abs(mnt_change_int)
+                        price_vol = abs_mnt_change // 5
+                        if price_vol > 15 * 10**17: # 1.5e18
+                            price_vol = 15 * 10**17
+                            
+                        # constraint 3: rawVol = 0.5e18 + fngVol + priceVol
+                        raw_vol = 5 * 10**17 + fng_vol + price_vol
                         
-                        REGIME_MAP = {"Expansion": 0, "Consolidation": 1, "Contraction": 2}
-                        out_regime = REGIME_MAP.get(current_regime, 1)
+                        # constraint 4: computedVol = (40 * rawVol + 60 * prevVol) / 100
+                        computed_vol = (40 * raw_vol + 60 * prev_vol_uint) // 100
+                        
+                        # constraint 5: clampedVol = clamp(computedVol, 0.5e18, 3.5e18)
+                        clamped_vol = computed_vol
+                        if clamped_vol < 5 * 10**17:
+                            clamped_vol = 5 * 10**17
+                        elif clamped_vol > 35 * 10**17:
+                            clamped_vol = 35 * 10**17
+                            
+                        # constraint 6: clampedScore
+                        computed_score = 100 - ((clamped_vol - 5 * 10**17) * 30) // 10**18
+                        if computed_score < 0:
+                            clamped_score = 0
+                        elif computed_score > 100:
+                            clamped_score = 100
+                        else:
+                            clamped_score = computed_score
+                            
+                        # constraint 7: regime classification
+                        if clamped_vol < 12 * 10**17:
+                            expected_regime = 0
+                        elif clamped_vol > 22 * 10**17:
+                            expected_regime = 2
+                        else:
+                            expected_regime = 1
 
                         prover_key = os.getenv("ZK_PROVER_PRIVATE_KEY") or private_key
                         
-                        proof = generate_zk_regime_proof(
+                        proof = generate_zk_regime_proof_uint(
                             fear_greed=fear_greed,
-                            mnt_change=mnt_change,
-                            prev_vol=prev_vol_val,
-                            out_vol=out_vol,
-                            out_risk_score=out_risk_score,
-                            out_regime=out_regime,
+                            mnt_change_uint=mnt_change_int,
+                            prev_vol_uint=prev_vol_uint,
+                            out_vol_uint=clamped_vol,
+                            out_risk_score=clamped_score,
+                            out_regime=expected_regime,
                             prover_private_key=prover_key
                         )
 
                         regime_tx = contract.functions.setRegimeWithZKProof(
                             int(fear_greed),
-                            int(mnt_change * 1e18),
-                            int(prev_vol_val * 1e18),
-                            int(out_vol * 1e18),
-                            int(out_risk_score),
-                            int(out_regime),
+                            int(mnt_change_int),
+                            int(prev_vol_uint),
+                            int(clamped_vol),
+                            int(clamped_score),
+                            int(expected_regime),
                             proof
                         ).build_transaction({
                             'from': account.address,
@@ -1755,10 +1812,10 @@ async def supervisory_controller_node(state: AgentState):
                         last_known_state["last_zk_proof"] = {
                             "fear_greed": fear_greed,
                             "mnt_change": mnt_change,
-                            "prev_vol": prev_vol_val,
-                            "out_vol": out_vol,
-                            "out_risk_score": out_risk_score,
-                            "out_regime": out_regime,
+                            "prev_vol": prev_vol_uint / 1e18,
+                            "out_vol": clamped_vol / 1e18,
+                            "out_risk_score": clamped_score,
+                            "out_regime": expected_regime,
                             "proof_hex": "0x" + proof.hex()
                         }
                     except Exception as re:
