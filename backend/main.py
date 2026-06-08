@@ -1641,12 +1641,26 @@ async def supervisory_controller_node(state: AgentState):
                     odos_router = "0x0D05a7D3448512B78fa8A9e46c4872C88C4a0D05"  # Odos V3 Router (unified across all EVM chains)
                     swap_calldata = b""  # Will be set by Odos assemble
                     
-                    if target_token != ZERO_ADDR:
+                    # We map UNWIND to WMNT target token to utilize the aggregator pathway safely
+                    effective_target_token = target_token
+                    if action == "UNWIND" and CURRENT_POSITION in ("USDY", "mETH"):
+                        effective_target_token = WMNT_ADDRESS
+                        
+                    if effective_target_token != ZERO_ADDR:
                         # ── DYNAMIC SWAP AMOUNT CALCULATION ──
                         if action == CURRENT_POSITION:
                             # Compounding: only swap the raw MNT in the vault (minus 0.01 gas buffer)
                             amount_in = balance - w3.to_wei(0.01, 'ether')
                             logger.info(f"executor: Compounding target {action}. Raw MNT balance: {w3.from_wei(balance, 'ether')}. Quoting swap for {w3.from_wei(amount_in, 'ether')} MNT.")
+                        elif action == "UNWIND":
+                            # Unwinding: we swap the ENTIRE balance of CURRENT_POSITION token back to WMNT/MNT
+                            from_token = USDY_ADDRESS if CURRENT_POSITION == "USDY" else METH_ADDRESS
+                            token_contract = w3.eth.contract(address=w3.to_checksum_address(from_token), abi=ERC20_ABI)
+                            token_balance = token_contract.functions.balanceOf(vault_address).call()
+                            if token_balance <= 0:
+                                return f"aborting|executor: UNWIND target balance of {CURRENT_POSITION} is 0. nothing to unwind."
+                            amount_in = token_balance
+                            logger.info(f"executor: Unwinding entire position of {CURRENT_POSITION}. Balance: {amount_in}. Quoting Odos V3 swap to WMNT/MNT.")
                         else:
                             # Switching positions: we will unwind the CURRENT_POSITION token to MNT
                             unwound_mnt = 0
@@ -1704,15 +1718,19 @@ async def supervisory_controller_node(state: AgentState):
                         
                         # ── MINIMUM SWAP VALUE GUARD ──
                         # Prevents dust-amount trades that get destroyed by DEX slippage on thin pools
-                        if amount_in < MIN_SWAP_VALUE_WEI:
+                        if amount_in < MIN_SWAP_VALUE_WEI and action != "UNWIND":
                             logger.info(f"executor: swap amount ({w3.from_wei(amount_in, 'ether')} MNT) is below minimum trade threshold ({w3.from_wei(MIN_SWAP_VALUE_WEI, 'ether')} MNT). skipping to avoid slippage loss.")
                             return f"aborting|executor: swap amount too small ({w3.from_wei(amount_in, 'ether')} MNT < {w3.from_wei(MIN_SWAP_VALUE_WEI, 'ether')} MNT min). skipped to prevent slippage loss."
                         
                         # ── WMNT WRAP: 1:1, no aggregator needed ──
-                        if action == "WMNT":
+                        if action == "WMNT" and CURRENT_POSITION == "MNT":
                             min_amount_out = amount_in
                             swap_calldata = b""  # contract handles wrap internally
                             logger.info(f"executor: WMNT wrap detected. 1:1 ratio. amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out}")
+                        elif action == "UNWIND" and CURRENT_POSITION == "WMNT":
+                            min_amount_out = amount_in
+                            swap_calldata = b""  # contract handles unwrap internally via _unwindToken
+                            logger.info(f"executor: WMNT emergency unwrap detected. 1:1 ratio. amountIn={w3.from_wei(amount_in, 'ether')} minAmountOut={min_amount_out}")
                         else:
                             # ── ODOS V3 DEX AGGREGATOR QUOTE + ASSEMBLE ──
                             try:
@@ -1725,7 +1743,7 @@ async def supervisory_controller_node(state: AgentState):
                                 volatility = state["data"].get("volatility", 1.0)
                                 if current_regime == "Contraction" or volatility > 2.0:
                                     slippage_pct = MAX_SLIPPAGE_CONTRACTION
-                                elif current_regime == "Consolidation":
+                                if current_regime == "Consolidation":
                                     slippage_pct = MAX_SLIPPAGE_CONSOLIDATION
                                 else:
                                     slippage_pct = MAX_SLIPPAGE_EXPANSION
@@ -1736,10 +1754,13 @@ async def supervisory_controller_node(state: AgentState):
                                     headers["x-api-key"] = odos_api_key
 
                                 # Step 1: Odos Quote with Retry/Backoff
+                                quote_input_token = "0x0000000000000000000000000000000000000000" if action != "UNWIND" else (USDY_ADDRESS if CURRENT_POSITION == "USDY" else METH_ADDRESS)
+                                quote_output_token = target_token if action != "UNWIND" else "0x0000000000000000000000000000000000000000" # Native MNT output for unwind
+                                
                                 quote_payload = json.dumps({
                                     "chainId": 5000,
-                                    "inputTokens": [{"tokenAddress": "0x0000000000000000000000000000000000000000", "amount": str(amount_in)}],
-                                    "outputTokens": [{"tokenAddress": w3.to_checksum_address(target_token), "proportion": 1}],
+                                    "inputTokens": [{"tokenAddress": w3.to_checksum_address(quote_input_token), "amount": str(amount_in)}],
+                                    "outputTokens": [{"tokenAddress": w3.to_checksum_address(quote_output_token), "proportion": 1}],
                                     "userAddr": w3.to_checksum_address(vault_address),
                                     "slippageLimitPercent": slippage_pct,
                                     "referralCode": 0,
@@ -1803,7 +1824,7 @@ async def supervisory_controller_node(state: AgentState):
                                 path_viz = quote_data.get("pathVizImage", None)
                                 if path_viz:
                                     logger.info(f"executor: Odos pathViz available (base64 SVG, {len(path_viz)} chars). Route uses multi-path split routing.")
-                                logger.info(f"executor: Odos V3 quote - pathId={path_id} amountIn={w3.from_wei(amount_in,'ether')} actualOut={actual_out/1e18:.6f} {action} priceImpact={price_impact_pct:.2f}%")
+                                logger.info(f"executor: Odos V3 quote - pathId={path_id} amountIn={actual_out/1e18 if action == 'UNWIND' else amount_in/1e18:.6f} actualOut={actual_out/1e18 if action != 'UNWIND' else actual_out/1e18:.6f} {action} priceImpact={price_impact_pct:.2f}%")
                                 
                                 # ── PRICE IMPACT GUARD ──
                                 if abs(price_impact_pct) > MAX_PRICE_IMPACT_PCT:
@@ -1835,7 +1856,7 @@ async def supervisory_controller_node(state: AgentState):
                                 return f"aborting|executor: Odos aggregator unavailable ({str(odos_err)[:60]}). swap to {action} skipped to protect funds."
 
                     # ── DYNAMIC GAS ESTIMATION ──
-                    target_token_checksum = w3.to_checksum_address(target_token) if target_token != ZERO_ADDR else ZERO_ADDR
+                    target_token_checksum = w3.to_checksum_address(effective_target_token) if effective_target_token != ZERO_ADDR else ZERO_ADDR
                     odos_router_checksum = w3.to_checksum_address(odos_router)
                     try:
                         gas_estimate = contract.functions.rebalance(
