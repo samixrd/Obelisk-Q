@@ -273,9 +273,6 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 - [x] **Transparent Fees**: Phased fee structure (0.07% swap, 5% performance, 0.5% management)
 - [x] **Audit Trail**: Every decision logged at `/api/cycles/history`
 
-### Zero Losses Record ✓
-No user losses recorded since launch. Circuit breaker + reentrancy guards enforce this.
-
 ---
 
 ## 💰 Business Potential & Revenue Model
