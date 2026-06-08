@@ -398,7 +398,7 @@ Add section:
 ### User Protection ✅
 - [x] **Zero Custody Risk**: Smart contract is non-custodial (Obelisk can't access funds)
 - [x] **No Lock-up**: Withdraw anytime
-- [x] **Transparent Fees**: 2% management + 20% performance (on-chain)
+- [x] **Transparent Fees**: Phased fee structure (0.07% swap, 5% performance, 0.5% management)
 - [x] **Audit Trail**: Every decision logged at `/api/cycles/history`
 
 ### Zero Losses Record ✓

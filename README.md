@@ -297,13 +297,6 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 
 ---
 
-### ⚠️ Technical Roadmap
-*   **Distributed Consensus (V3)**: Moving from PM2-based single-node recovery to a Raft-based distributed consensus for multi-VM high availability with sub-millisecond precision.
-*   **Multi-RPC Failover Strategy** ✅ *(Implemented)*: The agent is configured with a prioritized list of Mantle RPC providers (`MANTLE_RPC_URLS`) with cached Web3 connections. On any connection error or timeout (SLA: 15s), the executor automatically rotates to the next provider in the pool.
-*   **Cross-Chain Expansion**: Expanding the navigator to bridge capital to other L2s via LayerZero based on global yield opportunities.
-
----
-
 ### 🔐 Security & Safety Features
 
 ### Smart Contract Security ✅
@@ -321,7 +314,7 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 ### User Protection ✅
 - [x] **Zero Custody Risk**: Smart contract is non-custodial (Obelisk can't access funds)
 - [x] **No Lock-up**: Withdraw anytime
-- [x] **Transparent Fees**: 2% management + 20% performance (on-chain)
+- [x] **Transparent Fees**: Phased fee structure (0.07% swap, 5% performance, 0.5% management)
 - [x] **Audit Trail**: Every decision logged at `/api/cycles/history`
 
 ### Zero Losses Record ✓
@@ -329,47 +322,25 @@ No user losses recorded since launch. Circuit breaker + reentrancy guards enforc
 
 ---
 
-## 💰 Business Potential & GTM Strategy
+## 💰 Business Potential & Revenue Model
 
 ### 🏦 Revenue Model
-Obelisk Q utilizes an institutional-grade "2 & 20" model, fully automated on-chain:
-*   **Management Fee**: 2% annual AUM fee, streamed per cycle to the Obelisk DAO.
-*   **Performance Fee**: 20% "High-Water Mark" fee on profits generated above the benchmark yield (mETH APY).
-*   **Slippage Arbitrage**: A portion of rebalance efficiency is captured to fund the autonomous agent's gas costs.
+Obelisk Q employs a diversified fee structure structured across product phases to align incentives between the protocol, strategy creators, and copy-traders:
+
+| Stream | Rate | Applies To | Phase |
+| :--- | :--- | :--- | :--- |
+| **Swap / DEX Fee** | 0.07% per rebalance | All vaults | Phase 1 |
+| **Performance Fee** | 5% on yield | AI-managed vaults only | Phase 1 |
+| **Maintenance Fee** | 0.5% annually on TVL | AI-managed vaults only | Phase 1 |
+| **Copy-Trade Split** | Vault owner 3% + Protocol 2% (5% total) | Copied vaults | Phase 2 |
 
 ### 🚀 Go-To-Market (GTM)
-1.  **Phase 1: Ecosystem Alignment**: Partnership with Mantle LSP and Ondo Finance to offer Obelisk as a "Smart Vault" option for USDY/mETH holders.
-2.  **Phase 2: Institutional LPs**: Targeting DeFi funds and DAOs that require automated, risk-managed RWA exposure without active management.
-3.  **Phase 3: Governance Token**: Launch of $OBELISK to decentralize the agent's risk parameters and regime thresholds.
+1. **Ecosystem Phase** (Now): Hackathon -> early adopters -> Mantle community DeFi users.
+2. **Vault Scale Phase** (Phase 1): Deploy automated vault factory, Gelato automation, and custom safe havens to onboard retail and DAO treasuries.
+3. **Social Replication Phase** (Phase 2): Social copy-trading, React Native mobile apps, and LLM-driven intent engines to expand user base.
 
 ### 🌍 Market Opportunity
 With the RWA sector projected to reach $16T by 2030, Obelisk Q positions Mantle as the premier destination for intelligent, autonomous capital management. By combining the safety of US Treasuries (USDY) with the growth of liquid staking (mETH), we provide a unique "All-Weather" product for the next billion users.
-
----
-
-## 💰 Business Model
-
-### Fee Structure ("2 & 20" — Institutional Standard)
-
-| Fee | Rate | Trigger |
-|---|---|---|
-| Management Fee | **2% AUM / year** | Continuously accrued on vault TVL |
-| Performance Fee | **20% of profits** | Charged only on positive P&L per cycle |
-| Entry/Exit Fee | **0%** | No lock-in — full liquidity always |
-| Gas Costs | Borne by Agent | Paid from management fee revenue pool |
-
-### Revenue Projections (Conservative)
-
-| TVL | Annual Management Revenue | At 20% Perf (assuming 8% avg yield) |
-|---|---|---|
-| $100K | $2,000 | +$1,600 |
-| $1M | $20,000 | +$16,000 |
-| $10M | $200,000 | +$160,000 |
-
-### GTM Strategy (3 Phases)
-1. **Ecosystem Phase** (Now): Hackathon → early adopters → Mantle community DeFi users.
-2. **Institutional Phase** (Q1 2027): Onboard institutional LPs via Ondo Finance and Merchant Moe partnerships. Target: $1M TVL.
-3. **Governance Phase** (Q3 2027): Launch `$OBELISK` governance token. Transition fee revenue to DAO treasury. Target: $10M TVL.
 
 Obelisk Q proposes a new **AI × Web3 paradigm**: where the agent is not just a chatbot, but a **Sovereign Financial Actor**.
 
@@ -415,14 +386,67 @@ Obelisk Q is designed to protect users, not exploit them:
 
 ---
 
-## 🚀 Roadmap (Future Implementations)
-While Obelisk Q is fully functional on Mantle Mainnet today, the following features are planned for our next major protocol upgrades. These address complex institutional and retail needs:
+## 🚀 Project Roadmap
 
-1. **Custom Multi-Asset Vault Builder [Next Major Milestone]**: We will allow users to deploy their own custom AI-managed swarms on Mantle Network. Users can select any combination of Mantle-native assets (such as mETH, USDY, WMNT, FBTC, and more) and define customized weight percentages (e.g., 50% mETH, 30% WMNT, 20% USDY) summing up to 100%. The autonomous AI swarm will then actively balance, hedge, and manage these assets according to the user's custom weight limits and risk tolerance.
-2. **Omnichain RWAs via LayerZero**: Currently, Obelisk Q operates strictly on Mantle Mainnet. Future versions will integrate LayerZero to execute cross-chain rebalances (e.g., pulling yield from Ethereum mainnet RWAs while maintaining the vault on Mantle).
-3. **On-Chain Revenue Flow & Tokenomics**: Deploy automated fee-splitter smart contracts to stream the accrued management and performance fees to the Obelisk DAO and distribute protocol revenue directly to `$OBELISK` token stakers.
-4. **Dynamic Swarm Scaling**: Expanding the LangGraph agent architecture to dynamically spin up new micro-agents for emerging L2 yield opportunities.
-5. **EIP-4337 Account Abstraction & Gasless UX**: Integrate full gasless onboarding via Privy social logins, embedded smart wallets with automatic transaction gas reserves sponsored by the protocol, and secure two-step auto-forward withdrawals to personal external wallets to make the UX 100% friction-free.
+### Phase 0 — Core Architecture (Hackathon Build)
+*   **Status**: Live on Mantle Mainnet (Chain ID 5000)
+*   **Smart Contracts**:
+    *   `ObeliskVault` (`0x59fdE89B810812846ED167033C6d33fa425835E2`) — Capital vault + Odos V3 DEX aggregation
+    *   `ZKRegimeVerifier` (`0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D`) — On-chain ZK-ML proof verification
+*   **Supported Assets**: mETH · USDY · WMNT
+*   **AI & Analytics Engine**:
+    *   LangGraph + FastAPI volatility backend
+    *   HMM regime classification engine
+    *   Dynamic rebalancing trigger system
+    *   PM2 cluster process management
+*   **Web3 Frontend**:
+    *   Privy social login + non-custodial wallets
+    *   ZK proof validation history display
+
+### Phase 1 — Vault Infrastructure
+*   **Vault Layer**:
+    *   Vault Factory — systematic pool deployment on Mantle
+    *   ERC-6551 NFT-bound vault accounts
+    *   Users can create AI-managed vaults or manual vaults
+    *   Safe Multisig + Timelock governance
+    *   Formal smart contract audit + verification
+*   **Automation & Risk**:
+    *   Gelato v3 stop-loss automation
+    *   Custom safe haven selection — on market downturns the AI automatically rotates into the user's chosen defensive asset (Options: USDY US Treasury RWA, XAUT Gold RWA, or user-defined TradFi-backed stable assets)
+    *   Just-In-Time settlement — funds stay in user's own wallet until execution, routed through Bybit's institutional infrastructure off-chain and settled on-chain atomically (No central pool, no honeypot)
+    *   Circuit breaker — max drawdown guard
+    *   Gasless transactions via ERC-4337 paymaster
+*   **Dashboard**:
+    *   Real-time TVL + allocation telemetry
+    *   Vault performance analytics
+*   **Growth & User Acquisition**:
+    *   Points system — weekly on-chain + off-chain rewards
+    *   Referral vault sharing rewards
+    *   User onboarding campaigns begin Phase 1
+
+### Phase 2 — Social Layer & Mobile
+*   **Mobile App**:
+    *   iOS + Android app (React Native)
+    *   Biometric auth (Face ID / fingerprint)
+    *   Push notifications for trades and rebalances
+    *   Mobile-first deposit and withdrawal flows
+*   **AI Intent Engine**:
+    *   LLM natural language reasoning layer
+    *   Natural language -> on-chain action pipeline
+    *   Intent simulation + preview before signing
+*   **Leaderboard & Analytics**:
+    *   Live vault performance rankings
+    *   Dynamic yield rank badges
+    *   Public vault performance API
+*   **Copy Strategy**:
+    *   One-click vault mirroring
+    *   Vault owner earns 3%, protocol takes 2% (5% total from copier)
+    *   Customisable allocation tolerance
+    *   Strategy NFT — tradeable vault configs
+*   **Notifications**:
+    *   Telegram bot — position + rebalance alerts
+    *   Volatility threshold push alerts
+    *   Weekly email digest
 
 ---
 
