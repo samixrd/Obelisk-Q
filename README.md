@@ -268,11 +268,23 @@ After LLM confirmation, hard safety overrides apply:
 When a regime change occurs, a **3-cycle lock** is activated (~30 minutes at 10-min cycle intervals). During lock, the regime is held constant regardless of new observations. This prevents rapid oscillation ("whipsaw").
 
 #### 2.7 Dual-Model Consensus
-The Consensus Node resolves disagreements between the AI-determined regime and the deterministic analyst:
-*   **Any Contraction vote** → Final regime is **Contraction** (safety-first)
-*   **Any Consolidation vote** → Final regime is **Consolidation** (conservative)
-*   **Unanimous Expansion** required for Expansion allocation
-*   **Circuit Breaker (10pt Q-Score drop in 60min)** overrides the trend lock and forces emergency unwind to MNT.
+At the core of Obelisk Q's decision-making is the **Dual-Model Consensus** mechanism, designed to arbitrate and resolve disagreements between two independent evaluation layers: a **Cognitive AI Layer** and a **Deterministic Mathematical Analyst**. 
+
+Rather than relying purely on machine learning or static rules, the protocol merges qualitative market context with quantitative calculations, enforcing a **Safety-First Asymmetric Arbitration Bias**.
+
+1. **The Cognitive AI Layer**: Processes real-time qualitative and quantitative signals—such as on-chain activity, ecosystem data, macro sentiment, and the Fear & Greed index. This layer uses GPT-4o-mini to establish a contextual market outlook and acts as a confirmation filter on the raw regime observations.
+2. **The Deterministic Mathematical Analyst**: Evaluates pure statistical telemetry—using tight volatility calculations and historical data constraints. It remains insulated from qualitative market hype, providing a conservative mathematical baseline.
+
+##### Consensus Rules & Safety Bias Matrix
+The Consensus Node operates with an asymmetric risk-aversion profile. Disagreements between the two models are resolved as follows:
+*   **Safety-First Arbitration (Contraction Dominance)**: If *either* the AI layer or the Mathematical analyst votes for **Contraction**, the final consensus immediately resolves to **Contraction**. Funds are rotated to safety (USDY RWA backed by US Treasury Bills) automatically.
+*   **Conservative Default (Consolidation Gate)**: If there is a mismatch where one model votes for Expansion and the other votes for Consolidation, the consensus defaults to **Consolidation** (Wrapped MNT) to protect capital.
+*   **Unanimous Agreement for Growth**: For the vault to enter the **Expansion** regime (allocating heavily to mETH staking yield), *both* models must unanimously agree. Growth assets are never chased blindly.
+*   **Emergency Overrides**: 
+    *   **Circuit Breaker**: A 10-point drop in Q-Score within 60 minutes overrides the trend lock and triggers an emergency unwind to native MNT.
+    *   **Anti-Whipsaw Trend Lock (Hysteresis)**: Enforces a 3-cycle lock-in period on regime shifts to prevent rapid, gas-eroding capital rotations during noisy market movements.
+
+This dual-consensus design ensures that capital protection is always prioritized, keeping the agent transparent, mathematically verifiable, and risk-aware.
 
 #### 2.8 Regime → Allocation Mapping
 | Regime | Score Gate | Action | Damping Model |
