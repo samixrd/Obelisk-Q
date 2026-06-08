@@ -477,16 +477,9 @@ export function useVault(): VaultState {
         }
       }
 
-      const finalAmountMnt = formatMnt(finalAmountWei);
-      const feeWei = parseMntToWei("0.01");
-
-      if (finalAmountWei <= feeWei) {
-        throw new Error("Deposit amount must be greater than the 0.01 MNT fee");
-      }
-
-      const depositWei = finalAmountWei - feeWei;
+      // Deposit 100% of the MNT amount directly to the Vault Contract in a single transaction
+      const depositWei = finalAmountWei;
       const finalDepositMnt = formatMnt(depositWei);
-      const valueHex = "0x" + depositWei.toString(16);
 
       let hash;
       const walletProvider = activeWallet ? await activeWallet.getEthereumProvider() : null;
@@ -497,14 +490,7 @@ export function useVault(): VaultState {
       if (provider) {
         const signer = await provider.getSigner();
 
-        // Step A: Send 1% Fee to Treasury
-        const treasuryTx = await signer.sendTransaction({
-          to: TREASURY_ADDRESS,
-          value: feeWei,
-        });
-        await treasuryTx.wait();
-
-        // Step B: Deposit 99% to Vault Contract
+        // Step B: Deposit full MNT to Vault Contract (One single transaction signature)
         const txResp = await signer.sendTransaction({
           to: VAULT_ADDRESS,
           value: depositWei,
