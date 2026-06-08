@@ -12,6 +12,8 @@ interface Transaction {
   status: string;
   vault_address: string;
   cycle_number: number;
+  from_asset?: string;
+  to_asset?: string;
 }
 
 export function AgentTransactions() {
@@ -25,6 +27,13 @@ export function AgentTransactions() {
     
     if (currentAction === 'HOLD' || currentAction === 'SYNC') {
       return currentAction;
+    }
+
+    if (currentTx.from_asset && currentTx.to_asset) {
+      if (currentTx.from_asset === currentTx.to_asset) {
+        return currentTx.to_asset;
+      }
+      return `${currentTx.from_asset} → ${currentTx.to_asset}`;
     }
     
     // Find the previous successful/on-chain target asset by scanning older transactions

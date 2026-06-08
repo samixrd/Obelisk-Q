@@ -49,7 +49,23 @@ def init_db():
         regime TEXT,
         status TEXT,
         vault_address TEXT,
-        tx_hash TEXT
+        tx_hash TEXT,
+        from_asset TEXT,
+        to_asset TEXT
+    )''')
+    conn.execute('''CREATE TABLE IF NOT EXISTS zk_regime_proofs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        cycle INTEGER UNIQUE,
+        timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+        fear_greed INTEGER,
+        mnt_change REAL,
+        prev_vol REAL,
+        out_vol REAL,
+        out_risk_score INTEGER,
+        out_regime INTEGER,
+        proof TEXT,
+        tx_hash TEXT UNIQUE,
+        status TEXT
     )''')
     conn.execute('''CREATE TABLE IF NOT EXISTS performance_log (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -112,6 +128,21 @@ def init_db():
             conn.commit()
     except Exception as e:
         logger.warning(f"db_manager: migration failed: {e}")
+
+    # ── Database Migration: Add 'from_asset' and 'to_asset' columns to agent_transactions if missing ──
+    try:
+        cursor = conn.execute("PRAGMA table_info(agent_transactions)")
+        columns = [column[1] for column in cursor.fetchall()]
+        if "from_asset" not in columns:
+            logger.info("db_manager: migrating table agent_transactions - adding 'from_asset' column")
+            conn.execute("ALTER TABLE agent_transactions ADD COLUMN from_asset TEXT")
+            conn.commit()
+        if "to_asset" not in columns:
+            logger.info("db_manager: migrating table agent_transactions - adding 'to_asset' column")
+            conn.execute("ALTER TABLE agent_transactions ADD COLUMN to_asset TEXT")
+            conn.commit()
+    except Exception as e:
+        logger.warning(f"db_manager: agent_transactions migration failed: {e}")
         
     conn.close()
 
@@ -231,7 +262,23 @@ class DatabaseManager:
                     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                     status TEXT,
                     vault_address TEXT,
-                    cycle INTEGER
+                    cycle INTEGER,
+                    from_asset TEXT,
+                    to_asset TEXT
+                );
+                CREATE TABLE IF NOT EXISTS zk_regime_proofs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    cycle INTEGER UNIQUE,
+                    timestamp TEXT DEFAULT CURRENT_TIMESTAMP,
+                    fear_greed INTEGER,
+                    mnt_change REAL,
+                    prev_vol REAL,
+                    out_vol REAL,
+                    out_risk_score INTEGER,
+                    out_regime INTEGER,
+                    proof TEXT,
+                    tx_hash TEXT UNIQUE,
+                    status TEXT
                 );
                 CREATE TABLE IF NOT EXISTS heartbeats (
                     node_id TEXT PRIMARY KEY,
@@ -278,6 +325,25 @@ class DatabaseManager:
                 );
             """)
             conn.commit()
+
+            # ── Database Migration: Add 'from_asset' and 'to_asset' columns to agent_transactions if missing ──
+            try:
+                cursor = conn.execute("PRAGMA table_info(agent_transactions)")
+                columns = [column[1] for column in cursor.fetchall()]
+                migrated = False
+                if "from_asset" not in columns:
+                    logger.info("db_manager: migrating DatabaseManager agent_transactions - adding 'from_asset' column")
+                    conn.execute("ALTER TABLE agent_transactions ADD COLUMN from_asset TEXT")
+                    migrated = True
+                if "to_asset" not in columns:
+                    logger.info("db_manager: migrating DatabaseManager agent_transactions - adding 'to_asset' column")
+                    conn.execute("ALTER TABLE agent_transactions ADD COLUMN to_asset TEXT")
+                    migrated = True
+                if migrated:
+                    conn.commit()
+            except Exception as me:
+                logger.warning(f"db_manager: DatabaseManager agent_transactions migration failed: {me}")
+
             conn.close()
             logger.info("db_manager: schema verified and WAL mode enabled")
         except Exception as e:
@@ -1380,7 +1446,9 @@ async def supervisory_controller_node(state: AgentState):
                 regime=state["data"].get("regime", "N/A"), 
                 cycle=state.get("cycle_count", 0),
                 status="emergency_unwind",
-                tx_hash="N/A" # Will be updated if on-chain call succeeds
+                tx_hash="N/A", # Will be updated if on-chain call succeeds
+                from_asset=CURRENT_POSITION,
+                to_asset="MNT"
             )
             # Override action to trigger unwind in the RPC executor below
             state["data"]["action"] = "UNWIND"
@@ -1960,8 +2028,25 @@ async def supervisory_controller_node(state: AgentState):
                         })
                         signed_regime_tx = w3.eth.account.sign_transaction(regime_tx, private_key=private_key)
                         raw_regime_tx = getattr(signed_regime_tx, 'rawTransaction', getattr(signed_regime_tx, 'raw_transaction', None))
+                        regime_tx_hash = w3.to_hex(w3.keccak(raw_regime_tx))
                         w3.eth.send_raw_transaction(raw_regime_tx)
-                        logger.info("executor: ZK-ML regime sync transaction broadcasted successfully!")
+                        logger.info(f"executor: ZK-ML regime sync transaction broadcasted successfully: {regime_tx_hash}")
+                        
+                        try:
+                            record_zk_regime_proof(
+                                cycle=state.get("cycle_count", 0),
+                                fear_greed=int(fear_greed),
+                                mnt_change=float(mnt_change),
+                                prev_vol=prev_vol_uint / 1e18,
+                                out_vol=clamped_vol / 1e18,
+                                out_risk_score=clamped_score,
+                                out_regime=expected_regime,
+                                proof_hex="0x" + proof.hex(),
+                                tx_hash=regime_tx_hash,
+                                status="success"
+                            )
+                        except Exception as dbe:
+                            logger.error(f"executor: failed to record ZK proof to db: {dbe}")
 
                         # Cache proof details in last_known_state
                         last_known_state["last_zk_proof"] = {
@@ -1986,9 +2071,42 @@ async def supervisory_controller_node(state: AgentState):
                             })
                             signed_regime_tx = w3.eth.account.sign_transaction(regime_tx, private_key=private_key)
                             raw_regime_tx = getattr(signed_regime_tx, 'rawTransaction', getattr(signed_regime_tx, 'raw_transaction', None))
+                            fallback_tx_hash = w3.to_hex(w3.keccak(raw_regime_tx))
                             w3.eth.send_raw_transaction(raw_regime_tx)
+                            logger.info(f"executor: legacy setRegime fallback transaction broadcasted successfully: {fallback_tx_hash}")
+                            
+                            try:
+                                record_zk_regime_proof(
+                                    cycle=state.get("cycle_count", 0),
+                                    fear_greed=int(fear_greed),
+                                    mnt_change=float(mnt_change),
+                                    prev_vol=prev_vol_uint / 1e18,
+                                    out_vol=clamped_vol / 1e18,
+                                    out_risk_score=clamped_score,
+                                    out_regime=expected_regime,
+                                    proof_hex="LEGACY_FALLBACK",
+                                    tx_hash=fallback_tx_hash,
+                                    status="fallback"
+                                )
+                            except Exception as dbe:
+                                logger.error(f"executor: failed to record legacy fallback to db: {dbe}")
                         except Exception as fe:
                             logger.error(f"executor: legacy setRegime fallback also failed: {fe}")
+                            try:
+                                record_zk_regime_proof(
+                                    cycle=state.get("cycle_count", 0),
+                                    fear_greed=int(fear_greed),
+                                    mnt_change=float(mnt_change),
+                                    prev_vol=prev_vol_uint / 1e18,
+                                    out_vol=clamped_vol / 1e18,
+                                    out_risk_score=clamped_score,
+                                    out_regime=expected_regime,
+                                    proof_hex="N/A",
+                                    tx_hash="FAILED_" + secrets.token_hex(8),
+                                    status="failed"
+                                )
+                            except Exception as dbe:
+                                logger.error(f"executor: failed to record fallback failure to db: {dbe}")
 
                     return f"{rebalance_status}|{tx_hash_hex}|executor: signal synchronized. tx {'confirmed' if rebalance_status == 'success' else 'reverted'} on mantle mainnet: {tx_hash_hex}"
 
@@ -2015,7 +2133,9 @@ async def supervisory_controller_node(state: AgentState):
                     regime=state["data"].get("regime", "N/A"), 
                     cycle=state.get("cycle_count", 0),
                     status=status,
-                    tx_hash=h
+                    tx_hash=h,
+                    from_asset=CURRENT_POSITION,
+                    to_asset="MNT" if action == "UNWIND" else action
                 )
                 
                 if status == "success":
@@ -2385,20 +2505,70 @@ async def get_agent_transactions():
     """Returns the last 10 agent transactions."""
     try:
         conn = sqlite3.connect(DB_PATH)
+        # Verify columns exist via table_info to prevent query crash
+        cursor = conn.execute("PRAGMA table_info(agent_transactions)")
+        cols = [c[1] for c in cursor.fetchall()]
+        has_assets = "from_asset" in cols and "to_asset" in cols
+        
+        if has_assets:
+            rows = conn.execute("""
+                SELECT tx_hash, action, score, regime, timestamp, status, vault_address, cycle, from_asset, to_asset 
+                FROM agent_transactions 
+                ORDER BY id DESC LIMIT 25
+            """).fetchall()
+        else:
+            rows = conn.execute("""
+                SELECT tx_hash, action, score, regime, timestamp, status, vault_address, cycle 
+                FROM agent_transactions 
+                ORDER BY id DESC LIMIT 25
+            """).fetchall()
+            
+        conn.close()
+        
+        res = []
+        for r in rows:
+            tx_data = {
+                "tx_hash": r[0], "action": r[1], "score": r[2], "regime": r[3],
+                "timestamp": r[4], "status": r[5], "vault_address": r[6], "cycle_number": r[7]
+            }
+            if has_assets and len(r) > 9:
+                tx_data["from_asset"] = r[8]
+                tx_data["to_asset"] = r[9]
+            res.append(tx_data)
+        return res
+    except Exception as e:
+        logger.error(f"Failed to fetch transactions from DB: {e}")
+        return []
+
+
+@app.get("/api/agent/zk-proofs")
+async def get_agent_zk_proofs():
+    """Returns the last 25 ZK regime proof transactions."""
+    try:
+        conn = sqlite3.connect(DB_PATH)
         rows = conn.execute("""
-            SELECT tx_hash, action, score, regime, timestamp, status, vault_address, cycle 
-            FROM agent_transactions 
+            SELECT cycle, timestamp, fear_greed, mnt_change, prev_vol, out_vol, out_risk_score, out_regime, proof, tx_hash, status
+            FROM zk_regime_proofs
             ORDER BY id DESC LIMIT 25
         """).fetchall()
         conn.close()
         return [
             {
-                "tx_hash": r[0], "action": r[1], "score": r[2], "regime": r[3],
-                "timestamp": r[4], "status": r[5], "vault_address": r[6], "cycle_number": r[7]
+                "cycle": r[0],
+                "timestamp": r[1],
+                "fear_greed": r[2],
+                "mnt_change": r[3],
+                "prev_vol": r[4],
+                "out_vol": r[5],
+                "out_risk_score": r[6],
+                "out_regime": r[7],
+                "proof": r[8],
+                "tx_hash": r[9],
+                "status": r[10]
             } for r in rows
         ]
     except Exception as e:
-        logger.error(f"Failed to fetch transactions from DB: {e}")
+        logger.error(f"Failed to fetch ZK proofs from DB: {e}")
         return []
 
 
@@ -2576,7 +2746,7 @@ async def get_agent_logs():
     rows = get_recent_memory(20)
     return {"logs": [{"timestamp": r[0], "cycle": r[1], "regime": r[2], "score": r[3], "action": r[4], "position": r[5], "tx_hash": r[6]} for r in rows]}
 
-def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A"):
+def record_transaction(action, score, regime, cycle, status="success", tx_hash="N/A", from_asset=None, to_asset=None):
     # Only record real on-chain transactions (must start with 0x)
     if not tx_hash or not str(tx_hash).startswith("0x") or str(tx_hash).startswith("SIM_"):
         logger.info(f"tx_recorded: skipped {status} log for cycle {cycle} (no real on-chain hash)")
@@ -2585,20 +2755,39 @@ def record_transaction(action, score, regime, cycle, status="success", tx_hash="
     vault_addr = os.getenv("VAULT_ADDRESS")
     if not vault_addr:
         return {"status": "error", "message": "VAULT_ADDRESS not configured"}
+
+    if from_asset is None:
+        from_asset = CURRENT_POSITION if action == "UNWIND" else "MNT"
+    if to_asset is None:
+        to_asset = "MNT" if action == "UNWIND" else action
     
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.execute("""
             INSERT INTO agent_transactions 
-            (timestamp, cycle, action, score, regime, status, vault_address, tx_hash)
-            VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?)
-        """, (cycle, action, score, regime, status, vault_addr, tx_hash))
+            (timestamp, cycle, action, score, regime, status, vault_address, tx_hash, from_asset, to_asset)
+            VALUES (datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (cycle, action, score, regime, status, vault_addr, tx_hash, from_asset, to_asset))
         conn.commit()
         conn.close()
-        logger.info(f"tx_recorded: cycle={cycle} action={action} status={status} (DB saved)")
+        logger.info(f"tx_recorded: cycle={cycle} action={action} status={status} path={from_asset}->{to_asset} (DB saved)")
     except Exception as e:
         logger.error(f"Failed to save transaction to DB: {e}")
 
+
+def record_zk_regime_proof(cycle, fear_greed, mnt_change, prev_vol, out_vol, out_risk_score, out_regime, proof_hex, tx_hash, status="success"):
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("""
+            INSERT OR REPLACE INTO zk_regime_proofs
+            (cycle, timestamp, fear_greed, mnt_change, prev_vol, out_vol, out_risk_score, out_regime, proof, tx_hash, status)
+            VALUES (?, datetime('now'), ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (cycle, fear_greed, mnt_change, prev_vol, out_vol, out_risk_score, out_regime, proof_hex, tx_hash, status))
+        conn.commit()
+        conn.close()
+        logger.info(f"zk_proof_recorded: cycle={cycle} status={status} tx={tx_hash}")
+    except Exception as e:
+        logger.error(f"Failed to save ZK proof to DB: {e}")
 
 
 # ─── REST Endpoints ───────────────────────────────────────────────────────────

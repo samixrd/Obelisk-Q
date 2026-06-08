@@ -12,6 +12,7 @@ import { useYieldData } from "@/hooks/useYieldData";
 // Lazy load heavy components
 const AgentTransactions = lazy(() => import("./AgentTransactions").then(m => ({ default: m.AgentTransactions })));
 const ManagedAssets = lazy(() => import("./ManagedAssets").then(m => ({ default: m.ManagedAssets })));
+const AgentZKProofs = lazy(() => import("./AgentZKProofs").then(m => ({ default: m.AgentZKProofs })));
 
 const ComponentSkeleton = ({ height = 200 }: { height?: number }) => (
   <div className="w-full bg-black/[0.02] animate-pulse rounded-[40px] flex items-center justify-center border border-black/[0.05]" style={{ height }}>
@@ -448,6 +449,10 @@ export function PortfolioView() {
 
       <Suspense fallback={<ComponentSkeleton height={300} />}>
         <AgentTransactions />
+      </Suspense>
+
+      <Suspense fallback={<ComponentSkeleton height={300} />}>
+        <AgentZKProofs />
       </Suspense>
 
     </motion.div>
