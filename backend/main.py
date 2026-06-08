@@ -1353,6 +1353,14 @@ async def supervisory_controller_node(state: AgentState):
     risk_score = state["data"].get("risk", {}).get("score", 50)
     action = state["data"].get("action", "HOLD")
 
+    # If we want to switch positions (e.g., from USDY to WMNT), we MUST do it in two steps
+    # to avoid Odos msg.value mismatch error on-chain.
+    # Step 1: Unwind the current position to MNT first.
+    # Step 2: Swap the native MNT to the target token in the next cycle.
+    if action != CURRENT_POSITION and CURRENT_POSITION != "MNT" and action not in ("HOLD", "UNWIND"):
+        logger.warning(f"executor: switching position from {CURRENT_POSITION} to {action}. Overriding action to UNWIND first to prevent Odos msg.value mismatch.")
+        action = "UNWIND"
+
     # ── CIRCUIT BREAKER LOGIC ──
     update_circuit_breaker(risk_score)
     if CIRCUIT_BREAKER_ACTIVE:
