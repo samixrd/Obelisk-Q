@@ -758,8 +758,8 @@ MAX_SCORE_CHANGE = 10 # This is used elsewhere, keeping it for now
 # ── MINIMUM SWAP VALUE GUARD ──
 # Swaps below this threshold are skipped to prevent dust-amount trades
 # from suffering catastrophic slippage on thin liquidity pools.
-# 1 MNT ≈ $0.55 → 2 MNT ≈ $1.10 minimum trade size.
-MIN_SWAP_VALUE_WEI = Web3.to_wei(2, 'ether')  # 2 MNT minimum
+# 1 MNT minimum trade size.
+MIN_SWAP_VALUE_WEI = Web3.to_wei(1, 'ether')  # 1 MNT minimum
 
 # ── SLIPPAGE & VALUE LOSS CAPS (V3 tightened) ──
 MAX_SLIPPAGE_CONTRACTION = 0.8   # High-vol regime — still tight with V3 multi-path routing

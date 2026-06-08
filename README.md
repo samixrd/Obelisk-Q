@@ -23,7 +23,7 @@
 *   ✅ **ZK-ML On-Chain Verification**: High-precision ZK-ML regime model verification on-chain.
 *   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet** ([0x59fdE89B810812846ED167033C6d33fa425835E2](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)).
 *   ✅ **Continuous Execution**: Agent swarm running 24/7 — cycle count and uptime verifiable live at [`/api/agent/health`](https://obeliskq.app/api/agent/health).
-*   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.3%–0.8% based on regime and volatility, with a 2.5% hard value-loss cap).
+*   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.3%–0.8% based on regime and volatility, with a 2.5% hard value-loss cap). Minimum trade threshold is strictly set at **1 MNT** to prevent dust-amount swap failures.
 *   ✅ **Autonomous Liquidity Guard Rails**: Enforces a real-time Oracle-based price impact check. If liquidity is too thin or price impact is high (using Odos V3 Aggregator), the agent autonomously aborts the trade to protect user capital (guarded at >0.3% price impact).
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 *   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report at [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) — regime, allocation, live USDY/mETH APY, last rotation tx.
