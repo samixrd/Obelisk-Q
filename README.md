@@ -245,7 +245,7 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 *   **Graceful Fallback**: If the LLM call fails (network issue, rate limit, timeout), the agent automatically falls back to pure rule-based logic with zero downtime. The system never stalls waiting for AI.
 
 ### 4. Institutional Safeguards & Technical Excellence
-*   **Deterministic Slippage Guard (Anti-MEV)**: The agent now utilizes a **Dynamic Slippage Engine** with Odos V3 multi-path split routing (RFQ sources enabled) that adjusts its tolerance (0.3% to 0.8%) based on market volatility and regime, with a 2.5% hard value-loss cap ensuring execution success even during flash crashes.
+*   **Deterministic Slippage Guard (Anti-MEV)**: The agent now utilizes a **Dynamic Slippage Engine** with Odos V3 multi-path split routing (RFQ sources enabled) that adjusts its tolerance (0.3% to 0.8%) based on market volatility and regime, ensuring execution success with a 2.5% hard value-loss cap even during flash crashes.
 *   **Dynamic Asset Registry**: The vault is no longer limited to hardcoded tokens. The owner can add or remove any Mantle-native assets (mETH, USDY, FBTC, etc.) via an on-chain registry, making the protocol future-proof.
 *   **Agent-Level Circuit Breaker**: The agent has been granted authorized power to `pause()` the vault on-chain. If the AI detects a critical threat that requires more than a simple rebalance, it can instantly halt all vault operations to protect users.
 *   **Proportional Asset Unwinding**: Optimized withdrawal logic that only trades the specific user's share of assets. This ensures the rest of the vault's capital remains invested and earning yield.
