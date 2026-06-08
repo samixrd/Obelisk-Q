@@ -689,6 +689,19 @@ ALPHA = 0.1
 MAX_DELTA = 5
 MAX_SCORE_CHANGE = 10 # This is used elsewhere, keeping it for now
 
+# ── MINIMUM SWAP VALUE GUARD ──
+# Swaps below this threshold are skipped to prevent dust-amount trades
+# from suffering catastrophic slippage on thin liquidity pools.
+# 1 MNT ≈ $0.55 → 2 MNT ≈ $1.10 minimum trade size.
+MIN_SWAP_VALUE_WEI = Web3.to_wei(2, 'ether')  # 2 MNT minimum
+
+# ── SLIPPAGE & VALUE LOSS CAPS (V3 tightened) ──
+MAX_SLIPPAGE_CONTRACTION = 0.8   # High-vol regime — still tight with V3 multi-path routing
+MAX_SLIPPAGE_CONSOLIDATION = 0.3 # Normal regime — V3 SOR finds sub-0.3% routes easily
+MAX_SLIPPAGE_EXPANSION = 0.5     # Low-vol regime — moderate tolerance
+MAX_PRICE_IMPACT_PCT = 0.3       # Abort if single-pool price impact exceeds this
+MAX_VALUE_LOSS_PCT = 2.5         # HARD CAP: abort if output value >2.5% less than input
+
 def update_circuit_breaker(current_score):
     global SCORE_HISTORY, CIRCUIT_BREAKER_ACTIVE, CB_UNWIND_DONE
     now = time.time()
@@ -1549,7 +1562,7 @@ async def supervisory_controller_node(state: AgentState):
                     
                     # ── SLIPPAGE PROTECTION & ODOS AGGREGATOR QUOTE ──
                     min_amount_out = 0
-                    odos_router = "0xD9F4e85489aDcd0baF0Cd63b4231c6Af58c26745"  # Odos V3 on Mantle
+                    odos_router = "0x0D05a7D3448512B78fa8A9e46c4872C88C4a0D05"  # Odos V3 Router (unified across all EVM chains)
                     swap_calldata = b""  # Will be set by Odos assemble
                     
                     if target_token != ZERO_ADDR:
@@ -1581,8 +1594,8 @@ async def supervisory_controller_node(state: AgentState):
                                                 "userAddr": w3.to_checksum_address(vault_address),
                                                 "slippageLimitPercent": 1.0,
                                                 "referralCode": 0,
-                                                "disableRFQs": True,
-                                                "compact": True
+                                                "compact": True,
+                                                "pathVizImage": True
                                             }).encode()
                                             
                                             headers = {"Content-Type": "application/json", "User-Agent": "ObeliskVault/1.0"}
@@ -1591,7 +1604,7 @@ async def supervisory_controller_node(state: AgentState):
                                                 headers["x-api-key"] = odos_api_key
                                                 
                                             quote_req_unwind = urllib.request.Request(
-                                                "https://api.odos.xyz/sor/quote/v2",
+                                                "https://api.odos.xyz/sor/quote/v3",
                                                 data=quote_payload_unwind,
                                                 headers=headers,
                                                 method="POST"
@@ -1613,6 +1626,12 @@ async def supervisory_controller_node(state: AgentState):
                         if amount_in <= 0:
                             return f"aborting|executor: estimated swap amount ({w3.from_wei(amount_in, 'ether')} MNT) is insufficient after reserving gas buffer. swap to {action} skipped."
                         
+                        # ── MINIMUM SWAP VALUE GUARD ──
+                        # Prevents dust-amount trades that get destroyed by DEX slippage on thin pools
+                        if amount_in < MIN_SWAP_VALUE_WEI:
+                            logger.info(f"executor: swap amount ({w3.from_wei(amount_in, 'ether')} MNT) is below minimum trade threshold ({w3.from_wei(MIN_SWAP_VALUE_WEI, 'ether')} MNT). skipping to avoid slippage loss.")
+                            return f"aborting|executor: swap amount too small ({w3.from_wei(amount_in, 'ether')} MNT < {w3.from_wei(MIN_SWAP_VALUE_WEI, 'ether')} MNT min). skipped to prevent slippage loss."
+                        
                         # ── WMNT WRAP: 1:1, no aggregator needed ──
                         if action == "WMNT":
                             min_amount_out = amount_in
@@ -1626,14 +1645,14 @@ async def supervisory_controller_node(state: AgentState):
                                 import time
                                 import random
                                 
-                                # Dynamic slippage based on regime
+                                # Dynamic slippage based on regime (tightened caps)
                                 volatility = state["data"].get("volatility", 1.0)
                                 if current_regime == "Contraction" or volatility > 2.0:
-                                    slippage_pct = 2.5
+                                    slippage_pct = MAX_SLIPPAGE_CONTRACTION
                                 elif current_regime == "Consolidation":
-                                    slippage_pct = 0.5
+                                    slippage_pct = MAX_SLIPPAGE_CONSOLIDATION
                                 else:
-                                    slippage_pct = 1.0
+                                    slippage_pct = MAX_SLIPPAGE_EXPANSION
                                 
                                 odos_api_key = os.getenv("ODOS_API_KEY")
                                 headers = {"Content-Type": "application/json", "User-Agent": "ObeliskVault/1.0"}
@@ -1648,15 +1667,15 @@ async def supervisory_controller_node(state: AgentState):
                                     "userAddr": w3.to_checksum_address(vault_address),
                                     "slippageLimitPercent": slippage_pct,
                                     "referralCode": 0,
-                                    "disableRFQs": True,
-                                    "compact": True
+                                    "compact": True,
+                                    "pathVizImage": True
                                 }).encode()
 
                                 quote_data = None
                                 for attempt in range(5):
                                     try:
                                         quote_req = urllib.request.Request(
-                                            "https://api.odos.xyz/sor/quote/v2",
+                                            "https://api.odos.xyz/sor/quote/v3",
                                             data=quote_payload,
                                             headers=headers,
                                             method="POST"
@@ -1704,19 +1723,36 @@ async def supervisory_controller_node(state: AgentState):
                                 actual_out = int(out_amounts[0]) if out_amounts else 0
                                 price_impact_pct = float(quote_data.get("priceImpact", 0.0))
                                 
-                                logger.info(f"executor: Odos quote - pathId={path_id} amountIn={w3.from_wei(amount_in,'ether')} actualOut={actual_out/1e18:.6f} {action} priceImpact={price_impact_pct:.2f}%")
+                                # Log path visualization for route debugging
+                                path_viz = quote_data.get("pathVizImage", None)
+                                if path_viz:
+                                    logger.info(f"executor: Odos pathViz available (base64 SVG, {len(path_viz)} chars). Route uses multi-path split routing.")
+                                logger.info(f"executor: Odos V3 quote - pathId={path_id} amountIn={w3.from_wei(amount_in,'ether')} actualOut={actual_out/1e18:.6f} {action} priceImpact={price_impact_pct:.2f}%")
                                 
-                                # Price impact guard (>0.5% = abort)
-                                if abs(price_impact_pct) > 0.5:
-                                    logger.error(f"executor: Odos price impact too high ({price_impact_pct:.2f}%). aborting swap to protect funds.")
+                                # ── PRICE IMPACT GUARD ──
+                                if abs(price_impact_pct) > MAX_PRICE_IMPACT_PCT:
+                                    logger.error(f"executor: Odos price impact too high ({price_impact_pct:.2f}% > {MAX_PRICE_IMPACT_PCT}%). aborting swap to protect funds.")
                                     return f"aborting|executor: price impact too high ({price_impact_pct:.2f}%) via Odos. rebalance to {action} aborted to protect funds."
+                                
+                                # ── OUTPUT-vs-INPUT VALUE SANITY CHECK ──
+                                # If the quoted output value is dramatically less than input value,
+                                # the swap would be a net loss — abort to protect capital.
+                                input_value_usd = float(quote_data.get("inValues", ["0"])[0]) if quote_data.get("inValues") else 0
+                                output_value_usd = float(quote_data.get("outValues", ["0"])[0]) if quote_data.get("outValues") else 0
+                                
+                                if input_value_usd > 0 and output_value_usd > 0:
+                                    value_loss_pct = ((input_value_usd - output_value_usd) / input_value_usd) * 100
+                                    logger.info(f"executor: value check — in=${input_value_usd:.4f} out=${output_value_usd:.4f} loss={value_loss_pct:.2f}%")
+                                    if value_loss_pct > MAX_VALUE_LOSS_PCT:
+                                        logger.error(f"executor: VALUE LOSS TOO HIGH ({value_loss_pct:.2f}% > {MAX_VALUE_LOSS_PCT}%). in=${input_value_usd:.4f} out=${output_value_usd:.4f}. aborting swap.")
+                                        return f"aborting|executor: swap would lose {value_loss_pct:.1f}% of value (${input_value_usd:.2f} → ${output_value_usd:.2f}). aborted to protect funds."
                                 
                                 tx_data = assemble_data.get("transaction", {})
                                 calldata_hex = tx_data.get("data", "0x")
                                 swap_calldata = bytes.fromhex(calldata_hex.removeprefix("0x"))
                                 
                                 min_amount_out = int(actual_out * (1 - slippage_pct / 100))
-                                logger.info(f"executor: Odos assemble success. calldata_len={len(swap_calldata)} minAmountOut={min_amount_out/1e18:.6f} {action}")
+                                logger.info(f"executor: Odos assemble success. calldata_len={len(swap_calldata)} minAmountOut={min_amount_out/1e18:.6f} {action} slippage={slippage_pct}%")
                                 
                             except Exception as odos_err:
                                 logger.error(f"executor: Odos API failed: {odos_err}. aborting swap — will NOT fall back to bad pool.")
