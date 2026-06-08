@@ -39,7 +39,7 @@ Q-Score drops below 45 (Action: ROTATE_TO_USDY)
     ↓  
 On-chain: ObeliskVault.rebalance(USDY, target, calldata, minAmountOut) called on Mantle
     ↓
-    Odos V3 DEX Aggregator executes swap at best rate (guarded at >0.5% price impact)
+    Odos V3 DEX Aggregator executes swap at best rate via multi-path split routing (guarded at >0.3% price impact, 2.5% value-loss hard cap)
     ↓
 User funds now earning ~5% US Treasury yield — safe from DeFi crash
 ```

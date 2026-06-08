@@ -113,7 +113,7 @@ Users retain full ownership of their underlying capital at all times.
 During a withdrawal, the vault dynamically calculates the user's precise share of mETH, USDY, and WMNT, swaps only that share back to native MNT, and payouts the proceeds. This protects the remaining vault depositors from slippage or yield leakage caused by a single user's exit.
 
 ### 4.3 Dynamic Slippage Protection
-Before executing a rebalance swap via Merchant Moe, the agent calculates the expected pool impact and output off-chain based on active liquidity depth. Swaps are signed with strict slippage protection parameters (`minAmountOut`), protecting the vault from front-running and MEV sandwich attacks.
+Before executing a rebalance swap, the agent queries the **Odos V3 DEX Aggregator** for the optimal multi-path route across all Mantle DEXs (Merchant Moe, Agni, FusionX, Butter, etc.). Swaps are protected by a triple-layer guard: dynamic slippage limits (0.3%–0.8%), a 0.3% price impact cap, and a 2.5% hard value-loss abort. All swaps are signed with strict `minAmountOut` parameters, protecting the vault from front-running and MEV sandwich attacks.
 
 ---
 
@@ -137,7 +137,7 @@ All critical cryptographic materials (e.g. `AGENT_PRIVATE_KEY`, `PROVER_PRIVATE_
 | Threat Vector | Description | Obelisk Q Mitigation Strategy | Status |
 |---|---|---|---|
 | **Reentrancy Attack** | Attacker executes a recursive call to drain vault balances during withdrawal. | OpenZeppelin/custom `nonReentrant` mutex guard on all state-modifying functions. | **Active** |
-| **Front-running / MEV** | Searchers front-run rebalance swaps on Merchant Moe, causing high slippage. | Off-chain dynamic slippage calculations passed as `minAmountOut` on rebalance calls. | **Active** |
+| **Front-running / MEV** | Searchers front-run rebalance swaps, causing high slippage. | Odos V3 multi-path routing with RFQ sources + triple-layer slippage guard (0.3%–0.8% dynamic + 0.3% price impact + 2.5% value-loss hard cap) passed as `minAmountOut` on rebalance calls. | **Active** |
 | **LLM Attack / Hallucination** | AI model fails, hallucinating high-risk positions or corrupted regimes. | Asymmetric Consensus Engine + Deterministic Math Override Node + Rule-based fallback. | **Active** |
 | **RPC Downtime / DDOS** | RPC provider fails during a critical market contraction event. | `RPCManager` dynamically fails over and cycles across 3 Mantle RPC endpoints. | **Active** |
 | **Oracle Manipulation** | Attackers manipulate on-chain price feeds to trigger artificial regime swaps. | Integration of multi-source sentiment inputs (Fear & Greed, Bybit, Coingecko simple simple simple spot prices). | **Active** |

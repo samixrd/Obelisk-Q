@@ -23,8 +23,8 @@
 *   ✅ **ZK-ML On-Chain Verification**: High-precision ZK-ML regime model verification on-chain.
 *   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet** ([0x59fdE89B810812846ED167033C6d33fa425835E2](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)).
 *   ✅ **Continuous Execution**: Agent swarm running 24/7 — cycle count and uptime verifiable live at [`/api/agent/health`](https://obeliskq.app/api/agent/health).
-*   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.5%–2.5% based on regime and volatility).
-*   ✅ **Autonomous Liquidity Guard Rails**: Enforces a real-time Oracle-based price impact check. If liquidity is too thin or price impact is high (using Odos V3 Aggregator), the agent autonomously aborts the trade to protect user capital (guarded at >0.5% price impact).
+*   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection (0.3%–0.8% based on regime and volatility, with a 2.5% hard value-loss cap).
+*   ✅ **Autonomous Liquidity Guard Rails**: Enforces a real-time Oracle-based price impact check. If liquidity is too thin or price impact is high (using Odos V3 Aggregator), the agent autonomously aborts the trade to protect user capital (guarded at >0.3% price impact).
 *   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
 *   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report at [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) — regime, allocation, live USDY/mETH APY, last rotation tx.
 *   ✅ **Premium Responsive UI/UX**: Seamless onboarding experience, real-time live decision visualizer, glassmorphic analytics charts, and transparent transaction flows.
@@ -245,7 +245,7 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 *   **Graceful Fallback**: If the LLM call fails (network issue, rate limit, timeout), the agent automatically falls back to pure rule-based logic with zero downtime. The system never stalls waiting for AI.
 
 ### 4. Institutional Safeguards & Technical Excellence
-*   **Deterministic Slippage Guard (Anti-MEV)**: The agent now utilizes a **Dynamic Slippage Engine** that adjusts its tolerance (0.5% to 2.5%) based on market volatility and regime, ensuring execution success even during flash crashes.
+*   **Deterministic Slippage Guard (Anti-MEV)**: The agent now utilizes a **Dynamic Slippage Engine** with Odos V3 multi-path split routing (RFQ sources enabled) that adjusts its tolerance (0.3% to 0.8%) based on market volatility and regime, with a 2.5% hard value-loss cap ensuring execution success even during flash crashes.
 *   **Dynamic Asset Registry**: The vault is no longer limited to hardcoded tokens. The owner can add or remove any Mantle-native assets (mETH, USDY, FBTC, etc.) via an on-chain registry, making the protocol future-proof.
 *   **Agent-Level Circuit Breaker**: The agent has been granted authorized power to `pause()` the vault on-chain. If the AI detects a critical threat that requires more than a simple rebalance, it can instantly halt all vault operations to protect users.
 *   **Proportional Asset Unwinding**: Optimized withdrawal logic that only trades the specific user's share of assets. This ensures the rest of the vault's capital remains invested and earning yield.
@@ -258,7 +258,7 @@ The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real
 ### Smart Contract Security ✅
 - [x] **Reentrancy Guards**: OpenZeppelin `ReentrancyGuard` on all state-changing functions
 - [x] **Circuit Breaker**: Autonomous `pause()` if Q-Score drops 10pts in 60min
-- [x] **Deterministic Slippage**: 0.5%-2.5% dynamic protection (anti-MEV)
+- [x] **Deterministic Slippage**: 0.3%-0.8% dynamic protection (anti-MEV)
 - [x] **Verified on Mantle**: [Code is verified on explorer](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)
 
 ### Agent Safety ✅
