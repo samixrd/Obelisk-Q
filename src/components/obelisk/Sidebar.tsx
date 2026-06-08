@@ -20,7 +20,6 @@ interface SidebarProps {
 const MENU_ITEMS = [
   { icon: IconArrowUpRight, label: "Earn",         tab: "earn"         },
   { icon: IconPortfolio,    label: "Portfolio",    tab: "portfolio"    },
-  { icon: IconSafeguards,   label: "Safeguards",   tab: "safeguards"   },
   { icon: IconLogs,         label: "Agent Logs",   tab: "agent-logs"   },
 ];
 

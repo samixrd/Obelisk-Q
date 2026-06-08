@@ -15,7 +15,6 @@ import { FloatingSymbols } from "./FloatingSymbols";
 
 export type DashboardTab =
   | "earn"
-  | "safeguards"
   | "portfolio"
   | "agent-logs"
   | "preferences";
@@ -126,7 +125,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
     }
   }, [allComplianceChecked]);
 
-  const TABS: DashboardTab[] = ["earn", "portfolio", "safeguards", "agent-logs", "preferences"];
+  const TABS: DashboardTab[] = ["earn", "portfolio", "agent-logs", "preferences"];
   const [prevTab, setPrevTab] = useState<DashboardTab>(tab);
 
   const curIdx = TABS.indexOf(tab);
@@ -269,7 +268,7 @@ export function Dashboard({ activeTab: externalTab, onTabChange, walletAddress, 
             transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           >
             {tab === "earn" && <EarnView onOpenInvest={() => setInvestOpen(true)} />}
-            {tab === "safeguards" && <SafeguardsView />}
+
             {tab === "portfolio" && <PortfolioView />}
             {tab === "agent-logs" && <AgentLogsView />}
             {tab === "preferences" && (

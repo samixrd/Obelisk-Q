@@ -91,7 +91,7 @@ import { MagneticText } from "./MagneticText";
 
 function HeroSection({ onLaunch }: { onLaunch: () => void }) {
   return (
-    <section className="landing-hero" id="dashboard">
+    <section className="landing-hero" id="home">
       <div className="hero-video-wrapper">
         <video
           autoPlay
