@@ -129,9 +129,11 @@ function encodeGetVaultStats(): string {
 
 // ── Direct RPC Helper (Wallet Independent) ───────────────────────────────────
 async function rpcCall(method: string, params: any[]): Promise<any> {
-  if (!RPC_URL) return null;
-  try {
-    const response = await fetch(RPC_URL, {
+  const primaryUrl = RPC_URL;
+  const fallbackUrl = "https://rpc.mantle.xyz";
+  
+  const attemptCall = async (url: string) => {
+    const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
@@ -139,8 +141,19 @@ async function rpcCall(method: string, params: any[]): Promise<any> {
     const json = await response.json();
     if (json.error) throw new Error(json.error.message);
     return json.result;
+  };
+
+  try {
+    return await attemptCall(primaryUrl);
   } catch (err) {
-    console.error("RPC Call failed:", err);
+    console.warn(`Primary RPC Call to ${primaryUrl} failed, trying fallback public RPC:`, err);
+    try {
+      if (primaryUrl !== fallbackUrl) {
+        return await attemptCall(fallbackUrl);
+      }
+    } catch (fallbackErr) {
+      console.error("Fallback RPC Call failed too:", fallbackErr);
+    }
     return null;
   }
 }

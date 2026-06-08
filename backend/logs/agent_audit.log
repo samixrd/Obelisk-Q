@@ -6,3 +6,31 @@
 2026-05-19 07:04:02,837 - WARNING - [local] heartbeat: update failed: Error 22 connecting to localhost:6379. The remote computer refused the network connection.
 2026-05-19 07:04:02,841 - WARNING - [local] heartbeat: update failed: Error 22 connecting to localhost:6379. The remote computer refused the network connection.
 2026-05-20 03:12:27,549 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-06-08 12:21:34,618 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-06-08 12:21:35,960 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:21:39,951 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:21:42,760 - WARNING - [local] RPC health check failed for https://rpc.ankr.com/mantle: 403 Client Error: Forbidden for url: https://rpc.ankr.com/mantle
+2026-06-08 12:21:42,761 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:21:42,987 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:21:42,987 - INFO - [local] get_w3_with_failover: Connected to https://rpc.mantle.xyz on attempt 1
+2026-06-08 12:21:44,029 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:21:44,029 - INFO - [local] get_w3_with_failover: Connected to https://rpc.mantle.xyz on attempt 1
+2026-06-08 12:21:44,595 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT
+2026-06-08 12:21:44,597 - WARNING - [local] api/stats: DB stats fetch failed: no such table: agent_memory
+2026-06-08 12:21:44,858 - INFO - [local] telemetry: fetching fresh market context from external APIs
+2026-06-08 12:21:51,421 - INFO - [local] volatility_model: fng=8 fng_vol=1.84 mnt_change=3.28% price_vol=0.66 raw=3.00 ema_vol=2.10
+2026-06-08 12:21:51,536 - INFO - [local] bybit_sentiment: btc_price=63532.4 24h_ref=61365.7 macro_bias=neutral
+2026-06-08 12:33:41,128 - INFO - [local] db_manager: schema verified and WAL mode enabled
+2026-06-08 12:33:42,654 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:33:44,241 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:33:46,870 - WARNING - [local] RPC health check failed for https://rpc.ankr.com/mantle: 403 Client Error: Forbidden for url: https://rpc.ankr.com/mantle
+2026-06-08 12:33:46,871 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:33:46,957 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:33:46,957 - INFO - [local] get_w3_with_failover: Connected to https://rpc.mantle.xyz on attempt 1
+2026-06-08 12:33:47,773 - ERROR - [local] Failed to log RPC audit to SQLite: no such table: rpc_audit_log
+2026-06-08 12:33:47,773 - INFO - [local] get_w3_with_failover: Connected to https://rpc.mantle.xyz on attempt 1
+2026-06-08 12:33:48,339 - INFO - [local] api/stats: live vault AUM = 0.0100 MNT
+2026-06-08 12:33:48,340 - WARNING - [local] api/stats: DB stats fetch failed: no such table: agent_memory
+2026-06-08 12:33:48,578 - INFO - [local] telemetry: fetching fresh market context from external APIs
+2026-06-08 12:33:54,065 - INFO - [local] volatility_model: fng=8 fng_vol=1.84 mnt_change=3.31% price_vol=0.66 raw=3.00 ema_vol=2.10
+2026-06-08 12:33:54,329 - INFO - [local] bybit_sentiment: btc_price=63517.3 24h_ref=61358.3 macro_bias=neutral
