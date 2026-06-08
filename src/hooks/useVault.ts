@@ -150,18 +150,20 @@ async function rpcCall(method: string, params: any[]): Promise<any> {
 export function useVault(): VaultState {
   const { user } = usePrivy();
   const { wallets } = useWallets();
-  const { sessionToken, isEmbeddedWallet } = useAuth();
+  const { sessionToken, isEmbeddedWallet, walletAddress } = useAuth();
   const activeWallet = wallets.find(w => w.address.toLowerCase() === user?.wallet?.address?.toLowerCase()) || wallets[0];
-  const [address,    setAddress]    = useState<string | null>(null);
+  const [address,    setAddress]    = useState<string | null>(walletAddress);
 
-  // Sync address with Privy
+  // Sync address with Privy and AuthContext
   useEffect(() => {
     if (activeWallet?.address) {
       setAddress(activeWallet.address);
+    } else if (walletAddress) {
+      setAddress(walletAddress);
     } else {
       setAddress(null);
     }
-  }, [activeWallet]);
+  }, [activeWallet, walletAddress]);
   const [txState,    setTxState]    = useState<TxStatus>("idle");
   const [txHash,     setTxHash]     = useState<string | null>(null);
   const [txError,    setTxError]    = useState<string | null>(null);
