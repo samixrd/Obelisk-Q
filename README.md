@@ -15,7 +15,7 @@
 - **Smart Contracts:** Solidity (OpenZeppelin) on Mantle Mainnet
 - **Database:** SQLite (with PostgreSQL migration planned)
 - **AI:** GPT-4o-mini (Azure OpenAI) for regime confirmation
-- **Deployment:** Vercel (frontend) + Railway (backend)
+- **Deployment:** Vercel (frontend) + Azure (backend)
 
 ---
 
