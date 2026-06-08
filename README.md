@@ -32,113 +32,57 @@
 
 ---
 
-## 🎯 Why This Matters (For Judges)
+## 🎯 Why This Matters
 
 Obelisk Q solves a **$16T opportunity**: making institutional-grade yield management accessible to retail users.
 
 **The Problem:**
-- US Treasury yields (5% APY) are locked behind institutional access
-- Retail DeFi users miss 3-5% annual alpha by staying static
-- No autonomous system manages regime shifts without manual intervention
+*   **Barriers to Entry:** Safe, institutional-grade US Treasury yields (~5% APY) are locked away from everyday retail users.
+*   **Static Portfolio Loss:** Retail DeFi users miss 3%–5% annual alpha by holding static positions.
+*   **Active Management Deficit:** There is no autonomous system that reacts to regime changes before prices react to protect capital.
 
-**The Solution (You're Looking At It):**
-- **1-Click Deposit**: Users deposit MNT → AI handles everything 24/7
-- **ZK-ML Proof**: Regime decisions verified cryptographically on-chain (Mantle Mainnet)
-- **Zero Losses**: $OBELISK enforces safety via circuit breakers + reentrancy guards
-- **Live Demo**: See the agent work in real-time at [obeliskq.app](https://obeliskq.app)
+**The Solution:**
+*   **1-Click Wealth Management:** Users deposit MNT; the agent actively manages and balances positions 24/7.
+*   **On-Chain Verifiability (ZK-ML):** All regime shifts generate Zero-Knowledge proofs verified directly on-chain on Mantle Network.
+*   **Asymmetric Capital Safety:** Automatically shifts into institutional safe-haven RWA (USDY backed by US Treasury Bills) during market contractions.
 
-**Key Numbers:**
-| Metric | Value |
-|--------|-------|
-| Min. Deposit | 0.01 MNT |
-| Agent Uptime | 24/7 (verifiable via `/api/agent/health`) |
-| Regime Detection | Every 10 minutes (HMM-powered) |
-| Safety Level | Institutional (circuit breaker + ZK verification) |
+| Metric | Value | Reference / Endpoint |
+|---|---|---|
+| **Min. Deposit** | 0.01 MNT | [ObeliskVault Contract](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2) |
+| **Agent Uptime** | 24/7 | [`/api/agent/health`](https://obeliskq.app/api/agent/health) |
+| **Regime Detection** | Every 10 minutes | [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) |
+| **Safety Level** | Institutional-Grade | Circuit Breaker + ZK Verifier |
 
 ---
 
-## 🚀 Try It Now (< 5 Minutes)
+## 🚀 Quick Start & Live Verification (< 5 Minutes)
 
-### 🌐 Live Demo
-🔗 **[obeliskq.app](https://obeliskq.app)** — See the agent trading in real-time
+### 🌐 Live Demo & Endpoints
+*   **Live Web App:** 🔗 [obeliskq.app](https://obeliskq.app)
+*   **Live Uptime & Cycle Health:** `curl https://obeliskq.app/api/agent/health`
+*   **Live Market Regime Status:** `curl https://obeliskq.app/api/rwa/status`
+*   **Smart Contracts on Mantle:**
+    *   [ObeliskVault (0x59fd...)](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)
+    *   [ZKRegimeVerifier (0xbd47...)](https://explorer.mantle.xyz/address/0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D)
 
-- Connect wallet via Privy
-- Deposit test MNT (if available)
-- Watch regime detection in action
-- Check `/api/agent/health` for uptime proof
-- View `/api/rwa/status` for live allocation
-
-### 🏃 Run Locally (Copy-Paste)
+### 🏃 Run Locally
+To spin up the repository on your local machine:
 
 ```bash
-# Clone & install
+# Clone the repository
 git clone https://github.com/samixrd/Obelisk-Q.git
 cd Obelisk-Q
 
-# Install dependencies
+# Install dependencies for frontend and backend
 pnpm install
 pnpm run install:backend
 
-# Start everything
+# Launch frontend and backend concurrently
 pnpm run dev:all
 ```
-Then open:
-- Frontend: http://<your-localhost-or-azure-ip>:5173
-- Backend Docs: http://<your-localhost-or-azure-ip>:8000/docs
-- Smart Contract Address: `0x59fdE89B810812846ED167033C6d33fa425835E2`
 
-📊 Verify It's Working:
-Check agent is alive:
-```bash
-curl https://obeliskq.app/api/agent/health
-```
-Expected: `{"uptime_hours": X, "cycles_executed": Y, "status": "healthy"}`
-
-Check current regime:
-```bash
-curl https://obeliskq.app/api/rwa/status
-```
-Expected: Regime (Expansion/Consolidation/Contraction), current allocation, USDY APY
-
-Check smart contract on Mantle:
-- [ObeliskVault](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)
-- [ZKRegimeVerifier](https://explorer.mantle.xyz/address/0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D)
-
----
-
-## 🧪 Test the System (What Judges Will Check)
-
-### ✅ Test 1: Agent is Running 24/7
-```bash
-curl https://obeliskq.app/api/agent/health
-```
-Expected: Returns `{"status": "healthy", "uptime_hours": X, "cycles_executed": Y}`
-
-### ✅ Test 2: Regime Detection Works
-```bash
-curl https://obeliskq.app/api/rwa/status
-```
-Expected: Returns current regime (Expansion/Consolidation/Contraction), allocation %
-
-### ✅ Test 3: Smart Contract is Verified
-Visit: [ObeliskVault on Mantle](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)
-Should show: ✓ Code is verified, ✓ Recent transactions, ✓ Read/Write functions work
-
-### ✅ Test 4: Local Setup Works
-```bash
-pnpm run dev:all
-```
-Should see:
-- Vite server running on http://<your-localhost-or-azure-ip>:5173
-- FastAPI docs on http://<your-localhost-or-azure-ip>:8000/docs
-- No errors in console
-
-### ✅ Test 5: Deposit/Withdraw Flow
-1. Go to http://<your-localhost-or-azure-ip>:5173
-2. Connect wallet
-3. Deposit 0.1 MNT
-4. Check ObeliskVault contract for updated balance
-5. Watch regime detection cycle through
+*   **Frontend Interface:** `http://localhost:5173`
+*   **FastAPI Swagger Docs:** `http://localhost:8000/docs`
 
 ---
 
