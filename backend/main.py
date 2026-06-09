@@ -2031,6 +2031,9 @@ async def supervisory_controller_node(state: AgentState):
 
                         # Get fresh nonce after rebalance tx was mined
                         fresh_nonce = w3.eth.get_transaction_count(account.address)
+                        if fresh_nonce <= nonce:
+                            logger.info(f"executor: fetched nonce {fresh_nonce} is not greater than rebalance nonce {nonce}. Overriding to {nonce + 1}")
+                            fresh_nonce = nonce + 1
                         
                         regime_tx = contract.functions.setRegimeWithZKProof(
                             int(fear_greed),
@@ -2083,6 +2086,9 @@ async def supervisory_controller_node(state: AgentState):
                         logger.warning(f"executor: ZK regime sync failed, attempting legacy setRegime fallback: {re}")
                         try:
                             fallback_nonce = w3.eth.get_transaction_count(account.address)
+                            if fallback_nonce <= nonce:
+                                logger.info(f"executor: fetched fallback nonce {fallback_nonce} is not greater than rebalance nonce {nonce}. Overriding to {nonce + 1}")
+                                fallback_nonce = nonce + 1
                             regime_tx = contract.functions.setRegime(current_regime).build_transaction({
                                 'from': account.address,
                                 'nonce': fallback_nonce,
