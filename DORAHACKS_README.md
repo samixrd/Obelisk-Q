@@ -1,182 +1,327 @@
-# 🪐 Obelisk Q Wealth Navigator
-**Obelisk Q** is an autonomous wealth navigator for Mantle that leverages a sovereign agentic swarm to optimize yields across liquid staking and institutional RWAs.
+# 🪐 Obelisk Q — Autonomous Sovereign Wealth Navigator
+### Mantle Network Hackathon 2026 · AI & RWA Track + AI · Trading & Strategy Track
 
 ---
 
-## ⚡ Summary
-*   ✅ **Mainnet Ready**: Smart contracts deployed and verified on **Mantle Mainnet**.
-*   ✅ **Continuous Execution**: Agent swarm running 24/7.
-*   ✅ **Autonomous Rebalancing**: On-chain rebalances executed autonomously with dynamic slippage protection.
-*   ✅ **Institutional Safety**: **Zero user losses** recorded, enforced by on-chain reentrancy guards and a real-time autonomous circuit breaker.
-*   ✅ **Extreme Resilience**: **Multi-RPC failover** system integrated and tested across 3 independent providers (Mantle, PublicNode, Ankr).
-*   ✅ **RWA Judge Endpoint**: Full live RWA intelligence report available via our API.
-*   ✅ **EIP-4337 Gasless UX & Auto-Forwarding**: Full zero-friction onboarding for social users, automatic transaction gas reserves, and two-step auto-forward withdrawals to personal external wallets.
+## 🎯 One-Line Pitch
+
+> **The world's first autonomous AI wealth agent on Mantle — detecting market regimes in real time and rotating user capital between mETH staking yield and US Treasury-backed USDY, with every decision verified on-chain via Zero-Knowledge proofs.**
 
 ---
 
-## 🏆 Hackathon Submission: AI & RWA Track And AI · Trading & Strategy Track
-Obelisk Q is submitted to the **AI & RWA Track** (Application Path) and is competing for the **Grand Champion** title.
+## 🔴 The Problem
 
-### 📝 The Pitch: Bringing Intelligence to RWAs
-*   **Asset Category**: Real World Assets (USDY - US Treasury backed), Liquid Staking Tokens (mETH), and Wrapped MNT (WMNT).
-*   **The AI Role**: A 7-node autonomous pipeline (LangGraph) acts as a "Sovereign Navigator," detecting market regimes and rebalancing capital without human intervention.
-*   **The Strategy (RWA Safe Harbor)**: Captures "Growth Alpha" with mETH during expansions, and autonomously rotates into **USDY (US Treasury backed)** as a safe harbor during DeFi volatility events to protect user capital.
-*   **Mantle Integration**: Deeply integrated with the Mantle Ecosystem (mETH + USDY). Deployed and verified on **Mantle Mainnet**.
+August 5, 2024 — crypto markets lost **$500 billion in 72 hours**. Over **$600 million** in leveraged positions were liquidated in a single day. Retail users holding ETH, BTC, and DeFi positions had no warning. No protection. No exit.
 
-### 📈 The Pitch: Bringing Intelligence to Trading & Strategy
-*   **Asset Category**: Dynamic yield optimization assets across mETH, USDY, and WMNT.
-*   **The AI Role**: A 7-node autonomous swarm coordinating HMM-inspired regime classifiers, risk score generators, and GPT-4o Azure OpenAI consensus logic to perform automated rebalancing.
-*   **The Strategy (Regime Damping)**: Implements mathematical regime decoding that detects Expansion, Consolidation, and Contraction states using smoothed Fear & Greed and price signals. Executes rebalancing trades under optimized control theory damping models to maximize returns while mathematically mitigating whipsaw losses.
-*   **Mantle Integration**: Executes high-throughput swaps on-chain via the **Merchant Moe DEX**, fully protected by a prioritized Web3 failover system, reentrancy guards, and an autonomous, 10-point delta circuit breaker.
+October 2025 — a geopolitical flash crash wiped **$19 billion** in leveraged positions in hours. **1.62 million trader accounts** were liquidated. Exchange servers went down under the load.
 
----
+These are not edge cases. This is the market.
 
-## 🏗️ System Architecture
+Three structural problems make retail users permanently vulnerable:
 
-*(Please visit our GitHub Repository to view the full 7-Node Swarm architecture diagram!)*
-
-### 1. The Autonomous Swarm (Backend)
-The "brain" of the system operates on a specialized 7-node LangGraph feedback loop:
-*   **Regime Detection**: Scans liquidity markers and yield vectors on Mantle.
-*   **Risk Assessment**: Executes an HMM-inspired "Regime Audit" to classify markets.
-*   **Deterministic Analyst**: A pure math-based second opinion using tighter volatility/score thresholds.
-*   **Consensus Node**: Arbitrates between the AI and deterministic regimes with asymmetric safety bias.
-*   **Q-Score Engine**: Calculates institutional-grade stability ratings (0-100).
-*   **Telemetry Aggregator**: Synchronizes state across agent nodes using the Antigravity Protocol (<500ms latency).
-*   **Supervisory Controller**: The authorized on-chain actor that signs and triggers execution on Mantle.
-*   **HA Shadow Nodes**: Implements a "Hot Standby" architecture where secondary nodes monitor primary health and take over execution in case of failure.
-
-### 2. HMM-Inspired Regime Detection Algorithm
-
-Obelisk Q uses an **HMM-inspired regime classifier** — a multi-stage pipeline that combines volatility thresholds, hysteresis-based state persistence, LLM confirmation, and deterministic sanity overrides.
-
-#### 2.1 Hidden States (Market Regimes)
-*   **Expansion**: Low volatility, growth conditions. Target Asset is **mETH (staked ETH)**.
-*   **Consolidation**: Normal markets, moderate risk. Target Asset is **WMNT (Wrapped MNT)**.
-*   **Contraction**: High volatility, risk-off. Target Asset is **USDY (US Treasury RWA)**.
-
-#### 2.2 Dual-Model Consensus
-At the core of Obelisk Q's decision-making is the **Dual-Model Consensus** mechanism, designed to arbitrate and resolve disagreements between two independent evaluation layers: a **Cognitive AI Layer** and a **Deterministic Mathematical Analyst**. 
-
-Rather than relying purely on machine learning or static rules, the protocol merges qualitative market context with quantitative calculations, enforcing a **Safety-First Asymmetric Arbitration Bias**.
-
-1. **The Cognitive AI Layer**: Processes real-time qualitative and quantitative signals—such as on-chain activity, ecosystem data, macro sentiment, and the Fear & Greed index. This layer uses GPT-4o-mini to establish a contextual market outlook and acts as a confirmation filter on the raw regime observations.
-2. **The Deterministic Mathematical Analyst**: Evaluates pure statistical telemetry—using tight volatility calculations and historical data constraints. It remains insulated from qualitative market hype, providing a conservative mathematical baseline.
-
-##### Consensus Rules & Safety Bias Matrix
-The Consensus Node operates with an asymmetric risk-aversion profile. Disagreements between the two models are resolved as follows:
-*   **Safety-First Arbitration (Contraction Dominance)**: If *either* the AI layer or the Mathematical analyst votes for **Contraction**, the final consensus immediately resolves to **Contraction**. Funds are rotated to safety (USDY RWA backed by US Treasury Bills) automatically.
-*   **Conservative Default (Consolidation Gate)**: If there is a mismatch where one model votes for Expansion and the other votes for Consolidation, the consensus defaults to **Consolidation** (Wrapped MNT) to protect capital.
-*   **Unanimous Agreement for Growth**: For the vault to enter the **Expansion** regime (allocating heavily to mETH staking yield), *both* models must unanimously agree. Growth assets are never chased blindly.
-*   **Emergency Overrides**: 
-    *   **Circuit Breaker**: A 10-point drop in Q-Score within 60 minutes overrides all logic and forces an emergency unwind to native MNT.
-    *   **Anti-Whipsaw Trend Lock (Hysteresis)**: Enforces a 3-cycle lock-in period on regime shifts to prevent rapid, gas-eroding capital rotations during noisy market movements.
-
-This dual-consensus design ensures that capital protection is always prioritized, keeping the agent transparent, mathematically verifiable, and risk-aware.
-
-### 3. GPT-4o-mini Intelligence Layer (Azure OpenAI)
-The agent swarm is augmented by **GPT-4o-mini** via Azure OpenAI, providing real-time AI reasoning at two critical decision points:
-*   **Market Analysis**: Produces a 1-sentence market outlook each cycle.
-*   **Regime Confirmation**: Acts as a second opinion confirming or overriding the regime classification based on the full market context.
+| Problem | Impact |
+|---|---|
+| **No regime awareness** | Retail users hold static positions through crashes that institutional desks exit hours earlier |
+| **US Treasury yield inaccessible** | ~5% APY safe-haven yield from US T-Bills is locked behind institutional access barriers |
+| **No autonomous protection** | There is no system that automatically rotates retail capital to safety before a crash reaches them |
 
 ---
 
-## 💰 Business Potential & Revenue Model
+## ✅ The Solution: Obelisk Q
 
-### 🏦 Revenue Model
-Obelisk Q employs a diversified fee structure structured across product phases to align incentives between the protocol, strategy creators, and copy-traders:
+Obelisk Q is a **7-node autonomous AI swarm** running 24/7 on Mantle Mainnet. It reads live market conditions every 10 minutes, classifies the market into one of three hidden states, and autonomously rotates deposited capital between:
 
-| Stream | Rate | Applies To | Phase |
-| :--- | :--- | :--- | :--- |
-| **Swap / DEX Fee** | 0.07% per rebalance | All vaults | Phase 1 |
-| **Performance Fee** | 5% on yield | AI-managed vaults only | Phase 1 |
-| **Maintenance Fee** | 0.5% annually on TVL | AI-managed vaults only | Phase 1 |
-| **Copy-Trade Split** | Vault owner 3% + Protocol 2% (5% total) | Copied vaults | Phase 2 |
+- **mETH** (Mantle Liquid Staking — growth yield during expansion)
+- **WMNT** (Wrapped MNT — neutral position during consolidation)
+- **USDY** (Ondo Finance — 100% US Treasury-backed safe harbor during contraction)
 
-### 🚀 Go-To-Market (GTM)
-1. **Ecosystem Phase** (Now): Hackathon -> early adopters -> Mantle community DeFi users.
-2. **Vault Scale Phase** (Phase 1): Deploy automated vault factory, Gelato automation, and custom safe havens to onboard retail and DAO treasuries.
-3. **Social Replication Phase** (Phase 2): Social copy-trading, React Native mobile apps, and LLM-driven intent engines to expand user base.
+Users deposit MNT in 3 steps. The agent manages everything. Withdraw any time. No lock-up. No KYC. Minimum deposit: **0.01 MNT**.
+
+---
+
+## 🏗️ Technical Architecture: 3 Pillars
+
+---
+
+### PILLAR 1 — HMM Regime Detection Engine
+
+At the core of Obelisk Q is a **Hidden Markov Model (HMM)-inspired regime classifier** — a probabilistic pipeline that reads the hidden state of the market from observable signals.
+
+**Observation Model — Live Market Signals (every 10 min):**
+
+| Signal | Source | Formula |
+|---|---|---|
+| Fear & Greed Index | alternative.me | `V_fng = (100 - FearGreed) / 50` → range [0.0, 2.0] |
+| MNT 24h Price Change | CoinGecko | `V_price = min(1.5, |ΔMNT| / 5.0)` → range [0.0, 1.5] |
+| BTC Institutional Sentiment | Bybit API | Qualitative context for LLM layer |
+
+**EMA Smoothing (α=0.4)** prevents single-cycle noise from triggering costly swaps:
+```
+V_t = 0.4 × V_raw + 0.6 × V_(t-1)     bounded to [0.5, 3.5]
+```
+
+**State Classification:**
+- `V_t < 1.2` → **Expansion** → Allocate to mETH
+- `1.2 ≤ V_t ≤ 2.2` → **Consolidation** → Hold WMNT
+- `V_t > 2.2` → **Contraction** → Rotate to USDY (US Treasury safe harbor)
+
+**Anti-Whipsaw Hysteresis Lock:** After any regime change, a 3-cycle (~30 min) lock prevents the system from flipping back and forth at boundary conditions — saving gas and slippage on every cycle.
+
+---
+
+### PILLAR 2 — Dual-Model Consensus (AI + Math, Both Must Agree)
+
+This is what makes Obelisk Q fundamentally different from scripted AI agents.
+
+Most "AI agents" are an LLM wrapped around an API call. If the model hallucinates — users lose money. There is no check.
+
+Obelisk Q requires **two completely independent layers to agree** before any capital moves:
+
+**Layer 1 — Cognitive AI (GPT-4o-mini via Azure OpenAI)**
+Reads qualitative signals: Fear & Greed index, DeFiLlama yield data, CoinGecko price movements, Bybit BTC sentiment. Produces a market outlook and regime confirmation.
+
+**Layer 2 — Deterministic Mathematical Analyst**
+Pure volatility thresholds. No opinions. No bias. No LLM. Just the numbers.
+
+**Asymmetric Safety Bias (the key insight):**
+
+| AI Node | Math Node | Final Decision | Reason |
+|---|---|---|---|
+| Expansion | Expansion | **Expansion** | Unanimous — growth permitted |
+| Expansion | Consolidation | **Consolidation** | Safety default on disagreement |
+| Consolidation | Expansion | **Consolidation** | AI's qualitative concern respected |
+| **Contraction** | Any | **Contraction** | Contraction always wins |
+| Any | **Contraction** | **Contraction** | Contraction always wins |
+
+**Result:** AI hallucinations cannot cost users money. Bad signals from either model are caught by the other. Capital protection is structurally guaranteed — not hoped for.
+
+**Emergency Circuit Breaker:** If the Q-Score (yield 40% + volatility 35% + liquidity 25%) drops 10+ points within 60 minutes, the agent autonomously calls `pause()` on the vault contract and unwinds to safety regardless of regime state.
+
+---
+
+### PILLAR 3 — ZK-ML On-Chain Verification + RWA Safe Harbor
+
+**Zero-Knowledge Proofs for every regime decision:**
+Every cycle, a ZK-ML proof is generated from the HMM output and verified on-chain through our `ZKRegimeVerifier` smart contract on Mantle Mainnet. Users don't need to trust us — they can cryptographically verify every decision the agent made.
+
+```
+ZKRegimeVerifier: 0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D
+ObeliskVault:     0x59fdE89B810812846ED167033C6d33fa425835E2
+```
+
+**USDY as Autonomous Safe Harbor:**
+During Contraction, 75% of vault capital rotates into **USDY** (Ondo Finance, Mantle-native), backed 100% by US Treasury Bills. A retail user with 0.01 MNT gets the same institutional Treasury protection that has historically only been available to hedge funds. Automatically. With no manual action.
+
+**Allocation targets by regime:**
+
+| Regime | USDY (RWA) | mETH (LST) | WMNT | Trigger |
+|---|---|---|---|---|
+| Expansion | 20% | 60% | 20% | V < 1.2 · Q-Score ≥ 70 |
+| Consolidation | 45% | 40% | 15% | 1.2 ≤ V ≤ 2.2 |
+| **Contraction 🛡️** | **75%** | 15% | 10% | V > 2.2 |
+
+---
+
+## 🤖 The 7-Node Swarm Architecture
+
+```
+[Regime Detection]  →  Reads Fear/Greed + MNT price → computes V_t via HMM
+        ↓
+[Risk Assessment]   →  HMM-inspired regime audit, volatility classification
+        ↓
+[Deterministic Analyst] → Pure math second opinion (no LLM)
+        ↓
+[Consensus Node]    →  Asymmetric arbitration — safety-first resolution
+        ↓
+[Q-Score Engine]    →  Computes 0-100 institutional safety index
+        ↓
+[Telemetry Aggregator] → State sync across nodes (<500ms, Antigravity Protocol)
+        ↓
+[Supervisory Controller] → ONLY authorized node to call vault on-chain
+        ↓
+   ObeliskVault (Mantle Mainnet) → rebalance() via Odos V3 DEX Aggregator
+```
+
+**Technology Stack:**
+- **Backend:** Python + FastAPI + LangGraph (AI agent graph)
+- **AI:** GPT-4o-mini via Azure OpenAI
+- **Smart Contracts:** Solidity + OpenZeppelin on Mantle Mainnet (Chain ID 5000)
+- **Frontend:** React 18 + TypeScript + Vite + Tailwind
+- **DEX:** Odos V3 multi-path split routing (best execution across Agni, FusionX, Merchant Moe)
+- **RPC:** Multi-provider failover (Mantle, PublicNode, Ankr)
+- **Database:** SQLite with WAL mode + Redis heartbeat
+- **Process:** PM2 with auto-recovery, 450MB memory limit
+
+---
+
+## 🔥 Battle-Tested on Mainnet
+
+We want to be transparent: we hit two real problems during development on Mantle Mainnet — and fixed both.
+
+**Problem 1 — High Slippage (occurred twice):**
+DEX pool liquidity was thin at the wrong moment and our static slippage tolerance failed.
+
+**Fix:** Fully dynamic slippage engine — 0.3% (consolidation) to 0.8% (contraction) based on live regime and volatility. Hard 2.5% value-loss cap. Price-impact abort at >0.3%. Minimum swap size enforced at 1 MNT to prevent dust trades. Switched to Odos V3 multi-path split routing across all major Mantle DEXes simultaneously.
+
+**Problem 2 — ZK Proof Verification Failed:**
+The `setRegimeWithZKProof` on-chain call was reverting. The ZKRegimeVerifier was rejecting valid proofs due to a volatility encoding mismatch in the proof inputs.
+
+**Fix:** Input validation added before proof submission. Volatility encoding normalized to match the verifier's expected integer range. All proofs now submit and verify correctly.
+
+These failures happened on Mainnet — with real transactions. The fixes are shipped. The fact that we found and resolved these issues means the system has been stress-tested in conditions most hackathon projects simulate.
+
+---
+
+## 🙋 User Experience — 3 Steps
+
+1. **Connect wallet** — MetaMask or social login (Privy). No KYC. No whitelist.
+2. **Deposit MNT** — Minimum 0.01 MNT. Enter amount, confirm on-chain.
+3. **Done.** The 7-node swarm takes over.
+
+Every 10 minutes: HMM runs → swarm decides → capital positioned. The user does nothing.
+
+**Withdraw any time.** No lock-up. No penalty. The ObeliskVault is non-custodial — only the user can access their funds. The agent's Supervisor node can rebalance but cannot withdraw to any address other than the depositor.
+
+---
+
+## 📡 Live Verification Endpoints
+
+All public. No authentication required.
+
+| Endpoint | What It Shows |
+|---|---|
+| [`/api/agent/health`](https://obeliskq.app/api/agent/health) | Cycle count, current regime, Q-Score, uptime, RPC status |
+| [`/api/rwa/status`](https://obeliskq.app/api/rwa/status) | Live regime, allocation targets, USDY/mETH APY, last rotation tx |
+| [`/api/cycles/history`](https://obeliskq.app/api/cycles/history) | Full audit trail — every regime decision with volatility and score |
+| [`/api/agent/identity`](https://obeliskq.app/api/agent/identity) | ERC-8004 Agent ID + on-chain manifest |
+
+**Smart Contracts on Mantle Mainnet:**
+- [ObeliskVault](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2) — `0x59fdE89B810812846ED167033C6d33fa425835E2`
+- [ZKRegimeVerifier](https://explorer.mantle.xyz/address/0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D) — `0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D`
 
 ---
 
 ## 🌍 BGA Alignment: Blockchain for Good
-Obelisk Q is explicitly designed around the **Blockchain for Good Alliance (BGA)** principles of financial inclusion, market fairness, and transparency.
 
-### 🏦 Democratizing Institutional Yield Access
-Historically, US Treasury yields have only been accessible to institutional investors. **Obelisk Q breaks this barrier**:
-*   During market Contraction, the agent automatically rotates retail user deposits into **USDY**, a Mantle-native stablecoin fully backed by US Treasury Bills (~5% APY).
-*   A retail user with as little as **0.01 MNT** can access the same Treasury-backed yield as a billion-dollar hedge fund.
+For centuries, the most powerful financial tools on earth — US Treasury bonds, institutional execution desks, algorithmic risk management — have been locked behind a wall. That wall is called **minimum investment size**. Hedge funds enter. Retail stays out.
 
-### ⚖️ Reducing Information Asymmetry
-Retail DeFi users lack the tools and data pipelines that institutional traders use to time market cycles. Obelisk Q closes this gap by publishing every AI decision with **full reasoning transparency** via the in-app **AI Decision Transparency** feed.
+Obelisk Q tears that wall down. On Mantle.
 
 ---
 
-## 🚀 Project Roadmap
+### 🏦 Democratizing Institutional-Grade Yield
 
-### Phase 0 — Core Architecture (Hackathon Build)
-*   **Status**: Live on Mantle Mainnet (Chain ID 5000)
-*   **Smart Contracts**:
-    *   `ObeliskVault` (`0x59fdE89B810812846ED167033C6d33fa425835E2`) — Capital vault + Odos V3 DEX aggregation
-    *   `ZKRegimeVerifier` (`0xbd47209Fc1B99B9100c22ABF2C27CaD218dC974D`) — On-chain ZK-ML proof verification
-*   **Supported Assets**: mETH · USDY · WMNT
-*   **AI & Analytics Engine**:
-    *   LangGraph + FastAPI volatility backend
-    *   HMM regime classification engine
-    *   Dynamic rebalancing trigger system
-    *   PM2 cluster process management
-*   **Web3 Frontend**:
-    *   Privy social login + non-custodial wallets
-    *   ZK proof validation history display
+During market Contraction, Obelisk Q automatically rotates user capital into **USDY** — Ondo Finance's Mantle-native token backed 100% by US Treasury Bills, earning ~5% APY. This yield has historically been accessible only to institutions managing tens of millions of dollars.
 
-### Phase 1 — Vault Infrastructure
-*   **Vault Layer**:
-    *   Vault Factory — systematic pool deployment on Mantle
-    *   ERC-6551 NFT-bound vault accounts
-    *   Users can create AI-managed vaults or manual vaults
-    *   Safe Multisig + Timelock governance
-    *   Formal smart contract audit + verification
-*   **Automation & Risk**:
-    *   Gelato v3 stop-loss automation
-    *   Custom safe haven selection — on market downturns the AI automatically rotates into the user's chosen defensive asset (Options: USDY US Treasury RWA, XAUT Gold RWA, or user-defined TradFi-backed stable assets)
-    *   Just-In-Time settlement — funds stay in user's own wallet until execution, routed through Bybit's institutional infrastructure off-chain and settled on-chain atomically (No central pool, no honeypot)
-    *   Circuit breaker — max drawdown guard
-    *   Gasless transactions via ERC-4337 paymaster
-*   **Dashboard**:
-    *   Real-time TVL + allocation telemetry
-    *   Vault performance analytics
-*   **Growth & User Acquisition**:
-    *   Points system — weekly on-chain + off-chain rewards
-    *   Referral vault sharing rewards
-    *   User onboarding campaigns begin Phase 1
+On Obelisk Q:
+- **Minimum deposit:** 0.01 MNT *(vault contract threshold — anyone can enter)*
+- **Minimum for agent execution:** 1 MNT *(the agent only fires swaps above this to prevent dust-amount trades suffering catastrophic slippage on thin pools)*
+- **Time to first yield:** Under 10 minutes *(next agent cycle)*
+- **Manual action required:** Zero
 
-### Phase 2 — Social Layer & Mobile
-*   **Mobile App**:
-    *   iOS + Android app (React Native)
-    *   Biometric auth (Face ID / fingerprint)
-    *   Push notifications for trades and rebalances
-    *   Mobile-first deposit and withdrawal flows
-*   **AI Intent Engine**:
-    *   LLM natural language reasoning layer
-    *   Natural language -> on-chain action pipeline
-    *   Intent simulation + preview before signing
-*   **Leaderboard & Analytics**:
-    *   Live vault performance rankings
-    *   Dynamic yield rank badges
-    *   Public vault performance API
-*   **Copy Strategy**:
-    *   One-click vault mirroring
-    *   Vault owner earns 3%, protocol takes 2% (5% total from copier)
-    *   Customisable allocation tolerance
-    *   Strategy NFT — tradeable vault configs
-*   **Notifications**:
-    *   Telegram bot — position + rebalance alerts
-    *   Volatility threshold push alerts
-    *   Weekly email digest
+A retail user with a small balance gets the exact same Treasury-backed protection as a billion-dollar fund — automatically, non-custodially, and with full on-chain verifiability.
 
 ---
 
-## 🛠️ Getting Started
-*   **Live Demo**: https://www.obeliskq.app/
-*   **GitHub Repository**: https://github.com/samixrd/Obelisk-Q
+### ⚖️ Closing the Information Asymmetry Gap
+
+Institutional trading desks run 24/7 data pipelines — Fear & Greed indices, DeFiLlama yield feeds, macro sentiment monitors, volatility models. They know when to exit. Retail users find out after the crash.
+
+Obelisk Q runs the **same pipeline** and makes it public:
+- Every regime decision is logged to `/api/cycles/history` — open, no auth required
+- Every AI reasoning output is visible in the in-app **AI Decision Transparency** feed
+- Every swap is verifiable on Mantle Explorer with a transaction hash
+- Every ZK proof is verifiable on-chain via the `ZKRegimeVerifier` contract
+
+Users don't just benefit from the intelligence — they can *audit* it.
+
+---
+
+### 🛡️ Non-Extractive by Design
+
+Most DeFi yield products make money when users stay — even when they shouldn't. Obelisk Q is designed to do the opposite:
+
+| Feature | What it protects |
+|---|---|
+| **Circuit Breaker** | Autonomously pauses the vault if Q-Score drops 10pts in 60 min — even if it costs protocol fees |
+| **Hysteresis Lock** | Prevents overtrading that erodes small retail positions through gas fees |
+| **Non-custodial vault** | Obelisk Q cannot access or redirect user funds — ever |
+| **1 MNT swap minimum** | Protects small depositors from dust-trade slippage on thin liquidity pools |
+| **2.5% hard value-loss cap** | Every swap aborts if output value drops more than 2.5% — even mid-execution |
+
+The protocol earns when users earn. Not at their expense.
+
+---
+
+## 💰 Revenue Model
+
+| Stream | Rate | Phase |
+|---|---|---|
+| Swap / DEX Fee | 0.07% per rebalance | Phase 1 |
+| Performance Fee | 5% on yield generated | Phase 1 |
+| Maintenance Fee | 0.5% annually on TVL | Phase 1 |
+| Copy-Trade Split | Vault owner 3% + Protocol 2% | Phase 2 |
+
+---
+
+## 🚀 Roadmap
+
+### ✅ Phase 0 — Core Intelligence Engine (Complete · Live on Mainnet)
+- HMM regime classifier + 7-node LangGraph swarm
+- Dual-model consensus (GPT-4o-mini + deterministic analyst)
+- ZK-ML on-chain proof verification via ZKRegimeVerifier
+- ObeliskVault with Odos V3 DEX aggregation + dynamic slippage engine
+- Multi-RPC failover (Mantle, PublicNode, Ankr)
+- PM2 HA process management + SQLite audit trail
+- Full glassmorphic React dashboard
+
+### 🔜 Phase 1 — Vault Infrastructure & Multi-Asset Expansion
+
+The current architecture manages mETH and USDY. That's Phase 0. But the intelligence layer underneath — the HMM, the dual consensus, the ZK proofs — was built to scale far beyond two tokens.
+
+Phase 1 opens Obelisk Q to the full TradFi-on-chain asset universe on Mantle:
+
+- **Vault Factory** — any user can deploy their own AI-managed vault with custom risk parameters, custom asset weights, and their own defensive safe haven strategy
+- **Multi-asset support** — FBTC (tokenized Bitcoin), XAUT (gold RWA), real estate tokens, and institutional TradFi assets as they arrive on Mantle
+- **Custom safe haven selection** — users define what "safety" means to them: USDY (US Treasuries), XAUT (gold), or any TradFi-backed stable on Mantle
+
+**⚡ Just-In-Time Settlement — Powered by Bybit's Institutional Infrastructure**
+
+Phase 1 introduces a fundamentally safer capital model. We are integrating **Bybit's institutional execution infrastructure** — off-chain — while keeping user funds completely non-custodial at all times.
+
+> *Funds never leave the user's own wallet until the exact moment a trade executes. That's Just-In-Time settlement.*
+
+There is no honeypot. No central fund to hack. No pool of aggregated user deposits sitting on a server somewhere waiting to be exploited. Your money stays in your wallet — until the agent has earned the right to move it, found the optimal execution route, and is ready to settle atomically on-chain.
+
+**🏗️ Custom Vault Builder**
+
+Every user can build their own vault — their own risk parameters, their own target allocations, their own safe haven asset — all powered by the same HMM intelligence engine underneath. The AI adapts to the user's strategy. Not the other way around.
+
+- **Gelato v3 stop-loss automation** + **ERC-4337 gasless transactions** via paymaster
+- **ERC-6551 NFT-bound vault accounts** + Safe Multisig + Timelock governance
+- Points system + referral vault sharing rewards for user acquisition
+
+### 🔮 Phase 2 — Social Layer & Mobile
+- **Social copy-trading** — publish vault strategy as a tradeable Strategy NFT; others mirror in one click; vault owner earns 3%, protocol 2%
+- **iOS + Android app** (React Native) with biometric auth and push alerts
+- **LLM intent engine** — natural language → on-chain action pipeline ("rotate 50% to USDY" → executes)
+- **Telegram bot** — real-time regime alerts and rebalance notifications
+- **Public leaderboard** — best autonomous AI strategies on Mantle, ranked by verified on-chain performance
+
+---
+
+## 🔗 Links
+
+| Resource | URL |
+|---|---|
+| 🌐 **Live App** | [obeliskq.app](https://www.obeliskq.app/) |
+| 💻 **GitHub** | [github.com/samixrd/Obelisk-Q](https://github.com/samixrd/Obelisk-Q) |
+| 📊 **Live Agent Health** | [obeliskq.app/api/agent/health](https://obeliskq.app/api/agent/health) |
+| 🏦 **Live RWA Status** | [obeliskq.app/api/rwa/status](https://obeliskq.app/api/rwa/status) |
+| 📜 **Full Audit Trail** | [obeliskq.app/api/cycles/history](https://obeliskq.app/api/cycles/history) |
+| 🔍 **Vault on Mantle Explorer** | [explorer.mantle.xyz](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2) |
+
+---
+
+*Obelisk Q · Mantle Network Hackathon 2026 · MIT License*
+*"Not another yield optimizer. The infrastructure layer for autonomous, inclusive, verifiable wealth management."*
