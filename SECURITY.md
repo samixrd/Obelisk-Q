@@ -115,7 +115,7 @@ During a withdrawal, the vault dynamically calculates the user's precise share o
 ### 4.3 Dynamic Slippage Protection
 Before executing any rebalance swap or unwind operation, the agent queries the **Odos V3 DEX Aggregator** for the optimal multi-path route across all Mantle DEXs (Merchant Moe, Agni, FusionX, Butter, etc.). 
 
-All swaps—including entering growth positions and unwinding active assets (`mETH`/`USDY` back to native `MNT`)—are protected by a triple-layer guard: dynamic slippage limits (0.3%–0.8%), a 0.3% price impact cap, and a 2.5% hard value-loss abort. 
+All swaps—including entering growth positions and unwinding active assets (`mETH`/`USDY` back to native `MNT`)—are protected by a triple-layer guard: dynamic slippage limits (0.6%–0.8%), a 0.6% price impact cap, and a 2.5% hard value-loss abort. 
 
 By routing unwind operations through Odos swaps to `WMNT` on-chain instead of using the contract's internal zero-slippage `_unwindToken` loop, all transaction paths are strictly bound to dynamic `minAmountOut` parameters, protecting the vault from front-running and MEV sandwich attacks.
 
@@ -141,7 +141,7 @@ All critical cryptographic materials (e.g. `AGENT_PRIVATE_KEY`, `PROVER_PRIVATE_
 | Threat Vector | Description | Obelisk Q Mitigation Strategy | Status |
 |---|---|---|---|
 | **Reentrancy Attack** | Attacker executes a recursive call to drain vault balances during withdrawal. | OpenZeppelin/custom `nonReentrant` mutex guard on all state-modifying functions. | **Active** |
-| **Front-running / MEV** | Searchers front-run rebalance swaps, causing high slippage. | Odos V3 multi-path routing with RFQ sources + triple-layer slippage guard (0.3%–0.8% dynamic + 0.3% price impact + 2.5% value-loss hard cap) passed as `minAmountOut` on all entering swaps and UNWIND actions. | **Active** |
+| **Front-running / MEV** | Searchers front-run rebalance swaps, causing high slippage. | Odos V3 multi-path routing with RFQ sources + triple-layer slippage guard (0.6%–0.8% dynamic + 0.6% price impact + 2.5% value-loss hard cap) passed as `minAmountOut` on all entering swaps and UNWIND actions. | **Active** |
 | **LLM Attack / Hallucination** | AI model fails, hallucinating high-risk positions or corrupted regimes. | Asymmetric Consensus Engine + Deterministic Math Override Node + Rule-based fallback. | **Active** |
 | **RPC Downtime / DDOS** | RPC provider fails during a critical market contraction event. | `RPCManager` dynamically fails over and cycles across 3 Mantle RPC endpoints. | **Active** |
 | **Oracle Manipulation** | Attackers manipulate on-chain price feeds to trigger artificial regime swaps. | Integration of multi-source sentiment inputs (Fear & Greed, Bybit, Coingecko simple simple simple spot prices). | **Active** |

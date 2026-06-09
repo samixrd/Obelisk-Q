@@ -763,9 +763,9 @@ MIN_SWAP_VALUE_WEI = Web3.to_wei(1, 'ether')  # 1 MNT minimum
 
 # ── SLIPPAGE & VALUE LOSS CAPS (V3 tightened) ──
 MAX_SLIPPAGE_CONTRACTION = 0.8   # High-vol regime — still tight with V3 multi-path routing
-MAX_SLIPPAGE_CONSOLIDATION = 0.3 # Normal regime — V3 SOR finds sub-0.3% routes easily
-MAX_SLIPPAGE_EXPANSION = 0.5     # Low-vol regime — moderate tolerance
-MAX_PRICE_IMPACT_PCT = 0.3       # Abort if single-pool price impact exceeds this
+MAX_SLIPPAGE_CONSOLIDATION = 0.6 # Normal regime — V3 SOR finds sub-0.6% routes easily
+MAX_SLIPPAGE_EXPANSION = 0.6     # Low-vol regime — moderate tolerance
+MAX_PRICE_IMPACT_PCT = 0.6       # Abort if single-pool price impact exceeds this
 MAX_VALUE_LOSS_PCT = 2.5         # HARD CAP: abort if output value >2.5% less than input
 
 def update_circuit_breaker(current_score):

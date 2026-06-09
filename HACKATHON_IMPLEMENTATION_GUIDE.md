@@ -386,7 +386,7 @@ Add section:
 ### Smart Contract Security ✅
 - [x] **Reentrancy Guards**: OpenZeppelin `ReentrancyGuard` on all state-changing functions
 - [x] **Circuit Breaker**: Autonomous `pause()` if Q-Score drops 10pts in 60min
-- [x] **Deterministic Slippage**: 0.3%-0.8% dynamic protection via Odos V3 multi-path routing (anti-MEV, 2.5% hard value-loss cap)
+- [x] **Deterministic Slippage**: 0.6%-0.8% dynamic protection via Odos V3 multi-path routing (anti-MEV, 2.5% hard value-loss cap)
 - [x] **Verified on Mantle**: [Code is verified on explorer](https://explorer.mantle.xyz/address/0x59fdE89B810812846ED167033C6d33fa425835E2)
 
 ### Agent Safety ✅
