@@ -401,6 +401,206 @@ Obelisk Q is designed to protect users, not exploit them:
     *   Volatility threshold push alerts
     *   Weekly email digest
 
+    ---
+
+## 🪙 Tokenomics — $OBQ
+
+### Overview
+
+**$OBQ** is the native governance and incentive token of the Obelisk Q protocol. It is designed to align long-term incentives between the protocol, its AI-managed vault users, strategy creators, and the broader Mantle DeFi ecosystem. $OBQ is not a speculative instrument — it is the coordination layer that governs autonomous capital allocation, captures protocol fee value, and rewards participants who contribute to the protocol's growth and security.
+
+| Parameter | Value |
+| :--- | :--- |
+| **Token Name** | Obelisk Q |
+| **Ticker** | $OBQ |
+| **Token Standard** | ERC-20 (Mantle Mainnet, Chain ID 5000) |
+| **Total Supply** | 100,000,000 OBQ (fixed, no inflation) |
+| **Initial Circulating Supply** | 12,500,000 OBQ (12.5% at TGE) |
+| **Emission Model** | Fixed supply with time-locked vesting schedules |
+| **Governance** | On-chain via Safe Multisig + Timelock (Phase 1) → DAO (Phase 2) |
+
+---
+
+### Allocation Breakdown
+
+| Category | Allocation (%) | Tokens | Vesting Schedule |
+| :--- | :---: | :---: | :--- |
+| **Ecosystem & Liquidity Rewards** | 30% | 30,000,000 | Released linearly over 36 months via vault incentive programs |
+| **Treasury & Protocol Reserve** | 20% | 20,000,000 | 12-month cliff, then 24-month linear vesting. Controlled by multisig/DAO |
+| **Team & Core Contributors** | 15% | 15,000,000 | 12-month cliff, then 36-month linear vesting. Zero tokens unlock at TGE |
+| **Investors & Strategic Partners** | 12% | 12,000,000 | 6-month cliff, then 18-month linear vesting |
+| **Community Airdrop & Early Adopters** | 10% | 10,000,000 | 20% unlocked at TGE; remainder over 12 months |
+| **Hackathon, Grants & Developer Fund** | 8% | 8,000,000 | Released on milestone achievement; governed by multisig |
+| **Public Sale / Liquidity Bootstrap** | 5% | 5,000,000 | 100% unlocked at TGE for DEX liquidity provision |
+
+---
+
+### Team Allocation — Detail
+
+The **15% team allocation (15,000,000 OBQ)** is subject to the most conservative vesting schedule in the protocol, demonstrating the team's long-term alignment with protocol health over short-term extraction.
+
+- **Cliff Period**: 12 months from TGE. No team tokens unlock during this period under any circumstance.
+- **Vesting Duration**: 36-month linear vesting commencing after the cliff. Total lockup horizon = 48 months (4 years).
+- **Anti-Dilution Commitment**: The team allocation is fixed at launch and cannot be increased via governance.
+- **Distribution**:
+
+| Role | Allocation |
+| :--- | :--- |
+| Founding Engineer / Protocol Architect | 6,000,000 OBQ |
+| AI / ML Lead | 3,500,000 OBQ |
+| Smart Contract Lead | 2,500,000 OBQ |
+| Product & Design | 1,500,000 OBQ |
+| Advisors (3 seats, combined) | 1,500,000 OBQ |
+
+Advisor allocations vest over 24 months with a 6-month cliff. All team and advisor vesting schedules will be enforced via on-chain vesting contracts at Phase 1 launch.
+
+---
+
+### Token Utility
+
+$OBQ is a utility-first token. Its value accrual is directly tied to protocol activity — not speculation.
+
+**1. Governance**
+$OBQ holders vote on:
+- Addition of new vault asset registries (e.g., adding FBTC, XAUT as safe-haven assets)
+- Fee parameter adjustments (performance fee %, management fee %)
+- Treasury fund allocation and grants
+- Smart contract upgrade proposals (via Timelock)
+
+**2. Fee Reduction**
+Users who stake $OBQ in the protocol receive tiered fee discounts on performance and management fees:
+
+| Staked $OBQ | Performance Fee Discount | Management Fee Discount |
+| :--- | :---: | :---: |
+| 0 | 0% | 0% |
+| 500 OBQ | 10% | 10% |
+| 2,500 OBQ | 25% | 25% |
+| 10,000 OBQ | 50% | 50% |
+
+**3. Vault Emissions Boost**
+$OBQ stakers earn a multiplier on their vault yield rewards:
+- Base: 1.0x (no stake)
+- 1,000 OBQ staked: 1.25x multiplier
+- 5,000 OBQ staked: 1.5x multiplier
+- 25,000 OBQ staked: 2.0x multiplier
+
+**4. Strategy NFT Minting**
+In Phase 2, vault strategy configurations are mintable as tradeable NFTs. Minting requires burning a fixed amount of $OBQ, creating a direct deflationary sink tied to protocol growth.
+
+**5. Copy-Trade Revenue Share**
+Vault creators who list strategies for copy-trading receive their 3% copy-trade fee directly in $OBQ (or optionally in MNT), deepening token circulation within the protocol flywheel.
+
+---
+
+### Protocol Fee → Token Value Flow
+
+All protocol-generated fees flow through a structured value capture mechanism:
+
+```
+Protocol Fees (swap + performance + management)
+         |
+         ├──► 50% → Protocol Treasury (OBQ buyback reserve)
+         ├──► 30% → Vault Yield Reward Pool (distributed to OBQ stakers)
+         └──► 20% → Developer & Audit Fund (grants, security reviews)
+```
+
+- **Buyback & Burn (Phase 2)**: Once protocol TVL exceeds $1M, 20% of treasury inflows are allocated to open-market $OBQ buybacks and burns, creating a deflationary pressure mechanism tied directly to protocol usage.
+
+---
+
+### Vesting Summary Table
+
+| Stakeholder | TGE Unlock | Cliff | Vesting |
+| :--- | :---: | :---: | :--- |
+| Ecosystem Rewards | 0% | None | 36 months linear |
+| Treasury | 0% | 12 months | 24 months linear |
+| Team | 0% | 12 months | 36 months linear |
+| Investors | 0% | 6 months | 18 months linear |
+| Community / Airdrop | 20% | None | 12 months linear (remainder) |
+| Grants / Developer Fund | 0% | Milestone-gated | Per grant terms |
+| Public Sale / Liquidity | 100% | None | Fully unlocked at TGE |
+
+---
+
+### Governance Roadmap
+
+Obelisk Q governance evolves progressively across three phases — starting from a lean, security-first multisig and transitioning into a fully decentralized, token-weighted DAO. Each phase unlocks new decision-making powers to the community as the protocol matures and TVL grows.
+
+---
+
+#### Phase 0 — Operational Multisig *(Active Now)*
+
+**Model**: 3-of-5 Safe Multisig on Mantle Mainnet
+
+**Key Holders**: Core founding team (5 keyholders, 3 required to sign)
+
+**Scope of Authority**:
+- Emergency `pause()` of ObeliskVault if a critical threat is detected
+- Agent parameter updates (cycle interval, slippage thresholds, RPC failover config)
+- Smart contract upgrades during the hackathon/early-access window
+- Treasury fund custodianship prior to DAO formation
+
+**Limitations**: No token-holder voting. No community proposals. Speed and security are prioritized over decentralization at this stage.
+
+**Rationale**: During early protocol operation, rapid response to on-chain threats outweighs governance decentralization. The multisig ensures the team can protect user funds instantly without waiting for proposal cycles.
+
+---
+
+#### Phase 1 — Safe Multisig + On-Chain Timelock *(Phase 1 Launch)*
+
+**Model**: Safe Multisig (5-of-7, expanded keyholder set) + 48-hour Timelock contract
+
+**Trigger**: Deployment of Vault Factory and Phase 1 smart contracts on Mantle Mainnet
+
+**Key Additions**:
+- **Timelock Contract**: All non-emergency protocol changes are subject to a mandatory 48-hour on-chain delay before execution. This gives the community a public veto window to inspect and react to any proposed change.
+- **Community Signal Voting**: Off-chain governance via Snapshot ($OBQ-weighted). Results are non-binding but inform multisig decisions and establish governance legitimacy before full DAO.
+- **Expanded Keyholder Set**: 2 additional keyholders added from strategic partners or elected community representatives.
+- **Governance Scope Expands To**:
+  - Vault asset registry additions/removals (e.g., adding FBTC or XAUT as safe-haven assets)
+  - Fee parameter adjustments (performance fee, management fee, copy-trade split)
+  - Ecosystem reward emission rate adjustments
+  - Treasury grant approvals (developer fund disbursements)
+  - New safe-haven asset whitelist proposals
+
+**Emergency Override**: The multisig retains the ability to bypass the Timelock **only** in the event of an active exploit or critical vulnerability. All emergency actions are published on-chain with a post-mortem within 72 hours.
+
+**Transition Criteria to Phase 2**:
+- Protocol TVL sustained above $500,000 for 30 consecutive days
+- $OBQ token generation event (TGE) completed
+- Minimum 1,000 unique $OBQ holders on-chain
+- At least 3 successful community Snapshot votes executed
+
+---
+
+#### Phase 2 — Full Token DAO *(Phase 2 Launch)*
+
+**Model**: $OBQ-weighted on-chain DAO via Tally + Snapshot + Protocol-Owned Liquidity
+
+**Trigger**: Transition criteria from Phase 1 met; DAO contracts deployed and ownership transferred
+
+**Architecture**:
+- **Proposal Threshold**: Any wallet holding ≥ 10,000 $OBQ (or receiving delegation of ≥ 10,000 $OBQ) can submit an on-chain governance proposal.
+- **Quorum Requirement**: A minimum of 5% of circulating $OBQ supply must participate for a vote to be valid.
+- **Voting Period**: 5 days for standard proposals; 48 hours for emergency fast-track proposals (requires 10% quorum).
+- **Timelock**: All passed proposals are subject to a 72-hour Timelock execution delay (extended from Phase 1).
+- **Delegation**: $OBQ holders can delegate voting power to any address, enabling passive holders to participate via trusted delegates.
+
+**Full Governance Scope**:
+- All Phase 1 scope, plus:
+- Smart contract upgrade authorization
+- Buyback & burn parameter adjustments
+- Protocol-owned liquidity (POL) deployment decisions
+- New product module approvals (e.g., lending integrations, cross-chain vaults)
+- Treasury investment strategy (idle treasury yield allocation)
+- DAO contributor grants and core team performance reviews
+
+**Protocol-Owned Liquidity (POL)**:
+A portion of the Treasury is permanently deployed as protocol-owned DEX liquidity for the $OBQ/MNT pair on Mantle. This eliminates reliance on mercenary liquidity providers and ensures baseline token tradability regardless of market conditions. POL parameters (depth, range, rebalance cadence) are governed by $OBQ holders.
+
+**Sunset of Multisig**:
+Upon successful Phase 2 DAO activation, the Safe Multisig is demoted to an **emergency guardian role only** — it retains the sole ability to pause the protocol in the event of an active exploit, but loses all other administrative authority. Full sovereignty passes to $OBQ holders.
+
 ---
 
 ## 📚 Additional Resources
