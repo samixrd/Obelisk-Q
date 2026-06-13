@@ -406,6 +406,9 @@ Obelisk Q is designed to protect users, not exploit them:
 
 ---
 
+
+---
+
 ## 🪙 Tokenomics — $OBQ
 
 ### Overview
@@ -532,25 +535,6 @@ Protocol Fees (swap + performance + management)
 Obelisk Q governance evolves progressively across three phases — starting from a lean, security-first multisig and transitioning into a fully decentralized, token-weighted DAO. Each phase unlocks new decision-making powers to the community as the protocol matures and TVL grows.
 
 ---
-
-#### Phase 0 — Operational Multisig *(Active Now)*
-
-**Model**: 3-of-5 Safe Multisig on Mantle Mainnet
-
-**Key Holders**: Core founding team (5 keyholders, 3 required to sign)
-
-**Scope of Authority**:
-- Emergency `pause()` of ObeliskVault if a critical threat is detected
-- Agent parameter updates (cycle interval, slippage thresholds, RPC failover config)
-- Smart contract upgrades during the hackathon/early-access window
-- Treasury fund custodianship prior to DAO formation
-
-**Limitations**: No token-holder voting. No community proposals. Speed and security are prioritized over decentralization at this stage.
-
-**Rationale**: During early protocol operation, rapid response to on-chain threats outweighs governance decentralization. The multisig ensures the team can protect user funds instantly without waiting for proposal cycles.
-
----
-
 #### Phase 1 — Safe Multisig + On-Chain Timelock *(Phase 1 Launch)*
 
 **Model**: Safe Multisig (5-of-7, expanded keyholder set) + 48-hour Timelock contract
@@ -605,6 +589,7 @@ A portion of the Treasury is permanently deployed as protocol-owned DEX liquidit
 
 **Sunset of Multisig**:
 Upon successful Phase 2 DAO activation, the Safe Multisig is demoted to an **emergency guardian role only** — it retains the sole ability to pause the protocol in the event of an active exploit, but loses all other administrative authority. Full sovereignty passes to $OBQ holders.
+
 
 
 ---
