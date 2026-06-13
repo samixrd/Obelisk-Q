@@ -403,9 +403,14 @@ Obelisk Q is designed to protect users, not exploit them:
 
     ---
 
+
+---
+
 ## 🪙 Tokenomics — $OBQ
 
 ### Overview
+
+> ⚠️ **Planned Tokenomics** — $OBQ has not yet launched. The following tokenomics framework is designed for post-Phase 1 deployment. All parameters, allocations, and schedules are subject to revision prior to TGE.
 
 **$OBQ** is the native governance and incentive token of the Obelisk Q protocol. It is designed to align long-term incentives between the protocol, its AI-managed vault users, strategy creators, and the broader Mantle DeFi ecosystem. $OBQ is not a speculative instrument — it is the coordination layer that governs autonomous capital allocation, captures protocol fee value, and rewards participants who contribute to the protocol's growth and security.
 
@@ -600,6 +605,7 @@ A portion of the Treasury is permanently deployed as protocol-owned DEX liquidit
 
 **Sunset of Multisig**:
 Upon successful Phase 2 DAO activation, the Safe Multisig is demoted to an **emergency guardian role only** — it retains the sole ability to pause the protocol in the event of an active exploit, but loses all other administrative authority. Full sovereignty passes to $OBQ holders.
+
 
 ---
 
