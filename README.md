@@ -234,7 +234,7 @@ This dual-consensus design ensures that capital protection is always prioritized
 | Regime | Score Gate | Action | Damping Model |
 |---|---|---|---|
 | Expansion | `score ≥ 65` | Swap to mETH | Underdamped (ζ=0.4) |
-| Contraction | `score ≤ 45` | Swap to USDY | Critically Damped (ζ=1.0) |
+| Contraction | `score ≤ 60` | Swap to USDY | Critically Damped (ζ=1.0) |
 | Consolidation | `50 ≤ score ≤ 65` | Swap to WMNT | Optimal (ζ=0.707) |
 | Any | Outside ranges | HOLD | Critically Damped (ζ=1.0) |
 
